@@ -70,7 +70,7 @@ const events:StoryEvent[]=[
  {id:'final_signal',scene:'dawn',tag:'새벽의 수신',title:'누군가 내 이름을 부른다',speaker:'EVE · 외부 송신',text:'열일곱 번의 확인 끝에 EVE가 밝힌다. 지금의 목소리는 외부 생존자가 아니라 지식 저장고에서 합성된 인간의 마지막 메시지다. “너는 우리를 대신해 살아야 해.”',requires:['ark_truth'],choices:[C('대신 살아가는 것이 아니라 스스로 살아간다.','다른 생명의 삶을 빼앗지 않는다.',{stability:13,bond:9},{flag:'live_for_self'}),C('남겨진 인간의 부탁을 받아들인다.','복원에 삶을 바친다.',{knowledge:15,vital:-7},{flag:'accept_duty'}),C('기록에 묻는다. 그들은 정말 돌아오고 싶은가?','한 번도 하지 않은 질문.',{knowledge:10,bond:12},{flag:'ask_dead'})]},
 ];
 // Small, distinct incidental stories: varied outcomes, three choices each, no fixed chapter order.
-const vignettes:[string,Scene,string,string,Animal|undefined][]=[
+const vignettes:[title:string,scene:Scene,text:string,animal:Animal|undefined][]=[
  ['발소리 네 번','sanctuary','빈 복도에서 일정한 박자로 네 번 발소리가 들린다. 동물의 것인지 사람의 것인지 구별할 수 없다.','rabbit'],
  ['녹슨 나침반','wasteland','바닥에 떨어진 나침반은 북쪽이 아니라 보존실을 가리킨다.','fox'],
  ['꺼진 전등','laboratory','EVE의 손이 닿는 순간만 오래된 조명이 잠깐 켜진다.',undefined],

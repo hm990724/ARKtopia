@@ -1,0 +1,206 @@
+{
+  "characters": [
+    {
+      "id": "protagonist_neutral",
+      "filename": "public/assets/characters/protagonist_neutral.png",
+      "purpose": "캐릭터 초상화"
+    },
+    {
+      "id": "eve_hologram",
+      "filename": "public/assets/characters/eve_hologram.png",
+      "purpose": "EVE 홀로그램"
+    }
+  ],
+  "animals": [
+    {
+      "id": "rabbit_uncanny",
+      "name": "흰 토끼",
+      "filename": "public/assets/animals/rabbit_uncanny.png",
+      "protocol": "상처를 살펴볼 때 몸을 피하지 않는다. 치료 순서를 관찰해야 합니다.",
+      "category": "보존 동물",
+      "purpose": "기본 외형 · 기묘한 동물"
+    },
+    {
+      "id": "rabbit_mutant",
+      "name": "흰 토끼",
+      "filename": "public/assets/animals/rabbit_mutant.png",
+      "protocol": "상처를 살펴볼 때 몸을 피하지 않는다. 치료 순서를 관찰해야 합니다.",
+      "category": "보존 동물",
+      "purpose": "정신 붕괴와 신체 부담이 결합한 변이 외형"
+    },
+    {
+      "id": "fox_uncanny",
+      "name": "붉은 여우",
+      "filename": "public/assets/animals/fox_uncanny.png",
+      "protocol": "여우는 출입문과 우회로를 반복해서 확인합니다.",
+      "category": "보존 동물",
+      "purpose": "기본 외형 · 기묘한 동물"
+    },
+    {
+      "id": "fox_mutant",
+      "name": "붉은 여우",
+      "filename": "public/assets/animals/fox_mutant.png",
+      "protocol": "여우는 출입문과 우회로를 반복해서 확인합니다.",
+      "category": "보존 동물",
+      "purpose": "정신 붕괴와 신체 부담이 결합한 변이 외형"
+    },
+    {
+      "id": "deer",
+      "name": "밤사슴",
+      "filename": "public/assets/animals/deer.png",
+      "protocol": "낡은 명찰 앞에서 걸음을 멈추는 패턴을 보입니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "owl",
+      "name": "흰 올빼미",
+      "filename": "public/assets/animals/owl.png",
+      "protocol": "바닥에 일정한 각도와 간격으로 발자국을 남깁니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "wolf",
+      "name": "회색 늑대",
+      "filename": "public/assets/animals/wolf.png",
+      "protocol": "경계 지점 앞에서 움직임을 멈추고 소리를 듣습니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "crow",
+      "name": "까마귀",
+      "filename": "public/assets/animals/crow.png",
+      "protocol": "까마귀는 특정 음형에서 한 박자를 비워둡니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "otter",
+      "name": "수달",
+      "filename": "public/assets/animals/otter.png",
+      "protocol": "수달은 물의 흐름과 밸브 위치를 유심히 확인합니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "lynx",
+      "name": "스라소니",
+      "filename": "public/assets/animals/lynx.png",
+      "protocol": "스라소니는 비어 있는 의자와 한쪽 문을 번갈아 봅니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "axolotl",
+      "name": "유리 아홀로틀",
+      "filename": "public/assets/animals/axolotl.png",
+      "protocol": "온도와 압력의 작은 변화를 먼저 인식합니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "moth",
+      "name": "밤나방",
+      "filename": "public/assets/animals/moth.png",
+      "protocol": "불빛이 사라진 뒤에도 일정한 패턴을 따라갑니다.",
+      "category": "보존 동물"
+    },
+    {
+      "id": "mutant",
+      "name": "복합체 07",
+      "filename": "public/assets/animals/mutant.png",
+      "protocol": "서로 다른 목소리가 차례로 나타나지만 하나의 몸을 공유합니다.",
+      "category": "변이/합성"
+    },
+    {
+      "id": "chimera",
+      "name": "접합체 미라",
+      "filename": "public/assets/animals/chimera.png",
+      "protocol": "두 종류의 동물 반응이 서로 반대 방향으로 나타납니다.",
+      "category": "변이/합성"
+    }
+  ],
+  "backgrounds": [
+    {
+      "id": "hero-gate",
+      "filename": "public/assets/backgrounds/hero-gate.png"
+    },
+    {
+      "id": "gate",
+      "filename": "public/assets/backgrounds/gate.png"
+    },
+    {
+      "id": "sanctuary",
+      "filename": "public/assets/backgrounds/sanctuary.png"
+    },
+    {
+      "id": "laboratory",
+      "filename": "public/assets/backgrounds/laboratory.png"
+    },
+    {
+      "id": "wasteland",
+      "filename": "public/assets/backgrounds/wasteland.png"
+    },
+    {
+      "id": "hidden-photo",
+      "filename": "public/assets/backgrounds/hidden-photo.png"
+    },
+    {
+      "id": "dawn",
+      "filename": "public/assets/backgrounds/dawn.png"
+    }
+  ],
+  "endings": [
+    {
+      "id": "ending_new_consciousness",
+      "filename": "public/assets/endings/ending_new_consciousness.png",
+      "title": "인간 이후의 첫 문장",
+      "scene": "새로 탄생한 의식과 동물원 밖 첫 새벽",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_incomplete_revival",
+      "filename": "public/assets/endings/ending_incomplete_revival.png",
+      "title": "미완의 부활",
+      "scene": "인간 기억 복원의 불완전한 성공, 희미한 격리실",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_subject_000",
+      "filename": "public/assets/endings/ending_subject_000.png",
+      "title": "제000번 우리",
+      "scene": "관리자가 격리실 안에 갇혀 있고 EVE가 외부에서 기록",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_open_spring",
+      "filename": "public/assets/endings/ending_open_spring.png",
+      "title": "우리 밖의 봄",
+      "scene": "개방된 철문과 숲으로 나아가는 동물들",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_scattered_names",
+      "filename": "public/assets/endings/ending_scattered_names.png",
+      "title": "흩어진 이름들",
+      "scene": "안개 속으로 흩어지는 동물들의 뒷모습",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_two_caretakers",
+      "filename": "public/assets/endings/ending_two_caretakers.png",
+      "title": "마지막 두 관리자",
+      "scene": "주인공과 EVE가 관리실에서 마지막 불빛을 지킴",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_silent_automation",
+      "filename": "public/assets/endings/ending_silent_automation.png",
+      "title": "고요한 자동화",
+      "scene": "비어 있는 EVE 홀로그램과 홀로 작동하는 시설",
+      "status": "awaiting_user_art"
+    },
+    {
+      "id": "ending_last_signal",
+      "filename": "public/assets/endings/ending_last_signal.png",
+      "title": "마지막 통신",
+      "scene": "꺼져버린 단말기와 정적의 통신실",
+      "status": "awaiting_user_art"
+    }
+  ]
+}
