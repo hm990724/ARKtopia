@@ -1,9 +1,9 @@
-import {AnimalId,AnimalState,cap,log,recalc} from './sim';
+import {AnimalId,AnimalState,cap,log,recalc,isMutant,recordMutation} from './sim';
 import type {V10} from './game-v10';
 
 export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04';
 export type SecurityStatus='alert'|'breach'|'escaped';
-export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean};
+export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;lastTrace?:string};
 export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[]};
 export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0,lastScanDay:0,resolved:0,escapedIds:[],history:[]});
 export const cameras:{id:CameraId;title:string;description:string}[]=[
@@ -31,22 +31,34 @@ function trace(s:V10,title:string,detail:string,kind:'info'|'good'|'bad'|'myster
  s.security.history=[{day:s.day,title,detail},...s.security.history].slice(0,24);log(s,title,detail,kind);s.lastOutcome=detail;
 }
 export function escapeRisk(s:V10,a:AnimalState):number{
- const mutant=a.id==='mutant'||a.id==='chimera'||((a.id==='rabbit'||a.id==='fox')&&(a.stress>=75&&(a.contamination>=30||a.memory>=55)));
- return cap(Math.round((mutant?20:3)+a.stress*.43+a.contamination*.17-a.bond*.20+(100-s.facility)*.24+(100-s.power)*.13+(a.awakened?7:0)));
+ const mutant=isMutant(a);
+ const suppression=(a.suppressedUntilDay??0)>=s.day;
+ return cap(Math.round((mutant?32:3)+a.stress*.43+a.contamination*.17-a.bond*.20+(100-s.facility)*.24+(100-s.power)*.13+(a.awakened?7:0)-(suppression?70:0)));
 }
 export function nightlySecurity(s:V10,roll=Math.random()):V10{
  if(!s.security)s.security=initialSecurity();const sec=s.security;
- if(sec.incident){const inc=sec.incident;inc.steps++;inc.severity=cap(inc.severity+10);if(inc.status==='alert'&&inc.steps>=2)inc.status='breach';else if(inc.status==='breach'&&inc.steps>=3){inc.status='escaped';sec.escapedIds=[...new Set([...sec.escapedIds,inc.animalId])];trace(s,'격리 이탈','CCTV에서 개체가 사라졌습니다. 이동 경로를 추적해 재격리해야 합니다.','bad')}return s}
+ for(const a of s.animals.filter(x=>x.alive))recordMutation(s,a);
+ if(sec.incident){const inc=sec.incident;
+  const animal=s.animals.find(a=>a.id===inc.animalId&&a.alive);
+  if(!animal){sec.incident=null;sec.escapedIds=sec.escapedIds.filter(x=>x!==inc.animalId);return s;}
+  if((animal.suppressedUntilDay??0)>=s.day&&inc.status!=='escaped'){
+   sec.incident=null;sec.resolved++;
+   trace(s,'변이체 안정화','주사 효과로 격리 개체의 이상 행동이 일시적으로 잦아들었습니다.','good');return s;
+  }
+  inc.steps++;inc.severity=cap(inc.severity+(isMutant(animal)?19:10));
+  if(inc.status==='alert'&&inc.steps>=(isMutant(animal)?1:2))inc.status='breach';
+  else if(inc.status==='breach'&&inc.steps>=(isMutant(animal)?2:3)){inc.status='escaped';inc.detected=false;inc.tracked=false;inc.camera='CAM-01';inc.lastTrace=securityPatterns[inc.animalId].escape;sec.escapedIds=[...new Set([...sec.escapedIds,inc.animalId])];trace(s,'격리 이탈','CCTV에서 개체가 사라졌습니다. 이동 경로를 추적해 재격리해야 합니다.','bad')}return s}
  if(sec.escapedIds.length)return s;
  const alive=s.animals.filter(a=>a.alive);if(!alive.length||s.day<3||sec.lastIncidentDay===s.day)return s;
  const candidates=alive.map(a=>({a,risk:escapeRisk(s,a)})).filter(x=>x.risk>=25).sort((a,b)=>b.risk-a.risk);
  if(!candidates.length)return s;
- const chosen=candidates[0];const p=Math.min(0.48,Math.max(.025,(chosen.risk-19)/190));
+ const chosen=candidates[0];const mutating=isMutant(chosen.a);
+ const p=mutating?Math.min(.78,Math.max(.1,(chosen.risk-16)/115)):Math.min(.48,Math.max(.025,(chosen.risk-19)/190));
  if(roll>=p)return s;
  const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20};sec.lastIncidentDay=s.day;
  trace(s,'CCTV 이상 행동',`${a.name}: ${securityPatterns[a.id].behavior}`,'mystery');return s;
 }
-export type SecurityAction='scan'|'talk'|'lock'|'enter'|'track'|'recover'|'release';
+export type SecurityAction='scan'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum';
 export function securityAction(s:V10,action:SecurityAction):V10{
  if(s.phase!=='day'||s.run||s.pendingIncident||s.pending||!s.security)return s;
  const n=clone(s),sec=n.security;const inc=sec.incident;
@@ -71,10 +83,22 @@ export function securityAction(s:V10,action:SecurityAction):V10{
   if(n.ap<1)return s;n.ap--;n.stamina=cap(n.stamina-13);n.hp=cap(n.hp-(inc.severity>62?12:4));a.bond=cap(a.bond+7);inc.severity=cap(inc.severity-(a.bond>=35?42:19));a.stress=cap(a.stress-10);
   trace(n,'관리자 직접 접근',`${a.name}에게 직접 다가갔습니다. 생명과 체력을 걸고 개체를 안정시키려 했습니다.`,inc.severity>55?'bad':'good');
  }else if(action==='track'){
-  if(inc.status!=='escaped'||n.ap<1||n.power<9)return s;n.ap--;n.power=cap(n.power-9);inc.detected=true;inc.severity=cap(inc.severity-23);inc.camera=inc.camera==='CAM-01'?'CAM-04':'CAM-01';
+  if(inc.status!=='escaped'||n.ap<1||n.power<9)return s;n.ap--;n.power=cap(n.power-9);inc.detected=true;inc.tracked=true;inc.severity=cap(inc.severity-23);inc.camera=inc.camera==='CAM-01'?'CAM-04':'CAM-01';inc.lastTrace=securityPatterns[a.id].escape;
   trace(n,'탈출 개체 추적',`${a.name}가 ${inc.camera} 화면에 나타났습니다. ${securityPatterns[a.id].escape}`,'mystery');
+ }else if(action==='manualTrack'){
+  if(inc.status!=='escaped'||n.ap<1||n.stamina<14)return s;
+  n.ap--;n.stamina=cap(n.stamina-14);n.hp=cap(n.hp-3);inc.detected=true;inc.tracked=true;inc.camera='CAM-01';inc.severity=cap(inc.severity-9);inc.lastTrace=securityPatterns[a.id].escape;
+  trace(n,'정전 수동 추적',`${a.name}: CCTV 신호 없이 외곽 흔적을 따라갔습니다. ${inc.lastTrace}`,'mystery');
+ }else if(action==='serum'){
+  if(!isMutant(a)||n.mutantSerum<1||n.ap<1||inc.status!=='escaped'||!inc.tracked)return s;
+  n.ap--;n.mutantSerum--;n.stamina=cap(n.stamina-8);
+  a.suppressedUntilDay=n.day+2;a.stress=cap(a.stress-32);a.contamination=cap(a.contamination-15);
+  if(inc.severity>75)n.hp=cap(n.hp-5);
+  sec.escapedIds=sec.escapedIds.filter(x=>x!==a.id);sec.incident=null;sec.resolved++;
+  trace(n,'CCTV 변이체 진정·재격리',`${a.name}: 추적된 동선에서 억제 주사를 투여하고 격리실로 복귀시켰습니다. 변이 상태는 유지됩니다.`,'good');
+  recalc(n);return n;
  }else if(action==='recover'){
-  if(inc.status!=='escaped'||!inc.detected||n.ap<1||n.medicine<1)return s;
+  if(inc.status!=='escaped'||!inc.tracked||n.ap<1||n.medicine<1)return s;
   n.ap--;n.medicine--;n.stamina=cap(n.stamina-9);
   const success=inc.severity<=65||a.bond>=60;
   if(success){sec.escapedIds=sec.escapedIds.filter(id=>id!==a.id);a.stress=cap(a.stress+10);a.bond=cap(a.bond+3);sec.resolved++;sec.incident=null;trace(n,'재격리 완료',`${a.name}가 의료 케이지를 통해 무사히 돌아왔습니다. 격리실 ${a.room}번으로 복귀했습니다.`,'good')}

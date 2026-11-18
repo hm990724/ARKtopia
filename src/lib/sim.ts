@@ -1,5 +1,5 @@
 export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera';
-export type AnimalState={id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean};
+export type AnimalState={id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
 export type Start='medical'|'greenhouse'|'station'|'observatory';
 export type EventRecord={day:number;title:string;text:string;kind:'info'|'good'|'bad'|'mystery'};
@@ -26,12 +26,23 @@ export function createGame(origin:Origin,start:Start):State {const s:State={vers
 export function log(s:State,title:string,text:string,kind:EventRecord['kind']='info'){s.logs.unshift({day:s.day,title,text,kind});s.logs=s.logs.slice(0,80)}
 export function copy(s:State):State{return structuredClone(s)}
 export function spend(s:State,ap:number){if(s.phase!=='day'||s.ap<ap)return false;s.ap-=ap;return true}
-export function recalc(s:State){s.hp=cap(s.hp);s.stamina=cap(s.stamina);s.mind=cap(s.mind);s.radiation=cap(s.radiation);s.eve=cap(s.eve);s.power=cap(s.power);s.trust=cap(s.trust);if(s.hp<=0){s.phase='ending';s.ending='제000번 우리 — 관리자가 돌아오지 않았다. EVE는 끝내 그를 하나의 보존 대상으로 등록했다.'}else if(s.eve<=0&&s.animals.length===0){s.phase='ending';s.ending='마지막 통신 — EVE가 꺼졌다. 기록은 누구에게도 전달되지 못했다.'}}
+export function recalc(s:State){s.hp=cap(s.hp);s.stamina=cap(s.stamina);s.mind=cap(s.mind);s.radiation=cap(s.radiation);s.eve=cap(s.eve);s.power=cap(s.power);s.trust=cap(s.trust);if(s.hp<=0){s.phase='ending';s.ending='제000번 우리 — 관리자가 돌아오지 않았다. EVE는 끝내 그를 하나의 보존 대상으로 등록했다.'}else if(s.eve<=0){s.phase='ending';s.ending='마지막 통신 — EVE 코어 정지. 모든 보존 지시가 중단되었고, 담당자는 더 이상 외부와 연결할 수 없었다.'}}
+/** A mutation is a permanent neural state; suppressant only lowers its short-term risk. */
+export function isMutant(a:AnimalState):boolean {
+ return !!a.mutated || !!a.awakened || a.id==='mutant' || a.id==='chimera'
+   || (a.stress>=75 && (a.contamination>=30 || a.memory>=55));
+}
+export function recordMutation(s:State,a:AnimalState):boolean {
+ if(!a.alive||a.mutated||!isMutant(a))return false;
+ a.mutated=true;
+ log(s,'MUTANT 발현 · 격리 경보',`${a.name}의 신경 동기화가 임계치를 넘었습니다. 변이 후에는 돌봄만으로 정상화되지 않으며 진정 주사 또는 위험한 개체 처리 결정이 필요합니다.`,'bad');
+ return true;
+}
 export function dailyWork(s:State,type:'feed'|'heal'|'comfort'|'observe',id:AnimalId):State {const n=copy(s);const a=n.animals.find(a=>a.id===id&&a.alive);if(!a||!spend(n,1))return s;const name=a.name;if(type==='feed'){if(n.food<1)return s;n.food--;a.hp=cap(a.hp+10);a.stress=cap(a.stress-8);a.bond=cap(a.bond+8);log(n,'급식 완료',`${name}가 경계하다가 조금씩 먹이를 받아먹었다.`,'good')}
 if(type==='heal'){if(n.medicine<1)return s;n.medicine--;a.hp=cap(a.hp+(n.origin==='medic'?32:22));a.contamination=cap(a.contamination-18);log(n,'치료 기록',`${name}의 상처를 치료했다. 소독 장비의 작은 불빛이 꺼졌다.`,'good')}
 if(type==='comfort'){a.stress=cap(a.stress-20);a.bond=cap(a.bond+12);n.mind=cap(n.mind+3);log(n,'교감 기록',`${name}가 손길을 피하지 않았다. 잠시 조용한 시간이 흘렀다.`,'good')}
 if(type==='observe'){a.records++;a.memory=cap(a.memory+4);n.knowledge+=a.records<=3?2:0;const line=a.records===1?'처음에는 단순한 반사 행동처럼 보였다.':a.records<3?'동일한 행동이 반복된다. 습관이라기에는 너무 규칙적이다.':'익숙하지 않은 도구를 마치 사용해본 것처럼 다룬다.';log(n,'행동 관찰',`${name}: ${line}`,'mystery')}
-recalc(n);return n}
+recordMutation(n,a);recalc(n);return n}
 export function buy(s:State,item:'food'|'med'|'part'|'cell'|'filter'|'eve'):State {const n=copy(s);const cost={food:90,med:160,part:125,cell:480,filter:250,eve:340}[item];if(n.credits<cost)return s;n.credits-=cost;if(item==='food')n.food+=3;if(item==='med')n.medicine+=2;if(item==='part')n.parts+=3;if(item==='cell')n.rooms++;if(item==='filter'){n.radiation=cap(n.radiation-20);n.shield=cap(n.shield+50);}if(item==='eve')n.eve=cap(n.eve+26);log(n,'보급 터미널',`보급 크레딧 ${cost}을 사용하여 ${item} 물자를 확보했다.`);return n}
 export function repair(s:State,what:'power'|'eve'|'rooms'):State{const n=copy(s);if(!spend(n,1)||n.parts<1)return s;n.parts--;if(what==='power')n.power=cap(n.power+(n.origin==='engineer'?33:24));if(what==='eve')n.eve=cap(n.eve+(n.origin==='engineer'?25:17));if(what==='rooms')n.animals.forEach(a=>a.stress=cap(a.stress-6));log(n,'시설 수리',what==='eve'?'EVE의 발광부가 다시 안정적인 파형을 그린다.':'고장난 기계가 낮은 소리를 내며 움직이기 시작한다.','good');return n}
 export function extract(s:State,id:AnimalId,quality:number,choice:'gentle'|'force'|'stop'):State {
@@ -45,7 +56,7 @@ export function extract(s:State,id:AnimalId,quality:number,choice:'gentle'|'forc
  const safe=choice==='gentle';const successful=quality>=65;
  if(successful){const value=Math.round((safe?17:25)*(n.origin==='artist'?1.15:1));a.memory=cap(a.memory+value);n.knowledge+=value;n.extractions++;a.stress=cap(a.stress+(safe?7:21));a.bond=cap(a.bond+(safe?5:-13));a.hp=cap(a.hp-(safe?0:7));log(n,'행동 강령 일치',`${a.name}의 본능적 행동을 재현하자 낯선 기억이 스스로 떠올랐다. 지식 +${value}.`,'mystery');if(id==='fox')n.flags.foxStory=true;if(n.extractions>=3)n.flags.memoryDoor=true}
  else {a.stress=cap(a.stress+(safe?12:26));a.bond=cap(a.bond-(safe?4:12));a.hp=cap(a.hp-(safe?0:9));log(n,'행동 강령 위반',`${a.name}가 신호를 거부했다. 지식은 얻지 못했고 신뢰가 흔들렸다.`,'bad')}
- n.eve=cap(n.eve-3);recalc(n);return n;
+ n.eve=cap(n.eve-3);recordMutation(n,a);recalc(n);return n;
 }
 export function rescue(s:State,id:AnimalId,choice:'rescue'|'field'|'leave',success:boolean):State{const n=copy(s);n.pending=null;const sp=specs.find(x=>x.id===id)!;if(choice==='leave'){log(n,'외부 방생',`${sp.name}를 발견했지만 접근하지 않았다. 자국만 흙 위에 남았다.`);n.trust=cap(n.trust-2);return n}if(choice==='field'){n.medicine=Math.max(0,n.medicine-1);n.trust=cap(n.trust+6);n.knowledge+=2;log(n,'현장 보호',`${sp.name}를 치료한 뒤 그 자리에 남겨두었다. 다시 만날 수 있을지는 알 수 없다.`,'good');return n}if(!success){n.hp=cap(n.hp-7);n.stamina=cap(n.stamina-9);log(n,'구조 실패',`${sp.name}가 겁에 질려 탈출했다. 주인공은 찢어진 장갑을 감싸 쥔다.`,'bad');recalc(n);return n}if(n.animals.filter(a=>a.alive).length>=n.rooms){log(n,'격리 공간 부족',`${sp.name}를 구조하려 했으나 빈 격리실이 없어 현장 보호로 전환했다.`,'bad');n.trust=cap(n.trust+2);return n}if(!n.animals.some(a=>a.id===id&&a.alive)){const free=new Set(n.animals.filter(a=>a.alive).map(a=>a.room));let room=1;while(free.has(room))room++;n.animals.push(makeAnimal(id,room));n.lifeSaved++;n.trust=cap(n.trust+5);n.credits+=75;n.eventRisk=cap(n.eventRisk+6);log(n,'구조 성공',`${sp.name}가 이동 케이지에 들어왔다. 진정 → 운송 → 격리실 배정까지 완료했다.`,'good')}return n}
 export function night(s:State,def:{gate:boolean;evacuate:boolean;scan:boolean}):State {

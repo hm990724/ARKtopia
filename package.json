@@ -1,13 +1,19 @@
 {
-  "name": "echo-ward-v21",
-  "version": "21.0.0",
+  "name": "echo-ward-v34",
+  "version": "34.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test:sim": "node scripts/test-sim.cjs"
+    "test:sim": "node scripts/test-sim.cjs",
+    "test:v23": "node scripts/test-v23.cjs",
+    "test:v31": "node scripts/test-v32.cjs",
+    "test:v32": "node scripts/test-v32.cjs && node scripts/test-v32-mutation.cjs",
+    "test:v32:mutation": "node scripts/test-v32-mutation.cjs",
+    "test:v33": "node scripts/test-v33.cjs",
+    "test:v34": "node scripts/test-v34.cjs"
   },
   "dependencies": {
     "next": "^15.5.0",

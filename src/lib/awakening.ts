@@ -1,4 +1,5 @@
 import type {AnimalId,AnimalState} from "./sim";
+import {isMutant} from "./sim";
 
 export type AwakeningProfile={signal:string;identity:string;animalCry:string;firstWords:string;secondWords:string;manager:string};
 export const awakeningProfiles:Record<AnimalId,AwakeningProfile>={
@@ -21,5 +22,5 @@ export function isAwakeningReady(a:AnimalState):boolean {
   return a.alive&&!a.awakened && ((a.memory>=45&&a.stress>=48)||(a.memory>=26&&a.stress>=67)||(a.contamination>=35&&a.memory>=30&&a.stress>=55));
 }
 export function isMutantVisual(a:AnimalState):boolean {
-  return !!a.awakened || isAwakeningReady(a);
+  return isMutant(a)||isAwakeningReady(a);
 }

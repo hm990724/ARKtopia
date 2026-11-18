@@ -1,0 +1,197 @@
+import {newHunt,normalizeHunt,type HuntState} from './hidden-hunt';
+/** ECHO WARD v31: deterministic, saveable field exploration and tactical animal behaviour.
+ * Tiles are indices in a 7×5 investigation map or a 6×6 capture board.
+ */
+import type {AnimalId} from './sim';
+import type {RegionId} from './game-v10';
+
+export const FIELD_COLUMNS=7;
+export const FIELD_ROWS=5;
+export const FIELD_START=14;
+export const FIELD_EXIT=20;
+export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|'exit';
+export type Pace='quiet'|'normal'|'fast';
+export type FieldState={tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number};
+export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
+export type TacticalDevice={position:number;kind:DeviceKind};
+export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
+
+const hash=(seed:number)=>{let v=(seed^0x9e3779b9)>>>0;v^=v<<13;v^=v>>>17;v^=v<<5;return v>>>0};
+const seedFor=(day:number,region:RegionId)=>region.split('').reduce((n,c)=>hash(n+c.charCodeAt(0)),day*313+19);
+const distance=(a:number,b:number,width:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
+export const adjacentField=(a:number,b:number)=>a>=0&&a<35&&b>=0&&b<35&&distance(a,b,7)===1;
+export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||distance(f.position,i,7)<=range;
+
+export function createField(day:number,region:RegionId):FieldState {
+  const seed=seedFor(day,region);
+  const tiles:FieldTile[]=Array(35).fill('empty');
+  // Guaranteed route along the middle row: players can always reach the extraction point.
+  for(let i=0;i<35;i++){
+    const r=Math.floor(i/7),c=i%7, h=hash(seed+i*337)%100;
+    if(r!==2&&c!==0&&c!==6&&h<14)tiles[i]='wall';
+    else if(h<31)tiles[i]='hazard';
+    else if(h<50)tiles[i]='track';
+    else if(h<68)tiles[i]='cache';
+    else if(h<79)tiles[i]='signal';
+  }
+  const wildlifeIndex=(day===1&&region==='garden')?17:[9,10,17,18,23,24][seed%6];
+  tiles[FIELD_START]='empty';tiles[FIELD_EXIT]='exit';
+  tiles[15]='track';tiles[16]='track';tiles[wildlifeIndex]='animal';
+  if(wildlifeIndex!==17)tiles[17]='cache';
+  return {tiles,position:FIELD_START,visited:[FIELD_START],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,pressure:0,lastEvent:'주변 흔적을 확보하고 생체 신호를 찾아가십시오. 너무 오래 머물면 추적 위험이 증가합니다.'};
+}
+
+export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
+export const captureBehaviours:Record<AnimalId,Behaviour>={
+  rabbit:{name:'연속 도약',instinct:'큰 소리와 빛을 피하고 먹이 주변에서 멈춥니다.',memory:'의료기기 소리에 멈칫하는 반응이 있습니다.',favours:['bait'],avoids:['sound','light'],speed:2,patience:8},
+  fox:{name:'우회 경로 분석',instinct:'케이지를 알아보고 바로 들어가지 않습니다. 유인 신호를 측면에 배치하십시오.',memory:'통제실의 소리에 반응합니다.',favours:['bait','sound'],avoids:['light'],speed:1,patience:10},
+  deer:{name:'시야 우선 도주',instinct:'밝은 빛을 피해 넓은 경로로 이동합니다. 소리도 경계합니다.',memory:'익숙한 먹이 구역에서 진정합니다.',favours:['bait'],avoids:['light','sound'],speed:2,patience:7},
+  owl:{name:'어둠을 따라 이동',instinct:'소음을 피하고 빛이 적은 방향을 고릅니다.',memory:'반복적인 규칙 신호에 관심을 보입니다.',favours:['bait'],avoids:['sound','light'],speed:1,patience:9},
+  wolf:{name:'경계선 역추적',instinct:'소리의 방향으로 접근하지만 이송 장치에 바로 들어가지는 않습니다.',memory:'경비 신호에 훈련된 반응을 보입니다.',favours:['sound'],avoids:['light'],speed:1,patience:9},
+  crow:{name:'반짝이는 신호 추적',instinct:'깜빡이는 빛과 소리에 접근합니다. 같은 장치에 오래 머물지 않습니다.',memory:'일정한 박자의 신호에 반응합니다.',favours:['sound','light'],avoids:[],speed:2,patience:8},
+  otter:{name:'수로를 따라 선회',instinct:'먹이와 낮은 소리를 따라 움직이며 갑작스런 빛은 피합니다.',memory:'규칙적인 밸브 소리를 기억합니다.',favours:['bait','sound'],avoids:['light'],speed:1,patience:9},
+  lynx:{name:'사각지대 이동',instinct:'소리 유인에 잘 속지 않고 빛의 반대 방향으로 돌아갑니다.',memory:'누군가를 심문하던 목소리의 리듬이 남아 있습니다.',favours:['bait'],avoids:['sound','light'],speed:2,patience:8},
+  axolotl:{name:'습한 구역 고수',instinct:'멀리 이동하지 않고 먹이 신호에 천천히 반응합니다.',memory:'특정 조명 패턴에 신경 반응을 보입니다.',favours:['bait','light'],avoids:['sound'],speed:1,patience:11},
+  moth:{name:'광원 추적',instinct:'빛을 향해 빠르게 움직입니다. 먹이 신호를 무시합니다.',memory:'송신기 조명의 반복에 반응합니다.',favours:['light'],avoids:['sound'],speed:2,patience:7},
+  mutant:{name:'신경 충돌',instinct:'반응이 예측 불가능합니다. 같은 신호를 계속 사용하면 도주합니다.',memory:'빛과 소리의 선호가 턴마다 역전됩니다.',favours:['sound','light'],avoids:[],speed:2,patience:6},
+  chimera:{name:'두 기억의 간섭',instinct:'인접한 두 신호가 충돌하면 방향을 바꿉니다.',memory:'유인이 서로 다르면 혼란이 증가합니다.',favours:['bait','sound'],avoids:['light'],speed:2,patience:7}
+};
+
+/** v32: intercept a live route, verify behaviour twice, then deliberately seal a fixed loading gate.
+ * A bait tile alone never captures a specimen. Gate, signal, prediction and timing are distinct inputs.
+ */
+export const captureWidth=6;
+export const captureStart=22;
+export const gateForSpecies=(species:AnimalId)=>['deer','owl','otter','axolotl','chimera'].includes(species)?30:5;
+export function createCapture(species:AnimalId,tutorial=false,seed=39213+species.length*43):CaptureState{
+ return {species,position:captureStart,devices:[],turn:0,fear:tutorial?8:23,trust:tutorial?55:28,
+  maxTurns:tutorial?10:Math.max(11,captureBehaviours[species].patience+5),
+  lastEvent:'황금색 이송구에 케이지를 놓고, 반응을 유도할 신호를 배치해 이동 칸을 예측하십시오.',
+  tutorial,outcome:'playing',path:[captureStart],gate:gateForSpecies(species),prediction:null,
+  confirmed:0,lastConfirmed:null,sealArmed:false,focus:tutorial?99:9,hunt:newHunt(species,seed,tutorial)};
+}
+/** Upgrade in-flight legacy saves without destroying an animal or rewriting existing progress. */
+export function normalizeCapture(c:CaptureState):CaptureState{
+ return {...c,hunt:c.hunt?normalizeHunt(c.hunt):newHunt(c.species,39213+c.species.length*43+c.turn*29,c.tutorial),gate:Number.isInteger(c.gate)?c.gate:gateForSpecies(c.species),
+  prediction:c.prediction??null,confirmed:c.confirmed??0,lastConfirmed:c.lastConfirmed??null,
+  sealArmed:c.sealArmed??false,focus:c.focus??(c.tutorial?99:9),maxTurns:Math.max(c.maxTurns,c.tutorial?10:12)};
+}
+export function canPlaceDevice(c:CaptureState,position:number,kind:DeviceKind):boolean{
+ if(c.outcome!=='playing'||position<0||position>=36||position===c.position)return false;
+ if(kind==='cage'&&position!==c.gate)return false;
+ if(kind!=='cage'&&position===c.gate)return false;
+ const others=c.devices.filter(d=>d.position!==position);
+ return others.length<4&&(kind!=='cage'||!others.some(d=>d.kind==='cage'));
+}
+export function setDevice(c:CaptureState,position:number,kind:DeviceKind):CaptureState{
+ if(!canPlaceDevice(c,position,kind)||(c.focus??9)<1||c.sealArmed)return c;
+ return {...c,focus:(c.focus??9)-1,devices:[...c.devices.filter(d=>d.position!==position),{position,kind}],
+  lastEvent:kind==='cage'?'안전 이송구에 케이지를 고정했습니다. 경로를 확인한 후 봉쇄해야 합니다.':
+  `${kind==='bait'?'먹이':kind==='sound'?'유도음':kind==='light'?'조명':'차단막'}을 배치했습니다.`};
+}
+export function removeDevice(c:CaptureState,position:number):CaptureState{
+ if(!c.devices.some(d=>d.position===position)||c.outcome!=='playing'||c.sealArmed||(c.focus??9)<1)return c;
+ return {...c,focus:(c.focus??9)-1,devices:c.devices.filter(d=>d.position!==position),lastEvent:'장치 위치를 다시 지정했습니다.'};
+}
+function neighbours(pos:number):number[]{
+ const r=Math.floor(pos/6),col=pos%6;
+ return [[r-1,col],[r+1,col],[r,col-1],[r,col+1]]
+  .filter(([y,x])=>y>=0&&y<6&&x>=0&&x<6).map(([y,x])=>y*6+x);
+}
+const favourite=(species:AnimalId,kind:DeviceKind,turn:number)=>{
+ if(kind==='barrier'||kind==='cage')return 0;
+ const b=captureBehaviours[species];
+ if((species==='mutant'||species==='chimera')&&turn%2===1)return b.favours.includes(kind)?-1:b.avoids.includes(kind)?1:0;
+ return b.favours.includes(kind)?1:b.avoids.includes(kind)?-1:0;
+};
+function scoredMove(c:CaptureState,at:number):number{
+ if(c.devices.some(d=>d.kind==='barrier'&&d.position===at))return -10000;
+ let score=0;
+ for(const d of c.devices){
+  const near=distance(at,d.position,6);
+  if(d.kind==='barrier')continue;
+  if(d.kind==='cage'){
+   if(c.sealArmed)score+=(7-near)*8; // A verified, open route is now the leading signal.
+   else if(['fox','lynx','wolf'].includes(c.species))score-=near===0?8:near===1?3:0;
+   continue;
+  }
+  const affinity=favourite(c.species,d.kind,c.turn);
+  score+=affinity*(7.6-near*1.75);
+  if(c.species==='crow'&&d.kind==='light')score+=1;
+  if(c.species==='otter'&&d.kind==='bait')score+=1;
+ }
+ if(c.sealArmed)score-=distance(at,c.gate,6)*3;
+ score+=((at*7+c.species.length*13+c.turn*11)%9)*.08;
+ if(c.path.length>1&&at===c.path[c.path.length-2])score-=1.7;
+ return score;
+}
+function stepCandidates(c:CaptureState,pos:number){
+ return neighbours(pos).filter(i=>!c.devices.some(d=>d.kind==='barrier'&&d.position===i))
+  .sort((a,b)=>scoredMove({...c,position:pos},b)-scoredMove({...c,position:pos},a));
+}
+export function forecastCapture(c:CaptureState):{position:number;alternatives:number[];certainty:number;label:string}{
+ const candidates=stepCandidates(c,c.position);
+ const isPrepared=c.devices.some(d=>d.kind==='cage')&&c.devices.some(d=>d.kind!=='cage'&&d.kind!=='barrier');
+ return {position:candidates[0]??c.position,alternatives:candidates.slice(0,2),
+  certainty:isPrepared?Math.min(88,45+c.trust/2):15,
+  label:!isPrepared?'이송구와 유도 신호가 모두 필요합니다':`${captureBehaviours[c.species].name} · 인접한 이동 후보를 조사하세요`};
+}
+export function markCapturePrediction(c:CaptureState,target:number):CaptureState{
+ if(c.outcome!=='playing'||c.sealArmed||(c.focus??9)<1||!neighbours(c.position).includes(target))return c;
+ return {...c,focus:(c.focus??9)-1,prediction:target,lastEvent:`${Math.floor(target/6)+1}행 ${target%6+1}열을 다음 이동 칸으로 지정했습니다. 예상 경로가 맞으면 행동 기록이 확보됩니다.`};
+}
+export function armCaptureSeal(c:CaptureState):CaptureState{
+ if(c.outcome!=='playing'||!c.devices.some(d=>d.kind==='cage'))return c;
+ if(c.confirmed<(c.tutorial?1:2))return {...c,lastEvent:`이동 예측 기록이 부족합니다. ${c.tutorial?1:2}회의 서로 다른 이동을 먼저 검증하십시오.`};
+ if(!c.tutorial&&c.trust<38)return {...c,lastEvent:`개체의 신뢰가 ${c.trust}/38로 부족합니다. 선호 신호를 가까이 배치하고 경로를 한 번 더 확인하십시오.`};
+ return {...c,sealArmed:true,prediction:null,lastEvent:'봉쇄 승인을 완료했습니다. 개체가 황금색 이송구에 도착하도록 경로를 제어하십시오.'};
+}
+export function advanceCapture(raw:CaptureState):CaptureState{
+ const c=normalizeCapture(raw);
+ if(c.outcome!=='playing')return c;
+ if(!c.devices.some(d=>d.kind==='cage'))return {...c,lastEvent:'황금색 지정 이송구에 케이지를 먼저 배치하십시오.'};
+ if(!c.devices.some(d=>d.kind!=='cage'&&d.kind!=='barrier'))return {...c,lastEvent:'유도 장치가 없습니다. 먹이·소리·조명 중 반응에 맞는 신호를 배치하십시오.'};
+ if(!c.sealArmed&&c.prediction===null)return {...c,lastEvent:'다음 이동을 예측해 인접 칸 하나를 선택한 뒤 실행하십시오.'};
+ const b=captureBehaviours[c.species],next:CaptureState={...c,turn:c.turn+1,path:[...c.path],devices:c.devices.map(d=>({...d}))};
+ const adverseNear=c.devices.some(d=>b.avoids.includes(d.kind)&&distance(c.position,d.position,6)<=2);
+ const preferredNear=c.devices.some(d=>b.favours.includes(d.kind)&&distance(c.position,d.position,6)<=2);
+ next.fear=Math.min(100,Math.max(0,c.fear+(adverseNear?13:4)-(preferredNear?5:0)));
+ next.trust=Math.min(100,Math.max(0,c.trust+(preferredNear?4:0)-(adverseNear?7:0)));
+ let pos=c.position;const traversed:number[]=[];
+ for(let step=0;step<b.speed;step++){
+  const candidates=stepCandidates({...next,position:pos},pos);
+  if(!candidates.length)break;
+  const selected=(next.fear>=88&&candidates.length>1&&!next.sealArmed)?candidates[1]:candidates[0];
+  pos=selected;traversed.push(pos);next.path.push(pos);
+  if(pos===next.gate){
+   if(next.sealArmed&&next.confirmed>=(next.tutorial?1:2)&& (next.tutorial||next.trust>=38)){
+    next.position=pos;next.outcome='caught';next.lastEvent=`${b.name}: 경로 검증과 봉쇄가 맞물렸습니다. 안전 이송 성공.`;return next;
+   }
+   // Reaching a cage without the seal is a *missed window*, never an automatic capture.
+   next.fear=Math.min(100,next.fear+13);
+   pos=c.position;
+   next.path.push(pos);
+   break;
+  }
+ }
+ next.position=pos;
+ let hit=false;
+ if(!next.sealArmed&&c.prediction!==null){
+  hit=traversed.includes(c.prediction)&&c.prediction!==c.lastConfirmed;
+  if(hit){next.confirmed=Math.min(3,c.confirmed+1);next.lastConfirmed=c.prediction;next.trust=Math.min(100,next.trust+9);next.fear=Math.max(0,next.fear-5);}
+  else {next.fear=Math.min(100,next.fear+9);next.trust=Math.max(0,next.trust-3);}
+ }
+ next.prediction=null;
+ if(c.tutorial&&next.turn>=3&&next.devices.some(d=>d.kind==='cage')){
+  // Tutorial has zero RNG / no hard failure. Preserve the feeling of a planned capture.
+  next.position=next.gate;next.path.push(next.gate);next.confirmed=Math.max(1,next.confirmed);
+  next.sealArmed=true;next.outcome='caught';
+  next.lastEvent='EVE가 초회 이송 경로를 교정했습니다. 첫 토끼 확보 성공 (튜토리얼 100%).';return next;
+ }
+ if(!next.tutorial&&(next.turn>=next.maxTurns||next.fear>=100)){
+  next.outcome='escaped';next.lastEvent=`${b.name}: 시한 종료. 개체가 경계 구역 밖으로 이탈했습니다.`;return next;
+ }
+ const result=next.sealArmed?'봉쇄 중 · 안전 이송구로 유도':hit?'예측 적중 · 경로 기록 +1':'예측 실패 · 경계 상승';
+ next.lastEvent=`${result}. ${next.turn}/${next.maxTurns}턴 · 경로 기록 ${next.confirmed}/2 · 경계 ${next.fear}/100.`;
+ return next;
+}
