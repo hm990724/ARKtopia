@@ -1272,3 +1272,108 @@ select{color:#ecdeea;background:#272232;border:1px solid #66576d}
 /* Archive photograph was the only intentionally pale clickable card; match the dark console. */
 .v10-sidebar .v10-polaroid{width:75%;max-width:166px;background:#2c2935!important;color:#e4e0eb!important;border:1px solid #5c5669!important;padding:7px;transform:rotate(-2deg)}
 .v10-sidebar .v10-polaroid span{font-size:9px;color:#c9d4d1}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ECHO WARD / V42 — QUIET HORROR, NOT GAMIFIED NEON
+   All feedback lives on the monitor; only endings interrupt the player.
+   ══════════════════════════════════════════════════════════════════════ */
+.v42-telemetry{position:fixed;top:58px;right:16px;z-index:2800;width:min(290px,calc(100vw - 32px));padding:10px 12px 10px 14px;background:linear-gradient(135deg,#17191cf5,#201821f2);border:1px solid #786573;box-shadow:0 12px 32px #010204c9,inset 3px 0 #9e7869;pointer-events:none;animation:v42TelemetrySlide .36s cubic-bezier(.12,.8,.2,1) both;}
+.v42-telemetry-head{font:10px monospace;letter-spacing:1.1px;color:#b7a6a8;display:flex;align-items:center;gap:6px;margin:0 0 6px;border-bottom:1px solid #59474b;padding-bottom:6px}
+.v42-float-delta{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:28px;padding:4px 0;font-size:11px;border-bottom:1px solid #ffffff0b;animation:v42DeltaUp .42s both}
+.v42-float-delta strong{font:700 15px 'Consolas',monospace;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.v42-float-delta.loss{color:#f0a5a6}.v42-float-delta.gain{color:#b2d5bf}.v42-float-delta.neutral{color:#d5bb94}
+.v42-float-delta.loss strong{text-shadow:0 0 14px #e35f5f88}.v42-float-delta.gain strong{text-shadow:0 0 13px #8fcfa044}
+@keyframes v42TelemetrySlide{from{opacity:0;transform:translate(14px,-7px);filter:blur(3px)}to{opacity:1;transform:translate(0,0);filter:blur(0)}}
+@keyframes v42DeltaUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.v42-vital-guide{padding:7px 8px;margin:7px 0;background:linear-gradient(90deg,#312a38b8,#191820a8);border-left:2px solid #af9b83;font-size:9px;line-height:1.5;color:#e6d4cd;letter-spacing:.13px}
+.v42-hud-help{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:7px 11px;background:linear-gradient(90deg,#272029,#15181c);border:1px solid #5c4d53;font-size:10px;color:#baa9aa}
+.v42-hud-help span{padding:2px 6px;border-left:1px solid #7a6260}.v42-hud-help strong{color:#d8c6a4;font-weight:500}
+.v42-mutation-warning{position:relative;border:1px solid #77635f;background:linear-gradient(120deg,#221c21,#151317);padding:10px 12px;display:flex;justify-content:space-between;gap:12px;align-items:center;margin:8px 0;font-size:11px;overflow:hidden}
+.v42-mutation-warning::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent,#b29a8020,transparent);transform:translateX(-110%);animation:v42RiskSweep 5.4s linear infinite}
+.v42-mutation-warning strong{display:flex;align-items:center;gap:5px;color:#dfc5b6}.v42-mutation-warning b{color:#e8b1ae;font-family:monospace}.v42-mutation-warning.warning{border-color:#b78d52}.v42-mutation-warning.critical{border-color:#cd6d6d;background:linear-gradient(120deg,#3b2225,#21181d)}
+@keyframes v42RiskSweep{to{transform:translateX(110%)}}
+.v42-knowledge-uses{padding:9px 10px;background:#161a1d;border:1px solid #514d56;color:#beaeb4;font-size:11px;line-height:1.6;margin:7px 0}
+.v42-knowledge-uses b{color:#dfc9a3}
+.v42-analysis-row{border:1px solid #7b6b57;background:linear-gradient(110deg,#29232a,#181a1f);padding:10px 11px;margin:11px 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px}
+.v42-analysis-row>span{display:flex;align-items:center;gap:6px;color:#d5c8c4}.v42-analysis-row>span b{color:#e6c491;font:700 15px monospace}
+.v42-analysis-row button{cursor:pointer;border:1px solid #bea071!important;background:#3c3231!important;color:#ffebc8!important;padding:9px 13px!important;font-size:11px!important;min-height:36px}
+.v42-analysis-row button:disabled{opacity:.46;cursor:not-allowed}
+.v36-care-options button.v42-analysis-recommended{border-color:#dac38d!important;background:#463f31!important;box-shadow:inset 3px 0 #dfbe79,0 0 16px #c8ad5e30;position:relative}
+.v36-care-options button.v42-analysis-recommended::after{content:'판독 결과';position:absolute;right:9px;top:6px;font-size:9px;color:#eecb82}
+/* Mission theatre: keep the whole interaction visible at common desktop resolutions. */
+.v33-expedition{gap:7px;padding:7px!important}.v33-banner{padding:10px 13px!important}.v33-banner p{margin:3px 0!important}
+.v33-hud{gap:5px!important;padding:4px 0!important}.v33-map-frame{padding:8px!important}
+.v33-mission-layout{gap:9px!important;grid-template-columns:minmax(0,1fr) clamp(260px,29%,340px)!important}
+.v33-side-console{gap:8px!important;padding:11px!important}
+.v33-route-map{width:min(100%,675px)!important;max-width:100%;aspect-ratio:1.4}
+.v33-hidden-map{width:min(100%,555px)!important}
+.v33-broadcast{padding:8px 10px!important;margin:5px 0!important}.v33-map-bottom{padding:6px 8px!important}
+.v33-specimen{padding:7px!important;gap:7px!important}.v33-section-kicker{margin-top:3px!important}.v33-clue-cards{gap:6px!important}.v33-clue{min-height:46px!important;padding:6px 8px!important}
+.v33-tool-rack{gap:5px!important}.v33-command-detail{padding:7px 9px!important}.v33-wait{padding:9px!important}
+.v42-field-ledger{border:1px solid #6c6459;background:linear-gradient(120deg,#272427f1,#171b1ff1);padding:8px 12px;margin-top:6px;position:relative;overflow:hidden}
+.v42-field-ledger:before{content:'';position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,#c1a37d,transparent 65%)}
+.v42-field-ledger-title{display:flex;align-items:center;gap:7px;color:#d8c2a0;font-size:11px;margin-bottom:7px}.v42-field-ledger-title span{margin-left:auto;color:#978e91;font-size:10px}
+.v42-field-ledger-items{display:flex;flex-wrap:wrap;gap:6px}.v42-field-ledger-items>span{font-size:10px;color:#c9bbc0;background:#ffffff08;border:1px solid #6d60563b;padding:5px 8px;white-space:nowrap}.v42-field-ledger-items b{margin-left:4px;color:#e6cf9d;font:700 12px monospace}
+.v42-field-help{border:1px solid #665d4e;background:linear-gradient(135deg,#252326,#151c1e);margin:6px 0;overflow:hidden;color:#d7c6b8}
+.v42-field-help summary{list-style:none;cursor:pointer;padding:9px 10px;display:flex;gap:7px;align-items:center;font-size:11px;font-weight:750;color:#e4ceac;transition:background .2s}
+.v42-field-help summary::-webkit-details-marker{display:none}.v42-field-help summary:hover{background:#69573d2b}
+.v42-field-help summary>span{color:#e3bd78;text-shadow:0 0 10px #edbc6a66;animation:v42TutorialGlow 2.3s ease-in-out infinite}
+.v42-field-help summary b{font-size:9px;margin-left:auto;color:#aa9791;font-weight:500}
+.v42-field-guide-steps{padding:2px 11px 10px;border-top:1px solid #6557437b}.v42-field-guide-steps p,.v42-route-help>p{margin:7px 0 0;color:#cdbfc0;font-size:11px;line-height:1.65;word-break:keep-all}.v42-field-guide-steps strong{color:#f4d48e}
+@keyframes v42TutorialGlow{0%,100%{opacity:.72;text-shadow:0 0 3px #d5aa5b4d}50%{opacity:1;text-shadow:0 0 15px #f6ce83,0 0 25px #cc8e4888}}
+.v33-is-hunt .v42-decode-target,.v33-is-hunt .v42-tools-target{position:relative;isolation:isolate}
+.v33-is-hunt .v42-decode-target:before,.v33-is-hunt .v42-tools-target:before{content:'';position:absolute;inset:-4px;z-index:-1;pointer-events:none;border:1px dashed #dbba7648;box-shadow:0 0 16px #c3a54c12;animation:v42FocusBreath 3.5s ease-in-out infinite}
+@keyframes v42FocusBreath{0%,100%{opacity:.45}50%{opacity:1}}
+/* A tangible, hand-drawn tiny escort walking along actual map tiles. */
+.v42-walker-path{position:absolute;z-index:25;left:var(--walk-from-x);top:var(--walk-from-y);width:23px;height:31px;transform:translate(-50%,-68%);pointer-events:none;filter:drop-shadow(0 3px 6px #000);animation:v42WalkerTravel .45s ease-in-out both}
+@keyframes v42WalkerTravel{0%{left:var(--walk-from-x);top:var(--walk-from-y)}100%{left:var(--walk-to-x);top:var(--walk-to-y)}}
+.v42-walker-shadow{position:absolute;left:1px;bottom:-3px;width:22px;height:5px;border-radius:50%;background:#090e12c9;filter:blur(2px)}
+.v42-walker-head{position:absolute;left:7px;top:0;width:10px;height:11px;background:linear-gradient(90deg,#9a8e81 0 35%,#d5c4a8 35% 70%,#837671 70%);border:2px solid #272d32;border-radius:4px 4px 2px 2px;box-shadow:inset 0 -2px #5f5d64}
+.v42-walker-head:after{content:'';position:absolute;left:1px;top:4px;width:5px;height:2px;background:#a5dfdb;box-shadow:0 0 6px #7ed2c0}
+.v42-walker-body{position:absolute;left:5px;top:10px;width:14px;height:15px;background:linear-gradient(90deg,#535a63,#8d8e86 48%,#4a575e);border:2px solid #242b31;clip-path:polygon(20% 0,80% 0,100% 100%,0 100%)}
+.v42-walker-limb{position:absolute;top:22px;width:5px;height:9px;background:#343a42;border:1px solid #121e22;transform-origin:top}
+.v42-walker-limb.left{left:7px;animation:v42LeftLeg .22s linear infinite alternate}.v42-walker-limb.right{right:7px;animation:v42RightLeg .22s linear infinite alternate}
+@keyframes v42LeftLeg{from{transform:rotate(-23deg)}to{transform:rotate(23deg)}}@keyframes v42RightLeg{from{transform:rotate(23deg)}to{transform:rotate(-23deg)}}
+.v42-walker-lantern{position:absolute;right:0;top:16px;width:6px;height:7px;background:#e8ce87;border:1px solid #645b44;box-shadow:0 0 11px 4px #e4c58b55;animation:v42Lantern .25s ease-in-out infinite alternate}
+@keyframes v42Lantern{to{transform:translateY(2px)}}
+.v42-protocol-audit{margin:13px 0;padding:13px;border:1px solid #75655c;background:linear-gradient(140deg,#252126,#17191e);box-shadow:inset 3px 0 #ae9175}
+.v42-protocol-audit-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#e9d6b7}.v42-protocol-audit-head h4{margin:0;font-size:13px}.v42-protocol-audit-head span{margin-left:auto;font:10px monospace;color:#b7a594}
+.v42-protocol-audit>p{font-size:11px;color:#bbaeb1;line-height:1.7;margin:8px 0}
+.v42-protocol-attempts{display:grid;gap:7px;max-height:470px;overflow-y:auto;scrollbar-width:thin}
+.v42-protocol-attempts details{border:1px solid #695862;background:#15161af0}.v42-protocol-attempts summary{cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center;list-style:none;padding:9px 10px;font-size:11px;color:#e4cbb6}
+.v42-protocol-attempts summary::-webkit-details-marker{display:none}.v42-protocol-attempts summary b{font:700 10px monospace;color:#bfe1cd}
+.v42-protocol-steps{display:grid;gap:8px;padding:9px;border-top:1px solid #594852}.v42-protocol-steps article{background:#23242a;padding:9px;border-left:2px solid #9b8b7d}.v42-protocol-steps article.ok{border-color:#88ad96}.v42-protocol-steps article.bad{border-color:#c57c77}
+.v42-protocol-steps article>strong{display:block;color:#dcc5b0;font-size:11px}.v42-protocol-steps article>p{font-size:11px;color:#bfaab3;margin:5px 0}.v42-protocol-steps article small{display:block;color:#ded0c8;font-size:10px;line-height:1.65}.v42-protocol-steps article small b{color:#c3d2bb}
+.v42-protocol-no-record{padding:10px;border:1px dashed #65535d;color:#aa999f;font-size:11px}
+.v42-cctv-impact{position:absolute;z-index:16;left:50%;top:18%;transform:translateX(-50%);width:min(84%,320px);padding:14px 17px;text-align:center;background:#27161ae8;border:1px solid #ca7c83;color:#f9c7bc;box-shadow:0 0 42px #aa303744;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;animation:v42CameraImpact .55s cubic-bezier(.2,.8,.2,1) both}
+.v42-cctv-impact>strong{font-size:11px;letter-spacing:2px}.v42-cctv-impact>b{font:700 22px monospace;text-shadow:0 0 12px #d75355}
+@keyframes v42CameraImpact{0%{opacity:0;transform:translate(-50%,-8px);filter:blur(4px)}60%{opacity:1;transform:translate(-50%,2px);filter:blur(0)}100%{opacity:1;transform:translate(-50%,0)}}
+/* Dialogue buttons remain dark even after legacy global styles. */
+.v10-dialog .talk-actions .talk-reveal{background:#303338!important;color:#f4d7ae!important;border:1px solid #968068!important}
+.v10-dialog .talk-actions .talk-reveal:disabled{opacity:.35!important}
+.v10-dialog .talk-actions .talk-skip{background:#1b1a21!important;color:#bbaeb7!important;border:1px solid #665762!important}
+.v10-dialog .talk-actions .talk-next{background:#51404c!important;color:#f5e1e8!important;border:1px solid #9b7486!important}
+.v10-dialog .talk-actions button:not(:disabled):hover{box-shadow:0 0 14px #d9b4ac3a;filter:brightness(1.1)}
+.v10-dialog .talk-actions{gap:5px;padding:9px 10px 10px 2px}
+.v10-dialog .talk-actions button{font-size:10px!important;min-height:30px!important;padding:5px 8px!important}
+/* Mutation speech must always dominate the stack. */
+.awakening-shade{z-index:3600!important;animation:awakeningFade .52s ease both}
+.awakening-scene{box-shadow:0 0 0 1px #b27a8e,0 0 100px #591c3480}
+.v41-rewards-modal{animation:v42TelemetrySlide .4s ease both;background:linear-gradient(145deg,#251c28,#14151b)!important}
+.v10-modal-shade{backdrop-filter:blur(7px) saturate(.75)!important}
+/* Screenshot-scale desktop fixes, while retaining access on narrow devices. */
+@media(max-width:1140px){.v33-mission-layout,.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(0,1fr)!important}.v33-side-console{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.v33-side-console .v42-field-help{grid-column:1/-1}.v33-route-map{width:min(100%,560px)!important}.v33-hidden-map{width:min(100%,510px)!important}}
+@media(max-width:680px){.v42-telemetry{top:48px;right:8px;width:min(225px,calc(100vw - 16px))}.v42-float-delta{font-size:10px}.v42-hud-help{font-size:9px}.v42-field-ledger-title{flex-wrap:wrap}.v42-field-ledger-title span{margin-left:0}.v33-side-console{grid-template-columns:1fr!important}.v33-route-map,.v33-hidden-map{width:100%!important}.v10-dialog .talk-actions button{font-size:9px!important;padding:4px!important;min-height:28px!important}.v42-analysis-row{flex-direction:column;align-items:stretch}}
+@media(prefers-reduced-motion:reduce){.v42-telemetry,.v42-float-delta,.v42-walker-path,.v42-walker-limb,.v42-walker-lantern,.v42-field-help summary>span,.v42-decode-target:before,.v42-tools-target:before,.v42-mutation-warning:after,.v42-cctv-impact{animation:none!important}.v42-walker-path{left:var(--walk-to-x)!important;top:var(--walk-to-y)!important}}
+
+.v42-float-delta b{font:700 15px Consolas,monospace;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.v42-float-delta.loss b{text-shadow:0 0 12px #e3595c55}
+.v42-security-debrief{padding:10px 12px;margin:8px 0;background:linear-gradient(120deg,#25232a,#151a1d);border:1px solid #76685f;box-shadow:inset 2px 0 #c4a67e}
+.v42-security-debrief span{display:block;color:#ddc9aa;font:10px monospace;letter-spacing:.5px;margin-bottom:6px}
+.v42-security-debrief p{margin:4px 0 6px;color:#e0d1d0;font-size:11px;line-height:1.65;word-break:keep-all}
+.v42-security-debrief small{color:#a89ca0;font-size:9px;line-height:1.5}
+.v42-mutation-warning{flex-wrap:wrap}.v42-mutation-warning>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.v42-mutation-warning>p{margin:0;flex:1;min-width:180px;line-height:1.5}.v42-mutation-warning>small{display:block;width:100%;color:#b5a5a1;font-size:9px;line-height:1.5}
+
+/* Yellow targets only during the first guided encounter, not forever. */
+.v33-is-hunt .v42-decode-target:not(.v42-tutorial-active):before,.v33-is-hunt .v42-tools-target:not(.v42-tutorial-active):before{display:none!important}
+.v42-knowledge-uses{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.v42-knowledge-uses b{flex:0 0 100%}.v42-knowledge-uses span{padding:3px 6px;border:1px solid #76685555;background:#ffffff06}

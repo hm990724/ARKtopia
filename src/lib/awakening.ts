@@ -19,7 +19,7 @@ export const awakeningProfiles:Record<AnimalId,AwakeningProfile>={
 
 // One-time transition: the animal starts as an animal; acquired human memory can override instincts.
 export function isAwakeningReady(a:AnimalState):boolean {
-  return a.alive&&!a.awakened && ((a.memory>=45&&a.stress>=48)||(a.memory>=26&&a.stress>=67)||(a.contamination>=35&&a.memory>=30&&a.stress>=55));
+  return a.alive&&!a.awakened&&isMutant(a);
 }
 export function isMutantVisual(a:AnimalState):boolean {
   return isMutant(a)||isAwakeningReady(a);

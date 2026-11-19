@@ -9,7 +9,9 @@ import type {V10} from './game-v10';
 
 export type ArchiveStatus='contained'|'escaped'|'deceased'|'transferred'|'dissected';
 export type ArchiveRecord={day:number;title:string;detail:string;kind:'observation'|'care'|'research'|'security'|'decision'|'loss'};
-export type SpecimenDossier={key:string;species:AnimalId;name:string;firstDay:number;lastDay:number;status:ArchiveStatus;captureMethod:string;observedTraits:number[];records:ArchiveRecord[];maxStress:number;maxMemory:number};
+export type ProtocolStepRecord={stage:number;prompt:string;chosen:string;expected:string;matched:boolean};
+export type ProtocolAttempt={day:number;quality:number;mode:'gentle'|'force';result:string;steps:ProtocolStepRecord[]};
+export type SpecimenDossier={key:string;species:AnimalId;name:string;firstDay:number;lastDay:number;status:ArchiveStatus;captureMethod:string;observedTraits:number[];records:ArchiveRecord[];maxStress:number;maxMemory:number;protocolAttempts?:ProtocolAttempt[]};
 export type ArchiveGift='tracking'|'power'|'serum';
 export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;processedKeys:string[];dispatches:number;};
 const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',wolf:'WF',crow:'CR',otter:'OT',lynx:'LX',axolotl:'AX',moth:'MT',mutant:'MX',chimera:'CH'};
@@ -78,6 +80,15 @@ export function noteRescue(s:V10,id:AnimalId):void{
 }
 export function noteCare(s:V10,id:AnimalId,kind:string,answer:string,successful:boolean,detail:string):void{
  recordSpecimen(s,id,`${kind} · ${successful?'적절한 반응':'반응 불일치'}`,`선택: ${answer}. ${detail}`,'care');
+}
+/** Append exact protocol questions, chosen options, expected behavior and judgement. */
+export function recordProtocolAttempt(s:V10,id:AnimalId,attempt:ProtocolAttempt):void{
+ const archive=ensureArchive(s);const animal=s.animals.find(a=>a.id===id);
+ if(!animal?.specimenId)return;
+ const dossier=archive.entries[animal.specimenId];if(!dossier)return;
+ dossier.protocolAttempts=[attempt,...(dossier.protocolAttempts??[])].slice(0,12);
+ const summary=attempt.steps.map(step=>`#${step.stage} ${step.matched?'일치':'불일치'}: ${step.chosen}`).join(' / ');
+ recordSpecimen(s,id,'행동 강령 시도 · 단계별 판독',`${summary}. 최종 판정 ${attempt.quality}점 (${attempt.mode==='gentle'?'비침습적':'강제'}).`,'research');
 }
 export function noteResonance(s:V10,id:AnimalId):void{
  const a=s.animals.find(a=>a.id===id);

@@ -50,10 +50,18 @@ export function log(s:State,title:string,text:string,kind:EventRecord['kind']='i
 export function copy(s:State):State{return structuredClone(s)}
 export function spend(s:State,ap:number){if(s.phase!=='day'||s.ap<ap)return false;s.ap-=ap;return true}
 export function recalc(s:State){s.hp=cap(s.hp);s.stamina=cap(s.stamina);s.mind=cap(s.mind);s.radiation=cap(s.radiation);s.eve=cap(s.eve);s.power=cap(s.power);s.trust=cap(s.trust);if(s.hp<=0){s.phase='ending';s.ending='제000번 우리 — 관리자가 돌아오지 않았다. EVE는 끝내 그를 하나의 보존 대상으로 등록했다.'}else if(s.eve<=0){s.phase='ending';s.ending='마지막 통신 — EVE 코어 정지. 모든 보존 지시가 중단되었고, 담당자는 더 이상 외부와 연결할 수 없었다.'}}
+/** Distinct readout lets the UI warn players well before the irreversible threshold. */
+export function mutationRisk(a:AnimalState):{score:number;danger:boolean;description:string}{
+ const score=Math.min(100,Math.round(a.stress*.68+a.contamination*.55+a.memory*.48));
+ return {score,danger:isMutant(a),description:isMutant(a)?'신경 충돌 발생 · 변이 영구 확정':score>=32?'불안정 · 돌봄 대응 실패 시 급격히 악화':'잠복 상태 · 스트레스·오염·공명 증가에 유의'};
+}
 /** A mutation is a permanent neural state; suppressant only lowers its short-term risk. */
 export function isMutant(a:AnimalState):boolean {
  return !!a.mutated || !!a.awakened || a.id==='mutant' || a.id==='chimera'
-   || (a.stress>=75 && (a.contamination>=30 || a.memory>=55));
+   || a.stress>=60
+   || (a.stress>=48 && (a.contamination>=8 || a.memory>=10))
+   || (a.stress>=35 && a.contamination>=23)
+   || (a.stress>=30 && a.memory>=26);
 }
 export function recordMutation(s:State,a:AnimalState):boolean {
  if(!a.alive||a.mutated||!isMutant(a))return false;

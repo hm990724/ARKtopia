@@ -1,11 +1,11 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import type {V10} from '@/lib/game-v10';
 import {regions} from '@/lib/game-v10';
 import type {AnimalId} from '@/lib/sim';
 import {adjacentField,fieldVisible,type Pace} from '@/lib/tactical-field';
 import {HUNT_TRAITS,HUNT_SIZE,huntSearchAge,huntSearchedCount,observedEvidence,observationAge,type HuntMode,type HuntTool} from '@/lib/hidden-hunt';
-import {ArrowLeft,Radio,HeartPulse,Footprints,Clock3,Compass,ShieldAlert,ArrowUpRight,MapPin,Search,BookOpen,MoveRight,ScanEye,CheckCircle2} from 'lucide-react';
+import {ArrowLeft,Package,AlertTriangle,Radio,HeartPulse,Footprints,Clock3,Compass,ShieldAlert,ArrowUpRight,MapPin,Search,BookOpen,MoveRight,ScanEye,CheckCircle2} from 'lucide-react';
 
 type Props={state:V10;animalSrc:(id:AnimalId)=>string;onMove:(index:number,pace:Pace)=>void;onRetreat:()=>void;onHunt:(action:{type:HuntMode;cell?:number;clue?:number})=>void;onMedkit:()=>void;feedback:string};
 const clamp=(n:number)=>Math.max(0,Math.min(100,n));
@@ -28,6 +28,16 @@ function Status({title,value,level,color}:{title:string;value:string;level:numbe
 export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,onMedkit,feedback}:Props){
  const [mode,setMode]=useState<Exclude<HuntMode,'wait'|'reveal'>>('search');
  const [notice,setNotice]=useState('');
+ const [walking,setWalking]=useState<{from:number;to:number}|null>(null);
+ const walkTimeout=useRef<ReturnType<typeof setTimeout>|null>(null);
+ useEffect(()=>()=>{if(walkTimeout.current)clearTimeout(walkTimeout.current)},[]);
+ function walkTo(target:number){
+  if(walking||!field||!adjacentField(field.position,target))return;
+  setNotice('');setWalking({from:field.position,to:target});
+  if(walkTimeout.current)clearTimeout(walkTimeout.current);
+  walkTimeout.current=setTimeout(()=>{onMove(target,'normal');setWalking(null);walkTimeout.current=null},450);
+ }
+
  const run=state.run,field=state.field,capture=state.capture;
  if(!run||!field)return <section className="v33-missing">현장 연결이 끊겼습니다. 탐사 메뉴에서 다시 출동해 주세요.</section>;
  const region=regions.find(r=>r.id===run.region)!;
@@ -55,11 +65,12 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
   <div className="v33-hud" aria-label="탐사 생존 상태">
    <Status title={hunt?'남은 행동':'조사 진행'} value={hunt?`${hunt.actions} / ${hunt.maxActions}`:`${fieldProgress}%`} level={hunt?100*hunt.actions/hunt.maxActions:fieldProgress} color="gold"/>
    <Status title={hunt?'추적 위험':'추적 압박'} value={hunt?`${hunt.predator}/100`:`${pressure}%`} level={hunt?hunt.predator:pressure} color="rose"/>
-   <Status title="생명력" value={`${state.hp}/100`} level={state.hp} color="green"/>
-   <Status title="체력" value={`${state.stamina}/100`} level={state.stamina} color="cyan"/>
+   <Status title="HP · 생명력" value={`${state.hp}/100`} level={state.hp} color="green"/>
+   <Status title="ST · 활동 체력" value={`${state.stamina}/100`} level={state.stamina} color="cyan"/>
    <Status title="감염도" value={`${state.infection}%`} level={state.infection} color="rose"/>
    <Status title="EVE 코어" value={`${state.eve}/100`} level={state.eve} color="cyan"/>
   </div>
+  <div className="v42-hud-help"><span>HP: 부상·생존</span><span>ST: 이동·직접 대응</span><span>AP: 하루 출동·돌봄·연구</span><strong>{hunt?'수색 명령은 추적 행동 횟수를 소모':'이동 시 ST가 감소 · HP가 0이면 사망'}</strong></div>
   <div className="v33-mission-layout">
    <div className="v33-theater">
     {hunt? <>
@@ -99,33 +110,40 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     </>:<>
      <div className="v33-map-frame"><div className="v33-map-overline"><span><i/> FIELD ROUTE : {region.name}</span><b>GRID 7 × 5</b></div>
       <div className={'v33-route-map v33-biome-'+run.region} style={{backgroundImage:`linear-gradient(125deg,#121a16db,#0a091aeb),url(/assets/backgrounds/${region.art}.png)`}} role="group" aria-label="현장 이동 지도">
-       {field.tiles.map((tile,i)=>{const visible=fieldVisible(field,i,run.gear.includes('scanner')?3:run.gear.includes('flashlight')?2:1),here=field.position===i,walk=adjacentField(field.position,i)&&tile!=='wall';return <button type="button" key={i} disabled={!walk||!visible} className={'v33-route-cell '+(!visible?'v33-route-fog':'')+(walk?' v33-route-next':'')+(here?' v33-route-current':'')+' v33-land-'+tile} onClick={()=>{setNotice('');onMove(i,'normal')}} title={!visible?'미확인 지점':here?'담당자 위치':tile==='animal'?'생체 신호 포착':tile==='track'?'발자국':tile==='cache'?'물자':tile==='hazard'?'감염성 포자':tile==='exit'?'귀환 지점':tile==='wall'?'붕괴된 통로':'수색 가능 구역'}>
-        <PixelFoliage variant={(i*5)%5}/>{here?<span className="v33-route-player"><Compass size={19}/> 담당자</span>:!visible?<span className="v33-route-veiled"/>:tile==='wall'?<span className="v33-route-block"/>:tile==='animal'?<span className="v33-route-object v33-signal">✧<small>생체</small></span>:tile==='cache'?<span className="v33-route-object v33-cache">▤<small>보급</small></span>:tile==='track'?<PawPixel/>:tile==='hazard'?<span className="v33-route-object v33-hazard">◆<small>오염</small></span>:tile==='exit'?<span className="v33-route-object">⇥<small>귀환</small></span>:tile==='signal'?<span className="v33-route-object">✧<small>기록</small></span>:null}
+       {field.tiles.map((tile,i)=>{const visible=fieldVisible(field,i,run.gear.includes('scanner')?3:run.gear.includes('flashlight')?2:1),here=field.position===i,walk=adjacentField(field.position,i)&&tile!=='wall';return <button type="button" key={i} disabled={!walk||!visible||!!walking} className={'v33-route-cell '+(!visible?'v33-route-fog':'')+(walk?' v33-route-next':'')+(here?' v33-route-current':'')+' v33-land-'+tile} onClick={()=>walkTo(i)} title={!visible?'미확인 지점':here?'담당자 위치':tile==='animal'?'생체 신호 포착':tile==='track'?'발자국':tile==='cache'?'물자':tile==='hazard'?'감염성 포자':tile==='exit'?'귀환 지점':tile==='wall'?'붕괴된 통로':'수색 가능 구역'}>
+        <PixelFoliage variant={(i*5)%5}/>{here&&!walking?<span className="v33-route-player"><Compass size={19}/> 담당자</span>:!visible?<span className="v33-route-veiled"/>:tile==='wall'?<span className="v33-route-block"/>:tile==='animal'?<span className="v33-route-object v33-signal">✧<small>생체</small></span>:tile==='cache'?<span className="v33-route-object v33-cache">▤<small>보급</small></span>:tile==='track'?<PawPixel/>:tile==='hazard'?<span className="v33-route-object v33-hazard">◆<small>오염</small></span>:tile==='exit'?<span className="v33-route-object">⇥<small>귀환</small></span>:tile==='signal'?<span className="v33-route-object">✧<small>기록</small></span>:null}
        </button>})}
+       {walking&&<span className="v42-walker-path" aria-hidden="true" style={{'--walk-from-x':`${((walking.from%7)+.5)/7*100}%`,'--walk-from-y':`${(Math.floor(walking.from/7)+.5)/5*100}%`,'--walk-to-x':`${((walking.to%7)+.5)/7*100}%`,'--walk-to-y':`${(Math.floor(walking.to/7)+.5)/5*100}%`} as React.CSSProperties}><span className="v42-walker-shadow"/><span className="v42-walker-head"/><span className="v42-walker-body"/><span className="v42-walker-limb left"/><span className="v42-walker-limb right"/><span className="v42-walker-lantern"/></span>}
       </div>
-      <div className="v33-map-bottom"><span>강조된 인접 지역을 눌러 한 칸 이동</span><span>이동 {field.steps} · 흔적 {field.clues} · 물자 {field.loot}</span></div>
+      <div className="v33-map-bottom"><span>{walking?'격리복 관리자 이동 중 · 다음 칸으로 접근': '강조된 인접 지역을 눌러 한 칸 이동'}</span><span>이동 {field.steps} · 흔적 {field.clues} · 물자 {field.loot}</span></div>
      </div>
     </>}
     <div className="v33-broadcast" role="status" aria-live="polite"><span className="v33-broadcast-label"><Radio size={13}/> EVE / LIVE TRANSCRIPT</span><p>{lastFeed}</p></div>
+    <div className="v42-field-ledger" aria-label="현재 탐사에서 획득한 보상 수량"><div className="v42-field-ledger-title"><Package size={15}/><strong>현장 회수 장부</strong><span>회수 즉시 적립 · 최종 보상은 철수 시 표시</span></div><div className="v42-field-ledger-items"><span>고철 <b>+{run.earned?.scrap??0}</b></span><span>지식 <b>+{run.earned?.knowledge??0}</b></span><span>단서 <b>+{run.earned?.clues??0}</b></span><span>물자 점수 <b>{run.loot}</b></span><span>처리 개체 <b>{run.captures?.length??0}</b></span></div></div>
    </div>
    <aside className="v33-side-console">
     {hunt&&species? <>
      <div className="v33-specimen"><div className="v33-animal-frame"><img src={animalSrc(hunt.species)} alt="발견한 종의 표본 이미지 · 실제 위치가 아님"/></div><div><span className="v33-eyebrow">UNKNOWN POSITION / {hunt.species.toUpperCase()}</span><h3>{hunt.revealed[0]?species.title:'미확인 행동 패턴'}</h3><p>{hunt.revealed[0]?species.short:'EVE의 생체 분석 데이터가 잠겨 있습니다. 행동 분석을 해독하면 개체의 반응을 알 수 있습니다.'}</p></div></div>
      <div className="v36-hunt-rule"><b>흔적 판독 요령</b><p><strong>발자국</strong>은 직전 턴의 위치, <strong>풀 흔들림</strong>은 그 주변 1칸을 뜻합니다. 이미 연 칸도 동물이 다시 지나갑니다. 행동 한 번마다 위치가 바뀝니다.</p></div>
+     <details className="v42-field-help" defaultOpen={!!hunt.tutorial} key={`${hunt.species}-${hunt.tutorial?'first':'standard'}`}>
+      <summary><span>✦</span> EVE · 수색 장비 사용법 / 단서 해독 <b>열기·접기</b></summary>
+      <div className="v42-field-guide-steps"><p><strong>① 오른쪽 행동 카드</strong> — 서식·이동·기억 단서 3장을 각각 누르면 추적 행동 -1로 해독됩니다. 해독 내용은 분석실에도 보존됩니다.</p><p><strong>② 지도에서 위치 추리</strong> — 발자국은 지난 턴의 흔적, 흔들린 풀은 주변 1칸의 신호입니다. 열린 칸도 동물이 다시 지나갑니다.</p><p><strong>③ 아래 전술 아이템</strong> — 먹이·잔향 소리·조명·차단막을 선택하고 맵을 누르세요. 아이템은 1회 작동 후 자동으로 기본 수색으로 돌아옵니다.</p><p><strong>④ 현장 종료</strong> — 포획 뒤에도 수색은 계속 가능하며 보상은 철수할 때 한 번에 나타납니다. 지도에서 철수하거나 출구를 선택하세요.</p></div>
+     </details>
      <div className="v33-section-kicker"><BookOpen size={14}/> 행동 습성 기록 <small>각 카드 해독 시 행동 -1</small></div>
-     <div className="v33-clue-cards">
+     <div className={"v33-clue-cards v42-decode-target "+(hunt.tutorial?"v42-tutorial-active":"")}>
       {species.hints.map((clue,i)=><button type="button" key={i} className={'v33-clue '+(hunt.revealed[i]?'v33-clue-open':'')} disabled={hunt.revealed[i]||hunt.actions<1} onClick={()=>{setNotice('');onHunt({type:'reveal',clue:i})}} aria-label={hunt.revealed[i]?`해독한 힌트 ${i+1}: ${clue}`:`암호화된 행동 힌트 ${i+1}, 해독 시 행동 1 소모`}><span className="v33-clue-number">0{i+1}</span><span className="v33-clue-copy"><b>{hunt.revealed[i]?['서식지 반응','이동 습성','기억 패턴'][i]:'기밀 행동 패턴'}</b><small>{hunt.revealed[i]?clue:'기록을 해독하면 전술 힌트가 공개됩니다.'}</small></span><span className="v33-clue-cost">{hunt.revealed[i]?'확인':'해독 -1'}</span></button>)}
      </div>
      <div className="v33-section-kicker"><ScanEye size={14}/> 전술 명령 <small>칸 선택 시 1턴 경과</small></div>
-     <div className="v33-tool-rack">{tools.map(t=><button type="button" key={t.kind} aria-pressed={mode===t.kind} onClick={()=>{setMode(t.kind);setNotice('')}} className={'v33-tool '+(mode===t.kind?'v33-tool-active ':'')+' v33-tool-'+t.tone}><span className="v33-tool-sample" aria-hidden="true"><i/><i/></span><span className="v33-tool-label"><b>{t.name}</b><small>{t.cost}</small></span></button>)}</div>
+     <div className={"v33-tool-rack v42-tools-target "+(hunt.tutorial?"v42-tutorial-active":"")}>{tools.map(t=><button type="button" key={t.kind} aria-pressed={mode===t.kind} onClick={()=>{setMode(t.kind);setNotice('')}} className={'v33-tool '+(mode===t.kind?'v33-tool-active ':'')+' v33-tool-'+t.tone}><span className="v33-tool-sample" aria-hidden="true"><i/><i/></span><span className="v33-tool-label"><b>{t.name}</b><small>{t.cost}</small></span></button>)}</div>
      <div className="v33-command-detail"><strong>{activeMode.name}</strong><p>{activeMode.effect}</p><span>위 지도에서 대상 칸을 직접 선택</span></div>
      <button type="button" className="v33-wait" onClick={()=>{setNotice('');setMode('search');onHunt({type:'wait'})}}><Clock3 size={16}/> 숨죽여 관찰 · 1턴 진행 <MoveRight size={15}/></button>
      {danger&&<div className="v33-danger-warning"><ShieldAlert size={18}/><p><b>포식자 역추적 위험</b>행동 기회를 모두 소진하면 {species.risk}. 공격 전 경보를 확인하세요.</p></div>}
      <div className="v34-tactics-note"><b>수색 흔적 {huntSearchedCount(hunt)}칸 확보</b><span>열었던 칸은 다시 가려지지 않습니다. 다만 발자국과 풀 흔들림은 조사 당시의 기록이므로 현재도 그곳에 있다는 보장은 없습니다. 최근 2턴의 수색 소음만 개체 행동에 영향을 줍니다.</span></div>
-     {hunt.tutorial&&<div className="v33-tutorial-note">EVE · 첫 토끼 실습: 행동 단서 3종(서식지 반응·이동 습성·기억 패턴)은 각 카드마다 행동 1회를 써서 해독합니다. 기본 명령은 수풀 수색입니다. 먹이·잔향 소리·유도 조명·경로 봉쇄는 버튼을 선택하고 지도 한 칸을 누르면 1회만 사용되고 자동으로 수풀 수색으로 돌아옵니다. 발자국은 직전 자리, 흔들린 풀은 주변 1칸입니다. 첫 포획 성공 후에도 현장에 남아 물자를 더 찾을 수 있습니다.</div>}
+
      <div className="v33-history"><span>최근 관측 기록</span>{hunt.log.slice(0,2).map((h,i)=><p key={`${h.turn}-${i}`}><b>T{h.turn}</b> {h.message}</p>)}</div>
     </>:<>
      <div className="v33-intro-panel"><span className="v33-eyebrow">SURVEY / OPERATING MANUAL</span><h3>발자국을 따라 들어가라</h3><p>발자국·연구 기록·보급 상자를 발견해 조사합니다. 생체 신호가 나타나면 숨겨진 동물을 찾는 추적 게임으로 전환됩니다.</p><div className="v33-flow-lines"><span><Footprints size={17}/> 지난 흔적 조사</span><span><ArrowUpRight size={16}/> 위험 구역 통과</span><span><Search size={16}/> 생체 신호 탐지</span></div></div>
+     <details className="v42-field-help v42-route-help" defaultOpen={state.tutorialStep<=2}><summary><span>✦</span> EVE · 7×5 탐사 구역 안내 <b>열기·접기</b></summary><p>강조된 바로 옆 칸을 누르면 담당자가 실제로 걸어서 이동합니다. 발자국·연구 자료·보급 상자는 클릭한 뒤 즉시 회수 장부에 합산됩니다. 생체 신호는 8×8 은신 추적으로 이어지고, 포획 후에도 현장에 남을 수 있습니다. HP=생존, ST=이동, AP=하루 명령입니다.</p></details>
      <div className="v33-travel-status"><span>추적망 접근</span><strong>{pressure}%</strong><i><em style={{width:pressure+'%'}}/></i><p>한 번 이동할 때마다 시간이 흐릅니다. 압박이 100%에 도달하면 강제 철수합니다.</p></div>
      <div className="v33-travel-status"><span>탐사 목적</span><strong>{field.encountered?'신호 조사 완료':'야생 개체 발견'}</strong><p>지도를 끝까지 밝힐 필요는 없습니다. 자료를 챙겼다면 언제든 귀환할 수 있습니다.</p></div>
     </>}

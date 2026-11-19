@@ -1,6 +1,6 @@
 {
-  "name": "echo-ward-v41",
-  "version": "41.0.0",
+  "name": "echo-ward-v42",
+  "version": "42.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -19,7 +19,8 @@
     "test:v37": "node scripts/test-v37.cjs",
     "test:v39": "node scripts/test-v39.cjs",
     "test:v40": "node scripts/test-v40.cjs",
-    "test:v41": "node scripts/test-v41.cjs"
+    "test:v41": "node scripts/test-v41.cjs",
+    "test:v42": "node scripts/test-v42.cjs"
   },
   "dependencies": {
     "next": "^15.5.0",

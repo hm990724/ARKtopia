@@ -1,3 +1,5 @@
+> **현재 통합 버전: ECHO WARD v42.** 변경된 이동·탐사 보상·변이·행동 기록·화면 개선은 [`V42_RELEASE.md`](V42_RELEASE.md), 상세 자원·난이도는 [`V42_BALANCE.md`](V42_BALANCE.md) 참조. 기존 `public/assets`는 반드시 유지.
+
 # ECHO WARD v41 — 탐사 보상·관찰 기록·공명 연동
 
 **최신 변경 사항:** `V41_RELEASE.md`를 참조하세요. 기존 프로젝트의 `public/assets`는 그대로 두고 소스만 덮어씁니다.
