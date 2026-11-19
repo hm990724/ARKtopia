@@ -1,7 +1,7 @@
 'use client';
 import {useState} from 'react';
 import {Radio,HeartPulse,Brain,ChevronRight,ShieldAlert,Lock,BookOpen} from 'lucide-react';
-import {CREW_IDS,CREW_PROFILES,type CrewId} from '@/lib/crew';
+import {CREW_IDS,CREW_PROFILES,CREW_LOSS_EFFECTS,type CrewId} from '@/lib/crew';
 import type {V10} from '@/lib/game-v10';
 
 function Portrait({id,className='',condition='safe'}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical'}){
@@ -40,22 +40,40 @@ export function CrewRoster({state,onSupport,onTalk,onTreat}:{state:V10;onSupport
  const [selected,setSelected]=useState<CrewId|null>(null);
  const crew=state.crew;
  const selectedMember=crew?.members.find(m=>m.id===selected);
- const used=crew?.supportDay===state.day;
+ const used=crew?.supportDay===state.day;const retired=crew?.retired??[];
  return <section className="v45-roster" aria-label="본부 파견 인력과 일일 지원">
   <div className="v45-roster-head"><span><Radio size={12}/> HQ / STAFF</span><b>{crew?.members.length??0} / 4</b></div>
-  <div className="v45-roster-grid">{CREW_IDS.map(id=>{const member=crew?.members.find(m=>m.id===id);return <button key={id} className={'v45-roster-item '+(member?'arrived':'locked')+(selected===id?' selected':'')} disabled={!member} type="button" onClick={()=>setSelected(v=>v===id?null:id)} aria-label={`${CREW_PROFILES[id].post} ${member?`${CREW_PROFILES[id].title} 직원 상세`: '아직 미배치'}`}>
+  <div className="v45-roster-grid">{CREW_IDS.map(id=>{const member=crew?.members.find(m=>m.id===id);const lost=retired.includes(id);return <button key={id} className={'v45-roster-item '+(member?'arrived':lost?'v49-retired':'locked')+(selected===id?' selected':'')} disabled={!member} type="button" onClick={()=>setSelected(v=>v===id?null:id)} aria-label={`${CREW_PROFILES[id].post} ${member?`${CREW_PROFILES[id].title} 직원 상세`: lost?'영구 처리 · 복귀 불가':'아직 미배치'}`}>
    {member?<Portrait key={`${id}-${member.mind<35||member.hp<30?'critical':member.mind<62?'unstable':'safe'}`} id={id} condition={member.mind<35||member.hp<30?'critical':member.mind<62?'unstable':'safe'}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
-   <span><b>{CREW_PROFILES[id].post}</b><small>{member?CREW_PROFILES[id].title:'미배치'}</small></span>
+   <span><b>{CREW_PROFILES[id].post}</b><small>{member?CREW_PROFILES[id].title:lost?'인격 신호 소실':'미배치'}</small></span>
    {member&&<i className={member.mind<35||member.hp<30?'v45-staff-danger':member.mind<62?'v45-staff-warning':'v45-staff-ok'}/>}
   </button>})}</div>
+  {retired.length>0&&<div className="v49-roster-losses"><ShieldAlert size={14}/><span>시설 인력 공백 · {retired.map(id=>CREW_LOSS_EFFECTS[id].summary).join(' / ')}</span></div>}
   <div className="v45-roster-foot"><span>{used?'오늘의 지원 완료':'공동 지원: 하루 1회'}</span><span>{crew?.members.length?'직원 선택해 대화·지원':'본부 이송 후 인력 파견'}</span></div>
   {selectedMember&&selected&&<div className="v45-roster-detail">
    <header><b>{CREW_PROFILES[selected].title} <small>· {CREW_PROFILES[selected].post}</small></b><button type="button" onClick={()=>setSelected(null)} aria-label="직원 상세 닫기">×</button></header>
    <div className="v45-roster-stats"><span>HP <b>{selectedMember.hp}/100</b></span><span>정신 <b>{selectedMember.mind}/100</b></span></div>
    <p>{CREW_PROFILES[selected].benefit}</p><small className="v45-personality">{CREW_PROFILES[selected].personality}</small>
    {(selectedMember.hp<=25||selectedMember.mind<=28)&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 신경 불안정 · 야간 공격 위험</div>}
-   <div className="v45-roster-actions"><button onClick={()=>onTalk(selected)}><BookOpen size={13}/> 대화</button><button className="support" disabled={!!used||selectedMember.hp<=12||selectedMember.mind<=12} onClick={()=>onSupport(selected)}>오늘 지원</button></div>
-   <div className="v45-care-actions"><button disabled={state.ap<1||state.medicine<1} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={13}/> 치료 (AP1·약1)</button><button disabled={state.ap<1||state.knowledge<5} onClick={()=>onTreat(selected,'counsel')}><Brain size={13}/> 안정화 (AP1·지식5)</button></div>
+   <div className="v45-roster-actions"><button onClick={()=>onTalk(selected)}><BookOpen size={13}/> 대화</button><button className="support" disabled={!!used||selectedMember.hp<=12||selectedMember.mind<=0||!!state.crew?.pendingTermination} onClick={()=>onSupport(selected)}>오늘 지원</button></div>
+   <div className="v45-care-actions"><button disabled={selectedMember.mind<=0||state.ap<1||state.medicine<1} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={13}/> 치료 (AP1·약1)</button><button disabled={selectedMember.mind<=0||state.ap<1||state.knowledge<5} onClick={()=>onTreat(selected,'counsel')}><Brain size={13}/> 안정화 (AP1·지식5)</button></div>
   </div>}
  </section>;
+}
+
+/** A one-way, multi-line neural termination. The only actual decision is '처리한다'. */
+export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>void}){
+ const [step,setStep]=useState(0),[missing,setMissing]=useState(false);
+ const profile=CREW_PROFILES[id],effect=CREW_LOSS_EFFECTS[id];
+ const lines=effect.quote;
+ return <div className="v49-collapse-shade" role="dialog" aria-modal="true" aria-label={`${profile.post} 인격 신호 소실`}>
+  <div className="v49-collapse-window">
+   <div className="v49-collapse-image">
+    {!missing&&<img src={`/assets/cinematics/staff-terminations/${id}/scene.png`} alt={`${profile.title} 마지막 장면`} onError={()=>setMissing(true)}/>}
+    <div className="v49-collapse-glitch" aria-hidden="true"/>
+    <div className="v49-collapse-diagnostics"><small>STAFF / NEURAL LINK FAILURE</small><strong>{profile.post} {profile.title}</strong><span>MENTAL RESILIENCE: 0% · IRREVERSIBLE</span></div>
+   </div>
+   <div className="v49-collapse-talk" key={step}><span>FINAL VOICE LOG · {String(step+1).padStart(2,'0')} / 03</span><p>“{lines[step]}”</p><div className="v49-collapse-actions"><span>RECORDING // SIGNAL DECAY</span><button type="button" onClick={()=>step<lines.length-1?setStep(step+1):onTerminate()}>{step<lines.length-1?'다음 대사':'처리한다'} <ChevronRight size={16}/></button></div></div>
+  </div>
+ </div>;
 }

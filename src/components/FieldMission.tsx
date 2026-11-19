@@ -5,7 +5,7 @@ import {regions} from '@/lib/game-v10';
 import type {AnimalId} from '@/lib/sim';
 import {adjacentField,fieldVisible,type Pace} from '@/lib/tactical-field';
 import {HUNT_TRAITS,HUNT_SIZE,huntSearchAge,huntSearchedCount,observedEvidence,observationAge,type HuntMode,type HuntTool} from '@/lib/hidden-hunt';
-import {ArrowLeft,Package,AlertTriangle,Radio,HeartPulse,Footprints,Clock3,Compass,ShieldAlert,ArrowUpRight,MapPin,Search,BookOpen,MoveRight,ScanEye,CheckCircle2} from 'lucide-react';
+import {ArrowLeft,Package,AlertTriangle,Radio,HeartPulse,Footprints,Clock3,Compass,ShieldAlert,ArrowUpRight,MapPin,Search,MoveRight,ScanEye,CheckCircle2,Lock,UnlockKeyhole} from 'lucide-react';
 
 type Props={state:V10;animalSrc:(id:AnimalId)=>string;onMove:(index:number,pace:Pace)=>void;onRetreat:()=>void;onHunt:(action:{type:HuntMode;cell?:number;clue?:number})=>void;onMedkit:()=>void;feedback:string};
 const clamp=(n:number)=>Math.max(0,Math.min(100,n));
@@ -75,10 +75,18 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     {hunt&&species?<>
      <span className="v33-eyebrow">SPECIMEN // {hunt.species.toUpperCase()}</span>
      <div className="v44-specimen-image"><img src={animalSrc(hunt.species)} alt="확보된 표본 이미지, 실제 위치는 미확인"/></div>
-     <h3>{HUNT_TRAITS[hunt.species].title}</h3>
-     <p className="v44-specimen-desc">{hunt.revealed[0]?species.short:'행동 기록이 잠겨 있습니다. 오른쪽에서 습성 카드를 해독하세요.'}</p>
-     <div className="v44-specimen-traits"><b>행동 특성 · {hunt.revealed.filter(Boolean).length}/3 복원</b>
-      {species.hints.map((hint,i)=><p key={i} className={hunt.revealed[i]?'known':'unknown'}><span>0{i+1}</span>{hunt.revealed[i]?hint:'기록 암호화 · 오른쪽에서 해독'}</p>)}
+     <h3>{hunt.revealed.some(Boolean)?species.title:'행동 프로파일 · 미해독'}</h3>
+     <p className="v44-specimen-desc">{hunt.revealed.some(Boolean)?species.short:'은폐된 행동 정보입니다. 아래 잠금 기록을 직접 해독하면 하나씩 공개됩니다.'}</p>
+     <div data-tour="hunt-decode" className={'v47-trait-vault '+(hunt.tutorial?'v42-decode-target v42-tutorial-active':'')} aria-label="개체 행동 특성 해독">
+      <div className="v47-trait-vault-head"><b>행동 특성 · {hunt.revealed.filter(Boolean).length}/3 해독</b><small>해독 1회 = 수색 행동 1</small></div>
+      {species.hints.map((hint,i)=>{
+       const known=!!hunt.revealed[i];
+       return <button key={i} type="button" className={'v47-trait-card '+(known?'v47-trait-unlocked':'v47-trait-locked')} disabled={known||hunt.actions<1||hunt.outcome!=='playing'} onClick={()=>{setNotice('');onHunt({type:'reveal',clue:i})}} aria-label={known?`해독 완료 ${i+1}: ${hint}`:`미해독 행동 특성 ${i+1} · 해독 시 행동 1 소모`}>
+        <span className="v47-trait-symbol">{known?<UnlockKeyhole size={15}/>:<Lock size={15}/>}</span>
+        <span className="v47-trait-copy"><strong>{known?['서식지 반응','이동 습성','기억 패턴'][i]:`기밀 행동 0${i+1}`}</strong><small>{known?hint:'████ ███████ ████'}</small></span>
+        <span className="v47-trait-action">{known?'복원':hunt.actions>0&&hunt.outcome==='playing'?'해독 -1':'대기'}</span>
+       </button>
+      })}
      </div>
      <div className="v44-specimen-risk"><span>은신 상태</span><b>{hunt.outcome==='playing'?'위치 미확정':'탐사 종료'}</b></div>
     </>:<>
@@ -88,7 +96,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
      <div className="v44-specimen-traits"><b>현장 분석</b><p>탐사 경로: {field.steps}칸</p><p>회수 기록: {field.loot}점</p><p>생체 신호: {field.encountered?'조사 완료':'추적 중'}</p></div>
     </>}
    </aside>
-   <div className="v33-theater">
+   <div className="v33-theater" data-tour="run-choice">
     {hunt? <>
      <div className="v33-map-frame">
       <div className="v33-map-overline"><span><i/> SECTOR {run.region.toUpperCase()} · THICKET SCAN</span><b>GRID {HUNT_SIZE} × {HUNT_SIZE} · 수색 {huntSearchedCount(hunt)}/64</b></div>
@@ -135,7 +143,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     {hunt&&species? <>
      <div className="v44-side-label"><ScanEye size={14}/> 포획 도구 · 아래 전술 아이템 선택 후 중앙 타일 클릭</div>
      <div className="v33-section-kicker"><ScanEye size={14}/> 전술 명령 <small>칸 선택 시 1턴 경과</small></div>
-     <div className={"v33-tool-rack v42-tools-target "+(hunt.tutorial?"v42-tutorial-active":"")}>{tools.map(t=><button type="button" key={t.kind} aria-pressed={mode===t.kind} onClick={()=>{setMode(t.kind);setNotice('')}} className={'v33-tool '+(mode===t.kind?'v33-tool-active ':'')+' v33-tool-'+t.tone}><span className="v33-tool-sample" aria-hidden="true"><i/><i/></span><span className="v33-tool-label"><b>{t.name}</b><small>{t.cost}</small></span></button>)}</div>
+     <div data-tour="hunt-tools" className={"v33-tool-rack v42-tools-target "+(hunt.tutorial?"v42-tutorial-active":"")}>{tools.map(t=><button type="button" key={t.kind} aria-pressed={mode===t.kind} onClick={()=>{setMode(t.kind);setNotice('')}} className={'v33-tool '+(mode===t.kind?'v33-tool-active ':'')+' v33-tool-'+t.tone}><span className="v33-tool-sample" aria-hidden="true"><i/><i/></span><span className="v33-tool-label"><b>{t.name}</b><small>{t.cost}</small></span></button>)}</div>
      <div className="v33-command-detail"><strong>{activeMode.name}</strong><p>{activeMode.effect}</p><span>위 지도에서 대상 칸을 직접 선택</span></div>
      <button type="button" className="v33-wait" onClick={()=>{setNotice('');setMode('search');onHunt({type:'wait'})}}><Clock3 size={16}/> 숨죽여 관찰 · 1턴 진행 <MoveRight size={15}/></button>
      <div className="v44-live-readout" aria-live="polite">     <div className={'v36-observation '+(lastEvidence?'v36-observation-'+evidencePresentation.tone:'v36-observation-idle')} role="status" aria-live="polite">
@@ -146,10 +154,6 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
 </div>
      <div className="v33-broadcast" role="status" aria-live="polite"><span className="v33-broadcast-label"><Radio size={13}/> EVE / LIVE TRANSCRIPT</span><p>{lastFeed}</p></div>
      <div className="v44-guide-static" aria-label="수색 판독 요령"><b>판독 기록 / 수풀의 반응</b><p><strong>발자국</strong> 이전 위치 · <strong>흔들림</strong> 주변 1칸 · <strong>빈 수풀</strong> 당시 흔적 없음. 동물은 한 번 행동할 때마다 움직입니다.</p></div>
-     <div className="v33-section-kicker"><BookOpen size={14}/> 행동 습성 기록 <small>각 카드 해독 시 행동 -1</small></div>
-     <div className={"v33-clue-cards v42-decode-target "+(hunt.tutorial?"v42-tutorial-active":"")}>
-      {species.hints.map((clue,i)=><button type="button" key={i} className={'v33-clue '+(hunt.revealed[i]?'v33-clue-open':'')} disabled={hunt.revealed[i]||hunt.actions<1} onClick={()=>{setNotice('');onHunt({type:'reveal',clue:i})}} aria-label={hunt.revealed[i]?`해독한 힌트 ${i+1}: ${clue}`:`암호화된 행동 힌트 ${i+1}, 해독 시 행동 1 소모`}><span className="v33-clue-number">0{i+1}</span><span className="v33-clue-copy"><b>{hunt.revealed[i]?['서식지 반응','이동 습성','기억 패턴'][i]:'기밀 행동 패턴'}</b><small>{hunt.revealed[i]?clue:'기록을 해독하면 전술 힌트가 공개됩니다.'}</small></span><span className="v33-clue-cost">{hunt.revealed[i]?'확인':'해독 -1'}</span></button>)}
-     </div>
      {canWalkMedkit&&<button className="v33-wait v33-medkit" type="button" onClick={onMedkit}><HeartPulse size={15}/> 응급 키트 · HP +20</button>}
      {danger&&<div className="v33-danger-warning"><ShieldAlert size={18}/><p><b>포식자 역추적 위험</b>행동 기회를 모두 소진하면 {species.risk}. 공격 전 경보를 확인하세요.</p></div>}
      <div className="v34-tactics-note"><b>수색 흔적 {huntSearchedCount(hunt)}칸 확보</b><span>열었던 칸은 다시 가려지지 않습니다. 다만 발자국과 풀 흔들림은 조사 당시의 기록이므로 현재도 그곳에 있다는 보장은 없습니다. 최근 2턴의 수색 소음만 개체 행동에 영향을 줍니다.</span></div>
