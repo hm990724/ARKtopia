@@ -33,7 +33,7 @@ function trace(s:V10,title:string,detail:string,kind:'info'|'good'|'bad'|'myster
 export function escapeRisk(s:V10,a:AnimalState):number{
  const mutant=isMutant(a);
  const suppression=(a.suppressedUntilDay??0)>=s.day;
- return cap(Math.round((mutant?32:3)+a.stress*.43+a.contamination*.17-a.bond*.20+(100-s.facility)*.24+(100-s.power)*.13+(a.awakened?7:0)-(suppression?70:0)));
+ return cap(Math.round((mutant?32:3)+a.stress*.43+a.contamination*.17-a.bond*.20+(100-s.facility)*.24+(100-s.power)*.13+(a.awakened?7:0)-(s.facilities?.containment?12:0)-(suppression?70:0)));
 }
 export function nightlySecurity(s:V10,roll=Math.random()):V10{
  if(!s.security)s.security=initialSecurity();const sec=s.security;

@@ -1,5 +1,5 @@
 export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera';
-export type AnimalState={id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number};
+export type AnimalState={specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
 export type Start='medical'|'greenhouse'|'station'|'observatory';
 export type EventRecord={day:number;title:string;text:string;kind:'info'|'good'|'bad'|'mystery'};
@@ -18,10 +18,33 @@ export const specs:{id:AnimalId;name:string;former:string;trait:string;site:stri
 {id:'moth',name:'밤나방',former:'빛 감지 기록',trait:'낡은 신호를 따라간다',site:'observatory',unlock:11},
 {id:'mutant',name:'복합체 07',former:'분산된 인간의 언어 기록',trait:'하나의 입에서 서로 다른 목소리가 섞인다',site:'medical',unlock:17},
 {id:'chimera',name:'접합체 미라',former:'의식 합성 실험 기록',trait:'서로 다른 동물의 반응이 충돌한다',site:'medical',unlock:20}];
-export const origins:{id:Origin;title:string;desc:string;perk:string}[]=[{id:'medic',title:'누군가를 살리려 했다',desc:'희미한 수술등과 차가운 손',perk:'치료 효율 +15'},{id:'engineer',title:'문을 닫으려 했다',desc:'쏟아지는 경보와 마지막 철문',perk:'시설 수리 +15'},{id:'artist',title:'끝내지 못한 곡이 있다',desc:'불 꺼진 무대 위 오래된 선율',perk:'기억 동기화 +15'},{id:'warden',title:'누군가를 지키고 있었다',desc:'젖은 복도와 무전기 속 잡음',perk:'야간 방어 +15'}];
-export const starts:{id:Start;title:string;desc:string;art:string;bonus:string}[]=[{id:'medical',title:'지하 의료실',desc:'안전하지만 잠긴 곳이 많다',art:'laboratory',bonus:'의약품 2개'},{id:'greenhouse',title:'붕괴된 온실',desc:'구조 대상을 먼저 발견한다',art:'sanctuary',bonus:'식량 3개'},{id:'station',title:'폐역 승강장',desc:'오염에 노출되지만 물자가 있다',art:'wasteland',bonus:'부품 3개'},{id:'observatory',title:'외곽 관측소',desc:'신호가 강하지만 EVE가 멀다',art:'gate',bonus:'지식 10'}];
+// Four selectable memory fragments. These are memories, not proof of humanity.
+export const origins:{id:Origin;title:string;desc:string;perk:string}[]=[
+ {id:'medic',title:'문 너머의 환자',desc:'누군가 유리문을 두드렸다. 나는 마지막 남은 붕대를 쥐고 있었다.',perk:'구조 +11%p · 치료 회복량 증가'},
+ {id:'engineer',title:'꺼져 가는 발전기',desc:'멀리서 비명이 들렸지만, 나는 아직 돌아가는 발전기를 놓을 수 없었다.',perk:'전력 재가동 +9 · EVE 수리 강화'},
+ {id:'artist',title:'끝나지 않은 선율',desc:'객석은 텅 비었는데 누군가는 내 이름 대신 번호를 불렀다.',perk:'기억 동기화 지식 +15%'},
+ {id:'warden',title:'마지막으로 잠근 문',desc:'철문 반대편에 그림자가 있었다. 나는 누구를 지키려 했던 걸까.',perk:'야간 방어 시 위협 -5 추가'}
+];
+export const starts:{id:Start;title:string;desc:string;art:string;bonus:string}[]=[
+ {id:'medical',title:'지하 의료실',desc:'격리 침상 옆에 약품과 지워진 환자 번호가 남아 있다.',art:'laboratory',bonus:'시작 의약품 4개 · 보존 장비 점검'},
+ {id:'greenhouse',title:'붕괴된 온실',desc:'깨진 유리 안쪽에서 작은 생명이 유리를 긁는 소리가 들린다.',art:'sanctuary',bonus:'시작 식량 9개 · 첫 울음의 출처'},
+ {id:'station',title:'폐역 승강장',desc:'방송이 끊긴 승강장. 당신의 발보다 먼저 젖은 발자국이 찍혔다.',art:'wasteland',bonus:'시작 부품 6개 · 감염도 14%'},
+ {id:'observatory',title:'외곽 관측소',desc:'수신기에 누군가의 호흡이 반복된다. 마지막 기록은 당신보다 오래됐다.',art:'gate',bonus:'시작 지식 10 · EVE 코어 67/100'}
+];
+export const originStories:Record<Origin,{fragment:string;eve:string}>={
+ medic:{fragment:'...붕대를 감던 손이 기억나. 그런데 환자의 얼굴은, 이상하게 하나도 떠오르지 않아.',eve:'담당자님, 의료 실무 기록과 유사한 기억 파편이 확인되었습니다. 위기 상황에서 생체 반응을 보다 안정적으로 다룰 수 있습니다.'},
+ engineer:{fragment:'손끝에 기름이 묻어 있어. 경보가 울릴 때까지 발전기를 붙잡고 있었던 것 같아.',eve:'설비 조작에 관련된 기억 신호가 남아 있습니다. 발전기와 보존 코어를 복구할 때 도움이 됩니다.'},
+ artist:{fragment:'...누가 노래를 부르고 있었어. 분명 익숙한 곡인데, 가사는 왜 하나도 생각 안 나지?',eve:'청각·패턴 인식 기록을 감지했습니다. 반복된 행동에서 기억 공명을 분석하는 데 유리합니다.'},
+ warden:{fragment:'철문을 닫았어. 내가 안쪽에 있었는지 바깥에 있었는지도... 기억이 안 나.',eve:'보안 프로토콜에 관한 반응이 남아 있습니다. 야간 방어 절차에서 더 정밀하게 위협을 억제할 수 있습니다.'}
+};
+export const startStories:Record<Start,{fragment:string;eve:string}>={
+ medical:{fragment:'침상 옆에 번호가 적혀 있어. ...이건 이름이 아니라, 실험 기록 같은데.',eve:'의료실의 예비 의약품 4개를 확인했습니다. 침상 기록은 아직 접근 권한이 없습니다.'},
+ greenhouse:{fragment:'유리 너머에서 뭔가 움직였어. ...누가 아직 살아 있어.',eve:'온실 비상 식량 9개를 확보했습니다. 외부 생체 신호의 출처는 직접 조사해야 합니다.'},
+ station:{fragment:'역 전체가 젖었어. 기차가 끊긴 지 꽤 됐을 텐데, 누가 이 부품들을 모아 둔 거지?',eve:'회수 가능한 부품 6개를 확인했습니다. 외부 오염이 높아 감염도 14%로 시작합니다.'},
+ observatory:{fragment:'수신기에서 숨소리가 들렸어. 녹음이겠지? ...이곳엔 아무도 없다며.',eve:'관측 기록으로 초기 지식 10을 복원했습니다. 다만 외곽 코어 상태가 나빠 EVE 신호는 67/100에서 시작합니다.'}
+};
 export function cap(n:number){return Math.max(0,Math.min(100,Math.round(n)))}
-export function makeAnimal(id:AnimalId,room:number):AnimalState {return {id,name:specs.find(s=>s.id===id)?.name||id,hp:65+Math.floor(Math.random()*25),stress:20+Math.floor(Math.random()*25),bond:15,memory:0,contamination:0,room,alive:true,records:0}}
+export function makeAnimal(id:AnimalId,room:number):AnimalState {return {id,name:specs.find(s=>s.id===id)?.name||id,hp:65+Math.floor(Math.random()*25),stress:20+Math.floor(Math.random()*25),bond:15,memory:0,contamination:0,room,alive:true,records:0,hunger:22,sickness:0}}
 export function createGame(origin:Origin,start:Start):State {const s:State={version:9,day:1,ap:4,origin,start,hp:origin==='medic'?95:86,stamina:83,mind:80,radiation:start==='station'?18:2,eve:start==='observatory'?67:88,power:72,credits:650,food:6,medicine:start==='medical'?4:2,parts:start==='station'?6:3,knowledge:start==='observatory'?10:0,trust:46,animals:[],rooms:3,flags:{foundKey:false,foxStory:false,memoryDoor:false,humanTruth:false,mirror:false,consent:false,eveLied:false,infirmary:false,greenhouse:false,lab:false,outside:false},logs:[],phase:'day',ending:'',scene:starts.find(s=>s.id===start)?.art as State['scene']||'gate',pending:null,pendingReport:'',daysWithoutFood:0,raidCount:0,eventRisk:16,shield:100,lastEvent:'',lifeSaved:0,extractions:0,decisions:[]};if(start==='greenhouse')s.food+=3;log(s,'첫 번째 기록','눈을 뜨자 벽에 문질러 지운 이름이 있었다. 누군가 이 시설을 관리하던 흔적만 남아 있다.','mystery');return s}
 export function log(s:State,title:string,text:string,kind:EventRecord['kind']='info'){s.logs.unshift({day:s.day,title,text,kind});s.logs=s.logs.slice(0,80)}
 export function copy(s:State):State{return structuredClone(s)}
@@ -38,8 +61,32 @@ export function recordMutation(s:State,a:AnimalState):boolean {
  log(s,'MUTANT 발현 · 격리 경보',`${a.name}의 신경 동기화가 임계치를 넘었습니다. 변이 후에는 돌봄만으로 정상화되지 않으며 진정 주사 또는 위험한 개체 처리 결정이 필요합니다.`,'bad');
  return true;
 }
-export function dailyWork(s:State,type:'feed'|'heal'|'comfort'|'observe',id:AnimalId):State {const n=copy(s);const a=n.animals.find(a=>a.id===id&&a.alive);if(!a||!spend(n,1))return s;const name=a.name;if(type==='feed'){if(n.food<1)return s;n.food--;a.hp=cap(a.hp+10);a.stress=cap(a.stress-8);a.bond=cap(a.bond+8);log(n,'급식 완료',`${name}가 경계하다가 조금씩 먹이를 받아먹었다.`,'good')}
-if(type==='heal'){if(n.medicine<1)return s;n.medicine--;a.hp=cap(a.hp+(n.origin==='medic'?32:22));a.contamination=cap(a.contamination-18);log(n,'치료 기록',`${name}의 상처를 치료했다. 소독 장비의 작은 불빛이 꺼졌다.`,'good')}
+// Nightly upkeep is species-aware. Hunger/illness produce visible warnings before loss.
+export const SPECIES_CARE:Record<AnimalId,{hunger:number;fragility:number;contagion:number;note:string}>={
+ rabbit:{hunger:18,fragility:1.3,contagion:1.1,note:'작은 몸집 · 굶주림과 소음에 취약'},
+ fox:{hunger:15,fragility:.8,contagion:1.0,note:'경계심이 강하고 스트레스에 민감'},
+ deer:{hunger:21,fragility:1.2,contagion:1.2,note:'큰 식사량 · 외부 자극에 취약'},
+ owl:{hunger:13,fragility:1.2,contagion:.9,note:'야간 활동 · 강한 조명에 취약'},
+ wolf:{hunger:23,fragility:.8,contagion:1.0,note:'큰 식사량 · 관리 실패 시 위협'},
+ crow:{hunger:12,fragility:.9,contagion:.8,note:'자극에 적응하지만 불신을 오래 기억'},
+ otter:{hunger:20,fragility:1.1,contagion:1.5,note:'물 환경 · 오염에 취약'},
+ lynx:{hunger:19,fragility:.9,contagion:1.1,note:'격리 환경과 접촉 스트레스'},
+ axolotl:{hunger:10,fragility:1.5,contagion:1.7,note:'수질·오염에 매우 취약'},
+ moth:{hunger:12,fragility:1.4,contagion:.9,note:'조명 변화와 체력 저하에 취약'},
+ mutant:{hunger:24,fragility:1.2,contagion:1.5,note:'변이로 인한 불안정과 급격한 소모'},
+ chimera:{hunger:25,fragility:1.3,contagion:1.6,note:'복합 신경계 · 관리 난이도 높음'}
+};
+export function nightlyAnimalCondition(a:AnimalState,fed:boolean,facility:number,externalInfection:number){
+ const p=SPECIES_CARE[a.id];
+ const hunger=cap((a.hunger??22)+p.hunger-(fed?28:0));a.hunger=hunger;
+ const previousDisease=a.sickness??0;
+ a.sickness=cap(previousDisease+(hunger>=65?Math.round(8*p.fragility):0)+(a.contamination>=45?Math.round(7*p.contagion):0)+(facility<45?7:0)+(externalInfection>=70?5:0)-(fed?2:0));
+ if(hunger>=60){a.stress=cap(a.stress+Math.round(4*p.fragility));a.hp=cap(a.hp-Math.round((hunger>=85?9:3)*p.fragility));}
+ if((a.sickness??0)>=50){a.hp=cap(a.hp-Math.round(((a.sickness??0)>=80?10:4)*p.fragility));a.stress=cap(a.stress+3);}
+ if(a.stress>=90){a.hp=cap(a.hp-3);}
+}
+export function dailyWork(s:State,type:'feed'|'heal'|'comfort'|'observe',id:AnimalId):State {const n=copy(s);const a=n.animals.find(a=>a.id===id&&a.alive);if(!a||!spend(n,1))return s;const name=a.name;if(type==='feed'){if(n.food<1)return s;n.food--;a.hunger=cap((a.hunger??22)-34);a.hp=cap(a.hp+10);a.stress=cap(a.stress-8);a.bond=cap(a.bond+8);log(n,'급식 완료',`${name}가 경계하다가 조금씩 먹이를 받아먹었다.`,'good')}
+if(type==='heal'){if(n.medicine<1)return s;n.medicine--;a.hp=cap(a.hp+(n.origin==='medic'?32:22));a.contamination=cap(a.contamination-18);a.sickness=cap((a.sickness??0)-24);log(n,'치료 기록',`${name}의 상처를 치료했다. 소독 장비의 작은 불빛이 꺼졌다.`,'good')}
 if(type==='comfort'){a.stress=cap(a.stress-20);a.bond=cap(a.bond+12);n.mind=cap(n.mind+3);log(n,'교감 기록',`${name}가 손길을 피하지 않았다. 잠시 조용한 시간이 흘렀다.`,'good')}
 if(type==='observe'){a.records++;a.memory=cap(a.memory+4);n.knowledge+=a.records<=3?2:0;const line=a.records===1?'처음에는 단순한 반사 행동처럼 보였다.':a.records<3?'동일한 행동이 반복된다. 습관이라기에는 너무 규칙적이다.':'익숙하지 않은 도구를 마치 사용해본 것처럼 다룬다.';log(n,'행동 관찰',`${name}: ${line}`,'mystery')}
 recordMutation(n,a);recalc(n);return n}

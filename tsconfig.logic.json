@@ -1,0 +1,4 @@
+{
+  "compilerOptions": {"target":"ES2022","module":"CommonJS","moduleResolution":"node","strict":true,"skipLibCheck":true,"esModuleInterop":true,"lib":["ES2022","DOM"],"outDir":".tmp-logic"},
+  "include":["src/lib/**/*.ts"]
+}
