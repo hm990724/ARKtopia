@@ -1,0 +1,61 @@
+'use client';
+import {useState} from 'react';
+import {Radio,HeartPulse,Brain,ChevronRight,ShieldAlert,Lock,BookOpen} from 'lucide-react';
+import {CREW_IDS,CREW_PROFILES,type CrewId} from '@/lib/crew';
+import type {V10} from '@/lib/game-v10';
+
+function Portrait({id,className='',condition='safe'}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical'}){
+ const [failed,setFailed]=useState(false);
+ const [variant,setVariant]=useState<'normal'|'condition'>(condition==='safe'?'normal':'condition');
+ const filename=variant==='condition'?`portrait_${condition}.png`:'portrait.png';
+ return <span className={'v45-portrait '+className+' '+condition}>
+  {!failed&&<img key={`${id}-${condition}-${variant}`} src={`/assets/staff/${id}/${filename}`} alt={`${CREW_PROFILES[id].post} 초상화`} onError={()=>{if(variant==='condition')setVariant('normal');else setFailed(true)}}/>}
+  {failed&&<span className="v45-portrait-fallback" title={CREW_PROFILES[id].appearance}>{CREW_PROFILES[id].title.slice(0,1)}</span>}
+ </span>;
+}
+export type CinematicKind='eve'|CrewId;
+export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>void}){
+ const [failed,setFailed]=useState(false),[step,setStep]=useState(0);
+ const first=kind==='eve';const data=first?null:CREW_PROFILES[kind];
+ const bg=first?'/assets/cinematics/eve-first-meeting/scene.png':`/assets/cinematics/staff-arrivals/${kind}/scene.png`;
+ const lines=first?[
+  'SECURE CHANNEL // OFFLINE · 2089',
+  '비상 전원이 응답합니다. 유리창 너머에서 누군가 깨어납니다.',
+  '아직 눈을 가진 것은 아닙니다. 하지만 당신을 보고 있습니다.'
+ ]:[
+  `HQ TRANSPORT // ${data!.post} ARRIVAL`,
+  '지하 통로에서 반송 캡슐이 도착했습니다. 생체 기록은 암호화되어 있습니다.',
+  `PERSONNEL ${kind.toUpperCase()} · ${data!.post} ${data!.title} · 신경 분화 안정화. 본부는 원본 조직의 출처를 비공개 처리했습니다.`
+ ];
+ return <div className="v45-cinematic-overlay" role="dialog" aria-modal="true" aria-label={first?'EVE 첫 만남 연출':`${data!.post} 도착 연출`}>
+  <div className={'v45-cinematic '+(first?'is-eve':'is-crew')}>
+   <div className="v45-cinematic-scan"/>
+   <div className={'v45-cinematic-image '+(failed?'no-image':'has-image')}>{!failed&&<img src={bg} alt={first?'EVE 첫 만남 배경':'본부 직원 도착 장면'} onError={()=>setFailed(true)}/>}<div className="v45-cinematic-fallback">{first?<span>EVE <i>INITIALIZATION</i></span>:<span>ARK / BIO PERSONNEL <i>{kind.toUpperCase()}</i></span>}</div></div>
+   <div className="v45-cinematic-top"><span><Radio size={14}/> ARK · {first?'EMERGENCY AWAKENING':'PERSONNEL RECONSTRUCTION'}</span><small>{String(step+1).padStart(2,'0')} / 03</small></div>
+   <div className="v45-cinematic-bottom" key={step}><span>{first?'FIRST CONTACT / UNKNOWN VOICE':'HQ / UNVERIFIED ORIGIN'}</span><p>{lines[step]}</p><div className="v45-cinematic-controls"><button type="button" onClick={()=>setStep(v=>Math.max(0,v-1))} disabled={step===0}>이전</button><button type="button" onClick={()=>step<2?setStep(v=>v+1):onFinish()}>{step<2?'다음 장면':'통신 연결'} <ChevronRight size={16}/></button><button type="button" className="v45-cinema-skip" onClick={onFinish}>연출 건너뛰기</button></div></div>
+  </div>
+ </div>;
+}
+export function CrewRoster({state,onSupport,onTalk,onTreat}:{state:V10;onSupport:(id:CrewId)=>void;onTalk:(id:CrewId)=>void;onTreat:(id:CrewId,kind:'medical'|'counsel')=>void}){
+ const [selected,setSelected]=useState<CrewId|null>(null);
+ const crew=state.crew;
+ const selectedMember=crew?.members.find(m=>m.id===selected);
+ const used=crew?.supportDay===state.day;
+ return <section className="v45-roster" aria-label="본부 파견 인력과 일일 지원">
+  <div className="v45-roster-head"><span><Radio size={12}/> HQ / STAFF</span><b>{crew?.members.length??0} / 4</b></div>
+  <div className="v45-roster-grid">{CREW_IDS.map(id=>{const member=crew?.members.find(m=>m.id===id);return <button key={id} className={'v45-roster-item '+(member?'arrived':'locked')+(selected===id?' selected':'')} disabled={!member} type="button" onClick={()=>setSelected(v=>v===id?null:id)} aria-label={`${CREW_PROFILES[id].post} ${member?`${CREW_PROFILES[id].title} 직원 상세`: '아직 미배치'}`}>
+   {member?<Portrait key={`${id}-${member.mind<35||member.hp<30?'critical':member.mind<62?'unstable':'safe'}`} id={id} condition={member.mind<35||member.hp<30?'critical':member.mind<62?'unstable':'safe'}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
+   <span><b>{CREW_PROFILES[id].post}</b><small>{member?CREW_PROFILES[id].title:'미배치'}</small></span>
+   {member&&<i className={member.mind<35||member.hp<30?'v45-staff-danger':member.mind<62?'v45-staff-warning':'v45-staff-ok'}/>}
+  </button>})}</div>
+  <div className="v45-roster-foot"><span>{used?'오늘의 지원 완료':'공동 지원: 하루 1회'}</span><span>{crew?.members.length?'직원 선택해 대화·지원':'본부 이송 후 인력 파견'}</span></div>
+  {selectedMember&&selected&&<div className="v45-roster-detail">
+   <header><b>{CREW_PROFILES[selected].title} <small>· {CREW_PROFILES[selected].post}</small></b><button type="button" onClick={()=>setSelected(null)} aria-label="직원 상세 닫기">×</button></header>
+   <div className="v45-roster-stats"><span>HP <b>{selectedMember.hp}/100</b></span><span>정신 <b>{selectedMember.mind}/100</b></span></div>
+   <p>{CREW_PROFILES[selected].benefit}</p><small className="v45-personality">{CREW_PROFILES[selected].personality}</small>
+   {(selectedMember.hp<=25||selectedMember.mind<=28)&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 신경 불안정 · 야간 공격 위험</div>}
+   <div className="v45-roster-actions"><button onClick={()=>onTalk(selected)}><BookOpen size={13}/> 대화</button><button className="support" disabled={!!used||selectedMember.hp<=12||selectedMember.mind<=12} onClick={()=>onSupport(selected)}>오늘 지원</button></div>
+   <div className="v45-care-actions"><button disabled={state.ap<1||state.medicine<1} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={13}/> 치료 (AP1·약1)</button><button disabled={state.ap<1||state.knowledge<5} onClick={()=>onTreat(selected,'counsel')}><Brain size={13}/> 안정화 (AP1·지식5)</button></div>
+  </div>}
+ </section>;
+}

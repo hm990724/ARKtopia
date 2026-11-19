@@ -1,10 +1,11 @@
 export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera';
 export type AnimalState={specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
-export type Start='medical'|'greenhouse'|'station'|'observatory';
+export type Start='medical'|'greenhouse'|'station'|'observatory'|'generator'|'depot';
 export type EventRecord={day:number;title:string;text:string;kind:'info'|'good'|'bad'|'mystery'};
 export type Flags={foundKey:boolean;foxStory:boolean;memoryDoor:boolean;humanTruth:boolean;mirror:boolean;consent:boolean;eveLied:boolean;infirmary:boolean;greenhouse:boolean;lab:boolean;outside:boolean};
-export type State={version:9;day:number;ap:number;origin:Origin;start:Start;hp:number;stamina:number;mind:number;radiation:number;eve:number;power:number;credits:number;food:number;medicine:number;parts:number;knowledge:number;trust:number;animals:AnimalState[];rooms:number;flags:Flags;logs:EventRecord[];phase:'day'|'night'|'finale'|'ending';ending:string;scene:'gate'|'sanctuary'|'laboratory'|'wasteland'|'dawn';pending:AnimalId|null;pendingReport:string;daysWithoutFood:number;raidCount:number;eventRisk:number;shield:number;lastEvent:string;lifeSaved:number;extractions:number;decisions:{title:string;answer:string}[]};
+export type StartBenefits={huntCharges:number};
+export type State={version:9;day:number;ap:number;origin:Origin;start:Start;startBenefits?:StartBenefits;hp:number;stamina:number;mind:number;radiation:number;eve:number;power:number;credits:number;food:number;medicine:number;parts:number;knowledge:number;trust:number;animals:AnimalState[];rooms:number;flags:Flags;logs:EventRecord[];phase:'day'|'night'|'finale'|'ending';ending:string;scene:'gate'|'sanctuary'|'laboratory'|'wasteland'|'dawn';pending:AnimalId|null;pendingReport:string;daysWithoutFood:number;raidCount:number;eventRisk:number;shield:number;lastEvent:string;lifeSaved:number;extractions:number;decisions:{title:string;answer:string}[]};
 export const specs:{id:AnimalId;name:string;former:string;trait:string;site:string;unlock:number}[]=[
 {id:'rabbit',name:'흰 토끼',former:'미상의 의료 기록',trait:'다친 개체를 먼저 살핀다',site:'greenhouse',unlock:0},
 {id:'fox',name:'붉은 여우',former:'출입 통제 기록',trait:'잠긴 문을 기억한다',site:'station',unlock:0},
@@ -25,11 +26,14 @@ export const origins:{id:Origin;title:string;desc:string;perk:string}[]=[
  {id:'artist',title:'끝나지 않은 선율',desc:'객석은 텅 비었는데 누군가는 내 이름 대신 번호를 불렀다.',perk:'기억 동기화 지식 +15%'},
  {id:'warden',title:'마지막으로 잠근 문',desc:'철문 반대편에 그림자가 있었다. 나는 누구를 지키려 했던 걸까.',perk:'야간 방어 시 위협 -5 추가'}
 ];
-export const starts:{id:Start;title:string;desc:string;art:string;bonus:string}[]=[
- {id:'medical',title:'지하 의료실',desc:'격리 침상 옆에 약품과 지워진 환자 번호가 남아 있다.',art:'laboratory',bonus:'시작 의약품 4개 · 보존 장비 점검'},
- {id:'greenhouse',title:'붕괴된 온실',desc:'깨진 유리 안쪽에서 작은 생명이 유리를 긁는 소리가 들린다.',art:'sanctuary',bonus:'시작 식량 9개 · 첫 울음의 출처'},
- {id:'station',title:'폐역 승강장',desc:'방송이 끊긴 승강장. 당신의 발보다 먼저 젖은 발자국이 찍혔다.',art:'wasteland',bonus:'시작 부품 6개 · 감염도 14%'},
- {id:'observatory',title:'외곽 관측소',desc:'수신기에 누군가의 호흡이 반복된다. 마지막 기록은 당신보다 오래됐다.',art:'gate',bonus:'시작 지식 10 · EVE 코어 67/100'}
+/** Limited starter benefits keep later days meaningful: no permanent +AP/+hunt farming. */
+export const starts:{id:Start;title:string;desc:string;art:string;bonus:string;detail:string;category:string}[]=[
+ {id:'medical',title:'지하 의료실',desc:'격리동 아래의 비상 진료소',art:'laboratory',bonus:'의약품 +2 · 필터 +1',detail:'동물 치료·현장 응급처치와 감염 방호에 사용',category:'의료 보급'},
+ {id:'generator',title:'폐쇄 발전실',desc:'냉각이 멈춘 비상 배전실',art:'gate',bonus:'시작 전력 +20%p · 전지 +1',detail:'초반 출동과 장비 운용을 안정적으로 확보',category:'설비 보급'},
+ {id:'greenhouse',title:'붕괴된 온실',desc:'식물 배양등이 꺼진 복도',art:'sanctuary',bonus:'시작 ST +20 · 식량 +3',detail:'멀리 걷고 구조한 동물의 첫 급식을 준비',category:'생존 보급'},
+ {id:'station',title:'폐역 승강장',desc:'차단문 너머에 남은 단축 통로',art:'wasteland',bonus:'하루 AP +1 · 첫 2일',detail:'1~2일차에만 5AP, 3일차부터 기본 4AP',category:'운영 지원'},
+ {id:'observatory',title:'외곽 관측소',desc:'수풀을 비추던 낡은 탐지탑',art:'gate',bonus:'포획 행동 +2 · 첫 2회',detail:'처음 만나는 추적 대상 두 번에만 수색 2회 추가',category:'포획 지원'},
+ {id:'depot',title:'폐쇄 자재고',desc:'출입 기록이 삭제된 보관 시설',art:'wasteland',bonus:'시설 부품 +3 · 전지 +1',detail:'시설 복구·발전기 수리·현장 장비 운용에 사용',category:'정비 보급'}
 ];
 export const originStories:Record<Origin,{fragment:string;eve:string}>={
  medic:{fragment:'...붕대를 감던 손이 기억나. 그런데 환자의 얼굴은, 이상하게 하나도 떠오르지 않아.',eve:'담당자님, 의료 실무 기록과 유사한 기억 파편이 확인되었습니다. 위기 상황에서 생체 반응을 보다 안정적으로 다룰 수 있습니다.'},
@@ -38,14 +42,16 @@ export const originStories:Record<Origin,{fragment:string;eve:string}>={
  warden:{fragment:'철문을 닫았어. 내가 안쪽에 있었는지 바깥에 있었는지도... 기억이 안 나.',eve:'보안 프로토콜에 관한 반응이 남아 있습니다. 야간 방어 절차에서 더 정밀하게 위협을 억제할 수 있습니다.'}
 };
 export const startStories:Record<Start,{fragment:string;eve:string}>={
- medical:{fragment:'침상 옆에 번호가 적혀 있어. ...이건 이름이 아니라, 실험 기록 같은데.',eve:'의료실의 예비 의약품 4개를 확인했습니다. 침상 기록은 아직 접근 권한이 없습니다.'},
- greenhouse:{fragment:'유리 너머에서 뭔가 움직였어. ...누가 아직 살아 있어.',eve:'온실 비상 식량 9개를 확보했습니다. 외부 생체 신호의 출처는 직접 조사해야 합니다.'},
- station:{fragment:'역 전체가 젖었어. 기차가 끊긴 지 꽤 됐을 텐데, 누가 이 부품들을 모아 둔 거지?',eve:'회수 가능한 부품 6개를 확인했습니다. 외부 오염이 높아 감염도 14%로 시작합니다.'},
- observatory:{fragment:'수신기에서 숨소리가 들렸어. 녹음이겠지? ...이곳엔 아무도 없다며.',eve:'관측 기록으로 초기 지식 10을 복원했습니다. 다만 외곽 코어 상태가 나빠 EVE 신호는 67/100에서 시작합니다.'}
+ medical:{fragment:'냉장 상자는 망가졌는데, 멀쩡한 치료제가 남아 있네.',eve:'의약품 두 개와 바이오필터 하나를 확보했습니다. 응급처치·동물 치료·현장 감염 저감에 쓸 수 있습니다.'},
+ generator:{fragment:'불 꺼진 분전반이 아직 숨을 쉬고 있어. 좀 더 켤 수 있겠어.',eve:'시작 전력 20%포인트와 예비 전지 하나가 확보되었습니다. 이곳의 전력은 출동과 시설 운영에 사용됩니다.'},
+ greenhouse:{fragment:'여긴 아직 숨쉬기 괜찮아. 먹을 것도 조금 있고.',eve:'활동 체력 ST를 20 추가 확보하고 식량 세 개를 회수했습니다. 식량은 보호 개체의 밤 급식에 사용됩니다.'},
+ station:{fragment:'철문 뒤에 지름길이 있어. 이틀 정도는 움직임에 여유가 생기겠네.',eve:'1~2일차 동안 일일 행동력 AP가 4에서 5로 증가합니다. 3일차부터는 기본 4로 복귀합니다.'},
+ observatory:{fragment:'움직이는 풀숲을 추적한 기록이 남아 있어. 두 번은 써먹을 수 있겠네.',eve:'처음 두 번의 은신 개체 추적에서 행동 기회를 두 번씩 추가합니다. 두 번 사용하면 기존 행동 횟수로 돌아갑니다.'},
+ depot:{fragment:'비상 부품하고 전지가 아직 남았네. 문이 열리기 전에 챙기자.',eve:'시설 부품 세 개와 예비 전지 한 개를 확보했습니다. 고장 난 설비와 발전기를 복구할 때 사용하십시오.'}
 };
 export function cap(n:number){return Math.max(0,Math.min(100,Math.round(n)))}
 export function makeAnimal(id:AnimalId,room:number):AnimalState {return {id,name:specs.find(s=>s.id===id)?.name||id,hp:65+Math.floor(Math.random()*25),stress:20+Math.floor(Math.random()*25),bond:15,memory:0,contamination:0,room,alive:true,records:0,hunger:22,sickness:0}}
-export function createGame(origin:Origin,start:Start):State {const s:State={version:9,day:1,ap:4,origin,start,hp:origin==='medic'?95:86,stamina:83,mind:80,radiation:start==='station'?18:2,eve:start==='observatory'?67:88,power:72,credits:650,food:6,medicine:start==='medical'?4:2,parts:start==='station'?6:3,knowledge:start==='observatory'?10:0,trust:46,animals:[],rooms:3,flags:{foundKey:false,foxStory:false,memoryDoor:false,humanTruth:false,mirror:false,consent:false,eveLied:false,infirmary:false,greenhouse:false,lab:false,outside:false},logs:[],phase:'day',ending:'',scene:starts.find(s=>s.id===start)?.art as State['scene']||'gate',pending:null,pendingReport:'',daysWithoutFood:0,raidCount:0,eventRisk:16,shield:100,lastEvent:'',lifeSaved:0,extractions:0,decisions:[]};if(start==='greenhouse')s.food+=3;log(s,'첫 번째 기록','눈을 뜨자 벽에 문질러 지운 이름이 있었다. 누군가 이 시설을 관리하던 흔적만 남아 있다.','mystery');return s}
+export function createGame(origin:Origin,start:Start):State {const s:State={version:9,day:1,ap:start==='station'?5:4,origin,start,startBenefits:{huntCharges:start==='observatory'?2:0},hp:origin==='medic'?95:86,stamina:start==='greenhouse'?100:80,mind:80,radiation:2,eve:88,power:72,credits:650,food:start==='greenhouse'?9:6,medicine:start==='medical'?4:2,parts:start==='depot'?6:3,knowledge:0,trust:46,animals:[],rooms:3,flags:{foundKey:false,foxStory:false,memoryDoor:false,humanTruth:false,mirror:false,consent:false,eveLied:false,infirmary:false,greenhouse:false,lab:false,outside:false},logs:[],phase:'day',ending:'',scene:starts.find(s=>s.id===start)?.art as State['scene']||'gate',pending:null,pendingReport:'',daysWithoutFood:0,raidCount:0,eventRisk:16,shield:100,lastEvent:'',lifeSaved:0,extractions:0,decisions:[]};log(s,'첫 번째 기록','눈을 뜨자 벽에 문질러 지운 이름이 있었다. 누군가 이 시설을 관리하던 흔적만 남아 있다.','mystery');return s}
 export function log(s:State,title:string,text:string,kind:EventRecord['kind']='info'){s.logs.unshift({day:s.day,title,text,kind});s.logs=s.logs.slice(0,80)}
 export function copy(s:State):State{return structuredClone(s)}
 export function spend(s:State,ap:number){if(s.phase!=='day'||s.ap<ap)return false;s.ap-=ap;return true}
