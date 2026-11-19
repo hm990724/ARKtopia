@@ -81,9 +81,10 @@ export function crewNight(s:V10):void{
  crew.lastIncident=null;
  for(const m of crew.members){
   const days=s.day-m.arrivedDay;
-  // First three days are comparatively stable. Infection always taxes mental resilience.
-  const drain=days<=3?0:days>=14?5:days>=8?3:1;
-  const infectionDrain=s.infection>=75?4:s.infection>=65?2:0;
+  // Slower deterioration: duties and moral dilemmas are the main threats, not ordinary passing days.
+  // Days 1-5 are safe. After that, stress is charged only once every few days.
+  const drain=days<=5?0:days<=12?(days%3===0?1:0):(days%2===0?1:0);
+  const infectionDrain=days<=2?0:s.infection>=90?2:s.infection>=70?1:0;
   m.mind=cap(m.mind-drain-infectionDrain);
   if(m.mind===0)continue; // An exhausted personality has already collapsed; no assault event.
   // Staff HP is no longer automatically drained by ordinary work or passage of time.

@@ -2009,3 +2009,19 @@ select{color:#ecdeea;background:#272232;border:1px solid #66576d}
 @keyframes v49-lost-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes v49-wither{from{filter:grayscale(.25) brightness(.92)}to{filter:grayscale(.8) brightness(.6)}}@keyframes v49-scan{0%{transform:translateY(-120px);opacity:0}30%{opacity:.7}60%{transform:translateY(140px);opacity:.3}100%{transform:translateY(250px);opacity:0}}
 @media(max-width:560px){.v49-collapse-shade{padding:8px}.v49-collapse-image{height:40vh}.v49-collapse-actions>span{display:none}.v49-collapse-actions{justify-content:flex-end}}
 @media(prefers-reduced-motion:reduce){.v49-collapse-shade,.v49-collapse-talk,.v49-collapse-image img,.v49-collapse-glitch{animation:none}}
+
+/* v51 · quiet operational instruction, not a full-screen modal */
+.v51-cctv-help {grid-column:1/-1;background:#101923;border:1px solid #31514f;border-radius:8px;padding:8px 12px;color:#b5d9ce;font-size:12px;line-height:1.65}
+.v51-cctv-help summary{cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:700;list-style:none;min-height:28px}
+.v51-cctv-help p{margin:8px 0 2px;color:#9db0b2}
+.v51-cctv-help summary svg:last-child{margin-left:auto}
+
+.v51-staff-guide{margin:8px 0 10px;padding:8px 10px;border-left:2px solid #85bcaa;background:rgba(68,123,109,.13);color:#b1c9c4;font-size:11px;line-height:1.55;border-radius:4px;}
+
+/* v51 · archival evidence compact drawers */
+.v51-archive-drawer{margin-top:12px;border:1px solid #5a4659;border-radius:8px;background:rgba(20,16,30,.55);overflow:hidden}
+.v51-archive-drawer>summary{list-style:none;display:flex;align-items:center;gap:9px;cursor:pointer;padding:12px 15px;color:#d9bdd3;font-weight:700;font-size:13px}
+.v51-archive-drawer>summary::-webkit-details-marker{display:none}
+.v51-archive-drawer>summary b{margin-left:auto;color:#8ed3b8;font-size:12px}
+.v51-archive-drawer[open]>summary{border-bottom:1px solid #4d3c4a;background:rgba(99,59,91,.15)}
+.v51-archive-drawer>section{margin:0!important;border:0!important;background:transparent!important;padding:10px 14px!important}

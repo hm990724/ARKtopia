@@ -11,9 +11,9 @@ function stage(){const x=G.beginGame('artist','medical');assert.equal(x.scrap,0)
  const a=G.loadGame(JSON.parse(JSON.stringify(x)));assert.equal(a.scrap,x.scrap);assert.equal(a.animals[0].hunger,22);
  a.tutorialStep=6;const cam=G.buildFacility(a,'cctv');assert.notEqual(cam,a);assert(cam.facilities.cctv);assert.equal(cam.tutorialStep,7);assert.equal(a.facilities.cctv,false);assert.equal(cam.scrap,a.scrap-6);
  assert.strictEqual(G.buildFacility(cam,'cctv'),cam);
- const lab=G.buildFacility(cam,'synthesis');assert(lab.facilities.synthesis);assert.equal(lab.tutorialStep,8);assert.equal(lab.scrap,a.scrap-15);assert(lab.parts>=0);
+ assert.strictEqual(G.buildFacility(cam,'synthesis'),cam,'두 종 구조 전에는 생체 합성실 복구 불가');cam.animals.push(S.makeAnimal('fox',2));const lab=G.buildFacility(cam,'synthesis');assert(lab.facilities.synthesis);assert.equal(lab.tutorialStep,8);assert.equal(lab.scrap,a.scrap-15);assert(lab.parts>=0);
  assert.strictEqual(G.buildFacility(lab,'synthesis'),lab);
- console.log('PASS first rabbit grants salvage; CCTV then synthesis require real resources, progress tutorial exactly once');
+ console.log('PASS first rabbit grants salvage; synthesis requires two species and real resources, progress tutorial exactly once');
 }
 {
  const x=stage();x.tutorialStep=6;

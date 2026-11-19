@@ -53,7 +53,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat}:{state:V10;onSupport
   {selectedMember&&selected&&<div className="v45-roster-detail">
    <header><b>{CREW_PROFILES[selected].title} <small>· {CREW_PROFILES[selected].post}</small></b><button type="button" onClick={()=>setSelected(null)} aria-label="직원 상세 닫기">×</button></header>
    <div className="v45-roster-stats"><span>HP <b>{selectedMember.hp}/100</b></span><span>정신 <b>{selectedMember.mind}/100</b></span></div>
-   <p>{CREW_PROFILES[selected].benefit}</p><small className="v45-personality">{CREW_PROFILES[selected].personality}</small>
+   <p>{CREW_PROFILES[selected].benefit}</p><small className="v45-personality">{CREW_PROFILES[selected].personality}</small><div className="v51-staff-guide">지원 시 정신력 -5 · 영입 후 5일 동안 자연 감소 없음 · 이후 몇 일 간격으로 천천히 감소. 감염 70% 이상이면 추가 감소하며, 10일 회의에서 선택받지 못하면 -10입니다.</div>
    {(selectedMember.hp<=25||selectedMember.mind<=28)&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 신경 불안정 · 야간 공격 위험</div>}
    <div className="v45-roster-actions"><button onClick={()=>onTalk(selected)}><BookOpen size={13}/> 대화</button><button className="support" disabled={!!used||selectedMember.hp<=12||selectedMember.mind<=0||!!state.crew?.pendingTermination} onClick={()=>onSupport(selected)}>오늘 지원</button></div>
    <div className="v45-care-actions"><button disabled={selectedMember.mind<=0||state.ap<1||state.medicine<1} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={13}/> 치료 (AP1·약1)</button><button disabled={selectedMember.mind<=0||state.ap<1||state.knowledge<5} onClick={()=>onTreat(selected,'counsel')}><Brain size={13}/> 안정화 (AP1·지식5)</button></div>
