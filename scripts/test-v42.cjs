@@ -10,9 +10,11 @@ const {spendCareAnalysis,CARE_ANALYSIS_COST}=require('../src/lib/knowledge.ts');
 const {telemetryChanges}=require('../src/lib/telemetry.ts');
 const source={game:fs.readFileSync('src/components/Game.tsx','utf8'),field:fs.readFileSync('src/components/FieldMission.tsx','utf8'),archive:fs.readFileSync('src/components/SpecimenArchive.tsx','utf8'),css:fs.readFileSync('src/app/globals.css','utf8')};
 for(const [name,txt] of Object.entries(source))if(name!=='css'){const file=ts.createSourceFile(name+'.tsx',txt,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);assert.equal(file.parseDiagnostics.length,0,name+' syntax should parse')}
-for(const value of [0,30,44,50,59,60,65]){const a=makeAnimal('rabbit',1);a.stress=value;if(value<60)assert(!isMutant(a),'stress alone below 60 must not mutate');else assert(isMutant(a),'stress 60 must mutate')}
-for(const [stress,contamination,memory] of [[48,8,0],[48,0,10],[35,23,0],[30,0,26]]){const a=makeAnimal('fox',1);a.stress=stress;a.contamination=contamination;a.memory=memory;assert(isMutant(a),`must mutate at stress ${stress}, contam ${contamination}, memory ${memory}`);assert(isAwakeningReady(a),'newly mutated animal should speak immediately');a.awakened=true;assert(!isAwakeningReady(a),'replay only once')}
-assert(mutationRisk({...makeAnimal('fox',1),stress:60}).danger);console.log('PASS low-risk hybrid thresholds and one-time immediate mutant speech');
+// v52 rebalances v42's deliberately low early-access mutant thresholds.
+for(const value of [0,30,44,50,59,60,65,75,87,88]){const a=makeAnimal('rabbit',1);a.stress=value;if(value<88)assert(!isMutant(a),'stress alone below 88 must not mutate');else assert(isMutant(a),'stress 88 must mutate')}
+for(const [stress,contamination,memory] of [[74,42,0],[74,0,65],[65,55,60]]){const a=makeAnimal('fox',1);a.stress=stress;a.contamination=contamination;a.memory=memory;assert(isMutant(a),`must mutate at stress ${stress}, contam ${contamination}, memory ${memory}`);assert(isAwakeningReady(a),'newly mutated animal should speak immediately');a.awakened=true;assert(!isAwakeningReady(a),'replay only once')}
+const tutorial=makeAnimal('rabbit',1);tutorial.tutorialProtected=true;tutorial.stress=100;assert(!isMutant(tutorial),'guided rabbit must be mutation proof');
+assert(mutationRisk({...makeAnimal('fox',1),stress:88}).danger);console.log('PASS moderate mutation thresholds and one-time immediate mutant speech');
 const k=game.beginGame('artist','medical');k.knowledge=12;const snap=k.knowledge;const spent=spendCareAnalysis(k);assert(spent!==k);assert.equal(k.knowledge,snap);assert.equal(spent.knowledge,snap-CARE_ANALYSIS_COST);
 // For insufficient knowledge, no action is taken; all tests use an identical object instance.
 const empty={...k,knowledge:5};assert.strictEqual(spendCareAnalysis(empty),empty);console.log('PASS knowledge costs six actual points and cannot go negative');

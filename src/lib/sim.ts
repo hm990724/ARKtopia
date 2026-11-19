@@ -1,5 +1,5 @@
 export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera';
-export type AnimalState={specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
+export type AnimalState={specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;tutorialProtected?:boolean;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
 export type Start='medical'|'greenhouse'|'station'|'observatory'|'generator'|'depot';
 export type EventRecord={day:number;title:string;text:string;kind:'info'|'good'|'bad'|'mystery'};
@@ -57,17 +57,21 @@ export function copy(s:State):State{return structuredClone(s)}
 export function spend(s:State,ap:number){if(s.phase!=='day'||s.ap<ap)return false;s.ap-=ap;return true}
 export function recalc(s:State){s.hp=cap(s.hp);s.stamina=cap(s.stamina);s.mind=cap(s.mind);s.radiation=cap(s.radiation);s.eve=cap(s.eve);s.power=cap(s.power);s.trust=cap(s.trust);if(s.hp<=0){s.phase='ending';s.ending='제000번 우리 — 관리자가 돌아오지 않았다. EVE는 끝내 그를 하나의 보존 대상으로 등록했다.'}else if(s.eve<=0){s.phase='ending';s.ending='마지막 통신 — EVE 코어 정지. 모든 보존 지시가 중단되었고, 담당자는 더 이상 외부와 연결할 수 없었다.'}}
 /** Distinct readout lets the UI warn players well before the irreversible threshold. */
+/** Moderate difficulty: single mistakes trigger warnings, not immediate permanent mutation. */
+export const MUTATION_LIMITS={stress:88,mixedStress:74,contamination:42,memory:65,severeStress:65,severeContamination:55} as const;
 export function mutationRisk(a:AnimalState):{score:number;danger:boolean;description:string}{
- const score=Math.min(100,Math.round(a.stress*.68+a.contamination*.55+a.memory*.48));
- return {score,danger:isMutant(a),description:isMutant(a)?'신경 충돌 발생 · 변이 영구 확정':score>=32?'불안정 · 돌봄 대응 실패 시 급격히 악화':'잠복 상태 · 스트레스·오염·공명 증가에 유의'};
+ if(a.tutorialProtected)return {score:0,danger:false,description:'EVE 보호 실습 중 · 첫 토끼는 본부 인계까지 변이하지 않습니다.'};
+ const score=Math.min(100,Math.round(a.stress*.7+a.contamination*.35+a.memory*.2));
+ const danger=isMutant(a);
+ return {score,danger,description:danger?'신경 충돌 발생 · 변이 영구 확정':score>=55?'주의 · 변이 경보. 돌봄과 제독으로 회복할 여유가 있습니다.':'안정권 · 실수 몇 번으로 변이하지 않습니다.'};
 }
-/** A mutation is a permanent neural state; suppressant only lowers its short-term risk. */
+/** First rescue is protected until the tutorial transfer. All subsequent creatures follow moderate thresholds. */
 export function isMutant(a:AnimalState):boolean {
+ if(a.tutorialProtected)return false;
  return !!a.mutated || !!a.awakened || a.id==='mutant' || a.id==='chimera'
-   || a.stress>=60
-   || (a.stress>=48 && (a.contamination>=8 || a.memory>=10))
-   || (a.stress>=35 && a.contamination>=23)
-   || (a.stress>=30 && a.memory>=26);
+   || a.stress>=MUTATION_LIMITS.stress
+   || (a.stress>=MUTATION_LIMITS.mixedStress && (a.contamination>=MUTATION_LIMITS.contamination || a.memory>=MUTATION_LIMITS.memory))
+   || (a.stress>=MUTATION_LIMITS.severeStress && a.contamination>=MUTATION_LIMITS.severeContamination && a.memory>=60);
 }
 export function recordMutation(s:State,a:AnimalState):boolean {
  if(!a.alive||a.mutated||!isMutant(a))return false;
