@@ -520,12 +520,15 @@ function protocolAnswer(chosen:number){if(!s||!memoryTarget)return;const target=
  if(protocolStep<2){setProtocolStep(x=>x+1);return}
  const firstRabbit=s.tutorialStep===5&&memoryTarget==='rabbit'&&!s.headquarters?.firstReport;
  const quality=firstRabbit?100:mistakes===0?95:mistakes===1?75:mistakes===2?40:10;
- const n=extract(s,memoryTarget as AnimalId,quality,firstRabbit?'gentle':extractMode) as V10;
+ const n=extract(s,memoryTarget as AnimalId,quality,firstRabbit?'gentle':extractMode);
  if(n===s){setProtocolFeedback('동기화 불가: 동물의 안정도·유대·관찰 기록 또는 행동력·전력을 점검하세요.');return}
  // A one-time guided lesson: the novice may choose incorrectly, EVE corrects the archive, and the rabbit reaches 100%.
- if(firstRabbit){const rescuedRabbit=n.animals.find(a=>a.id==='rabbit'&&a.alive);if(rescuedRabbit)rescuedRabbit.memory=100;n.lastOutcome='EVE 초기 실습 교정 완료. 첫 토끼 공명 100%. 분석실에서 기록을 검토한 뒤 본부 인계를 결정하십시오.';}
+ if(firstRabbit){const rescuedRabbit=n.animals.find(a=>a.id==='rabbit'&&a.alive);if(rescuedRabbit)rescuedRabbit.memory=100;}
  const completed=registerFullResonance(s,n as V10,memoryTarget as AnimalId);
- if(firstRabbit)completed.tutorialArchiveReviewPending=true;
+ if(firstRabbit){
+  completed.tutorialArchiveReviewPending=true;
+  completed.lastOutcome='EVE 초기 실습 교정 완료. 첫 토끼 공명 100%. 분석실에서 기록을 검토한 뒤 본부 인계를 결정하십시오.';
+ }
  if(extractMode==='force'&&!firstRabbit){crewDissectionShock(completed);applyCrewOpinion(completed,'disposal','dispose');}
  recordProtocolAttempt(completed,memoryTarget as AnimalId,{day:completed.day,quality,mode:firstRabbit?'gentle':extractMode,result:firstRabbit?`튜토리얼: ${mistakes}개 오판을 EVE가 교정 · 공명 100%`:completed.lastOutcome||'판정 완료',steps:allAnswers});
  recordSpecimen(completed,memoryTarget as AnimalId,'행동 강령 공명 연구',firstRabbit?`첫 실습: ${3-mistakes}/3회 직접 일치 · EVE 교정 ${mistakes}회. 공명 100% 달성. 분석실에 모든 원본 선택을 남겼습니다.`:`적절한 판단 ${3-mistakes}/3회 · 공명 정확도 ${quality}점. 단계별 선택과 결과는 분석실의 동기화 이력에 영구 보관했습니다.`,'research');
