@@ -520,7 +520,7 @@ function protocolAnswer(chosen:number){if(!s||!memoryTarget)return;const target=
  if(protocolStep<2){setProtocolStep(x=>x+1);return}
  const firstRabbit=s.tutorialStep===5&&memoryTarget==='rabbit'&&!s.headquarters?.firstReport;
  const quality=firstRabbit?100:mistakes===0?95:mistakes===1?75:mistakes===2?40:10;
- const n=extract(s,memoryTarget as AnimalId,quality,firstRabbit?'gentle':extractMode);
+ const n=extract(s,memoryTarget as AnimalId,quality,firstRabbit?'gentle':extractMode) as V10;
  if(n===s){setProtocolFeedback('동기화 불가: 동물의 안정도·유대·관찰 기록 또는 행동력·전력을 점검하세요.');return}
  // A one-time guided lesson: the novice may choose incorrectly, EVE corrects the archive, and the rabbit reaches 100%.
  if(firstRabbit){const rescuedRabbit=n.animals.find(a=>a.id==='rabbit'&&a.alive);if(rescuedRabbit)rescuedRabbit.memory=100;n.lastOutcome='EVE 초기 실습 교정 완료. 첫 토끼 공명 100%. 분석실에서 기록을 검토한 뒤 본부 인계를 결정하십시오.';}
