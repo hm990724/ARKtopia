@@ -2486,7 +2486,7 @@ export default function Game() {
       animals: "첫 동물 구조 성공 후 해금",
       research: "동물 구조 후 행동 관찰 1회로 해금",
       synthesis:
-        capturedSpeciesCount(s) < 2
+        !s || capturedSpeciesCount(s) < 2
           ? "서로 다른 일반 개체 2종을 확보한 뒤 생체 합성실이 열립니다."
           : "보급실에서 고철 9개 + 부품 2개로 생체 합성실 복구",
       cctv: "보급실에서 고철 6개 + 부품 1개로 CCTV 감시망 복구",
