@@ -747,3 +747,23 @@ button,small,strong,b,span,p{word-break:keep-all;overflow-wrap:break-word}
 .v33-hidden-map .v34-cleared.v33-placed-barrier{background:linear-gradient(140deg,#722e3bcc,#542535cf)!important}
 @media(max-width:740px){.v34-empty-stamp{font-size:7px;padding:2px 0}.v34-tactics-note{padding:8px 10px}.v34-tactics-note span{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.v34-fresh-clearing .v33-leaf i{animation:none!important}}
+
+/* v35: strict fog-of-war. Unknown terrain / footprints / rustle never leak
+ * through DOM classes, styles, accessibility labels or tooltips. */
+.v33-hidden-map .v33-land.v35-unknown-land{background:linear-gradient(135deg,#1a2b25,#15211f 60%,#111c21)!important;border-color:#34463b65;box-shadow:inset 0 0 20px #0715109c;}
+.v33-hidden-map .v35-unknown-land .v33-leaf{opacity:1;filter:brightness(.54) saturate(.8);transform:scale(1.2)}
+.v33-hidden-map .v35-unknown-land .v33-leaf i{width:9%;height:30%;background:#4a7359;box-shadow:4px -3px #213e35,-4px 1px #345847}
+.v33-hidden-map .v35-unknown-land:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(155deg,#0b191b28 0 8px,transparent 8px 18px);pointer-events:none;z-index:2}
+.v33-hidden-map .v35-observed-foot .v33-paw-pixel{position:relative;z-index:5;color:#f0d6a5;filter:drop-shadow(0 1px 5px #e3b78699);animation:v35-reveal-evidence .35s steps(5,end) both}
+.v33-hidden-map .v35-observed-rustle .v33-leaf{opacity:.5}
+.v35-rustle-signal{position:absolute;inset:24%;z-index:5;display:flex;align-items:center;justify-content:center;gap:3px;pointer-events:none}
+.v35-rustle-signal i{height:50%;width:3px;background:#c1dea0;box-shadow:0 0 4px #95ca83;transform:rotate(-14deg)}
+.v35-rustle-signal i:nth-child(2){height:80%;transform:rotate(14deg)}
+.v35-rustle-signal i:nth-child(3){height:34%;transform:rotate(-4deg)}
+.v35-inspected-rustle{animation:v35-reveal-evidence .38s steps(4,end) both}
+.v35-evidence-age{position:absolute;left:3px;bottom:2px;z-index:7;color:#ffdc9d;background:#19271fdd;font:700 8px/1.2 monospace;padding:2px 3px;pointer-events:none}
+.v35-aged-evidence{color:#c1b9a0a6;background:#24251ed0}
+.v35-observed-foot:has(.v35-aged-evidence) .v33-paw-pixel,.v35-observed-rustle:has(.v35-aged-evidence) .v35-rustle-signal{opacity:.42;filter:grayscale(.5)}
+.v35-empty-mark{pointer-events:none;color:#bba88d;z-index:5;font-size:17px;font-weight:800}
+@keyframes v35-reveal-evidence{from{opacity:0;transform:scale(1.5)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.v35-inspected-rustle,.v33-hidden-map .v35-observed-foot .v33-paw-pixel{animation:none!important}}

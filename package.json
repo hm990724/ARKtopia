@@ -1,6 +1,6 @@
 {
-  "name": "echo-ward-v34",
-  "version": "34.0.0",
+  "name": "echo-ward-v35",
+  "version": "35.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,7 +13,8 @@
     "test:v32": "node scripts/test-v32.cjs && node scripts/test-v32-mutation.cjs",
     "test:v32:mutation": "node scripts/test-v32-mutation.cjs",
     "test:v33": "node scripts/test-v33.cjs",
-    "test:v34": "node scripts/test-v34.cjs"
+    "test:v34": "node scripts/test-v34.cjs",
+    "test:v35": "node scripts/test-v35.cjs"
   },
   "dependencies": {
     "next": "^15.5.0",

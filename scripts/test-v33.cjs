@@ -67,7 +67,7 @@ function testGameIntegration(){
 }
 function testCompatibility(){
  const old=G.beginGame('artist','medical');old.capture={species:'rabbit',position:22,turn:0,devices:[],fear:23,trust:28,maxTurns:11,lastEvent:'old',tutorial:false,outcome:'playing',path:[22],gate:5,prediction:null,confirmed:0,lastConfirmed:null,sealArmed:false};
- const loaded=G.loadGame(old);assert.equal(loaded.capture.hunt.version,34);
+ const loaded=G.loadGame(old);assert.equal(loaded.capture.hunt.version,35);
  assert.equal(typeof JSON.parse(JSON.stringify(loaded.capture.hunt)).position,'number');
  let sec=G.beginGame('artist','medical');sec.day=3;sec.power=60;sec.ap=4;sec.animals.push(Sim.makeAnimal('fox',1));sec.animals[0].stress=100;
  for(let i=0;i<5;i++)S.nightlySecurity(sec,0);

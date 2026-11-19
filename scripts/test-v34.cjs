@@ -10,7 +10,7 @@ function aDifferentCell(state){return (state.position+1)%64;}
 function testsSearchAndPersistence(){
  for(const species of Object.keys(H.HUNT_TRAITS)){
   let hunt=H.newHunt(species,13719+species.length*47);
-  assert.equal(hunt.version,34);
+  assert.equal(hunt.version,35);
   assert.equal(H.huntSearchedCount(hunt),0);
   const miss=aDifferentCell(hunt),beforePos=hunt.position;
   let r=R(hunt,{type:'search',cell:miss});
@@ -71,7 +71,7 @@ function testsOldSaveUpgrade(){
  const old=JSON.parse(JSON.stringify({...capture,hunt:{...hunt,version:33}}));
  delete old.hunt.searchedAt;delete old.hunt.lastSearch;
  const loaded=Tactical.normalizeCapture(old);
- assert.equal(loaded.hunt.version,34);assert.equal(loaded.hunt.actions,hunt.actions);
+ assert.equal(loaded.hunt.version,35);assert.equal(loaded.hunt.actions,hunt.actions);
  assert.equal(loaded.hunt.position,hunt.position);assert.deepEqual(loaded.hunt.footprints,hunt.footprints);
  assert.equal(loaded.hunt.revealed[1],true);assert.deepEqual(loaded.hunt.searchedAt,{});
  assert.equal(loaded.hunt.lastSearch,null);
@@ -83,7 +83,7 @@ function testsOldSaveUpgrade(){
  game=G.performVeiledHunt(game,{type:'search',cell:miss});
  const restored=G.loadGame(JSON.parse(JSON.stringify(game)));
  assert(restored.capture.hunt.searchedAt[String(miss)]>=1);
- assert.equal(restored.capture.hunt.version,34);
+ assert.equal(restored.capture.hunt.version,35);
  console.log('PASS v33 live hunt migration and new search records across save/load with no creature reset');
 }
 for(const test of [testsSearchAndPersistence,testsMovementNotBlocked,testsSpeciesDifferences,testsOldSaveUpgrade])test();

@@ -4,13 +4,13 @@ import type {V10} from '@/lib/game-v10';
 import {regions} from '@/lib/game-v10';
 import type {AnimalId} from '@/lib/sim';
 import {adjacentField,fieldVisible,type Pace} from '@/lib/tactical-field';
-import {HUNT_TRAITS,HUNT_SIZE,huntSearchAge,huntSearchedCount,type HuntMode,type HuntTool} from '@/lib/hidden-hunt';
+import {HUNT_TRAITS,HUNT_SIZE,huntSearchAge,huntSearchedCount,observedEvidence,observationAge,type HuntMode,type HuntTool} from '@/lib/hidden-hunt';
 import {ArrowLeft,Radio,HeartPulse,Footprints,Clock3,Compass,ShieldAlert,ArrowUpRight,MapPin,Search,BookOpen,MoveRight,ScanEye} from 'lucide-react';
 
 type Props={state:V10;animalSrc:(id:AnimalId)=>string;onMove:(index:number,pace:Pace)=>void;onRetreat:()=>void;onHunt:(action:{type:HuntMode;cell?:number;clue?:number})=>void;onMedkit:()=>void;feedback:string};
 const clamp=(n:number)=>Math.max(0,Math.min(100,n));
 const tools:{kind:Exclude<HuntMode,'wait'|'reveal'>;name:string;cost:string;effect:string;tone:string}[]=[
- {kind:'search',name:'수풀 수색',cost:'행동 1',effect:'수풀을 열어 실제 위치를 확인합니다. 빈칸도 계속 표시되며 동물의 다음 이동은 막지 않습니다.',tone:'search'},
+ {kind:'search',name:'수풀 수색',cost:'행동 1',effect:'선택한 딱 한 칸만 엽니다. 조사 시점의 발자국·풀 흔들림·빈칸을 확인합니다. 동물은 조사 직후 이동합니다.',tone:'search'},
  {kind:'bait',name:'먹이 배치',cost:'행동 1',effect:'호응하는 개체가 한 칸씩 접근 · 반복 시 학습',tone:'bait'},
  {kind:'sound',name:'잔향 소리',cost:'행동 1',effect:'소리 선호 개체 접근, 소음 민감 개체 도주',tone:'sound'},
  {kind:'light',name:'유도 조명',cost:'행동 1',effect:'빛을 좇거나 피하는 반응 · 타일 광원 점등',tone:'light'},
@@ -36,7 +36,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
  function tap(i:number){if(!hunt)return;setNotice('');onHunt({type:mode,cell:i});}
  return <section className={'v33-expedition '+(hunt?'v33-is-hunt':'v33-is-field')} aria-label="잔향 추적 — 전술형 탐사 및 은신 포획">
   <header className="v33-banner">
-   <div className="v33-banner-copy"><span className="v33-eyebrow">ARK // EXPEDITION RECORD : {String(state.day).padStart(3,'0')} <i>● FIELD SIGNAL</i></span><h2>{hunt?'발자국이 멈춘 곳':'수풀이 잠든 구역'}</h2><p>{hunt?'확인한 풀숲은 계속 열려 있지만 안전한 칸은 아닙니다. 지난 턴 발자국으로 다음 이동 위치를 예측하세요.':'직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 외부 추적망이 가까워집니다.'}</p></div>
+   <div className="v33-banner-copy"><span className="v33-eyebrow">ARK // EXPEDITION RECORD : {String(state.day).padStart(3,'0')} <i>● FIELD SIGNAL</i></span><h2>{hunt?'보이지 않는 발자취':'수풀이 잠든 구역'}</h2><p>{hunt?'아무 흔적도 자동으로 보이지 않습니다. 직접 수색한 칸에서만 당시의 발자국과 풀 흔들림을 확인하고, 다음 위치를 추리하세요.':'직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 외부 추적망이 가까워집니다.'}</p></div>
    <button className="v33-retreat" type="button" onClick={onRetreat}><ArrowLeft size={15}/>{hunt?'추적 중단':'현장 철수'}</button>
   </header>
   <div className="v33-hud" aria-label="탐사 생존 상태">
@@ -52,25 +52,32 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     {hunt? <>
      <div className="v33-map-frame">
       <div className="v33-map-overline"><span><i/> SECTOR {run.region.toUpperCase()} · THICKET SCAN</span><b>GRID {HUNT_SIZE} × {HUNT_SIZE} · 수색 {huntSearchedCount(hunt)}/64</b></div>
-      <div className={'v33-hidden-map v33-biome-'+run.region} style={{backgroundImage:`linear-gradient(135deg,#101b16dc,#10101ed2),url(/assets/backgrounds/${region.art}.png)`}} role="group" aria-label="발자국 추적 격자. 동물은 보이지 않습니다." data-tour="run-choice">
+      <div className={'v33-hidden-map v33-biome-'+run.region} style={{backgroundImage:`linear-gradient(135deg,#101b16dc,#10101ed2),url(/assets/backgrounds/${region.art}.png)`}} role="group" aria-label="전부 가려진 추적 격자. 조사한 칸에서만 과거 흔적을 확인합니다." data-tour="run-choice">
        {hunt.terrain.map((terrain,i)=>{
-        const obj=hunt.objects.find(o=>o.cell===i),foot=hunt.footprints.includes(i),shake=hunt.shaking.includes(i);
-        const age=huntSearchAge(hunt,i),opened=age>=0,recent=age>=0&&age<=2,wasLast=hunt.lastSearch?.cell===i&&hunt.turn-(hunt.lastSearch?.turn??0)<=1;
-        return <button className={'v33-land v33-land-'+terrain+(foot?' v33-foot':'')+(shake?' v33-shake':'')+(obj?' v33-placed v33-placed-'+obj.kind:'')+(opened?' v34-cleared':'')+(recent?' v34-fresh-clearing':'')+(wasLast?' v34-last-inspected':'')+(mode==='search'?' v33-targeting':'')} type="button" key={i} onClick={()=>tap(i)} disabled={hunt.outcome!=='playing'} aria-label={`${Math.floor(i/8)+1}행 ${i%8+1}열${foot?' · 지난 턴 발자국':''}${shake?' · 수풀이 흔들리는 칸':''}${opened?' · 수색 완료, 동물 재진입 가능':''}${recent?' · 수색 소음 경계 중':''}${obj?' · '+obj.kind+' 장치':''}`} title={`${String.fromCharCode(65+i%8)}${Math.floor(i/8)+1} · ${foot?'지난 턴 발자국':shake?'수풀 흔들림':opened?'수색했던 풀숲 (재진입 가능)':'미확인 수풀'}`}>
+        const obj=hunt.objects.find(o=>o.cell===i);
+        const age=huntSearchAge(hunt,i),opened=age>=0,recent=age>=0&&age<=2;
+        const evidence=observedEvidence(hunt,i),evidenceAge=observationAge(hunt,i);
+        const foot=evidence?.kind==='footprint',shake=evidence?.kind==='rustle';
+        const newlyInspected=!!evidence&&evidenceAge<=1;
+        const wasLast=hunt.lastSearch?.cell===i&&hunt.turn-(hunt.lastSearch?.turn??0)<=1;
+        const label=!opened?'미수색 풀숲':foot?'조사 당시 이전 위치 발자국':shake?'조사 당시 발자국 주변의 풀 흔들림':evidence?.kind==='caught'?'발견 완료':'조사 당시 흔적 없음';
+        return <button className={'v33-land '+(opened?'v33-land-'+terrain:'v35-unknown-land')+(foot?' v35-observed-foot':shake?' v35-observed-rustle':'')+(obj?' v33-placed v33-placed-'+obj.kind:'')+(opened?' v34-cleared':'')+(recent?' v34-fresh-clearing':'')+(wasLast?' v34-last-inspected':'')+(mode==='search'?' v33-targeting':'')} type="button" key={i} onClick={()=>tap(i)} disabled={hunt.outcome!=='playing'} aria-label={`${Math.floor(i/8)+1}행 ${i%8+1}열 · ${label}${obj?' · '+obj.kind+' 설치됨':''}`} title={`${String.fromCharCode(65+i%8)}${Math.floor(i/8)+1} · ${label}${evidence?` (T${evidence.turn} 기록 · 현재 위치 아님)`:''}`}>
           {opened&&<span className="v34-open-ground" aria-hidden="true"/>}
           <PixelFoliage variant={(i*7+hunt.seed)%5}/>
           {opened&&<span className="v34-clear-mark" aria-hidden="true">{recent?'◈':'·'}</span>}
-          {shake&&<span className="v33-rustle" aria-hidden="true"/>}
+          {shake&&newlyInspected&&<span className="v33-rustle v35-inspected-rustle" aria-hidden="true"/>}
           {foot&&<PawPixel/>}
+          {shake&&<span className="v35-rustle-signal" aria-hidden="true"><i/><i/><i/></span>}
+          {opened&&!foot&&!shake&&<span className="v35-empty-mark" aria-hidden="true">{newlyInspected?'–':''}</span>}
           {obj&&<span className={'v33-world-effect v33-effect-'+obj.kind} aria-hidden="true"><i/><i/><i/></span>}
-          {wasLast&&hunt.lastSearch&&!hunt.lastSearch.found&&<span className="v34-empty-stamp" aria-hidden="true">당시 빈칸</span>}
+          {evidence&&<span className={'v35-evidence-age'+(evidenceAge>2?' v35-aged-evidence':'')} aria-hidden="true">T{evidence.turn}</span>}
           <span className="v33-grid-cross" aria-hidden="true"/>
          </button>;
        })}
       </div>
-      <div className="v33-map-bottom"><span><PawPixel/> 발자국 = 직전 위치 · 수색 기록은 계속 유지</span><span>최근 수색 2턴 경계 · 열린 칸도 재진입</span></div>
+      <div className="v33-map-bottom"><span><PawPixel/> 조사한 칸의 기록만 표시 · 발자국 = 이전 위치</span><span>흔들림 = 발자국 주변 1칸 · 동물은 계속 이동</span></div>
      </div>
-     <div className="v33-stage-footnote"><span className="v33-scanner-dot"/> {hunt.lastSearch&&!hunt.lastSearch.found?`최근 확인: ${String.fromCharCode(65+hunt.lastSearch.cell%8)}${Math.floor(hunt.lastSearch.cell/8)+1} 비어 있음 · 다음 위치 재예측`:hunt.species==='fox'?'이상 신호: 진짜·가짜 발자국이 함께 감지되었습니다.':'생체 열영상 차단 · 현재 위치 비공개'} <span>TURN {String(hunt.turn).padStart(2,'0')}</span></div>
+     <div className="v33-stage-footnote"><span className="v33-scanner-dot"/> {hunt.lastSearch?`최근 수색: ${String.fromCharCode(65+hunt.lastSearch.cell%8)}${Math.floor(hunt.lastSearch.cell/8)+1} · 관측 기록은 시간이 지나면 낡습니다.`:'미수색 구역 · 모든 발자국과 풀 흔들림 비공개'} <span>TURN {String(hunt.turn).padStart(2,'0')}</span></div>
     </>:<>
      <div className="v33-map-frame"><div className="v33-map-overline"><span><i/> FIELD ROUTE : {region.name}</span><b>GRID 7 × 5</b></div>
       <div className={'v33-route-map v33-biome-'+run.region} style={{backgroundImage:`linear-gradient(125deg,#121a16db,#0a091aeb),url(/assets/backgrounds/${region.art}.png)`}} data-tour="run-choice" role="group" aria-label="현장 이동 지도">
@@ -95,8 +102,8 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
      <div className="v33-command-detail"><strong>{activeMode.name}</strong><p>{activeMode.effect}</p><span>위 지도에서 대상 칸을 직접 선택</span></div>
      <button type="button" className="v33-wait" onClick={()=>{setNotice('');onHunt({type:'wait'})}}><Clock3 size={16}/> 숨죽여 관찰 · 1턴 진행 <MoveRight size={15}/></button>
      {danger&&<div className="v33-danger-warning"><ShieldAlert size={18}/><p><b>포식자 역추적 위험</b>행동 기회를 모두 소진하면 {species.risk}. 공격 전 경보를 확인하세요.</p></div>}
-     <div className="v34-tactics-note"><b>수색 흔적 {huntSearchedCount(hunt)}칸 확보</b><span>밝게 열린 칸은 조사한 장소입니다. 동물이 다시 숨을 수 있고, 최근 2턴의 수색 소음에만 경계 반응을 보입니다.</span></div>
-     {hunt.tutorial&&<div className="v33-tutorial-note">EVE · 첫 토끼는 튜토리얼 개체입니다. 발자국과 8칸의 흔들림을 관찰해 보세요. 초회 구조는 확정 보정됩니다.</div>}
+     <div className="v34-tactics-note"><b>수색 흔적 {huntSearchedCount(hunt)}칸 확보</b><span>열었던 칸은 다시 가려지지 않습니다. 다만 발자국과 풀 흔들림은 조사 당시의 기록이므로 현재도 그곳에 있다는 보장은 없습니다. 최근 2턴의 수색 소음만 개체 행동에 영향을 줍니다.</span></div>
+     {hunt.tutorial&&<div className="v33-tutorial-note">EVE · 첫 토끼는 튜토리얼 개체입니다. 수풀을 열어 전 턴의 발자국과 그 주변 한 칸의 흔들림을 조사해 보세요. 초회 구조는 확정 보정됩니다.</div>}
      <div className="v33-history"><span>최근 관측 기록</span>{hunt.log.slice(0,2).map((h,i)=><p key={`${h.turn}-${i}`}><b>T{h.turn}</b> {h.message}</p>)}</div>
     </>:<>
      <div className="v33-intro-panel"><span className="v33-eyebrow">SURVEY / OPERATING MANUAL</span><h3>발자국을 따라 들어가라</h3><p>발자국·연구 기록·보급 상자를 발견해 조사합니다. 생체 신호가 나타나면 숨겨진 동물을 찾는 추적 게임으로 전환됩니다.</p><div className="v33-flow-lines"><span><Footprints size={17}/> 지난 흔적 조사</span><span><ArrowUpRight size={16}/> 위험 구역 통과</span><span><Search size={16}/> 생체 신호 탐지</span></div></div>

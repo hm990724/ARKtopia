@@ -1,4 +1,4 @@
-/** ECHO WARD 34 — persistent search trails and reactive animal tracking.
+/** ECHO WARD 35 — fog-of-war observations and stale evidence tracking.
  * Invariant: UI never receives a 'current position' derived hint. Only last TURN's
  * departure footprint and its eight surrounding tiles are presented to the player.
  * Pure state transitions, deterministic seeded noise, serializable saves.
@@ -11,14 +11,30 @@ export type HuntMode='search'|HuntTool|'wait'|'reveal';
 export type Terrain='thicket'|'path'|'mud'|'water'|'ruin'|'root';
 export type HuntObject={cell:number;kind:HuntTool;life:number};
 export type HuntLog={turn:number;message:string;kind:'hint'|'warning'|'event'|'error'};
+/** Evidence is a snapshot taken BEFORE the animal moves; it never updates passively.
+ * Unknown squares have no observation record, even if the hidden engine knows
+ * their footprints and rustle. Historical observations remain stale until rescanned.
+ */
+export type HuntEvidence='footprint'|'rustle'|'empty'|'caught';
+export type HuntObservation={kind:HuntEvidence;turn:number};
+export function observedEvidence(state:HuntState,cell:number):HuntObservation|null{
+ if(!Number.isInteger(cell)||cell<0||cell>=HUNT_CELLS)return null;
+ return state.observations?.[String(cell)]??null;
+}
+export function observationAge(state:HuntState,cell:number):number{
+ const evidence=observedEvidence(state,cell);
+ return evidence?Math.max(0,state.turn-evidence.turn):-1;
+}
+
 export type HuntState={
- version:34;species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
+ version:35;species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
  // Internal, never render on the board: the creature always moves after an action.
  position:number;previous:number;footprints:number[];shaking:number[];
  terrain:Terrain[];objects:HuntObject[];revealed:boolean[];
  // Opened clearing remains marked forever. Only searches within the last two
  // turns contribute fear/avoidance; clearings are NOT solid obstacles.
  searchedAt:Record<string,number>;
+ observations:Record<string,HuntObservation>;
  lastSearch:{cell:number;found:boolean;turn:number}|null;
  habits:Partial<Record<HuntTool,number>>;fear:number;predator:number;
  outcome:'playing'|'caught'|'escaped';resultText:string;lastEvent:string;log:HuntLog[];
@@ -80,7 +96,18 @@ export function normalizeHunt(raw:HuntState):HuntState {
  const previous=raw.lastSearch;
  const lastSearch=previous&&Number.isInteger(previous.cell)&&previous.cell>=0&&previous.cell<64&&typeof previous.found==='boolean'
   ?{cell:previous.cell,found:previous.found,turn:Math.min(raw.turn,Math.max(0,previous.turn??raw.turn))}:null;
- return {...raw,version:34,searchedAt,lastSearch};
+ const observations:Record<string,HuntObservation>={};
+ for(const [key,val] of Object.entries(raw.observations??{})){
+  const cell=Number(key);
+  if(!Number.isInteger(cell)||cell<0||cell>=HUNT_CELLS||!val||typeof val!=='object')continue;
+  const evidence=val as HuntObservation;
+  if(!['footprint','rustle','empty','caught'].includes(evidence.kind)||!Number.isFinite(evidence.turn))continue;
+  if(!Object.hasOwn(searchedAt,key))continue; // a clue must have been personally inspected
+  observations[key]={kind:evidence.kind,turn:Math.max(0,Math.min(raw.turn,evidence.turn))};
+ }
+ // Migrating from v34 intentionally does not reconstruct unseen footprints:
+ // the old version exposed them globally, but doing so here would leak positions.
+ return {...raw,version:35,searchedAt,observations,lastSearch};
 }
 function relocateOnCreate(seed:number,species:AnimalId):{old:number;now:number}{const old=8+Math.floor(randomAt(seed,0,1)*48);const options=rangeChoices(old,HUNT_TRAITS[species].speed);return {old,now:options[Math.floor(randomAt(seed,0,2)*options.length)]??old}}
 function rangeChoices(at:number,steps:number){const [x,y]=coord(at);const out:number[]=[];for(let dy=-steps;dy<=steps;dy++)for(let dx=-steps;dx<=steps;dx++){if(Math.abs(dx)+Math.abs(dy)!==steps)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&nx<8&&ny>=0&&ny<8)out.push(ny*8+nx)}return out;}
@@ -89,9 +116,9 @@ function traces(species:AnimalId,seed:number,turn:number,previous:number):number
 export function newHunt(species:AnimalId,seed:number,tutorial=false):HuntState{
  const start=relocateOnCreate(seed,species),footprints=traces(species,seed,0,start.old);
  const maxActions=tutorial?13:['wolf','lynx','mutant','chimera'].includes(species)?9:10;
- return {version:34,species,tutorial,seed,turn:0,actions:maxActions,maxActions,position:start.now,previous:start.old,
-  footprints,shaking:huntGrassMotion(footprints),terrain:generatedTerrain(seed),objects:[],revealed:[false,false,false],searchedAt:{},lastSearch:null,habits:{},fear:tutorial?0:16,predator:0,
-  outcome:'playing',resultText:'',lastEvent:'신호가 희미합니다. 지도에는 한 턴 전의 발자국만 남아 있습니다.',log:[],selectedCell:null,lastCommand:null,misses:0};
+ return {version:35,species,tutorial,seed,turn:0,actions:maxActions,maxActions,position:start.now,previous:start.old,
+  footprints,shaking:huntGrassMotion(footprints),terrain:generatedTerrain(seed),objects:[],revealed:[false,false,false],searchedAt:{},observations:{},lastSearch:null,habits:{},fear:tutorial?0:16,predator:0,
+  outcome:'playing',resultText:'',lastEvent:'모든 풀숲이 가려져 있습니다. 한 칸을 조사해야 그 시점의 발자국·풀 흔들림·빈칸 여부를 확인할 수 있습니다.',log:[],selectedCell:null,lastCommand:null,misses:0};
 }
 const nil={hp:0,parts:0,food:0,infection:0,threat:0};
 const msg=(state:HuntState,message:string,kind:HuntLog['kind']='event'):HuntState=>({...state,lastEvent:message,log:[{turn:state.turn,message,kind},...state.log].slice(0,5)});
@@ -144,19 +171,25 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   if(!Number.isInteger(action.cell)||action.cell!<0||action.cell!>=64)return unchanged;
  }
  const current={...raw,objects:raw.objects.map(x=>({...x})),revealed:[...raw.revealed],
-  searchedAt:{...(raw.searchedAt??{})},lastSearch:raw.lastSearch??null,habits:{...raw.habits},log:[...raw.log]};
+  searchedAt:{...(raw.searchedAt??{})},observations:{...(raw.observations??{})},lastSearch:raw.lastSearch??null,habits:{...raw.habits},log:[...raw.log]};
  let text='',kind:HuntLog['kind']='event';
  if(action.type==='search'){
   const searchedCell=action.cell!;
   // Mark before testing: both an empty clearing and a successful discovery open the grass.
   current.searchedAt[String(searchedCell)]=current.turn+1;
+  const evidence:HuntEvidence=searchedCell===current.position?'caught':current.footprints.includes(searchedCell)?'footprint':current.shaking.includes(searchedCell)?'rustle':'empty';
+  // Never expose global footprints/shaking: only the selected square is sampled.
+  current.observations[String(searchedCell)]={kind:evidence,turn:current.turn};
   current.lastSearch={cell:searchedCell,found:searchedCell===current.position,turn:current.turn+1};
   if(action.cell===current.position){
    current.actions--;current.turn++;current.outcome='caught';current.selectedCell=action.cell!;current.lastCommand='search';
    current.resultText=current.tutorial?'풀숲에서 토끼를 발견했습니다. EVE의 첫 구조 보정이 활성화됩니다.':'풀숲을 젖히자 개체의 모습이 드러났습니다. 숨은 위치를 정확히 찾아 보호 이송합니다.';
    return {state:msg(current,current.resultText,'hint'),changed:true,won:true,lost:false,penalty:nil};
   }
-  current.fear+=8;current.misses++;text='수풀을 헤쳤지만 아무것도 없습니다. 이 칸은 확인한 상태로 남습니다. 개체는 다음 턴에 이 자리로 다시 들어올 수 있습니다.';kind='warning';
+  current.fear+=8;current.misses++;
+  if(evidence==='footprint'){text='도트 발자국 발견. 개체가 이곳에 있었던 것은 이전 턴입니다. 이미 다른 칸으로 이동했을 수 있습니다.';kind='hint';}
+  else if(evidence==='rustle'){text='눌린 풀이 흔들립니다. 직전 발자국에서 한 칸 반경의 흔적입니다. 현재 위치를 뜻하지는 않습니다.';kind='hint';}
+  else {text='풀숲을 열었지만 흔적이 없습니다. 이 칸은 확인한 기록으로 남고 개체는 다시 들어올 수 있습니다.';kind='warning';}
  }else if(action.type==='wait'){
   text='바람이 지나갔습니다. 개체가 움직이고 새로운 발자국이 남습니다.';
  }else if(action.type==='barrier'||action.type==='bait'||action.type==='sound'||action.type==='light'){
