@@ -1377,3 +1377,30 @@ select{color:#ecdeea;background:#272232;border:1px solid #66576d}
 /* Yellow targets only during the first guided encounter, not forever. */
 .v33-is-hunt .v42-decode-target:not(.v42-tutorial-active):before,.v33-is-hunt .v42-tools-target:not(.v42-tutorial-active):before{display:none!important}
 .v42-knowledge-uses{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.v42-knowledge-uses b{flex:0 0 100%}.v42-knowledge-uses span{padding:3px 6px;border:1px solid #76685555;background:#ffffff06}
+
+/* v42.1 — compact exploration and live-capture tiles.
+ * Classic Minesweeper cells are roughly 16px: the field targets 52px,
+ * about 3–4x as wide with a minimum comfortable pointer/touch target.
+ * Never stretch 7x5 cells: the walker's percentage-based coordinates
+ * are computed from that exact ratio. */
+.v33-expedition .v33-hidden-map{
+  width:min(100%,416px)!important;max-width:100%!important;
+  aspect-ratio:1!important;
+}
+.v33-expedition .v33-route-map{
+  width:min(100%,364px)!important;max-width:100%!important;
+  aspect-ratio:7/5!important;
+}
+.v33-expedition .v33-hidden-map>.v33-land,
+.v33-expedition .v33-route-map>.v33-route-cell{
+  min-height:0;aspect-ratio:1;
+}
+/* Follow the compact grid size instead of leaving a giant empty map frame. */
+.v33-expedition .v33-map-frame{
+  width:min(100%,462px);margin-inline:auto;
+}
+@media(max-width:680px){
+  .v33-expedition .v33-hidden-map{width:min(100%,416px)!important}
+  .v33-expedition .v33-route-map{width:min(100%,364px)!important}
+  .v33-expedition .v33-map-frame{width:100%}
+}

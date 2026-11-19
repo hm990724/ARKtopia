@@ -30,6 +30,15 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
  const [notice,setNotice]=useState('');
  const [walking,setWalking]=useState<{from:number;to:number}|null>(null);
  const walkTimeout=useRef<ReturnType<typeof setTimeout>|null>(null);
+ // A <details> element has an `open` attribute, not `defaultOpen`.
+ // Apply its initial state only when the tutorial/specimen changes so the
+ // player can open/close the guide freely during normal re-renders.
+ const guideDetailsRef=useRef<HTMLDetailsElement>(null);
+ const guideSpecies=state.capture?.hunt?.species;
+ const guideStartsExpanded=Boolean(state.capture?.hunt ? state.capture.hunt.tutorial : state.tutorialStep<=2);
+ useEffect(()=>{
+  if(guideDetailsRef.current)guideDetailsRef.current.open=guideStartsExpanded;
+ },[guideSpecies,guideStartsExpanded]);
  useEffect(()=>()=>{if(walkTimeout.current)clearTimeout(walkTimeout.current)},[]);
  function walkTo(target:number){
   if(walking||!field||!adjacentField(field.position,target))return;
@@ -125,7 +134,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     {hunt&&species? <>
      <div className="v33-specimen"><div className="v33-animal-frame"><img src={animalSrc(hunt.species)} alt="발견한 종의 표본 이미지 · 실제 위치가 아님"/></div><div><span className="v33-eyebrow">UNKNOWN POSITION / {hunt.species.toUpperCase()}</span><h3>{hunt.revealed[0]?species.title:'미확인 행동 패턴'}</h3><p>{hunt.revealed[0]?species.short:'EVE의 생체 분석 데이터가 잠겨 있습니다. 행동 분석을 해독하면 개체의 반응을 알 수 있습니다.'}</p></div></div>
      <div className="v36-hunt-rule"><b>흔적 판독 요령</b><p><strong>발자국</strong>은 직전 턴의 위치, <strong>풀 흔들림</strong>은 그 주변 1칸을 뜻합니다. 이미 연 칸도 동물이 다시 지나갑니다. 행동 한 번마다 위치가 바뀝니다.</p></div>
-     <details className="v42-field-help" defaultOpen={!!hunt.tutorial} key={`${hunt.species}-${hunt.tutorial?'first':'standard'}`}>
+     <details className="v42-field-help" ref={guideDetailsRef} key={`${hunt.species}-${hunt.tutorial?'first':'standard'}`}>
       <summary><span>✦</span> EVE · 수색 장비 사용법 / 단서 해독 <b>열기·접기</b></summary>
       <div className="v42-field-guide-steps"><p><strong>① 오른쪽 행동 카드</strong> — 서식·이동·기억 단서 3장을 각각 누르면 추적 행동 -1로 해독됩니다. 해독 내용은 분석실에도 보존됩니다.</p><p><strong>② 지도에서 위치 추리</strong> — 발자국은 지난 턴의 흔적, 흔들린 풀은 주변 1칸의 신호입니다. 열린 칸도 동물이 다시 지나갑니다.</p><p><strong>③ 아래 전술 아이템</strong> — 먹이·잔향 소리·조명·차단막을 선택하고 맵을 누르세요. 아이템은 1회 작동 후 자동으로 기본 수색으로 돌아옵니다.</p><p><strong>④ 현장 종료</strong> — 포획 뒤에도 수색은 계속 가능하며 보상은 철수할 때 한 번에 나타납니다. 지도에서 철수하거나 출구를 선택하세요.</p></div>
      </details>
@@ -143,7 +152,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
      <div className="v33-history"><span>최근 관측 기록</span>{hunt.log.slice(0,2).map((h,i)=><p key={`${h.turn}-${i}`}><b>T{h.turn}</b> {h.message}</p>)}</div>
     </>:<>
      <div className="v33-intro-panel"><span className="v33-eyebrow">SURVEY / OPERATING MANUAL</span><h3>발자국을 따라 들어가라</h3><p>발자국·연구 기록·보급 상자를 발견해 조사합니다. 생체 신호가 나타나면 숨겨진 동물을 찾는 추적 게임으로 전환됩니다.</p><div className="v33-flow-lines"><span><Footprints size={17}/> 지난 흔적 조사</span><span><ArrowUpRight size={16}/> 위험 구역 통과</span><span><Search size={16}/> 생체 신호 탐지</span></div></div>
-     <details className="v42-field-help v42-route-help" defaultOpen={state.tutorialStep<=2}><summary><span>✦</span> EVE · 7×5 탐사 구역 안내 <b>열기·접기</b></summary><p>강조된 바로 옆 칸을 누르면 담당자가 실제로 걸어서 이동합니다. 발자국·연구 자료·보급 상자는 클릭한 뒤 즉시 회수 장부에 합산됩니다. 생체 신호는 8×8 은신 추적으로 이어지고, 포획 후에도 현장에 남을 수 있습니다. HP=생존, ST=이동, AP=하루 명령입니다.</p></details>
+     <details className="v42-field-help v42-route-help" ref={guideDetailsRef}><summary><span>✦</span> EVE · 7×5 탐사 구역 안내 <b>열기·접기</b></summary><p>강조된 바로 옆 칸을 누르면 담당자가 실제로 걸어서 이동합니다. 발자국·연구 자료·보급 상자는 클릭한 뒤 즉시 회수 장부에 합산됩니다. 생체 신호는 8×8 은신 추적으로 이어지고, 포획 후에도 현장에 남을 수 있습니다. HP=생존, ST=이동, AP=하루 명령입니다.</p></details>
      <div className="v33-travel-status"><span>추적망 접근</span><strong>{pressure}%</strong><i><em style={{width:pressure+'%'}}/></i><p>한 번 이동할 때마다 시간이 흐릅니다. 압박이 100%에 도달하면 강제 철수합니다.</p></div>
      <div className="v33-travel-status"><span>탐사 목적</span><strong>{field.encountered?'신호 조사 완료':'야생 개체 발견'}</strong><p>지도를 끝까지 밝힐 필요는 없습니다. 자료를 챙겼다면 언제든 귀환할 수 있습니다.</p></div>
     </>}
