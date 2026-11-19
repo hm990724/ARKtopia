@@ -563,11 +563,19 @@ const tourGuide=(!s||tutorialStep>=9||guideDismissed||careDialog)?null:(():{targ
  return {target:'cctv-tab',title:'08 · 감시망 최종 점검',body:'복구된 CCTV로 이동해 감시 절차를 확인하면 튜토리얼이 종료되고 자유 운영이 시작됩니다.',nav:'cctv'};
 })();
 useEffect(()=>{
- guideFocus.current?.classList.remove('echo-tour-focus');guideFocus.current=null;
+ guideFocus.current?.classList.remove('echo-tour-focus');
+ guideFocus.current=null;
  if(!tourGuide||talk.length||awakening||result||nightView||memoryTarget||s?.pending||s?.pendingIncident||s?.headquarters?.pendingAnimal||s?.headquarters?.pendingScene||confirmRestart||inspect)return;
- const el=document.querySelector<HTMLElement>(`[data-tour="${tourGuide.target}"]`);
- if(el){el.classList.add('echo-tour-focus');guideFocus.current=el;const timer=window.setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'}),150);return()=>{window.clearTimeout(timer);el.classList.remove('echo-tour-focus');if(guideFocus.current===el)guideFocus.current=null};}
- return()=>{el?.classList.remove('echo-tour-focus');if(guideFocus.current===el)guideFocus.current=null};
+ const element=document.querySelector<HTMLElement>(`[data-tour="${tourGuide.target}"]`);
+ if(!element)return;
+ element.classList.add('echo-tour-focus');
+ guideFocus.current=element;
+ const timer=window.setTimeout(()=>element.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'}),150);
+ return()=>{
+  window.clearTimeout(timer);
+  element.classList.remove('echo-tour-focus');
+  if(guideFocus.current===element)guideFocus.current=null;
+ };
 },[tourGuide?.target,tab,talk.length,awakening,result,nightView,s?.pending]);
 
 const current=talk[talkIdx];const artAnimal=s?.animals.find(a=>a.id===selectedAnimal);const region=regions.find(r=>r.id===selectedRegion)!;const canAuto=!!s&&s.power>=region.power+(selectedGear.includes('scanner')?8:0);const canManual=!!s&&selectedGear.includes('flashlight')&&!selectedGear.includes('scanner')&&s.flashlight>=25;const live=s?.animals.filter(a=>a.alive)||[];const nextIncident=s?.pendingIncident?incidentDefs[s.pendingIncident]:null;
