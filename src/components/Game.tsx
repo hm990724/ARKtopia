@@ -2355,7 +2355,10 @@ export default function Game() {
     }
     if (firstRabbit) {
       const rescuedRabbit = n.animals.find((a) => a.id === "rabbit" && a.alive);
-      if (rescuedRabbit) rescuedRabbit.memory = 100;
+
+      if (rescuedRabbit) {
+        rescuedRabbit.memory = 100;
+      }
     }
 
     const completed = registerFullResonance(
@@ -2366,7 +2369,9 @@ export default function Game() {
 
     if (firstRabbit) {
       completed.tutorialArchiveReviewPending = true;
-      completed.lastOutcome = "EVE 초기 실습 교정 완료. 첫 토끼 공명 100%.";
+
+      completed.lastOutcome =
+        "EVE 초기 실습 교정 완료. 첫 토끼 공명 100%. 분석실에서 기록을 검토한 뒤 본부 인계를 결정하십시오.";
     }
     if (extractMode === "force" && !firstRabbit) {
       crewDissectionShock(completed);
