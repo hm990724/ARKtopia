@@ -42,14 +42,14 @@ export default function FieldExplorationV68({state:s,animalSrc,onMove,onRetreat,
  }
  function inspect(cell=cursor){
   if(paused||field!.choice||locked.current)return;
-  if(hunt){locked.current=true;setCursor(cell);onHunt({type:tool??'search',cell});setTool(null);}
+  if(hunt){locked.current=true;setCursor(cell);onHunt({type:tool??'search',cell});setTool(null);window.setTimeout(()=>{locked.current=false},120);}
   else{
    const target=field!.tiles.findIndex((tile,i)=>adjacentField(field!.position,i,width,field!.tiles.length)&&['track','signal','cache','animal'].includes(tile));
    if(target<0){setNotice('인접한 조사 지점이 없습니다. 지도에서 이동 가능한 칸을 선택하세요.');return;}
    onMove(target,'quiet');
   }
  }
- function capture(){if(!paused&&located&&!locked.current){locked.current=true;onHunt({type:'capture',clue:gauge});}}
+ function capture(){if(!paused&&located&&!locked.current){locked.current=true;onHunt({type:'capture',clue:gauge});window.setTimeout(()=>{locked.current=false},120);}}
  function key(e:KeyboardEvent){
   if(e.target instanceof HTMLElement&&(e.target.matches('input,select,textarea')||e.target.isContentEditable)||e.repeat||e.ctrlKey||e.altKey||e.metaKey)return;
   if(document.querySelector('[aria-modal="true"]'))return;

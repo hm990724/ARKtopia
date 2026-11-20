@@ -10,7 +10,7 @@ export const CREW_PROFILES:Record<CrewId,{title:string;post:string;benefit:strin
  wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 교대조가 없으면 제가 두 번 돌면 되죠. 근데 저 철문, 누가 안쪽에서 긁었죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
  deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
 };
-export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number};
+export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;preservationId?:string;bodyStability?:number;memoryFragments?:number;memoryEvents?:string[]};
 export type CrewIncident={day:number;id:CrewId;damage:number;before:number;after:number;text:string};
 export type CrewConflictKind='treatment'|'disposal';
 export type CrewConflictChoice='treat'|'withhold'|'protect'|'dispose';
@@ -18,12 +18,13 @@ export type CrewConflict={serial:number;day:number;kind:CrewConflictKind;choice:
 export type CrewNightVote={day:number;members:CrewId[]};
 export type CrewNightResult={day:number;selected:CrewId;losses:{id:CrewId;before:number;after:number}[];effect:string};
 export type CrewTermination={id:CrewId;day:number};
-export type CrewArrivalOrder={id:CrewId;transferDay:number};
+export type CrewArrivalOrder={id:CrewId;transferDay:number;specimenKey?:string};
 export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
 export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
 export function ensureCrew(s:V10):CrewState{
  const existing=s.crew;
  const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,arrivalQueue:existing?.arrivalQueue??[],lastArrivalDay:existing?.lastArrivalDay??0,members:existing?.members??[],retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
+ for(const m of crew.members){m.bodyStability??=90;if(!m.preservationId)m.preservationId=Object.values(s.archive?.entries??{}).find(e=>e.species===m.id&&e.status==='transferred')?.key;}
  if(existing){Object.assign(existing,crew);return existing;}
  s.crew=crew;
  return crew;
@@ -34,21 +35,46 @@ export function queueCrewArrival(s:V10,id:AnimalId):boolean{
  if(!isCrewId(id))return false;
  const crew=ensureCrew(s);
  if(crew.members.some(m=>m.id===id)||crew.retired.includes(id)||crew.arrivalQueue.some(a=>a.id===id))return false;
- crew.arrivalQueue.push({id,transferDay:s.day});
+ crew.arrivalQueue.push({id,transferDay:s.day,specimenKey:s.animals.find(a=>a.id===id&&(a as typeof a&{transferred?:boolean}).transferred)?.specimenId});
  log(s,'본부 반송 캡슐 접수',`${CREW_PROFILES[id].post} 근무 인력 파견 대기. DAY ${s.day+1}부터 인력 한 명씩 순차 파견됩니다.`,'mystery');
  return true;
 }
 /** Recruit a staff member ONLY when its original animal is transferred to HQ. */
-export function recruitCrew(s:V10,id:AnimalId):boolean{
+export function recruitCrew(s:V10,id:AnimalId,specimenKey?:string):boolean{
  if(!isCrewId(id))return false;
  const crew=ensureCrew(s);
  if(crew.members.some(m=>m.id===id)||crew.retired.includes(id)||crew.members.length>=4)return false;
- crew.members.push({id,arrivedDay:s.day,hp:85,mind:88,bond:45,lastSpokenDay:0});
+ const preservationId=specimenKey??Object.values(s.archive?.entries??{}).find(e=>e.species===id&&e.status==='transferred')?.key;
+ crew.members.push({id,preservationId,bodyStability:90,arrivedDay:s.day,hp:85,mind:88,bond:45,lastSpokenDay:0});
  log(s,'본부 인력 등록',`${CREW_PROFILES[id].post}이(가) 도착했습니다. 기존 근무 이력은 본부 보안 정책에 따라 비공개입니다.`,'mystery');
  return true;
 }
+
+export const CREW_MEMORY:Record<CrewId,string[]>={
+ rabbit:['빈 우리 앞에서 발을 멈췄어요. 누군가를 밤새 기다렸던 기분이 들어요.','내 손이 닿지 않아, 다친 아이 옆에 몸을 붙였던 것 같아요.','그 토끼였던 시간도 제 삶이에요. 치료를 위해 살아 있는 누군가를 버리고 싶지 않아요.'],
+ fox:['창고의 측문이 낯설지 않아요. 출근한 적도 없는데요.','물건을 숨겨 둔 곳의 냄새가 기억나요. 손보다 코가 먼저 찾았어요.','여우의 몸으로 배고팠던 기억이 돌아왔어요. 겨우 되찾은 이 손과 삶을 다시 잃는 게 무서워요.'],
+ wolf:['문을 세 번 두드리면 돌아봐야 할 것 같아요.','작은 개체들 앞을 막아섰던 기억이 있어요. 낮은 시선으로요.','늑대로 지켰던 이들은 아직 여기 있어요. 명령보다 그들을 지키겠습니다.'],
+ deer:['이름표의 선을 따라 걷고 싶은 기분이 들어요.','종이를 넘기려 했는데 발굽이 닿았어요. 꿈이라고 생각했어요.','사슴으로 살아온 시간이 기록에서 지워졌어요. 제가 누구였는지 증명할 원본부터 찾겠어요. 그 번호를 지우지 마세요.']
+};
+/** A trusted conversation remembers only a witnessed personal event. No calendar reveal. */
+export function rememberCrew(s:V10,id:CrewId):V10{
+ const m=s.crew?.members.find(x=>x.id===id);
+ if(!m||m.mind<=0||s.phase!=='day'||m.lastSpokenDay===s.day)return s;
+ const n=copy(s) as V10,member=ensureCrew(n).members.find(x=>x.id===id)!;
+ if(member.mind<=35&&(n.originZero?.photos??0)>=7){member.memoryEvents??=[];if(!member.memoryEvents.includes('body-shock'))member.memoryEvents.push('body-shock');}
+ member.lastSpokenDay=n.day;member.bond=cap(member.bond+5);member.memoryEvents??=[];
+ const event=id==='rabbit'?(n.operations?.correct??0)>0:id==='fox'?n.suppliesCollected>0||n.crew?.supportDay===n.day:id==='wolf'?n.security.resolved>0||n.operations?.night?.status==='success':n.narrative?.choices.shift_report!==undefined||(n.originZero?.photos??0)>0;
+ const stage=member.memoryFragments??0;
+ const allowed=stage===0?event&&member.bond>=50:stage===1?event&&member.bond>=65&&(n.narrative?.choices.shift_report!==undefined||(n.originZero?.photos??0)>=6):member.bond>=80&&(n.originZero?.photos??0)>=10;
+ if(stage<3&&allowed){member.memoryFragments=stage+1;member.memoryEvents.push(`fragment-${stage+1}`);member.mind=cap(member.mind+3);n.trust=cap(n.trust+2);log(n,'직원 기억 조각',CREW_MEMORY[id][stage],'mystery');}
+ return n;
+}
+
 export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';text:string}[]{
  const member=ensureCrew(s).members.find(m=>m.id===id);if(!member)return [];
+ if(member.memoryEvents?.includes('body-shock')&&(member.memoryFragments??0)>=2&&(s.originZero?.photos??0)>=10&&member.preservationId)return [{speaker:id,text:'관리자님……. 제 손이 이상해요. 분명히 다섯 개였는데……. 왜 자꾸 네 발로 서야 할 것 같죠?'},{speaker:'EVE',text:`이송 개체 번호 ${member.preservationId}. 직원 뇌 보존 번호 ${member.preservationId}. 두 기록이 일치합니다.`},{speaker:id,text:'내가 그 동물이었던 거군요.'},{speaker:id,text:CREW_MEMORY[id][2]}];
+ if(id==='rabbit'&&member.memoryFragments===1)return [{speaker:'관리자',text:'며칠 전에 보낸 토끼는 어떻게 됐지?'},{speaker:'EVE',text:'본부에서는 개체 상태가 안정적이라고 보고했습니다.'},{speaker:'관리자',text:'그럼 다시 볼 수 있겠네.'},{speaker:'EVE',text:'……그 부분은 확인이 어렵습니다.'},{speaker:id,text:CREW_MEMORY.rabbit[0]}];
+ if((member.memoryFragments??0)>0)return [{speaker:id,text:CREW_MEMORY[id][member.memoryFragments!-1]},{speaker:'EVE',text:'기억을 말할지, 지금은 멈출지 당신이 선택해도 됩니다.'}];
  const profile=CREW_PROFILES[id];const days=Math.max(0,s.day-member.arrivedDay);
  const personal:Record<CrewId,[string,string,string]>={
   rabbit:['소독약 냄새가 잠깐 피 냄새처럼 느껴졌어요. 제가 과로했나 봐요.','복도에 작은 환자가 울고 있었어요. 분명 토끼였는데... 아이 이름을 불렀어요.','담당자님, 잠깐만 제 손을 잡아 주세요. 제 손이 자꾸 발처럼 접혀요.'],
@@ -57,10 +83,10 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
   deer:['아침에 일지 한 장을 잘못 분류했어요. 기록은 이미 고쳤습니다!','실험실 이름을 읽는데 제 이름처럼 들렸어요. 손이 떨려서 종이를 떨어뜨렸어요.','기록이 맞지 않아요. 제가 적은 이름이 제 이름을 지워요. 저 아직 사람 맞죠?']
  };
  if(member.mind<=22)return [
-  {speaker:id,text:personal[id][2]},
+  {speaker:id,text:personal[id][0]},
   {speaker:'EVE',text:`${profile.post} 생체 신호 위험. 정신력 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`},
   {speaker:id,text:'제가 그러지 않았어요... 아니, 제가 그랬나요? 제 손이 기억을 못 해요.'}];
- if(s.headquarters.revealStage>=2&&s.flags.humanTruth)return [
+ if((member.memoryFragments??0)>=3&&s.headquarters.revealStage>=2&&s.flags.humanTruth)return [
   {speaker:id,text:profile.secret},
   {speaker:'관리자',text:'그 기억은 어디서 온 거야?'},
   {speaker:id,text:personal[id][1]},
@@ -90,6 +116,11 @@ export function crewNight(s:V10):void{
  const crew=ensureCrew(s);
  crew.lastIncident=null;
  for(const m of crew.members){
+  // Artificial bodies depend on containment, not simply on elapsed days.
+  const environment=s.power<15||s.facility<35;
+  const shock=m.mind<30;
+  m.bodyStability=cap((m.bodyStability??90)+(environment?-6:2)-(shock?5:0));
+  if(m.bodyStability<25){m.mind=cap(m.mind-4);log(s,'직원 신체 안정 경고',`${CREW_PROFILES[m.id].post}: 안정 ${m.bodyStability}. 시설 전원과 상담·의료 지원이 필요합니다.`,'bad');}
   const days=s.day-m.arrivedDay;
   // Slower deterioration: duties and moral dilemmas are the main threats, not ordinary passing days.
   // Days 1-5 are safe. After that, stress is charged only once every few days.
@@ -173,8 +204,8 @@ export function treatCrew(s:V10,id:CrewId,kind:'medical'|'counsel'):V10{
  const member=s.crew?.members.find(m=>m.id===id);
  if(!member||member.mind<=0||s.crew?.pendingTermination||s.phase!=='day'||s.ap<1||(kind==='medical'&&s.medicine<1))return s;
  const n=copy(s) as V10;const m=ensureCrew(n).members.find(a=>a.id===id)!;n.ap--;
- if(kind==='medical'){n.medicine--;m.mind=cap(m.mind+28)}
- else{m.mind=cap(m.mind+12)}
+ if(kind==='medical'){n.medicine--;m.mind=cap(m.mind+28);m.bodyStability=cap((m.bodyStability??90)+18)}
+ else{m.mind=cap(m.mind+12);m.bond=cap(m.bond+8)}
  log(n,`직원 관리 · ${CREW_PROFILES[id].post}`,`${kind==='medical'?'의약품 1개로 정신력 +28':'대화 안정화로 정신력 +12'} 회복`,'good');
  n.lastOutcome=`${CREW_PROFILES[id].title}의 ${kind==='medical'?'신경 회복':'대화 안정화'} 완료`;
  return n;

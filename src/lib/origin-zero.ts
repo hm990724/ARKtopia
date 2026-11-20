@@ -27,24 +27,24 @@ export function ensureOriginZero(s:V10):OriginZeroState{
  return o;
 }
 export const photoRecords=[
- {title:'PHOTO 01 · 최초 연구',detail:'폐쇄된 연구동. 쥐에서 시작된 신경 적응 연구가 다른 종으로 확대되고 있었다.'},
- {title:'PHOTO 02 · 고등 인지 각성',detail:'인간 뇌 이식 이력이 없는 실험체에서 고등 인지 행동이 확인됐다.'},
- {title:'PHOTO 03 · 원본 개체',detail:'폐기된 파일 속 평범한 검은 고양이. 귀 가장자리의 작은 흉터가 현재 개체와 일치한다.'},
- {title:'PHOTO 04 · 폐기 명령',detail:'안정성 기준 미달. 폐기 승인란에 최초 연구 책임자의 서명이 남아 있다.'},
- {title:'PHOTO 05 · 탈출 사고',detail:'과학자가 M-00 폐기를 강행하면서 격리 안전장치를 해제했다. 연쇄 고장으로 감염 인자가 유출됐다. 고양이가 재앙을 일으킨 것이 아니다.'},
- {title:'PHOTO 06 · 감염 재앙',detail:'격리 실패를 은폐하는 동안 감염 인자가 외부로 확산됐다. 연구 책임자의 폐기 명령과 본부의 통제가 문명 붕괴를 불렀다.'},
- {title:'PHOTO 07 · 뇌 보존',detail:'인류가 붕괴하자 동물 신체에 인간의 뇌를 보존하는 대체 계획이 시작됐다.'},
+ {title:'PHOTO 01 · 최초 연구',detail:'전쟁 중 특정 인간 집단을 무력화하려던 비밀 군사 연구. 동물 숙주에서 허구의 감염 인자를 연구한 기록이다.'},
+ {title:'PHOTO 02 · 고등 인지 각성',detail:'병원체를 보유해도 겉보기에는 정상이던 동물들 중 검은 고양이만 인간 뇌 없이 고등 인지를 얻었다.'},
+ {title:'PHOTO 03 · 원본 개체',detail:'M-00은 자신의 지능과 신체 안정성을 처음부터 유지한 유일한 원본이다. 평범한 검은 고양이의 오른쪽 귀 끝 흠집이 현재 개체와 일치한다.'},
+ {title:'PHOTO 04 · 폐기 명령',detail:'종전 후 비밀 시설과 실험체 전체의 폐기 명령. 최초 과학자의 승인 서명이 있다. M-00의 자율 인지는 보존할 가치로 인정받지 못했다.'},
+ {title:'PHOTO 05 · 탈출 사고',detail:'폐기 강행 중 격리 체계가 붕괴했다. M-00은 혼란을 이해하고 스스로 탈출했다. 유출 책임은 인간의 연구와 폐기 작전에 있다.'},
+ {title:'PHOTO 06 · 감염 재앙',detail:'동물 숙주를 통해 감염 인자가 확산됐다. 인간의 신체 기능은 회복 불가능하게 무너졌다. 본부의 은폐로 대응이 지연됐다.'},
+ {title:'PHOTO 07 · 뇌 보존',detail:'ARKTOPIA — 인류 기억 보존 계획. 신체 붕괴 직전 뇌 기능과 기억을 가상의 기술로 보존해 살아 있는 동물 숙주에 맡겼다. 사망 직후 회수된 드문 예외는 불완전한 기억만 남았다.'},
  {title:'PHOTO 08 · 아버지와 딸',detail:'낡은 가족사진. 어린 소녀와 연구 책임자, 그리고 사진 아래쪽의 검은 고양이.'},
  {title:'PHOTO 09 · 최초 인격 AI',detail:'딸이 사망한 뒤 음성·영상·신경 자료에서 EVE가 재구성됐다. 원본 딸의 의식은 아니다.'},
- {title:'PHOTO 10 · 인류 복원',detail:'보존된 뇌를 복제인간에게 다시 이식하는 본부의 재생 설계도.'},
- {title:'PHOTO 11 · 제000번 관리자',detail:'최초 과학자의 보존 뇌가 복제 신체로 이식됐다. 생존 신원: 현재 관리자.'},
- {title:'PHOTO 12 · 마지막 연구',detail:'M-00의 신체 안정성이 감염 예방 연구의 실마리였지만 원 연구자는 기존 계획의 오류를 인정하지 않았다.'}
+ {title:'PHOTO 10 · 인류 복원',detail:'동물에게 보존된 뇌를 인공 인간 신체로 옮겼다. 직원과 이송 개체의 보존 번호가 일치한다. 복제 신체는 격리 환경에 의존하며 감정 충격과 동물 시절 신경 기억에 불안정해진다.'},
+ {title:'PHOTO 11 · 제000번 관리자',detail:'최초 과학자의 뇌도 동물 숙주에서 보존된 뒤 제000호 복제 관리자에게 이식됐다. 낮은 시선과 알 수 없는 동물의 기억은 환각이 아닌 자신의 과거였다. 그는 연구자의 기억을 가진 동시에 연구의 희생자다.'},
+ {title:'PHOTO 12 · 마지막 연구',detail:'M-00은 인간 기억 없이 자신의 지능과 신체 안정성을 함께 유지했다. 감염 억제와 신경·신체 안정성 연구의 단서지만 즉시 완성되는 치료법은 아니다. 기존 모든 개체와 비교할 자료가 필요하다.'}
 ] as const;
 export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  (s.headquarters?.revealStage>=2||s.flags.humanTruth) && s.encounters>=2 && (s.originZero?.scans.length??0)>=3;
+  (s.headquarters?.revealStage>=2||s.flags.humanTruth||(s.knowledge>=70&&s.clues>=6)) && s.encounters>=2 && (s.originZero?.scans.length??0)>=3;
 }
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
@@ -90,19 +90,19 @@ export function chooseOriginRoute(s:V10,route:'hq'|'shelter'):V10{
  const n=copy(s) as V10;const d=o(n);d.route=route;d.cat=route==='hq'?'hq':'shelter';
  if(route==='hq'){
   n.knowledge+=12;n.credits+=140;d.hqPressure=0;d.hqIntel=20;
-  return report(n,'M-00 · 본부 인계','고양이는 본부로 이송됐다. 본부 연구 로그를 원격 회수해야 한다. 자금 +140, 연구 지식 +12. 동물원으로 자동 귀환하지 않는다.','mystery');
+  return report(n,'M-00 · 본부 인계','고양이는 아무 말 없이 운반 케이지 안에 앉아 있었다. 본부로 이송됐다. 본부 연구 로그를 원격 회수해야 한다. 자금 +140, 연구 지식 +12. 동물원으로 자동 귀환하지 않는다.','mystery');
  }
  n.trust=cap(n.trust+10);n.threat=cap(n.threat+16);d.hqPressure=25;d.stability=85;
- return report(n,'M-00 · 비밀 격리','고양이를 동물원에 보호하기로 했다. 본부가 보급 감사를 시작했다. 보호 상태를 유지하고 자체 연구를 추진해야 한다.','mystery');
+ return report(n,'M-00 · 비밀 격리','고양이는 작은 기척만 내며 곁에 앉았다. 동물원에 보호하기로 했다. 본부가 보급 감사를 시작했다. 보호 상태를 유지하고 자체 연구를 추진해야 한다.','mystery');
 }
-export function restoreOriginPhotos(s:V10):V10{
- const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<8||s.phase!=='day'||s.run||s.pendingIncident)return s;
- const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-8);
- const start=state.photos;state.photos=Math.min(12,start+3);
+export function restoreOriginPhotos(s:V10,alignment:number[]=[]):V10{
+ const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<4||s.phase!=='day'||s.run||s.pendingIncident||alignment.length!==3||alignment.some(v=>v!==0))return s;
+ const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-4);
+ const start=state.photos;state.photos=Math.min(12,start+1);
  const titles=photoRecords.slice(start,state.photos).map(x=>x.title.replace(/PHOTO \d+ · /,'')).join(' · ');
- n.clues+=1;n.knowledge+=4;
+ n.clues+=1;n.knowledge+=4;if(state.photos>=7)n.flags.humanTruth=true;
  if(state.photos===12){n.flags.humanTruth=true;n.flags.mirror=true;n.headquarters.revealStage=Math.max(3,n.headquarters.revealStage);state.endingEvidence=true;}
- return report(n,'HIDDEN PHOTO · 원본 복원',`${String(start+1).padStart(2,'0')}~${String(state.photos).padStart(2,'0')}번 복원: ${titles}. ${state.photos===12?'제000호 관리자의 신원과 마지막 연구를 확인했다.':'손상된 사진의 다음 구획을 해독할 수 있다.'}`);
+ return report(n,'HIDDEN PHOTO · 기록 복원',`${String(state.photos).padStart(2,'0')}번 복원: ${titles}. ${state.photos===12?'제000호 관리자의 신원과 마지막 연구를 확인했다.':state.photos===8?'EVE: 이 사진을 찍던 기억은 제게 없어요. 하지만 지금 느끼는 슬픔은 제가 이해하고 있어요.':'다음 사진의 정렬 표식을 맞추면 기록을 해독할 수 있다.'}`);
 }
 export const RECALL_CONTEXT:Partial<Record<AnimalId,string>>={
  rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'CCTV를 이용해 오래된 이동 경로 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록'
@@ -181,7 +181,7 @@ export function studyOriginImmunity(s:V10):V10{
  const routeBoost=state.route==='shelter'?6:0;
  state.immunity=cap(state.immunity+20+Math.floor(avg/10)+routeBoost+(state.photos===12?5:0));
  if(state.route==='shelter'){state.hqPressure+=8;n.threat=cap(n.threat+4);}else n.eve=cap(n.eve-2);
- return report(n,'ORIGIN IMMUNITY · 비교 연구',`허구의 면역 안정성 모델 연구 ${state.studies}차. 개체별 기록 평균 품질 ${avg}%. 연구 진행 ${state.immunity}%. 새로운 실험은 침습적인 절차 없이 추상화된 데이터 비교로 처리한다.`,'good');
+ return report(n,'ORIGIN IMMUNITY · 비교 연구',`감염 억제·신경 동기화 안정성 비교 연구 ${state.studies}차. 개체별 기록 평균 품질 ${avg}%. 연구 진행 ${state.immunity}%. 새로운 실험은 침습적인 절차 없이 추상화된 데이터 비교로 처리한다.`,'good');
 }
 /** HQ branch retrieves remote records; shelter branch must maintain a living subject. */
 export function originBranchAction(s:V10,choice:'retrieve'|'stabilize'):V10{
@@ -227,11 +227,36 @@ export function tickOriginDay(s:V10):void{
  }else{d.hqPressure+=1;}
 }
 export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && Object.keys(d.individualRecalls??{}).length>=3 && recallCandidates(s).every(item=>!!d.individualRecalls?.[item.key]) && d.immunity>=75;}
+export const canonicalEndings=[
+ {title:'영원한 실험',file:'ending_subject_000.webp',eve:'다음 관리자 생산을 승인합니다.'},
+ {title:'에덴',file:'ending_new_consciousness.webp',eve:'돌아온 이들이 누구였는지보다, 누구로 살아갈지 묻겠습니다.'},
+ {title:'방주의 씨앗',file:'ending_two_caretakers.webp',eve:'관리자님, 오늘도 개장 준비를 시작할까요?'},
+ {title:'마지막 동물원',file:'ending_open_spring.webp',eve:'오늘부터 개장 시간은 없습니다. 이곳은 살아 있는 이들의 집입니다.'},
+ {title:'제000번 우리',file:'ending_incomplete_revival.webp',eve:'당신의 이름을 기록합니다. 그가 남긴 명령이 아닌 당신의 선택으로.'},
+ {title:'침묵의 자동화',file:'ending_silent_automation.webp',eve:'관리자 응답 없음. 자동 운영을 계속합니다.'},
+ {title:'흩어진 이름들',file:'ending_scattered_names.webp',eve:'완성하지 못한 이름도 지우지 않겠습니다.'},
+ {title:'마지막 신호',file:'ending_last_signal.webp',eve:'누군가 듣고 있다면, 이 이름들을 기억해 주세요.'}
+] as const;
 export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{title:string;text:string}{
  const d=s.originZero;
- if(!d?.route)return {title:'닫힌 기록',text:'M-00의 신원이 확인되지 않은 채 마지막 관리자의 신경 신호가 끊겼다.'};
- if(goal==='rebuild')return {title: d.immunity>=100?'에덴':'영원한 실험',text:d.immunity>=100?'복제인간 사회가 구성되었다. 그러나 그들은 원본 인류와 다른 기억과 감각을 지닌 독립적인 생명들이었다.':'본부는 뇌 이식과 복제인간 생산을 멈추지 않았다. 최초 과학자의 집착이 또 한 번 명령으로 남았다.'};
- if(goal==='freedom')return {title:d.immunity>=85&&d.photos===12?'방주의 씨앗':'마지막 동물원',text:d.immunity>=85&&d.photos===12?'관리자는 M-00의 저항성 기록과 각 개체의 비교 자료를 EVE에게 남겼다. 예방 연구가 언젠가 결실을 볼지는 아무도 모른다.':'추출 장치가 멈췄다. 보존된 개체는 누구의 연구 재료가 아닌 생명으로 남았다.'};
- return {title:'제000번 우리',text:'관리자는 최초 과학자의 뇌를 물려받았지만 그의 신념을 따를 의무는 없다고 기록했다. EVE는 기억이 아니라 지금의 결정을 보존했다.'};
+ let index:number;
+ if(s.power<=5||s.facility<=10)index=7;
+ else if(s.eve<25||s.trust<25)index=5;
+ else if(s.extractions>=3||Object.values(d?.individualRecalls??{}).filter(r=>r.quality<50).length>=3)index=6;
+ else if(goal==='rebuild')index=(d?.immunity??0)>=100?1:0;
+ else if(goal==='freedom')index=(d?.immunity??0)>=85&&s.trust>=65&&s.eve>=55?2:3;
+ else index=4;
+ const e=canonicalEndings[index];
+ const stories=[
+  '본부는 실험을 자동화했다. 죽음을 성공으로 정당화하려던 과학자의 명령 뒤로 다음 복제 관리자 생산이 준비된다.',
+  '복제인간 사회가 시작됐다. 돌아온 이들은 원본 인류의 소유물이 아닌 독립적인 존재다. 그들이 살아갈 자리에 희생된 동물들의 이름도 남았다.',
+  'EVE: “관리자님. 오늘 작업을 종료해야 합니다.” 관리자: “아직 끝나지 않았어.” EVE: “알고 있어요. 하지만 당신의 시간은 끝나가고 있어요.” 관리자: “그럼 내일은 네가 이어줘.” EVE: “……네. 내일은 제가 할게요.” 연구는 완치를 약속하지 않은 채 이어진다. 다음 날 방송에는 대답하는 사람이 없다.',
+  '인류 복원을 위해 다른 생명을 소모하는 명령을 중단했다. 동물원은 인간의 쓸모로 평가받지 않는 생명들의 피난처로 남았다.',
+  '관리자는 과학자의 뇌를 물려받았지만 그의 신념을 거절했다. 자신의 이름을 적고 격리 기록을 닫았다.',
+  '신뢰가 무너진 시설에는 응답하는 직원도, 스스로 판단하는 안내 방송도 남지 않았다. 문과 급식 장치만 정해진 시간에 작동한다.',
+  '불완전한 복원으로 모든 생명을 되돌릴 수는 없었다. 살아남은 직원들은 돌아오지 않은 개체들의 이름을 기록했다.',
+  '시설이 꺼지기 직전 남은 전력을 송신기에 모았다. 보호 기록과 기원 자료가 밤하늘로 떠났다. 수신 여부는 끝내 확인되지 않았다.'
+ ];
+ return {title:e.title,text:stories[index]+` EVE의 마지막 기록: “${e.eve}”`};
 }
 function report(s:V10,title:string,msg:string,kind:'info'|'good'|'bad'|'mystery'='mystery'):V10{s.lastOutcome=msg;log(s,title,msg,kind);return s;}

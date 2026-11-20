@@ -84,4 +84,28 @@ test('Hunt: 5/10/15 unlock records; guaranteed actionable location within 20 act
  assert.deepEqual(h.revealed,[true,true,true]);assert.equal(h.located,h.position);assert.ok(h.actions>0);
  assert.equal(hunt.performHuntAction(h,{type:'capture',clue:50}).won,true);
 });
+test('Photos: alignment required; one record per confirmation; old progress preserved',()=>{
+ let s=late();s.originZero.photos=0;
+ assert.equal(origin.restoreOriginPhotos(s),s);assert.equal(origin.restoreOriginPhotos(s,[0,1,0]),s);
+ for(let i=0;i<12;i++){s.ap=4;s.power=100;s=origin.restoreOriginPhotos(s,[0,0,0]);assert.equal(s.originZero.photos,i+1);}
+ assert.equal(origin.restoreOriginPhotos(s,[0,0,0]),s);assert.equal(g.loadGame(JSON.parse(JSON.stringify(s))).originZero.photos,12);
+});
+test('Crew: trust plus individual event gates memories; no absent speakers or repeated daily reward',()=>{
+ const crew=require('../src/lib/crew.ts');let s=late();assert.deepEqual(crew.crewDialog(s,'rabbit'),[]);
+ crew.recruitCrew(s,'rabbit');s=crew.rememberCrew(s,'rabbit');assert.equal(s.crew.members[0].memoryFragments,undefined);
+ s.day++;s.operations=ops.emptyOperations();s.operations.correct=1;s=crew.rememberCrew(s,'rabbit');assert.equal(s.crew.members[0].memoryFragments,1);
+ assert.ok(crew.crewDialog(s,'rabbit').some(l=>l.text.includes('다시 볼 수')));assert.equal(crew.rememberCrew(s,'rabbit'),s);
+ s.day++;s.crew.members[0].bond=65;s=crew.rememberCrew(s,'rabbit');assert.equal(s.crew.members[0].memoryFragments,2);
+ s.day++;s.crew.members[0].bond=80;s=crew.rememberCrew(s,'rabbit');assert.equal(s.crew.members[0].memoryFragments,3);
+ assert.equal(g.loadGame(JSON.parse(JSON.stringify(s))).crew.members[0].memoryFragments,3);
+});
+test('Eight canonical endings remain reachable, distinct artwork mappings, death in every ending',()=>{
+ const art=require('../src/lib/ending-art.ts');let s=late();s.trust=80;s.eve=80;s.facility=90;s.power=90;
+ for(const c of origin.recallCandidates(s)){s.power=100;s=recall(s,c.key);}s.originZero.immunity=90;s.phase='finale';
+ const fixtures=[['rebuild',{immunity:90},{}],['rebuild',{immunity:100},{}],['freedom',{immunity:90},{}],['freedom',{immunity:80},{}],['preserve',{},{}],['preserve',{}, {eve:20}],['freedom',{}, {extractions:3}],['preserve',{}, {power:1}]];
+ const titles=[],files=[];
+ fixtures.forEach(([goal,originPatch,patch],i)=>{const candidate=structuredClone(s);Object.assign(candidate,patch);Object.assign(candidate.originZero,originPatch);const final=archive.finishWithArchive(candidate,goal);assert.equal(final.phase,'ending');assert.ok(final.ending.startsWith(origin.canonicalEndings[i].title));assert.ok(final.ending.includes('사망했다'));titles.push(final.ending.split(' — ')[0]);files.push(art.findEndingArt(final.ending).file);if(i!==2)assert.ok(!final.ending.includes('내일은 제가 할게요'));assert.equal(g.loadGame(JSON.parse(JSON.stringify(final))).ending,final.ending);});
+ assert.equal(new Set(titles).size,8);assert.equal(new Set(files).size,8);
+ const legacy=fresh();legacy.phase='finale';assert.ok(archive.finishWithArchive(legacy,'preserve').ending.includes('사망'));
+});
 console.log(`v68: ${count} acceptance groups passed`);

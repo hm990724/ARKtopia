@@ -108,7 +108,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
      <div className="v67-staff-content">
       <div className="v67-staff-heading"><div><span className="micro-label">HQ // PERSONNEL</span><h2 id="v67-staff-title">{CREW_PROFILES[selected].post}</h2><p>{CREW_PROFILES[selected].personality}</p></div><button className="v67-staff-close" type="button" aria-label="직원 정보 닫기" onClick={()=>setSelected(null)}>×</button></div>
       <div className="v67-staff-mind"><span>정신 안정도</span><strong>{selectedMember.mind}<small> / 100</small></strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.mind}%`}}/></div></div>
-      <p className="v67-staff-brief">{({rabbit:'응급처치와 회복을 돕습니다.',fox:'식량과 보급품을 추가로 확보합니다.',wolf:'야간 경계와 시설 방어를 지원합니다.',deer:'오염 관리와 기록 분석을 지원합니다.'} as Record<CrewId,string>)[selected]}</p>
+      <p>신체 안정 {selectedMember.bodyStability??90} · 신뢰 {selectedMember.bond} · 기억 조각 {selectedMember.memoryFragments??0}/3</p><p className="v67-staff-brief">{({rabbit:'응급처치와 회복을 돕습니다.',fox:'식량과 보급품을 추가로 확보합니다.',wolf:'야간 경계와 시설 방어를 지원합니다.',deer:'오염 관리와 기록 분석을 지원합니다.'} as Record<CrewId,string>)[selected]}</p>
       {selectedMember.mind<=28&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 위험 상태 · 조속한 안정 조치가 필요합니다.</div>}
       <div className="v67-staff-action-grid">
        <button type="button" onClick={()=>{setSelected(null);onTalk(selected)}}><BookOpen size={16}/> 대화</button>

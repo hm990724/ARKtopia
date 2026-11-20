@@ -18,7 +18,7 @@ export function CameraComparison({state:s,onUpdate}:{state:V10;onUpdate:(s:V10)=
    {sceneObjects.map((name,i)=><button key={name} className={'ops-scene-object object-'+i+(changed===i?' changed':'')} aria-label={`${name} 조사`} disabled={baseline||done||s.phase!=='day'||!!s.pendingIncident} onClick={()=>onUpdate(reportCamera(s,camera,i))}>
     {i===0?(changed===0?<DoorOpen/>:<DoorClosed/>):i===1?<UtensilsCrossed/>:<Lightbulb/>}<span>{name}</span>
    </button>)}
-   <span className="ops-feed-label">CAM {camera+1} · {baseline?'기준':'현재'}</span>
+   {camera===0&&!baseline&&s.crew?.members.some(m=>m.id==='rabbit')&&s.headquarters.transferred.includes('rabbit')&&<div className="ops-cameo"><img src="/assets/staff/rabbit/portrait.webp" alt="빈 우리 앞에 서 있는 의무관"/><span>의무관은 빈 우리 앞에서 한동안 움직이지 않는다.</span></div>}<span className="ops-feed-label">CAM {camera+1} · {baseline?'기준':'현재'}</span>
   </div>
   <button disabled={baseline||done||s.phase!=='day'||!!s.pendingIncident} onClick={()=>onUpdate(reportCamera(s,camera,null))}>변화 없음 · 정상 보고</button>
   <p role="status">{s.operations?.lastFeedback||'EVE: 문, 급식대, 조명의 위치와 동작을 살펴보세요. 판독은 카메라마다 최대 세 번입니다.'}</p>

@@ -39,10 +39,10 @@ let hq=origin.chooseOriginRoute(c,'hq');let kept=origin.chooseOriginRoute(c,'she
 assert.equal(hq.originZero.route,'hq');assert.equal(kept.originZero.route,'shelter');assert.equal(hq.originZero.cat,'hq');assert.equal(kept.originZero.cat,'shelter');
 assert.equal(origin.chooseOriginRoute(hq,'shelter'),hq,'branch cannot be reversed without a new save');
 console.log('PASS automatic concealed scans / cat tracking / positive / irreversible fork');
-function fill(x){for(let i=0;i<4;i++){x.ap=4;x.power=100;x=origin.restoreOriginPhotos(x);}return x;}
+function fill(x){for(let i=0;i<12;i++){x.ap=4;x.power=100;x=origin.restoreOriginPhotos(x,[0,0,0]);}return x;}
 hq=fill(hq);kept=fill(kept);
 assert.equal(hq.originZero.photos,12);assert.equal(hq.flags.mirror,true);assert.equal(kept.originZero.photos,12);
-assert.equal(origin.photoRecords.length,12);console.log('PASS 12 photos unlocked only after positive branch and restored as 4 groups');
+assert.equal(origin.photoRecords.length,12);console.log('PASS 12 photos unlocked only after positive branch and restored individually after alignment');
 // Each already known specimen, including transferred or dead, has an alternate retrieval route.
 hq.ap=4;hq.power=100;
 for(const c of origin.recallCandidates(hq)){for(const input of origin.recallSequence(c))hq=origin.performRecallStep(hq,c.key,input);hq=origin.performOriginRecall(hq,c.key);}
