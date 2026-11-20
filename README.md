@@ -1,57 +1,46 @@
-# ECHO WARD — 현재 실행용 소스 / v54
+# ANOMALY ZOO / ARKtopia v67 · 병리실 & UI 패치
 
-이 압축에는 **실행에 필요한 소스와 설정만** 있습니다. 이전 버전 릴리스 문서, 임시 타입 출력물, 기존 이미지(`public/assets`)는 넣지 않았습니다. 기존 저장 데이터 키 `last-enclosure-ark-v10`은 유지됩니다.
+v66 **ORIGIN ZERO**를 유지하면서 **직원 상세 모달 + 토끼 이송 후 격리실 튜토리얼 버그 수정 + 생체 합성 제거 및 병리·검시 시스템**을 추가한 전체 소스 폴더입니다.
 
-## 적용
+## Windows에 설치
 
-1. 현재 `ARKtopia/public/assets`는 그대로 보존합니다. **해당 폴더를 지우지 마세요.**
-2. ZIP의 `src/`, `package.json`, `tsconfig.json`, `next-env.d.ts`, `scripts/`를 프로젝트 루트에 덮어씁니다.
-3. 로컬에서 `npm install`, `npm run check:assets`, `npm run typecheck`, `npm run build`를 실행합니다.
-4. 검증 후 변경 사항과 신규 이미지를 GitHub에 커밋·푸시합니다.
-
-## 새 보상 규칙
-
-| 경로 | 즉시 보상 | 장기 결과 |
-|---|---|---|
-| **살아 있는 개체 본부 인계** | 고철 +3, 식량 +2 | 개체 이탈, 해당 종 직원 영입 가능. **고급 지원권 없음** |
-| **해부·병리 표본 1개 본부 송신** | CR +180, 고급 지원권 +1 | 신경 조직 송신 기록에 남음, 결말 조건에 반영 |
-| 사후 부검 | 표본 +1, 지식 +10 | 사망 개체에 한정 |
-| 생존 개체 강제 회수 | 표본 +2, 지식 +25 | 개체 영구 소실, 정신·신뢰 하락, 결말에 기록 |
-
-예전 저장 파일에 **생체 이송만으로 발생한 미사용 고급 보상권**은 불러오기 시 정리합니다. 이미 사용한 보너스는 취소하지 않습니다. 표본 송신으로 얻은 미사용 보상권은 유지합니다.
-
-## `scene.png` 인식 문제 점검
-
-게임이 요청하는 도착 장면 URL은 `/assets/cinematics/staff-arrivals/rabbit/scene.png`입니다. Windows 파일 탐색기에 이미지가 보여도 **그것만으로 실제 배포 사이트에서 접근 가능한 것은 아닙니다.**
-
-* 대화 인물 초상: `public/assets/staff/rabbit/portrait.png`
-* 도착 시네마틱: `public/assets/cinematics/staff-arrivals/rabbit/scene.png`
-* 의무관 외 보급관·보안관·서기관도 같은 패턴으로 `fox`, `wolf`, `deer` 사용
-* 직원은 살아 있는 개체를 본부에 인계해 영입할 때 연출이 발생하며, **직원 명단 → 본부 도착 기록 재생**으로 다시 확인할 수 있습니다.
-
-확인 명령(프로젝트 루트 / PowerShell):
+1. 기존 `C:\Users\lookm\Documents\GitHub\ARKtopia` 폴더를 삭제하기 전에 **다른 이름으로 백업**하세요. 기존 `.git`, `.env`는 이 ZIP에 없습니다.
+2. 새 ZIP을 풀면 최상위에 `ARKtopia` 폴더가 나옵니다. `C:\Users\lookm\Documents\GitHub\`에 놓으세요.
+3. PowerShell에서 실행:
 
 ```powershell
+cd C:\Users\lookm\Documents\GitHub\ARKtopia
+npm ci
 npm run check:assets
-Get-Item .\public\assets\cinematics\staff-arrivals\rabbit\scene.png | Select-Object FullName,Length
-git ls-files public/assets/cinematics/staff-arrivals/rabbit/scene.png
+npm run typecheck
+npm run dev
 ```
 
-`git ls-files` 결과가 비어 있으면 파일이 GitHub에 올라가지 않은 것입니다. `.gitignore` 때문에 제외된 경우에는 다음과 같이 강제로 추가할 수 있습니다.
+브라우저: http://localhost:3000
 
-```powershell
-git add -f public/assets/cinematics/staff-arrivals/rabbit/scene.png
-git add -f public/assets/staff/rabbit/portrait.png
-git commit -m "Add staff cinematic and portrait"
-git push origin main
-```
+## 주요 변경
 
-**실제 서비스 도메인** 뒤에 `/assets/cinematics/staff-arrivals/rabbit/scene.png`를 붙여 직접 열어 보세요. 이미지가 로드되지 않으면 서버에 배포되지 않았거나 잘못된 파일/경로입니다. 새 시네마틱 UI에서도 이미지가 실패하면 재생 화면에 URL 확인 링크가 나타납니다. 코드에서는 PNG 헤더 확인 기능도 제공합니다.
+- **직원 UI**: 왼쪽 목록에서 직원 선택하면 화면 중앙 모달이 뜹니다. 긴 규칙 설명과 세부 감소 수치 안내를 제거하고 정신 안정도·성격·대화·지원·회복만 남겼습니다. 바깥 클릭/Esc로 닫습니다.
+- **튜토리얼 저장 복구**: 첫 토끼가 본부 이송된 뒤에는 `tutorialStep` 4/5로 되돌아가지 않습니다. 옛 세이브도 로딩 시 6 이상으로 보정, 이송 전용 안내 플래그 초기화. 다음 임무는 야간 → CCTV → 병리실 복구입니다.
+- **합성 시설 대체**: 기존 세이브와 호환하기 위해 내부 시설 키 `synthesis`는 유지하지만 게임 화면에는 **병리·검시실**로 표시됩니다. 두 동물의 결합/키메라 생산 기능은 제거했습니다. 2종 확보 조건도 없습니다.
+- **병리·검시 행동**: 생존 개체의 비침습 검체/정밀 검사, 사망 개체의 사후 검시. 확률은 건강·스트레스·시설 상태로 달라집니다. 결과 성공/실패, 다음 선택(내부 기록 보관/본부 보고)에 따라 지식·신뢰·크레딧·위협이 바뀝니다. 하루 중복 검사·사후 중복 검사 제한 및 저장 데이터 호환을 추가했습니다.
+- **Hidden Photo**: 기존 12개 기록 카드에 실제 포함된 기존 그림을 "ARCHIVE VISUALIZATION"로 붙여 기록을 읽기 쉽게 했습니다. 신규 원본 12장이라고 표시하지 않습니다.
 
-## 엔딩
+## 이미지와 미완성 상태
 
-마지막 세 선택(복원 / 개방 / 보존)은 지식, 신뢰, EVE 상태, 생존 개체 수, 생체 이송 건수, 표본 송신 건수, 강제 회수 건수, 직원 소실 수에 따라 분기합니다. 기존 엔딩 일러스트 파일명을 유지하고, 추가 분기에도 기존 일러스트를 연결했습니다. 특정 행동을 강요하지 않아도 다른 결말에 접근할 수 있습니다.
+현재 포함된 이미지 **50장 전부 기존 이미지**입니다. 새로운 이미지 생성 시도가 동물 스프라이트로 잘못 나와 **프로젝트에 넣지 않았습니다**. 요청한 신규 비동물 원본 이미지 약 29장은 **미완성**이며 정확한 내역은 `ART_AUDIT.md` 및 `ASSET_WORKLIST.md`를 참고하세요. 엔딩 기존 그림과 새 세계관의 정확한 일치도는 재검토가 필요합니다.
 
-## 검증
+## 실제 검증
 
-전달 전 **게임 로직 전체 TypeScript 검사**, 생체 이송·직원 영입·표본 송신·구형 저장 데이터 마이그레이션·엔딩 이미지 매칭 단위 검증, TSX 구문 및 CSS 구문 검사를 수행했습니다. **Next.js 전체 `npm run build`와 실제 Vercel·이미지 파일 접속 결과는 여기서 최종 검증하지 못했습니다.**
+- TypeScript `tsc --noEmit`: **통과**
+- 기존 ORIGIN ZERO 로직 7개 시나리오: **통과**
+- 토끼 이송/옛 저장 복구/병리 성공·실패/반복검사 제한 등 신규 테스트 7개: **통과**
+- `npm run check:assets`: **통과** (기존 핵심 에셋 점검)
+- Next.js 전체 빌드: **미완료**. 이 Linux 실행 환경에 Windows SWC 바이너리만 있고 네트워크가 막혀 Linux용 바이너리를 받지 못했습니다.
+- 브라우저 실플레이·시각적 모달 렌더링: **미검증**
+
+## 주의
+
+- **저장 데이터**: 브라우저의 `last-enclosure-ark-v10` 키는 그대로 사용합니다. 중요 저장은 백업하거나 별도 브라우저 프로필로 테스트하세요.
+- `.git`/`node_modules`/`.next`는 ZIP에 포함되지 않습니다. Git 기록과 로컬 환경 설정은 꼭 따로 보존하세요.
+- 법적으로 필요한 타사 라이선스 안내를 의도적으로 제거하지 않았습니다. 기존 소스에 별도 프로젝트 LICENSE는 없었습니다.

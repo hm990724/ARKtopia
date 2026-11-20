@@ -31,8 +31,11 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
  const [searchFlash,setSearchFlash]=useState<number|null>(null);
  const [walking,setWalking]=useState<{from:number;to:number}|null>(null);
  const walkTimeout=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const fieldChoiceFirstButton=useRef<HTMLButtonElement|null>(null);
  // The field guide is a fixed quick-read panel instead of a dropdown.
  useEffect(()=>()=>{if(walkTimeout.current)clearTimeout(walkTimeout.current)},[]);
+ // A paused field event must announce itself where the player is looking: on the map.
+ useEffect(()=>{if(state.field?.choice&&!state.capture)fieldChoiceFirstButton.current?.focus();},[state.field?.choice?.id,state.capture]);
  function walkTo(target:number){
   if(walking||!field||field.choice||!adjacentField(field.position,target,fieldWidth(field),field.tiles.length))return;
   setNotice('');setWalking({from:field.position,to:target});
@@ -90,7 +93,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
    <Status title="정신력" value={`${state.mind}/100`} level={state.mind} color="green"/>
    <Status title="현장 이동 ST" value={`${state.stamina}/100`} level={state.stamina} color="cyan"/>
   </div>
-  <div className="v42-hud-help v44-hud-help"><span>정신력 = 신경 안정 · ST = 현장 이동</span><strong>{hunt?'3턴마다 풀숲 근처 반응 감지':'WASD / 방향키 이동 · 붉은 점 미니맵은 현재 위치'}</strong></div>
+  <div className="v42-hud-help v44-hud-help"><span>정신력 = 신경 안정 · ST = 현장 이동</span><strong>{hunt?'3턴마다 풀숲 근처 반응 감지':field.choice?'현장 이벤트 발생 · 지도 중앙 선택지 클릭 후 이동':'WASD / 방향키 이동 · 청록색 칸이 이동 가능'}</strong></div>
   <div className="v33-mission-layout">
    <aside className="v44-specimen-column" aria-label="개체와 지역 정보">
     {hunt&&species?<>
@@ -112,7 +115,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
      <div className="v44-specimen-risk"><span>은신 상태</span><b>{hunt.outcome==='playing'?'위치 미확정':'탐사 종료'}</b></div>
     </>:<>
      <span className="v33-eyebrow">ARK // SECTOR SURVEY</span>
-     <div className="v44-sector-banner v61-sector-photo" style={{backgroundImage:`linear-gradient(160deg,#070b10b9,#121021bb),url(/assets/backgrounds/${region.art}.png)`}} aria-label={`${region.name} 전경`} />
+     <div className="v44-sector-banner v61-sector-photo" style={{backgroundImage:`linear-gradient(160deg,#070b10b9,#121021bb),url(/assets/backgrounds/${region.art}.webp)`}} aria-label={`${region.name} 전경`} />
      <div className="v61-sector-name"><h3>{region.name}</h3><span className="v61-sector-signal"><i/> SIGNAL ACTIVE</span></div>
      <div className="v61-live-map-card" aria-label="현장 실시간 미니맵">
        <div className="v61-live-map-title"><b><MapPin size={13}/> LIVE MAP</b><span>{fieldWidth(field)} × {fieldHeight(field)}</span></div>
@@ -130,11 +133,10 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     </>}
    </aside>
    <div className="v33-theater" data-tour="run-choice">
-    {!hunt&&field.choice&&<section className="v57-field-choice" role="group" aria-label="현장 위험 선택"><div className="v57-choice-kicker">ARK // OPTIONAL RISK EVENT</div><h3>{field.choice.title}</h3><p>{field.choice.description}</p><div className="v57-choice-actions"><button onClick={()=>onDecision('leave')}>지나간다 <small>손실 없이 이동</small></button><button onClick={()=>onDecision('survey')}>신중 조사 <small>ST -3 · 지식 +2</small></button><button className="is-danger" onClick={()=>onDecision('risk')}>강행 회수 <small>ST -6 · 위험 {field.choice.danger}% · 고급 보상</small></button></div></section>}
     {hunt? <>
      <div className="v33-map-frame">
       <div className="v33-map-overline"><span><i/> SECTOR {run.region.toUpperCase()} · THICKET SCAN</span><b>GRID {HUNT_SIZE} × {HUNT_SIZE} · 수색 {huntSearchedCount(hunt)}/64</b></div>
-      <div className={'v33-hidden-map v33-biome-'+run.region} style={{backgroundImage:`linear-gradient(135deg,#101b16dc,#10101ed2),url(/assets/backgrounds/${region.art}.png)`}} role="group" aria-label="전부 가려진 추적 격자. 조사한 칸에서만 과거 흔적을 확인합니다.">
+      <div className={'v33-hidden-map v33-biome-'+run.region} style={{backgroundImage:`linear-gradient(135deg,#101b16dc,#10101ed2),url(/assets/backgrounds/${region.art}.webp)`}} role="group" aria-label="전부 가려진 추적 격자. 조사한 칸에서만 과거 흔적을 확인합니다.">
        {hunt.terrain.map((terrain,i)=>{
         const obj=hunt.objects.find(o=>o.cell===i);
         const age=huntSearchAge(hunt,i),opened=age>=0,recent=age>=0&&age<=2;
@@ -170,13 +172,28 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
     </>:<>
      <div className="v33-map-frame"><div className="v33-map-overline"><span><i/> FIELD ROUTE : {region.name}</span><b>GRID {width} × {height} · 귀환점 매 출동 변경</b></div>
       <div className="v57-mini-overlay" aria-label="현장 미니맵"><span>LIVE MAP · <b>● 관리자</b></span><div style={{gridTemplateColumns:`repeat(${width},4px)`}}>{field.tiles.map((t,i)=><i key={i} className={i===field.position?'here':field.visited.includes(i)?t==='wall'?'wall':'seen':'unknown'}/>)}</div></div>
-      <div className={'v33-route-map v57-field-map v33-biome-'+run.region} style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`,['--v57-light-x' as string]:`${((field.position%width)+.5)/width*100}%`,['--v57-light-y' as string]:`${(Math.floor(field.position/width)+.5)/height*100}%`,backgroundImage:`linear-gradient(125deg,#121a16db,#0a091aeb),url(/assets/backgrounds/${region.art}.png)`} as CSSProperties} role="group" aria-label="현장 이동 지도">
-       {field.tiles.map((tile,i)=>{const visible=fieldVisible(field,i,run.gear.includes('scanner')?3:run.gear.includes('flashlight')?2:1),here=field.position===i,walk=adjacentField(field.position,i,width,field.tiles.length)&&tile!=='wall'&&(!field.choice);return <button type="button" key={i} disabled={!walk||!visible||!!walking} className={'v33-route-cell '+(!visible?'v33-route-fog':'')+(walk?' v33-route-next':'')+(here?' v33-route-current':'')+' v33-land-'+tile} onClick={()=>walkTo(i)} title={!visible?'미확인 지점':here?'담당자 위치':tile==='animal'?'생체 신호 포착':tile==='track'?'발자국':tile==='cache'?'물자':tile==='hazard'?'감염성 포자':tile==='exit'?'귀환 지점':tile==='wall'?'붕괴된 통로':'수색 가능 구역'}>
+      <div className={'v33-route-map v57-field-map v33-biome-'+run.region} style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`,['--v57-light-x' as string]:`${((field.position%width)+.5)/width*100}%`,['--v57-light-y' as string]:`${(Math.floor(field.position/width)+.5)/height*100}%`,backgroundImage:`linear-gradient(125deg,#121a16db,#0a091aeb),url(/assets/backgrounds/${region.art}.webp)`} as CSSProperties} role="group" aria-label="현장 이동 지도">
+       {field.tiles.map((tile,i)=>{const visible=fieldVisible(field,i,run.gear.includes('scanner')?3:run.gear.includes('flashlight')?2:1),here=field.position===i,walk=adjacentField(field.position,i,width,field.tiles.length)&&tile!=='wall'&&(!field.choice);return <button type="button" key={i} disabled={!walk||!visible||!!walking} className={'v33-route-cell '+(!visible?'v33-route-fog':'')+(walk?' v33-route-next':'')+(walk&&visible&&!walking?' v62-route-walkable':'')+(here?' v33-route-current':'')+' v33-land-'+tile} onClick={()=>walkTo(i)} title={!visible?'미확인 지점':here?'담당자 위치':tile==='animal'?'생체 신호 포착':tile==='track'?'발자국':tile==='cache'?'물자':tile==='hazard'?'감염성 포자':tile==='exit'?'귀환 지점':tile==='wall'?'붕괴된 통로':'수색 가능 구역'}>
         <PixelFoliage variant={(i*5)%5}/>{here&&!walking?<span className="v33-route-player"><Compass size={19}/> 담당자</span>:!visible?<span className="v33-route-veiled"/>:tile==='wall'?<span className="v33-route-block"/>:tile==='animal'?<span className="v33-route-object v33-signal">✧<small>생체</small></span>:tile==='cache'?<span className="v33-route-object v33-cache">▤<small>보급</small></span>:tile==='track'?<PawPixel/>:tile==='hazard'?<span className="v33-route-object v33-hazard">◆<small>오염</small></span>:tile==='exit'?<span className="v33-route-object">⇥<small>귀환</small></span>:tile==='signal'?<span className="v33-route-object">✧<small>기록</small></span>:i===(field.origin??14)?<span className="v33-route-object">↩<small>입구 30%</small></span>:null}
+         {walk&&visible&&!walking&&<span className="v62-move-indicator" aria-hidden="true">이동 <span>↗</span></span>}
        </button>})}
        {walking&&<span className="v42-walker-path" aria-hidden="true" style={{'--walk-from-x':`${((walking.from%width)+.5)/width*100}%`,'--walk-from-y':`${(Math.floor(walking.from/width)+.5)/height*100}%`,'--walk-to-x':`${((walking.to%width)+.5)/width*100}%`,'--walk-to-y':`${(Math.floor(walking.to/width)+.5)/height*100}%`} as React.CSSProperties}><span className="v42-walker-shadow"/><span className="v42-walker-head"/><span className="v42-walker-body"/><span className="v42-walker-limb left"/><span className="v42-walker-limb right"/><span className="v42-walker-lantern"/></span>}
+
       </div>
-      <div className="v33-map-bottom"><span>{walking?'격리복 이동 중':field.choice?'현장 판단을 먼저 선택하세요':'WASD·방향키 / 인접 칸 클릭으로 이동'}</span><span>이동 {field.steps} · 흔적 {field.clues} · 물자 {field.loot}</span></div>
+       {field.choice&&<section className="v62-map-choice-mask" role="dialog" aria-modal="true" aria-labelledby="v62-choice-heading" aria-describedby="v62-choice-description">
+        <div className="v62-map-choice-card">
+         <div className="v62-map-choice-alert"><AlertTriangle size={16}/><span>FIELD INTERVENTION · 이동 일시 정지</span><b>선택 필요</b></div>
+         <h3 id="v62-choice-heading">{field.choice.title}</h3>
+         <p id="v62-choice-description">{field.choice.description}</p>
+         <div className="v62-choice-caption">다음 행동을 선택하면 탐사가 이어집니다.</div>
+         <div className="v62-map-choice-actions">
+          <button type="button" ref={fieldChoiceFirstButton} onClick={()=>onDecision('leave')}><span className="v62-choice-icon"><MoveRight size={17}/></span><strong>지나간다</strong><small>추가 손실 없이 진행</small></button>
+          <button type="button" onClick={()=>onDecision('survey')}><span className="v62-choice-icon"><Search size={17}/></span><strong>신중 조사</strong><small>ST -3 · 지식 +2</small></button>
+          <button type="button" className="v62-choice-risk" onClick={()=>onDecision('risk')}><span className="v62-choice-icon"><ShieldAlert size={17}/></span><strong>강행 회수</strong><small>ST -6 · 실패 위험 {field.choice.danger}%</small></button>
+         </div>
+        </div>
+       </section>}
+      <div className={'v33-map-bottom'+(field.choice?' v62-map-bottom-paused':'')}><span>{walking?'격리복 이동 중':field.choice?'⚠ 지도 중앙에서 행동을 선택하세요 · 선택 후 이동 재개':'빛나는 인접 칸 클릭 / WASD·방향키로 이동'}</span><span>이동 {field.steps} · 흔적 {field.clues} · 물자 {field.loot}</span></div>
      </div>
     </>}
     <div className="v42-field-ledger" aria-label="현재 탐사에서 획득한 보상 수량"><div className="v42-field-ledger-title"><Package size={15}/><strong>현장 회수 장부</strong><span>회수 즉시 적립 · 최종 보상은 철수 시 표시</span></div><div className="v42-field-ledger-items"><span>고철 <b>+{run.earned?.scrap??0}</b></span><span>지식 <b>+{run.earned?.knowledge??0}</b></span><span>단서 <b>+{run.earned?.clues??0}</b></span><span>물자 점수 <b>{run.loot}</b></span><span>처리 개체 <b>{run.captures?.length??0}</b></span></div></div>
@@ -199,7 +216,7 @@ export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,on
      <div className="v44-side-label"><Package size={14}/> 출동 장비 / 즉시 확인</div>
      <div className="v44-equipped">{run.gear.map(g=><span key={g}>{({flashlight:'손전등',filter:'바이오필터',scanner:'생체 스캐너',medkit:'응급 키트',cage:'운송 케이지'} as Record<string,string>)[g]}</span>)}</div>
      {canWalkMedkit&&<button className="v33-wait v33-medkit" type="button" onClick={onMedkit}><HeartPulse size={16}/> 응급 키트 사용 · 정신력 +20</button>}
-     <div className="v44-guide-static"><b>현장 안내</b><p>WASD 이동 · 정식 출구 100% · 긴급 철수 30%.</p></div>
+     <div className={'v44-guide-static'+(field.choice?' v62-guide-paused':'')}><b>{field.choice?'⚠ 이동 일시 정지':'현장 안내'}</b><p>{field.choice?'지도 중앙에 나타난 현장 선택지 3개 중 하나를 선택하세요. 선택 후 탐사가 계속됩니다.':'빛나는 인접 칸 클릭·WASD 이동 · 정식 출구 100% · 긴급 철수 30%.'}</p></div>
      <div className="v33-broadcast v55-signal-report" role="status" aria-live="polite"><span className="v33-broadcast-label"><Radio size={13}/> EVE / LIVE TRANSCRIPT</span><p key={lastFeed} className="v55-signal-line">{lastFeed}</p></div>
      <div className="v33-travel-status"><span>추적망 접근</span><strong>{pressure}%</strong><i><em style={{width:pressure+'%'}}/></i><p>압박 100% 시 정신력 피해와 긴급 철수.</p></div>
      <div className="v33-travel-status"><span>탐사 목적</span><strong>{field.encountered?'신호 조사 완료':'야생 개체 발견'}</strong><p>흔적을 찾거나 귀환점을 확보하세요.</p></div>

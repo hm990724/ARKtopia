@@ -1,0 +1,76 @@
+/** Local regression tests. Node and installed TypeScript are the only requirements. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const ts=require('typescript');
+require.extensions['.ts']=(mod,file)=>{
+ const transpiled=ts.transpileModule(fs.readFileSync(file,'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}});
+ mod._compile(transpiled.outputText,file);
+};
+const g=require(path.resolve(__dirname,'../src/lib/game-v10.ts'));
+const sim=require(path.resolve(__dirname,'../src/lib/sim.ts'));
+function add(s,id,alive=true){let a=sim.makeAnimal(id,s.animals.length+1);a.alive=alive;a.hp=90;a.stress=10;a.memory=100;a.sickness=0;a.contamination=0;a.records=3;s.animals.push(a);return a}
+let st=g.beginGame('artist','generator');st.day=5;st.tutorialStep=5;st.ap=5;st.rooms=5;const a=add(st,'rabbit');st.headquarters.pendingAnimal='rabbit';st.headquarters.firstReport=true;st.tutorialArchiveReviewPending=true;
+let moved=g.resolveHeadquarters(st,'transfer');assert.notEqual(moved,st);assert.equal(moved.headquarters.transferred.includes('rabbit'),true);assert.equal(moved.animals.find(x=>x.id==='rabbit').alive,false);assert.equal(moved.tutorialStep,6);assert.equal(moved.tutorialArchiveReviewPending,false);assert.equal(moved.headquarters.pendingAnimal,null);console.log('PASS rabbit sent HQ clears tutorial flag and advances mission');
+// older broken saves must migrate without resurrecting rabbit
+let broken=structuredClone(moved);broken.tutorialStep=4;broken.tutorialArchiveReviewPending=true;broken.animals.find(x=>x.id==='rabbit').tutorialProtected=true;const recovered=g.loadGame(broken);assert.ok(recovered.tutorialStep>=6);assert.equal(recovered.tutorialArchiveReviewPending,false);assert.equal(recovered.animals[0].alive,false);console.log('PASS old saves migrate out of empty containment tutorial');
+let s=g.beginGame('artist','generator');s.tutorialStep=7;s.phase='day';s.scrap=20;s.parts=20;s.power=100;s.ap=4;let built=g.buildFacility(s,'synthesis');assert.notEqual(built,s);assert.equal(built.tutorialStep,7);assert.equal(built.facilities.synthesis,true);const linked=g.buildFacility({...built,scrap:20,parts:20,power:100},'cctv');assert.equal(linked.tutorialStep,8);console.log('PASS pathology facility opens without two animal donors, tutorial advances after CCTV');
+s=built;add(s,'fox');s.ap=4;s.power=100;s.medicine=5;
+let studied=g.runPathology(s,'fox','noninvasive',0);assert.ok(studied.pathologyPending.success);assert.equal(studied.pathologyRecords.length,1);assert.ok(studied.knowledge>s.knowledge);assert.equal(studied.animals.length,1);assert.equal(g.runPathology(studied,'fox','noninvasive',0),studied,'must finish event first');studied=g.resolvePathologyEvent(studied,'archive');assert.equal(studied.pathologyPending,null);assert.equal(g.runPathology(studied,'fox','clinical',0),studied,'once per day on live animal');console.log('PASS successful non-invasive exam -> evidence choice, no synthetic animal, no daily spam');
+studied.day++;studied.ap=4;studied.power=100;let failed=g.runPathology(studied,'fox','clinical',1);assert.equal(failed.pathologyPending.success,false);assert.ok(failed.animals[0].stress>studied.animals[0].stress);failed=g.resolvePathologyEvent(failed,'headquarters');assert.equal(failed.pathologyPending,null);assert.ok(failed.credits>studied.credits);console.log('PASS failed clinical exam has effect and HQ followup');
+const dead=add(failed,'deer',false);failed.ap=4;failed.power=100;let examined=g.runPathology(failed,'deer','postmortem',0);assert.equal(examined.pathologyPending.success,true);examined=g.resolvePathologyEvent(examined,'archive');assert.equal(g.runPathology(examined,'deer','postmortem',0),examined,'one postmortem only');assert.equal(g.runPathology(examined,'fox','postmortem',0),examined,'no autopsy of living subject');console.log('PASS death-only postmortem, once per specimen');
+let old=g.loadGame({...g.beginGame('artist','generator'),pathologyRecords:undefined,pathologyPending:undefined});assert.deepEqual(old.pathologyRecords,[]);assert.equal(old.pathologyPending,null);console.log('PASS pathology save migration');
+
+// ORIGIN ZERO regression scenarios — preserved by the pathology refactor.
+{
+const archive=require(path.resolve(__dirname,'../src/lib/specimen-archive.ts'));
+const origin=require(path.resolve(__dirname,'../src/lib/origin-zero.ts'));
+function add(s,id){const a=sim.makeAnimal(id,s.animals.length+1);Object.assign(a,{memory:100,hp:90,stress:15,contamination:0,sickness:0,records:3});s.animals.push(a);archive.noteRescue(s,id);return a;}
+let s=g.beginGame('artist','generator');s.day=26;s.tutorialStep=9;s.encounters=5;s.headquarters.revealStage=2;s.ap=4;s.rooms=8;
+for(const id of ['rabbit','fox','deer'])add(s,id);
+assert.equal(s.originZero.scans.length,3,'every captured specimen receives a hidden routine test');
+assert.equal(origin.canTrackCat(s),true,'late exploration opens the ordinary cat');
+let c=origin.initiateOriginTrack(s);assert.equal(c.originZero.cat,'traced');assert.equal(c.ap,3);
+let wrong=origin.pickOriginTrace(c,0);assert.equal(wrong.originZero.trackProgress,0);assert.equal(wrong.threat,c.threat+3);
+for(const frame of origin.catTrackFrames)c=origin.pickOriginTrace(c,frame.answer);
+assert.equal(c.originZero.cat,'captured');assert.equal(c.originZero.trackProgress,3);
+c=origin.analyzeOriginCat(c);assert.equal(c.originZero.cat,'positive');assert.equal(c.originZero.firstPositiveDay,26);assert.ok(c.lastOutcome.includes('M-00'));
+let hq=origin.chooseOriginRoute(c,'hq');let kept=origin.chooseOriginRoute(c,'shelter');
+assert.equal(hq.originZero.route,'hq');assert.equal(kept.originZero.route,'shelter');assert.equal(hq.originZero.cat,'hq');assert.equal(kept.originZero.cat,'shelter');
+assert.equal(origin.chooseOriginRoute(hq,'shelter'),hq,'branch cannot be reversed without a new save');
+console.log('PASS automatic concealed scans / cat tracking / positive / irreversible fork');
+function fill(x){for(let i=0;i<4;i++){x.ap=4;x.power=100;x=origin.restoreOriginPhotos(x);}return x;}
+hq=fill(hq);kept=fill(kept);
+assert.equal(hq.originZero.photos,12);assert.equal(hq.flags.mirror,true);assert.equal(kept.originZero.photos,12);
+assert.equal(origin.photoRecords.length,12);console.log('PASS 12 photos unlocked only after positive branch and restored as 4 groups');
+// Each already known specimen, including transferred or dead, has an alternate retrieval route.
+hq.ap=4;hq.power=100;
+for(const id of ['rabbit','fox','deer'])hq=origin.performOriginRecall(hq,id);
+assert.equal(Object.keys(hq.originZero.recalls).length,3);
+assert.ok(origin.originCrisisAvailable({...hq,day:28}));hq.day=28;
+hq=origin.resolveOriginCrisis(hq,'protect');assert.equal(hq.originZero.crisisDone,true);
+hq.ap=4;hq.power=100;hq=origin.originBranchAction(hq,'retrieve');
+for(let i=0;i<5&&hq.originZero.immunity<75;i++){hq.ap=4;hq.power=100;hq.knowledge=100;hq=origin.studyOriginImmunity(hq)}
+assert.ok(hq.originZero.immunity>=75);assert.equal(origin.originReadyForFinale(hq),true);
+hq.day=31;hq.pendingIncident=null;hq.power=99;hq.food=99;hq.rooms=8;
+let pre=g.finishDay(hq,'shield');assert.equal(pre.phase,'finale');
+let out=archive.finishWithArchive(pre,'rebuild');assert.equal(out.phase,'ending');assert.ok(out.ending.includes('사망했다'));
+console.log('PASS HQ remote evidence -> crisis -> recall -> immunity -> final ending with death');
+// Keep branch remains independent; not requiring HQ specimen magically back at the zoo.
+kept.day=28;kept.ap=4;kept.power=100;assert.ok(origin.originCrisisAvailable(kept));kept=origin.resolveOriginCrisis(kept,'protect');
+kept.ap=4;kept.power=100;
+for(const id of ['rabbit','fox','deer'])kept=origin.performOriginRecall(kept,id);
+for(let i=0;i<4&&kept.originZero.immunity<75;i++){kept.ap=4;kept.power=100;kept.knowledge=100;kept=origin.studyOriginImmunity(kept)}
+assert.equal(origin.originReadyForFinale(kept),true);
+kept.phase='finale';const protect=archive.finishWithArchive(kept,'freedom');assert.ok(/방주의 씨앗|마지막 동물원/.test(protect.ending));assert.ok(protect.ending.includes('사망했다'));
+console.log('PASS shelter protection branch -> alternative ending');
+// Old saves without origin-state should load and never fabricate positive markers.
+const old=g.beginGame('artist','generator');delete old.originZero;const migrated=g.loadGame(structuredClone(old));assert.equal(migrated.originZero.cat,'unknown');assert.equal(migrated.originZero.scans.length,0);
+console.log('PASS older save origin-state migration');
+// No premature finale even on Day 40 until player completes the final research.
+const unfinished=g.beginGame('artist','generator');unfinished.day=39;unfinished.power=99;unfinished.food=99;unfinished.pendingIncident=null;const still=g.finishDay(unfinished,'shield');assert.equal(still.phase,'day');
+console.log('PASS calendar does not skip M-00 / Hidden Photo / recall before finale');
+// Legacy staff transfer must still produce next-day personnel.
+let staff=g.beginGame('artist','generator');staff.day=5;staff.rooms=5;add(staff,'rabbit');staff=g.requestHeadquartersTransfer(staff,'rabbit');staff=g.resolveHeadquarters(staff,'transfer');assert.equal(staff.crew.members.length,0);staff.day=6;assert.deepEqual(g.scheduleStaffByDay(staff),['rabbit']);
+console.log('PASS v64 HQ transfer retains next-day 1-person arrival');
+}

@@ -18,7 +18,7 @@ export const specs:{id:AnimalId;name:string;former:string;trait:string;site:stri
 {id:'axolotl',name:'유리 아홀로틀',former:'신체 수복 기록',trait:'센서 손상 부위를 진단한다',site:'medical',unlock:9},
 {id:'moth',name:'밤나방',former:'빛 감지 기록',trait:'낡은 신호를 따라간다',site:'observatory',unlock:11},
 {id:'mutant',name:'복합체 07',former:'분산된 인간의 언어 기록',trait:'하나의 입에서 서로 다른 목소리가 섞인다',site:'medical',unlock:17},
-{id:'chimera',name:'접합체 미라',former:'의식 합성 실험 기록',trait:'서로 다른 동물의 반응이 충돌한다',site:'medical',unlock:20}];
+{id:'chimera',name:'접합체 미라',former:'폐기된 접합 연구의 잔여 기록',trait:'서로 다른 동물의 반응이 충돌한다',site:'medical',unlock:20}];
 // Four selectable memory fragments. These are memories, not proof of humanity.
 export const origins:{id:Origin;title:string;desc:string;perk:string}[]=[
  {id:'medic',title:'문 너머의 환자',desc:'누군가 유리문을 두드렸다. 나는 마지막 남은 붕대를 쥐고 있었다.',perk:'구조 +11%p · 치료 회복량 증가'},

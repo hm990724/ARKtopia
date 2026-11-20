@@ -1,13 +1,14 @@
 {
-  "name": "echo-ward",
-  "version": "60.0.0",
+  "name": "anomaly-zoo",
+  "version": "67.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "check:assets": "node scripts/check-assets.cjs"
+    "check:assets": "node scripts/check-assets.cjs",
+    "test:logic": "node scripts/test-logic.cjs"
   },
   "dependencies": {
     "next": "^15.5.0",

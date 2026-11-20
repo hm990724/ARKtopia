@@ -108,7 +108,12 @@ export function normalizeHunt(raw:HuntState):HuntState {
  }
  // Migrating from v34 intentionally does not reconstruct unseen footprints:
  // the old version exposed them globally, but doing so here would leak positions.
- return {...raw,version:35,searchedAt,observations,lastSearch};
+ // v62: 20 basic tracking actions for every non-tutorial animal, including predators.
+ // Existing in-progress saves retain spent actions and any equipment/archive bonus.
+ const previousBase=['wolf','lynx','mutant','chimera'].includes(raw.species)?9:10;
+ const upgradedMax=!raw.tutorial&&raw.maxActions<20?20+Math.max(0,raw.maxActions-previousBase):raw.maxActions;
+ const actionBonus=upgradedMax-raw.maxActions;
+ return {...raw,version:35,searchedAt,observations,lastSearch,maxActions:upgradedMax,actions:Math.min(upgradedMax,raw.actions+actionBonus)};
 }
 function relocateOnCreate(seed:number,species:AnimalId):{old:number;now:number}{const old=8+Math.floor(randomAt(seed,0,1)*48);const options=rangeChoices(old,HUNT_TRAITS[species].speed);return {old,now:options[Math.floor(randomAt(seed,0,2)*options.length)]??old}}
 function rangeChoices(at:number,steps:number){const [x,y]=coord(at);const out:number[]=[];for(let dy=-steps;dy<=steps;dy++)for(let dx=-steps;dx<=steps;dx++){if(Math.abs(dx)+Math.abs(dy)!==steps)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&nx<8&&ny>=0&&ny<8)out.push(ny*8+nx)}return out;}
@@ -116,7 +121,7 @@ function foxDecoy(seed:number,turn:number,truth:number){let c=Math.floor(randomA
 function traces(species:AnimalId,seed:number,turn:number,previous:number):number[]{return species==='fox'?[previous,foxDecoy(seed,turn,previous)]:[previous]}
 export function newHunt(species:AnimalId,seed:number,tutorial=false):HuntState{
  const start=relocateOnCreate(seed,species),footprints=traces(species,seed,0,start.old);
- const maxActions=tutorial?13:['wolf','lynx','mutant','chimera'].includes(species)?9:10;
+ const maxActions=tutorial?13:20;
  return {version:35,species,tutorial,seed,turn:0,actions:maxActions,maxActions,position:start.now,previous:start.old,
   footprints,shaking:huntGrassMotion(footprints),terrain:generatedTerrain(seed),objects:[],revealed:[false,false,false],searchedAt:{},observations:{},lastSearch:null,habits:{},fear:tutorial?0:16,predator:0,
   outcome:'playing',resultText:'',lastEvent:'모든 풀숲이 가려져 있습니다. 한 칸을 조사해야 그 시점의 발자국·풀 흔들림·빈칸 여부를 확인할 수 있습니다.',log:[],selectedCell:null,lastCommand:null,misses:0};
@@ -230,10 +235,17 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   text=`저주파 청음 결과: ${bearing}에서 움직임 포착. 동물이 이번 턴 이동한 뒤의 넓은 구역입니다. 다음 턴에는 다시 이동할 수 있습니다.`;
   kind='hint';
  }
+ // Timed field notes keep a long hunt readable without revealing a hidden coordinate.
+ // This uses existing trait hints and does not alter movement, rewards or saves.
+ if(!current.tutorial&&[5,10,15].includes(current.turn)){
+  const note=HUNT_TRAITS[current.species].hints[current.turn/5-1];
+  text+=` · 자동 관찰 메모 (${current.turn}/20): ${note}`;
+  kind='hint';
+ }
  current.objects=current.objects.map(o=>({...o,life:o.life-1})).filter(o=>o.life>0);
  // Predator escalation is signalled before high-damage failure, never an invisible instant hit.
  const dangerous=['wolf','lynx','mutant','chimera'].includes(current.species);
- current.predator=Math.min(100,current.predator+(dangerous?13:4)+(action.type==='search'?12:0));
+ current.predator=Math.min(100,current.predator+(dangerous?6:3)+(action.type==='search'?6:0));
  current.fear=Math.min(100,Math.max(0,current.fear+(action.type==='search'?7:3)));
  if(dangerous&&current.predator>=60&&current.actions>0){text+=' EVE 경보: 포식자가 담당자님을 역추적하고 있습니다. 남은 행동이 적습니다.';kind='warning';}
  if(current.actions<=0){

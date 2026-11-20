@@ -5,10 +5,10 @@ import {cap,log,copy} from './sim';
 export type CrewId='rabbit'|'fox'|'wolf'|'deer';
 export const CREW_IDS:CrewId[]=['rabbit','fox','wolf','deer'];
 export const CREW_PROFILES:Record<CrewId,{title:string;post:string;benefit:string;first:string;secret:string;appearance:string;personality:string}>={
- rabbit:{title:'의무관',post:'의무관',benefit:'담당자 정신력 +18 · 오늘의 휴식/응급처치 효과 강화',first:'...의료실은 어디죠? 흰 붕대가 있는 곳이라면 익숙해요. 전에 아픈 아이들을 돌봤던 것 같은데.',secret:'흰 장갑을 벗으면 손끝에 털이 보여요. 아까 환자에게... 당근을 주라고 했나요?',appearance:'눈처럼 흰 단발, 차분한 표정, 구식 양호실의 흰 간호복',personality:'상냥하고 말이 느린 양호선생님. 불안할 때 아이에게 말하듯 속삭인다.'},
- fox:{title:'보급관',post:'보급관',benefit:'부품 +1 · 식량 +1 · CR +30',first:'물품 목록과 영수증부터 보죠. 지급하지 않은 건 지급한 게 아닙니다. ...제가 문을 잠근 적이 있나요?',secret:'어제도 재고가 맞았는데, 왜 오늘은 제 발자국이 보급실 선반 위에 남아 있죠?',appearance:'오렌지빛 짙은 갈색 장발, 얇은 사각 안경, 단정한 검정 보급 담당 제복',personality:'꼼꼼하고 차가운 여성. 사소한 물품 부족도 따지고 들지만 책임감이 높다.'},
- wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 이번엔 아무도 못 지나가요. 헤, 근데 저 철문은 왜 손톱 자국이 있죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
- deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 제가 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
+ rabbit:{title:'의무관',post:'의무관',benefit:'담당자 정신력 +18 · 오늘의 휴식/응급처치 효과 강화',first:'...의료실은 어디죠? 출근 기록이 손상됐다고 들었습니다. 환자가 있다면 먼저 상태를 확인하겠습니다.',secret:'흰 장갑을 벗으면 손끝에 털이 보여요. 아까 환자에게... 당근을 주라고 했나요?',appearance:'눈처럼 흰 단발, 차분한 표정, 구식 양호실의 흰 간호복',personality:'상냥하고 말이 느린 양호선생님. 불안할 때 아이에게 말하듯 속삭인다.'},
+ fox:{title:'보급관',post:'보급관',benefit:'부품 +1 · 식량 +1 · CR +30',first:'물품 목록과 영수증부터 확인하죠. 지급하지 않은 건 지급한 게 아닙니다. 서명 누락부터 정리하겠습니다.',secret:'어제도 재고가 맞았는데, 왜 오늘은 제 발자국이 보급실 선반 위에 남아 있죠?',appearance:'오렌지빛 짙은 갈색 장발, 얇은 사각 안경, 단정한 검정 보급 담당 제복',personality:'꼼꼼하고 차가운 여성. 사소한 물품 부족도 따지고 들지만 책임감이 높다.'},
+ wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 교대조가 없으면 제가 두 번 돌면 되죠. 근데 저 철문, 누가 안쪽에서 긁었죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
+ deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
 };
 export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number};
 export type CrewIncident={day:number;id:CrewId;damage:number;before:number;after:number;text:string};
@@ -18,23 +18,33 @@ export type CrewConflict={serial:number;day:number;kind:CrewConflictKind;choice:
 export type CrewNightVote={day:number;members:CrewId[]};
 export type CrewNightResult={day:number;selected:CrewId;losses:{id:CrewId;before:number;after:number}[];effect:string};
 export type CrewTermination={id:CrewId;day:number};
-export type CrewState={retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
-export const emptyCrew=():CrewState=>({retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
+export type CrewArrivalOrder={id:CrewId;transferDay:number};
+export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
+export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
 export function ensureCrew(s:V10):CrewState{
  const existing=s.crew;
- const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,members:existing?.members??[],retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
+ const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,arrivalQueue:existing?.arrivalQueue??[],lastArrivalDay:existing?.lastArrivalDay??0,members:existing?.members??[],retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
  if(existing){Object.assign(existing,crew);return existing;}
  s.crew=crew;
  return crew;
 }
 export function isCrewId(id:AnimalId):id is CrewId{return CREW_IDS.includes(id as CrewId)}
+/** Staff appearances are bound to the four distinct original animal species. */
+export function queueCrewArrival(s:V10,id:AnimalId):boolean{
+ if(!isCrewId(id))return false;
+ const crew=ensureCrew(s);
+ if(crew.members.some(m=>m.id===id)||crew.retired.includes(id)||crew.arrivalQueue.some(a=>a.id===id))return false;
+ crew.arrivalQueue.push({id,transferDay:s.day});
+ log(s,'본부 반송 캡슐 접수',`${CREW_PROFILES[id].post} 근무 인력 파견 대기. DAY ${s.day+1}부터 인력 한 명씩 순차 파견됩니다.`,'mystery');
+ return true;
+}
 /** Recruit a staff member ONLY when its original animal is transferred to HQ. */
 export function recruitCrew(s:V10,id:AnimalId):boolean{
  if(!isCrewId(id))return false;
  const crew=ensureCrew(s);
  if(crew.members.some(m=>m.id===id)||crew.retired.includes(id)||crew.members.length>=4)return false;
  crew.members.push({id,arrivedDay:s.day,hp:85,mind:88,bond:45,lastSpokenDay:0});
- log(s,'본부 인력 등록 · 신경 세포 분화',`${CREW_PROFILES[id].post}이(가) 도착했습니다. 본부의 출생 기록은 기밀입니다.`,'mystery');
+ log(s,'본부 인력 등록',`${CREW_PROFILES[id].post}이(가) 도착했습니다. 기존 근무 이력은 본부 보안 정책에 따라 비공개입니다.`,'mystery');
  return true;
 }
 export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';text:string}[]{
@@ -50,7 +60,7 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
   {speaker:id,text:personal[id][2]},
   {speaker:'EVE',text:`${profile.post} 생체 신호 위험. 정신력 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`},
   {speaker:id,text:'제가 그러지 않았어요... 아니, 제가 그랬나요? 제 손이 기억을 못 해요.'}];
- if(s.headquarters.revealStage>=2||days>=12)return [
+ if(s.headquarters.revealStage>=2&&s.flags.humanTruth)return [
   {speaker:id,text:profile.secret},
   {speaker:'관리자',text:'그 기억은 어디서 온 거야?'},
   {speaker:id,text:personal[id][1]},

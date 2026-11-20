@@ -3,6 +3,7 @@
  * Species IDs still identify active animals in the legacy simulation. A distinct
  * specimenId identifies each successive rescued individual in the archive.
  */
+import {routineOriginScan,originEndEpilogue,originReadyForFinale} from './origin-zero';
 import {cap,copy,log,finish as baseFinish,type AnimalId,type AnimalState} from './sim';
 import {HUNT_TRAITS,type HuntState} from './hidden-hunt';
 import type {V10} from './game-v10';
@@ -84,6 +85,7 @@ export function noteRescue(s:V10,id:AnimalId):void{
  const entry=archive.entries[a.specimenId!];entry.captureMethod=archive.fieldJournal[id]?.at(-1)||'시설 외곽에서 안전 구조';
  entry.observedTraits=[...(archive.knownTraits[id]??[])];
  recordSpecimen(s,id,'보호 격리실 입소',`격리실 ${a.room}호 배정. 포획 경로와 발견한 특성이 이 기록에 보존됩니다.`,'observation');
+ routineOriginScan(s,id);
 }
 export function noteCare(s:V10,id:AnimalId,kind:string,answer:string,successful:boolean,detail:string):void{
  recordSpecimen(s,id,`${kind} · ${successful?'적절한 반응':'반응 불일치'}`,`선택: ${answer}. ${detail}`,'care');
@@ -103,11 +105,11 @@ export function noteResonance(s:V10,id:AnimalId):void{
 }
 /** A second dispatch or independent evidence opens the same irreversible truth. */
 export function evaluateArchiveReveal(s:V10):void{
- const archive=ensureArchive(s);if(archive.revealed||archive.revealPending)return;
+ const archive=ensureArchive(s);if(archive.revealed||archive.revealPending||!s.originZero?.firstPositiveDay)return;
  const dispatched=(s.headquarters?.transferred.length??0)+archive.dispatches;
  const throughDispatch=dispatched>=2&&s.day>=7;
  const throughEvidence=s.day>=12&&s.knowledge>=45&&s.clues>=8;
- if(throughDispatch||throughEvidence){
+ if(s.flags.humanTruth && s.headquarters?.revealStage>=2 && (throughDispatch||throughEvidence)){
   archive.revealPending=true;
   log(s,'폐쇄된 병리실의 원래 명칭',throughDispatch?'외부 이송 내역 두 건에서 신경 조직 회수 코드가 발견됐다.':'이송을 거부한 채 복원한 기록에서 병리 실험 지시서가 발견됐다.','mystery');
  }
@@ -175,6 +177,18 @@ export function knownSpeciesTraits(s:V10,id:AnimalId):{known:boolean;label:strin
 export function finishWithArchive(s:V10,goal:'rebuild'|'freedom'|'preserve'):V10{
  if(s.phase!=='finale')return s;
  const n=baseFinish(s,goal) as V10;
+ if(originReadyForFinale(s)){
+  const epilogue=originEndEpilogue(s,goal);
+  const coerced=Object.values(n.archive?.entries??{}).filter(entry=>entry.records.some(record=>record.title==='강제 조직 회수')).length;
+  const protectedAnimals=n.animals.filter(animal=>animal.alive).length;
+  const staffLost=n.crew?.retired?.length??0;
+  const cost=`최종 기록: 보호 개체 ${protectedAnimals}, 생체 이송 ${n.headquarters.transferred.length}, 강제 회수 ${coerced}, 소실 직원 ${staffLost}.`;
+  const regret=coerced>0?' 과거의 연구 방식으로 상실된 생명은 되돌릴 수 없었다.':goal==='rebuild'?' 살아 있는 개체를 강제로 해치지 않는 방법은 끝내 완전히 증명되지 않았다.':'';
+  const stance=n.narrative?.finalStance==='inherit'?'원 연구자의 신념을 계승한 책임은 남았다.':n.narrative?.finalStance==='reject'?'과거의 잘못을 되풀이하지 않겠다는 선택이 남았다.':'같은 기억을 가졌다는 이유만으로 같은 존재가 될 필요는 없었다.';
+  n.ending=`${epilogue.title} — ${epilogue.text}${regret} 관리자는 오랜 시간 동물의 몸에 적응한 뇌와 쇠퇴한 복제 신체의 한계를 넘지 못하고 사망했다. ${stance} ${cost}`;
+  log(n,'ORIGIN ZERO · 마지막 지시',n.ending,'mystery');
+  return n;
+ }
  const a=ensureArchive(n);const handed=n.headquarters?.transferred.length??0;
  const forced=Object.values(a.entries).filter(e=>e.records.some(r=>r.title==='강제 조직 회수')).length;
  if(goal==='rebuild'&&handed+a.dispatches>=3&&forced>0){
@@ -190,6 +204,15 @@ export function finishWithArchive(s:V10,goal:'rebuild'|'freedom'|'preserve'):V10
  }else if(goal==='preserve'&&a.revealed&&handed>0){
   n.ending+=' 본부에 보낸 개체의 처리 기록은 EVE와 담당자가 계속 보존합니다. 그 이름들이 다시 지워지지 않도록.';
  }
+ const stance=n.narrative?.finalStance;
+ if(stance==='inherit'&&goal==='rebuild')n.ending+=' 과거 과학자의 명령을 계승한 관리자는 그 신념이 또 다른 희생을 만드는 순간 책임을 피할 수 없다.';
+ if(stance==='reject'&&goal!=='rebuild')n.ending+=' 뇌에 새겨진 신념을 거부한 관리자는 기억보다 살아 있는 사람들의 선택이 중요하다고 기록했다.';
+ if(stance==='question')n.ending+=' 자신이 원본 과학자와 동일한 존재인지 확신할 수는 없다. 그러나 현재의 선택만은 스스로 내렸다.';
+ const legacy=n.narrative?.choices?.daughter_archive;
+ const protection=n.narrative?.choices?.preservation_order;
+ if(legacy===0&&goal==='rebuild')n.ending+=' 관리자는 과거 연구자의 명령을 계승했다. 그 선택은 이미 끝난 희생을 다시 되풀이할 위험을 남겼다.';
+ if(legacy===1&&goal!=='rebuild')n.ending+=' EVE는 설계된 딸을 흉내 내는 일을 멈추고 자신의 판단으로 문을 열었다.';
+ if(protection===0&&goal==='freedom')n.ending+=' 관리자가 숨겨 둔 피험자 명부에 이름이 복구됐다. 이들의 동의가 없는 실험은 더 이상 진행되지 않는다.';
  // One compact epilogue makes the cumulative moral cost visible regardless of goal.
  if(forced>0||handed>0||a.dispatches>0){
   n.ending+=` 최종 명세: 생체 이송 ${handed}건, 신경 조직 송신 ${a.dispatches}건, 강제 회수 ${forced}건.`;
