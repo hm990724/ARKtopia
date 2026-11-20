@@ -9,12 +9,21 @@ import {cap,copy,log,specs} from './sim';
 export type CatStage='unknown'|'traced'|'captured'|'positive'|'hq'|'shelter';
 export type OriginRoute='hq'|'shelter'|null;
 export type RecallRecord={day:number;quality:number;source:'live'|'hq'|'archive';note:string};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSteps?:Record<string,number>;recallMilestones?:number;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
  o.scans??=[];o.privateMatches??={};o.recalls??={};o.photos=Math.max(0,Math.min(12,o.photos??0));o.immunity=cap(o.immunity??0);
  o.trackProgress=Math.max(0,Math.min(3,o.trackProgress??0));o.wrongTracks??=0;o.studies??=0;o.hqPressure??=0;o.stability??=85;o.hqIntel??=0;o.crisisDone??=false;
+ if(!o.individualRecalls){
+  o.individualRecalls={};
+  // One legacy species result credits ONE recorded individual, never all siblings.
+  for(const [species,result] of Object.entries(o.recalls)){
+   const first=recallCandidates(s).find(c=>c.id===species);
+   if(first&&result)o.individualRecalls[first.key]=result;
+  }
+ }
+ o.recallSteps??={};o.recallMilestones??=Math.floor(Object.keys(o.individualRecalls).length/5);
  return o;
 }
 export const photoRecords=[
@@ -22,8 +31,8 @@ export const photoRecords=[
  {title:'PHOTO 02 · 고등 인지 각성',detail:'인간 뇌 이식 이력이 없는 실험체에서 고등 인지 행동이 확인됐다.'},
  {title:'PHOTO 03 · 원본 개체',detail:'폐기된 파일 속 평범한 검은 고양이. 귀 가장자리의 작은 흉터가 현재 개체와 일치한다.'},
  {title:'PHOTO 04 · 폐기 명령',detail:'안정성 기준 미달. 폐기 승인란에 최초 연구 책임자의 서명이 남아 있다.'},
- {title:'PHOTO 05 · 탈출 사고',detail:'폐기 구역 외벽의 잠금장치가 열렸다. 이송 기록에 공백이 생긴 날이다.'},
- {title:'PHOTO 06 · 감염 재앙',detail:'유출 뒤 여러 지역에서 동일한 이상 신호가 관측됐다. 확산 원인은 연구시설과 연관돼 있었다.'},
+ {title:'PHOTO 05 · 탈출 사고',detail:'과학자가 M-00 폐기를 강행하면서 격리 안전장치를 해제했다. 연쇄 고장으로 감염 인자가 유출됐다. 고양이가 재앙을 일으킨 것이 아니다.'},
+ {title:'PHOTO 06 · 감염 재앙',detail:'격리 실패를 은폐하는 동안 감염 인자가 외부로 확산됐다. 연구 책임자의 폐기 명령과 본부의 통제가 문명 붕괴를 불렀다.'},
  {title:'PHOTO 07 · 뇌 보존',detail:'인류가 붕괴하자 동물 신체에 인간의 뇌를 보존하는 대체 계획이 시작됐다.'},
  {title:'PHOTO 08 · 아버지와 딸',detail:'낡은 가족사진. 어린 소녀와 연구 책임자, 그리고 사진 아래쪽의 검은 고양이.'},
  {title:'PHOTO 09 · 최초 인격 AI',detail:'딸이 사망한 뒤 음성·영상·신경 자료에서 EVE가 재구성됐다. 원본 딸의 의식은 아니다.'},
@@ -35,7 +44,7 @@ export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  (s.day>=25 && (s.headquarters?.revealStage>=2||s.flags.humanTruth) && s.encounters>=2 || s.day>=36);
+  (s.headquarters?.revealStage>=2||s.flags.humanTruth) && s.encounters>=2 && (s.originZero?.scans.length??0)>=3;
 }
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
@@ -98,31 +107,76 @@ export function restoreOriginPhotos(s:V10):V10{
 export const RECALL_CONTEXT:Partial<Record<AnimalId,string>>={
  rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'CCTV를 이용해 오래된 이동 경로 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록'
 };
-export function recallCandidates(s:V10):{id:AnimalId;source:'live'|'hq'|'archive';label:string}[]{
- const ids=new Set<AnimalId>([...s.animals.map(a=>a.id),...(s.headquarters?.transferred??[]),...Object.values(s.archive?.entries??{}).map(e=>e.species)]);
- return [...ids].filter(id=>!!RECALL_CONTEXT[id]).map(id=>{
-  const alive=s.animals.some(a=>a.id===id&&a.alive&&!s.security?.escapedIds.includes(id));
-  const transferred=s.headquarters?.transferred.includes(id)||false;
-  return {id,source:alive?'live':transferred?'hq':'archive',label:specs.find(x=>x.id===id)?.name||id};
- });
+export type RecallCandidate={key:string;id:AnimalId;source:'live'|'hq'|'archive'|'escaped';label:string};
+export function recallCandidates(s:V10):RecallCandidate[]{
+ const entries=new Map<string,RecallCandidate>();
+ for(const e of Object.values(s.archive?.entries??{})){
+  if(!RECALL_CONTEXT[e.species])continue;
+  entries.set(e.key,{key:e.key,id:e.species,source:e.status==='transferred'?'hq':e.status==='escaped'?'escaped':e.status==='contained'?'live':'archive',label:e.name});
+ }
+ for(const a of s.animals){
+  const key=a.specimenId||`${a.id}-legacy-${a.room}`;
+  const dossier=s.archive?.entries[key];
+  const transferred=dossier?.status==='transferred'||(!a.alive&&s.headquarters?.transferred.includes(a.id));
+  entries.set(key,{key,id:a.id,source:transferred?'hq':!a.alive?'archive':s.security?.escapedIds.includes(a.id)?'escaped':'live',label:a.name});
+ }
+ // Historical saves sometimes retained only the transfer species, without a body/dossier.
+ for(const id of s.headquarters?.transferred??[])if(![...entries.values()].some(e=>e.id===id&&e.source==='hq')){
+  const key=`${id}-legacy-hq`;entries.set(key,{key,id,source:'hq',label:specs.find(x=>x.id===id)?.name||id});
+ }
+ return [...entries.values()];
 }
-export function performOriginRecall(s:V10,id:AnimalId):V10{
- const d=s.originZero;if(!d?.route||d.photos<6||d.recalls[id]||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
- const candidate=recallCandidates(s).find(x=>x.id===id);if(!candidate)return s;
+export const recallProtocols:Record<AnimalId,{title:string;signals:string[];sequence:number[]}>= {
+ rabbit:{title:'보호 기억 · 진정 순서',signals:['호흡','접근','휴식'],sequence:[0,2,1]},
+ fox:{title:'창고 CCTV · 우회 경로',signals:['정문','측문','창고'],sequence:[1,2,0]},
+ deer:{title:'격리 회로 · 안전 경로',signals:['입력','접지','격리문'],sequence:[1,0,2]},
+ wolf:{title:'경계 행동 · 안전 접근',signals:['멈춤','눈 낮추기','한 걸음'],sequence:[0,1,2]},
+ owl:{title:'시야 회전 · 관측 각도',signals:['좌측','중앙','우측'],sequence:[2,0,1]},
+ crow:{title:'미완성 선율 · 박자 복원',signals:['낮은 음','중간 음','높은 음'],sequence:[0,2,1]},
+ otter:{title:'펌프 · 압력 흐름',signals:['밸브','펌프','배수'],sequence:[2,0,1]},
+ lynx:{title:'사각지대 · 은폐 경로',signals:['그늘','정지','통로'],sequence:[0,1,2]},
+ axolotl:{title:'재생 신호 · 안정 주기',signals:['수온','휴식','미광'],sequence:[0,2,1]},
+ moth:{title:'광원 · 점등 순서',signals:['약광','암전','잔광'],sequence:[1,0,2]},
+ mutant:{title:'간섭 신호 · 역순 복원',signals:['신호 A','신호 B','신호 C'],sequence:[2,1,0]},
+ chimera:{title:'두 기억 · 동기화',signals:['기억 A','휴지','기억 B'],sequence:[0,2,1]}
+};
+export function recallSequence(c:RecallCandidate):number[]{
+ const offset=[...c.key].reduce((v,ch)=>v+ch.charCodeAt(0),0)%3;
+ const seq=recallProtocols[c.id].sequence;
+ return [...seq.slice(offset),...seq.slice(0,offset)];
+}
+/** Each step is persisted. Incorrect input costs power but cannot erase a completed record. */
+export function performRecallStep(s:V10,key:string,input:number):V10{
+ const d=s.originZero,c=recallCandidates(s).find(x=>x.key===key);
+ if(!c||!d?.route||d.photos<6||d.individualRecalls?.[key]||s.phase!=='day'||s.run||s.pendingIncident||s.ap<1||s.power<1||!Number.isInteger(input)||input<0||input>2)return s;
+ const n=copy(s) as V10,state=o(n),step=state.recallSteps![key]??0;
+ if(step>=3)return s;
+ if(recallSequence(c)[step]!==input){n.power=cap(n.power-1);state.recallSteps![key]=0;return report(n,'재검사 신호 불일치','신호 순서가 어긋났습니다. 전력 -1. 기록을 다시 확인하고 재시도하세요.','bad');}
+ state.recallSteps![key]=step+1;
+ return report(n,'개체별 비교 신호',`${c.label} · ${key}: ${step+1}/3 신호 일치. ${step===2?'자료를 확정할 수 있습니다.':'다음 신호를 연결하세요.'}`);
+}
+export function performOriginRecall(s:V10,key:string):V10{
+ const d=s.originZero,candidate=recallCandidates(s).find(x=>x.key===key);
+ if(!d?.route||d.photos<6||!candidate||d.individualRecalls?.[key]||(d.recallSteps?.[key]??0)<3||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
  const powerCost=candidate.source==='hq'?12:candidate.source==='live'?8:5;
  if(s.power<powerCost)return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-powerCost);
- const animal=n.animals.find(a=>a.id===id&&a.alive);
- const quality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:42;
- state.recalls[id]={day:n.day,quality,source:candidate.source,note:RECALL_CONTEXT[id]!};
+ const animal=n.animals.find(a=>a.specimenId===key&&a.alive);
+ const quality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:candidate.source==='escaped'?50:42;
+ const result:RecallRecord={day:n.day,quality,source:candidate.source==='escaped'?'archive':candidate.source,note:RECALL_CONTEXT[candidate.id]!};
+ state.individualRecalls![key]=result;
+ // Keep old aggregate fields readable by previous builds; progression uses IDs only.
+ state.recalls[candidate.id]=result;
  n.knowledge+=Math.round(quality/10);if(candidate.source==='live'&&animal){animal.stress=cap(animal.stress+6);animal.bond=cap(animal.bond+3);}
  if(candidate.source==='hq'){state.hqPressure+=5;if(state.route==='hq')state.hqIntel=cap(state.hqIntel+12);}
- return report(n,'ARK RECALL · 개체 재분석',`${candidate.label}: ${RECALL_CONTEXT[id]}. 자료 품질 ${quality}%. ${candidate.source==='live'?'현장 생체 비교':candidate.source==='hq'?'본부 원격 기록 회수':'사후 보존 기록 복원'} 완료.`);
+ const milestone=Math.floor(Object.keys(state.individualRecalls!).length/5);
+ if(milestone>(state.recallMilestones??0)){n.parts+=2;n.knowledge+=10;state.recallMilestones=milestone;}
+ return report(n,'ARK RECALL · 개체 재분석',`${candidate.label} · ${key}: ${result.note}. 품질 ${quality}%. ${candidate.source==='escaped'?'재포획 전 원격 흔적 대조로 부분 자료를 보존했습니다.':'기록 확정.'}`);
 }
 export function studyOriginImmunity(s:V10):V10{
- const d=s.originZero;if(!d?.route||d.photos<9||Object.keys(d.recalls).length<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
+ const d=s.originZero;if(!d?.route||d.photos<9||Object.keys(d.individualRecalls??{}).length<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-10);n.knowledge-=12;state.studies++;
- const qualities=Object.values(state.recalls).map(r=>r.quality);
+ const qualities=Object.values(state.individualRecalls??{}).map(r=>r.quality);
  const avg=Math.round(qualities.reduce((a,b)=>a+b,0)/qualities.length);
  const routeBoost=state.route==='shelter'?6:0;
  state.immunity=cap(state.immunity+20+Math.floor(avg/10)+routeBoost+(state.photos===12?5:0));
@@ -148,7 +202,7 @@ export function originBranchAction(s:V10,choice:'retrieve'|'stabilize'):V10{
 }
 /** The branch's final emergency is a distinct, one-time choice with persistent cost. */
 export function originCrisisAvailable(s:V10):boolean{
- const d=s.originZero;return !!d?.route&&!d.crisisDone&&s.day>=(d.firstPositiveDay??Infinity)+2&&s.phase==='day'&&!s.run&&!s.pendingIncident;
+ const d=s.originZero;return !!d?.route&&!d.crisisDone&&d.photos>=6&&Object.keys(d.individualRecalls??{}).length>=1&&s.phase==='day'&&!s.run&&!s.pendingIncident;
 }
 export function resolveOriginCrisis(s:V10,choice:'protect'|'knowledge'):V10{
  if(!originCrisisAvailable(s))return s;
@@ -172,7 +226,7 @@ export function tickOriginDay(s:V10):void{
   d.hqPressure+=3;s.threat=cap(s.threat+3);
  }else{d.hqPressure+=1;}
 }
-export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && Object.keys(d.recalls).length>=3 && recallCandidates(s).every(item=>!!d.recalls[item.id]) && d.immunity>=75;}
+export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && Object.keys(d.individualRecalls??{}).length>=3 && recallCandidates(s).every(item=>!!d.individualRecalls?.[item.key]) && d.immunity>=75;}
 export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{title:string;text:string}{
  const d=s.originZero;
  if(!d?.route)return {title:'닫힌 기록',text:'M-00의 신원이 확인되지 않은 채 마지막 관리자의 신경 신호가 끊겼다.'};

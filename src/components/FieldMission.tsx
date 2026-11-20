@@ -9,7 +9,7 @@ import {ArrowLeft,Package,AlertTriangle,Radio,HeartPulse,Footprints,Clock3,Compa
 
 type Props={state:V10;animalSrc:(id:AnimalId)=>string;onMove:(index:number,pace:Pace)=>void;onRetreat:()=>void;onHunt:(action:{type:HuntMode;cell?:number;clue?:number})=>void;onMedkit:()=>void;onDecision:(action:'leave'|'survey'|'risk')=>void;feedback:string};
 const clamp=(n:number)=>Math.max(0,Math.min(100,n));
-const tools:{kind:Exclude<HuntMode,'wait'|'reveal'>;name:string;cost:string;effect:string;tone:string}[]=[
+const tools:{kind:Exclude<HuntMode,'wait'|'reveal'|'capture'>;name:string;cost:string;effect:string;tone:string}[]=[
  {kind:'search',name:'기본 조사',cost:'행동 1',effect:'선택한 딱 한 칸만 엽니다. 조사 시점의 발자국·풀 흔들림·빈칸을 확인합니다. 동물은 조사 직후 이동합니다.',tone:'search'},
  {kind:'bait',name:'먹이 배치',cost:'행동 1',effect:'호응하는 개체가 한 칸씩 접근 · 반복 시 학습',tone:'bait'},
  {kind:'sound',name:'잔향 소리',cost:'행동 1',effect:'소리 선호 개체 접근, 소음 민감 개체 도주',tone:'sound'},
@@ -26,7 +26,7 @@ function PixelFoliage({variant}:{variant:number}){return <span className={'v33-l
  </svg></span>}
 function Status({title,value,level,color}:{title:string;value:string;level:number;color:'rose'|'cyan'|'gold'|'green'}){const tone={rose:'#ed9ba9',cyan:'#87d7d5',gold:'#eac383',green:'#91dabc'}[color];return <div className={'v33-status v57-field-ring v33-status-'+color}><div className="v57-field-ring-circle" style={{background:`conic-gradient(${tone} ${clamp(level)}%,#423849 ${clamp(level)}% 100%)`}}><div>{value}</div></div><span>{title}</span></div>}
 export default function FieldMission({state,animalSrc,onMove,onRetreat,onHunt,onMedkit,onDecision,feedback}:Props){
- const [mode,setMode]=useState<Exclude<HuntMode,'wait'|'reveal'>>('search');
+ const [mode,setMode]=useState<Exclude<HuntMode,'wait'|'reveal'|'capture'>>('search');
  const [notice,setNotice]=useState('');
  const [searchFlash,setSearchFlash]=useState<number|null>(null);
  const [walking,setWalking]=useState<{from:number;to:number}|null>(null);

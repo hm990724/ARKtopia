@@ -8,7 +8,7 @@ import type {AnimalId} from './sim';
 export const HUNT_SIZE=8;
 export const HUNT_CELLS=HUNT_SIZE*HUNT_SIZE;
 export type HuntTool='bait'|'sound'|'light'|'barrier';
-export type HuntMode='search'|HuntTool|'wait'|'reveal';
+export type HuntMode='search'|HuntTool|'wait'|'reveal'|'capture';
 export type Terrain='thicket'|'path'|'mud'|'water'|'ruin'|'root';
 export type HuntObject={cell:number;kind:HuntTool;life:number};
 export type HuntLog={turn:number;message:string;kind:'hint'|'warning'|'event'|'error'};
@@ -28,7 +28,7 @@ export function observationAge(state:HuntState,cell:number):number{
 }
 
 export type HuntState={
- version:35;species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
+ version:35;located?:number|null;species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
  // Internal, never render on the board: the creature always moves after an action.
  position:number;previous:number;footprints:number[];shaking:number[];
  terrain:Terrain[];objects:HuntObject[];revealed:boolean[];
@@ -176,9 +176,18 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  if(action.type==='search'||['bait','sound','light','barrier'].includes(action.type)){
   if(!Number.isInteger(action.cell)||action.cell!<0||action.cell!>=64)return unchanged;
  }
+ if(action.type==='capture'&&(raw.located==null||raw.located!==raw.position||!Number.isFinite(action.clue)||action.clue!<0||action.clue!>100))return unchanged;
  const current={...raw,objects:raw.objects.map(x=>({...x})),revealed:[...raw.revealed],
   searchedAt:{...(raw.searchedAt??{})},observations:{...(raw.observations??{})},lastSearch:raw.lastSearch??null,habits:{...raw.habits},log:[...raw.log]};
  let text='',kind:HuntLog['kind']='event';
+ if(action.type==='capture'){
+  current.actions--;current.turn++;current.lastCommand='capture';
+  if(action.clue!>=38&&action.clue!<=68){current.outcome='caught';current.resultText='포획망을 안전 구간에 맞췄습니다. 개체를 보호 격리실로 이송합니다.';return {state:msg(current,current.resultText,'hint'),changed:true,won:true,lost:false,penalty:nil};}
+  current.located=null;current.fear=Math.min(100,current.fear+12);
+  if(current.actions<=0){current.outcome='escaped';current.resultText='마지막 포획 시도가 빗나갔습니다. 흔적은 기록에 남습니다.';return {state:msg(current,current.resultText,'error'),changed:true,won:false,lost:true,penalty:finishPenalty(current)};}
+  current.previous=current.position;current.position=chooseStep(current);
+  return {state:msg(current,'포획망이 빗나갔습니다. 경계 +12 · 흔적을 다시 조사하거나 청음하세요.','warning'),changed:true,won:false,lost:false,penalty:nil};
+ }
  if(action.type==='search'){
   const searchedCell=action.cell!;
   // Mark before testing: both an empty clearing and a successful discovery open the grass.
@@ -188,9 +197,8 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   current.observations[String(searchedCell)]={kind:evidence,turn:current.turn};
   current.lastSearch={cell:searchedCell,found:searchedCell===current.position,turn:current.turn+1};
   if(action.cell===current.position){
-   current.actions--;current.turn++;current.outcome='caught';current.selectedCell=action.cell!;current.lastCommand='search';
-   current.resultText=current.tutorial?'풀숲에서 토끼를 발견했습니다. EVE의 첫 구조 보정이 활성화됩니다.':'풀숲을 젖히자 개체의 모습이 드러났습니다. 숨은 위치를 정확히 찾아 보호 이송합니다.';
-   return {state:msg(current,current.resultText,'hint'),changed:true,won:true,lost:false,penalty:nil};
+   current.actions=Math.max(1,current.actions-1);current.turn++;current.located=current.position;current.selectedCell=action.cell!;current.lastCommand='search';
+   return {state:msg(current,'개체 발견 · 안전 구간에 바늘이 들어오면 F 또는 포획 버튼을 누르세요.','hint'),changed:true,won:false,lost:false,penalty:nil};
   }
   current.fear+=8;current.misses++;
   if(evidence==='footprint'){text='도트 발자국 발견. 개체가 이곳에 있었던 것은 이전 턴입니다. 이미 다른 칸으로 이동했을 수 있습니다.';kind='hint';}
@@ -221,6 +229,7 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   current.revealed[clue]=true;text=`행동 분석 ${clue+1} 해독 완료. 새로운 이동 습성을 확인했습니다.`;kind='hint';
  }
  current.actions--;current.turn++;current.lastCommand=action.type;current.selectedCell=action.cell??null;
+ current.located=null;
  const from=current.position;
  const next=chooseStep(current);
  current.previous=from;current.position=next;
@@ -238,7 +247,8 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  // Timed field notes keep a long hunt readable without revealing a hidden coordinate.
  // This uses existing trait hints and does not alter movement, rewards or saves.
  if(!current.tutorial&&[5,10,15].includes(current.turn)){
-  const note=HUNT_TRAITS[current.species].hints[current.turn/5-1];
+  const index=current.turn/5-1;current.revealed[index]=true;
+  const note=HUNT_TRAITS[current.species].hints[index];
   text+=` · 자동 관찰 메모 (${current.turn}/20): ${note}`;
   kind='hint';
  }
@@ -248,11 +258,14 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  current.predator=Math.min(100,current.predator+(dangerous?6:3)+(action.type==='search'?6:0));
  current.fear=Math.min(100,Math.max(0,current.fear+(action.type==='search'?7:3)));
  if(dangerous&&current.predator>=60&&current.actions>0){text+=' EVE 경보: 포식자가 담당자님을 역추적하고 있습니다. 남은 행동이 적습니다.';kind='warning';}
+ if(current.turn>=Math.min(19,current.maxActions-2)&&current.actions>0){
+  current.located=current.position;
+  text+=' · 누적 흔적을 연결해 현재 위치를 확정했습니다. 포획 타이밍을 맞추세요.';
+ }
  if(current.actions<=0){
   if(current.tutorial){
-   // Explicit scripted tutorial guarantee, cannot be exploited in ordinary hunts.
-   current.outcome='caught';current.resultText='최초 구조용 보정 절차 완료. EVE가 위치를 확정해 흰 토끼를 안전하게 확보했습니다.';
-   return {state:msg(current,current.resultText,'hint'),changed:true,won:true,lost:false,penalty:nil};
+   current.actions=2;current.located=current.position;
+   return {state:msg(current,'EVE가 포획 위치를 다시 표시합니다. 초회 실습은 재시도할 수 있습니다.','hint'),changed:true,won:false,lost:false,penalty:nil};
   }
   current.outcome='escaped';const penalty=finishPenalty(current);
   current.resultText=`${HUNT_TRAITS[current.species].title} · 추적 기회를 모두 소비했습니다. ${HUNT_TRAITS[current.species].risk}.`;
