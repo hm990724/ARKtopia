@@ -1,3 +1,49 @@
+# ARKtopia v70 — 진행 불가 버그 수정 전체 프로젝트
+
+이 압축은 **ARKtopia v69 전체 프로젝트에 보급 접근·하루 종료·AP 복구·퓨즈 처리 회귀 수정**을 적용한 v70 전체 소스입니다. 기존 동물 이미지, 직원, ORIGIN ZERO, 12개 Hidden Photo 기록, 엔딩 분기는 그대로 유지합니다.
+
+**먼저 읽기:** `NEXT_STEPS_README.md`(실제 변경 파일/근본 원인/테스트 및 미해결 사항) · `QA_REPORT_v70.md`(검증 사실).
+
+```powershell
+npm ci
+npm run typecheck
+npm run test:all
+npm run check:assets:v70
+npm run build
+npm run dev
+```
+
+> 현 작업 컨테이너에서 TypeScript + 34개 테스트는 통과했으나 Linux용 SWC가 없고 npm registry 연결이 실패하여 Next.js 빌드/브라우저는 **미검증**입니다. 아래는 기존 v69/v67 문서 아카이브입니다.
+
+---
+
+# ARKtopia v69 · 전체 프로젝트 (탐지/포획 복구 및 세계관 통합)
+
+**중요:** 압축 안의 `NEXT_STEPS_README.md`와 `QA_REPORT_v69.md`를 먼저 읽으세요. 이 파일은 제공된 v67 소스에 v69 개선 사항을 직접 적용한 결과물이며, 별도 Codex의 더 최신 저장소 내용은 포함됐다고 주장하지 않습니다.
+
+## v69 변경 핵심
+- 직접 그물 드래그 포획 · 청음 구역 가시화 · 단서 기반 추적
+- CCTV의 직접 4구역 클릭 판독 · 정밀 스캔 대체 수단 보존
+- 야간 선택형 퓨즈 수리, 모바일 직원 영역 접기
+- 직원의 이송 개체 보존 번호 · 신체 안정도/동물 기억 충돌
+- 군사 연구와 M-00 종전 후 탈출, ARKTOPIA 살아 있는 동물 숙주 보존, PHOTO11 관리자 이력
+- 기존 직원 4종 아트/컷신·엔딩·저장·기능 유지. 14개 동물 이미지(7종×2) 반영.
+
+## Windows 실행
+```powershell
+cd C:\Users\lookm\Documents\GitHub\ARKtopia
+npm ci
+npm run check:assets
+npm run typecheck
+npm run test:logic
+npm run test:v69
+npm run dev
+```
+브라우저: http://localhost:3000
+
+---
+
+## 이전 버전 안내
 # ANOMALY ZOO / ARKtopia v67 · 병리실 & UI 패치
 
 v66 **ORIGIN ZERO**를 유지하면서 **직원 상세 모달 + 토끼 이송 후 격리실 튜토리얼 버그 수정 + 생체 합성 제거 및 병리·검시 시스템**을 추가한 전체 소스 폴더입니다.

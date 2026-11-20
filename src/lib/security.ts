@@ -3,7 +3,7 @@ import type {V10} from './game-v10';
 
 export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04';
 export type SecurityStatus='alert'|'breach'|'escaped';
-export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;lastTrace?:string};
+export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string};
 export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[]};
 export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0,lastScanDay:0,resolved:0,escapedIds:[],history:[]});
 export const cameras:{id:CameraId;title:string;description:string}[]=[
@@ -13,7 +13,7 @@ export const cameras:{id:CameraId;title:string;description:string}[]=[
  {id:'CAM-04',title:'연구동',description:'기억 동기화 및 설비 접근'}];
 export const securityPatterns:Record<AnimalId,{behavior:string;escape:string;voice:string}>= {
  rabbit:{behavior:'진료대 위에 앞발을 얹고 정해진 순서로 기구를 옮기고 있습니다.',escape:'의료실의 잠금장치를 건드린 흔적이 있습니다.',voice:'화… 환자분…? 움직이지 마세요…'},
- fox:{behavior:'감시 사각지대에만 머무르며 잠금 패널을 바라봅니다.',escape:'보안 패널의 문 열림 기록이 삭제됐습니다.',voice:'출입 통제. 신원 확인부터 해.'},
+ fox:{behavior:'자재 창고를 순서대로 점검하고 빈 물품 칸에서 멈춥니다.',escape:'보급 창고의 반출 장부와 물품 수량이 서로 맞지 않습니다.',voice:'부품은 몇 개 남았지… 먼저 재고부터 세야 해.'},
  deer:{behavior:'옛 보존 명찰을 피해 같은 통로를 반복해 걷습니다.',escape:'연구 자료실 문에 뿔 자국이 남았습니다.',voice:'아직… 보호 명단이 끝나지 않았어.'},
  owl:{behavior:'발톱으로 감시 카메라의 회전 주기와 같은 패턴을 그립니다.',escape:'정확히 카메라가 돌아간 틈에 이동했습니다.',voice:'주기… 여덟, 열셋… 다시 계산해야…'},
  wolf:{behavior:'다른 개체의 방 앞에서 경계 자세를 취하고 있습니다.',escape:'외곽 울타리 앞에 방어 흔적이 있습니다.',voice:'뒤로 물러나! 내가 막을게!'},
@@ -58,10 +58,29 @@ export function nightlySecurity(s:V10,roll=Math.random()):V10{
  const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20};sec.lastIncidentDay=s.day;
  trace(s,'CCTV 이상 행동',`${a.name}: ${securityPatterns[a.id].behavior}`,'mystery');return s;
 }
-export type SecurityAction='scan'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum';
-export function securityAction(s:V10,action:SecurityAction):V10{
+export type SecurityAction='scan'|'inspect'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum';
+// Deterministic candidate among four image regions; no exact coordinates are stored in saves.
+export function cctvHotspotIndex(s:V10):number {
+ const i=s.security?.incident; if(!i)return -1;
+ return (s.day*3+i.animalId.length*5+i.steps)%4;
+}
+export function securityAction(s:V10,action:SecurityAction,selectedCamera?:CameraId,hotspot?:number):V10{
  if(s.phase!=='day'||s.run||s.pendingIncident||s.pending||!s.security)return s;
  const n=clone(s),sec=n.security;const inc=sec.incident;
+ if(action==='inspect'){
+  if(!inc||inc.manualInspected||hotspot===undefined||hotspot<0||hotspot>3||!selectedCamera)return s;
+  if(n.power<3)return s;
+  n.power=cap(n.power-3);
+  if(inc.camera===selectedCamera&&hotspot===cctvHotspotIndex(s)){
+   inc.detected=true;inc.manualInspected=true;inc.severity=cap(inc.severity-17);
+   if(inc.status==='escaped')inc.tracked=true;
+   trace(n,'CCTV 수동 판독 성공',`${inc.camera} 화면에서 이전 영상과 달라진 지점을 직접 찾아냈습니다. ${securityPatterns[inc.animalId].behavior}`,'good');
+  }else{
+   n.threat=cap(n.threat+2);
+   trace(n,'CCTV 수동 판독 오탐','선택한 화면에 변화를 확인하지 못했습니다. 전력 3을 소모했고, 다음 감시 신호를 확인해야 합니다.','info');
+  }
+  return n;
+ }
  if(action==='scan'){
   const scanCost=(n.voice?.correct??0)>=2?5:8;
   if(n.power<scanCost||n.ap<1||sec.lastScanDay===n.day)return s;

@@ -88,13 +88,15 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
 }
 export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{state:V10;onSupport:(id:CrewId)=>void;onTalk:(id:CrewId)=>void;onTreat:(id:CrewId,kind:'medical'|'counsel')=>void;onReplayArrival?:(id:CrewId)=>void}){
  const [selected,setSelected]=useState<CrewId|null>(null);
+ const [rosterOpen,setRosterOpen]=useState(false);
  const crew=state.crew;
  const selectedMember=crew?.members.find(m=>m.id===selected);
  const used=crew?.supportDay===state.day;const retired=crew?.retired??[];
  useEffect(()=>{if(!selected)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setSelected(null)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[selected]);
 
  return <section className="v45-roster" aria-label="본부 파견 인력과 일일 지원">
-  <div className="v45-roster-head"><span><Radio size={12}/> HQ / STAFF</span><b>{crew?.members.length??0} / 4</b></div>
+  <div className="v45-roster-head"><span><Radio size={12}/> HQ / STAFF</span><b>{crew?.members.length??0} / 4</b><button className="v69-roster-toggle" type="button" aria-expanded={rosterOpen} aria-controls="v69-roster-content" onClick={()=>setRosterOpen(v=>!v)}>{rosterOpen?"직원 접기":"직원 펼치기"} <ChevronRight size={14}/></button></div>
+  <div id="v69-roster-content" className={"v69-roster-content "+(rosterOpen?"is-open":"")}>
   <div className="v45-roster-grid">{CREW_IDS.map(id=>{const member=crew?.members.find(m=>m.id===id);const lost=retired.includes(id);return <button key={id} className={'v45-roster-item '+(member?'arrived':lost?'v49-retired':'locked')+(selected===id?' selected':'')} disabled={!member} type="button" onClick={()=>setSelected(v=>v===id?null:id)} aria-label={`${CREW_PROFILES[id].post} ${member?`직원 상세`: lost?'영구 처리 · 복귀 불가':'아직 미배치'}`}>
    {member?<StaffPortrait key={`${id}-${member.mind<35?'critical':member.mind<62?'unstable':'safe'}`} id={id} condition={member.mind<35?'critical':member.mind<62?'unstable':'safe'}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
    <span className="v60-staff-info"><b>{CREW_PROFILES[id].post}</b><small>{member?`정신력 ${member.mind} · ${member.mind<35?'위험':member.mind<62?'주의':'안정'}`:lost?'인격 신호 소실':'미배치'}</small>{member&&<span className="v60-staff-progress"><i style={{width:`${member.mind}%`}}/></span>}</span>
@@ -102,13 +104,15 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
   </button>})}</div>
   {retired.length>0&&<div className="v49-roster-losses"><ShieldAlert size={14}/><span>시설 인력 공백 · {retired.map(id=>CREW_LOSS_EFFECTS[id].summary).join(' / ')}</span></div>}
   <div className="v45-roster-foot"><span>{used?'오늘의 지원 완료':'공동 지원: 하루 1회'}</span><span>{crew?.arrivalQueue?.length?`본부 복원 대기 ${crew.arrivalQueue.length}명 · 다음 날부터 하루 1명`:crew?.members.length?'직원 선택해 대화·지원':'공명 100% · 건강한 개체를 본부 이송'}</span></div>
+  </div>
   {selectedMember&&selected&&createPortal(<div className="v67-staff-overlay" role="presentation" onMouseDown={(event)=>{if(event.target===event.currentTarget)setSelected(null)}}>
     <div className="v67-staff-modal" role="dialog" aria-modal="true" aria-labelledby="v67-staff-title" key={selected}>
      <div className="v67-staff-hero"><StaffPortrait id={selected} condition={selectedMember.mind<35?'critical':selectedMember.mind<62?'unstable':'safe'} className="v67-staff-hero-art"/><span className="v67-staff-hero-tint"/><div className="v67-staff-hero-label">ARK // PERSONNEL RECORD <b>{CREW_PROFILES[selected].post}</b></div></div>
      <div className="v67-staff-content">
       <div className="v67-staff-heading"><div><span className="micro-label">HQ // PERSONNEL</span><h2 id="v67-staff-title">{CREW_PROFILES[selected].post}</h2><p>{CREW_PROFILES[selected].personality}</p></div><button className="v67-staff-close" type="button" aria-label="직원 정보 닫기" onClick={()=>setSelected(null)}>×</button></div>
       <div className="v67-staff-mind"><span>정신 안정도</span><strong>{selectedMember.mind}<small> / 100</small></strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.mind}%`}}/></div></div>
-      <p>신체 안정 {selectedMember.bodyStability??90} · 신뢰 {selectedMember.bond} · 기억 조각 {selectedMember.memoryFragments??0}/3</p><p className="v67-staff-brief">{({rabbit:'응급처치와 회복을 돕습니다.',fox:'식량과 보급품을 추가로 확보합니다.',wolf:'야간 경계와 시설 방어를 지원합니다.',deer:'오염 관리와 기록 분석을 지원합니다.'} as Record<CrewId,string>)[selected]}</p>
+      {(state.originZero?.photos??0)>=7&&<div className="v69-staff-body-status"><span>복제 신체 안정도</span><strong>{selectedMember.stability??88}%</strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.stability??88}%`,background:(selectedMember.stability??88)<35?'#e68da2':'#82c5c7'}}/></div><small>기억 잔향 {selectedMember.memoryEcho??0}% · 연결 보존 번호 {selectedMember.sourceSpecimenId??'기록 복구 중'}</small></div>}
+      <p className="v67-staff-brief">{({rabbit:'응급처치와 회복을 돕습니다.',fox:'식량과 보급품을 추가로 확보합니다.',wolf:'야간 경계와 시설 방어를 지원합니다.',deer:'오염 관리와 기록 분석을 지원합니다.'} as Record<CrewId,string>)[selected]}</p>
       {selectedMember.mind<=28&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 위험 상태 · 조속한 안정 조치가 필요합니다.</div>}
       <div className="v67-staff-action-grid">
        <button type="button" onClick={()=>{setSelected(null);onTalk(selected)}}><BookOpen size={16}/> 대화</button>

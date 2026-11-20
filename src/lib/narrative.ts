@@ -24,8 +24,8 @@ export function currentChapter(s:V10):Chapter{
 export const chapters:Record<Chapter,{title:string;hint:string}>={
  1:{title:'새로운 관리자',hint:'시설을 유지하고 동물의 습관을 관찰하자.'},
  2:{title:'이상한 습관들',hint:'사소한 행동과 불일치하는 기록을 대조하자.'},
- 3:{title:'보존 시설',hint:'이송 명세와 생체 보존 기록의 진실을 확인하자.'},
- 4:{title:'첫 번째 인간',hint:'제000번 관리자와 최초의 연구 명령을 대조하자.'},
+ 3:{title:'방주 계획',hint:'살아 있는 동물 숙주에 보존된 인간의 기억을 추적하자.'},
+ 4:{title:'종전 후 버려진 연구',hint:'전쟁 병기 M-00의 폐기 기록과 제000번 관리자의 과거를 대조하자.'},
  5:{title:'인류를 복원하라',hint:'과거의 명령을 따를지, 지금 살아 있는 생명을 지킬지 선택하자.'}
 };
 export type CaseChoice={label:string;hint:string};

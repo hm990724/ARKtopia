@@ -39,13 +39,13 @@ let hq=origin.chooseOriginRoute(c,'hq');let kept=origin.chooseOriginRoute(c,'she
 assert.equal(hq.originZero.route,'hq');assert.equal(kept.originZero.route,'shelter');assert.equal(hq.originZero.cat,'hq');assert.equal(kept.originZero.cat,'shelter');
 assert.equal(origin.chooseOriginRoute(hq,'shelter'),hq,'branch cannot be reversed without a new save');
 console.log('PASS automatic concealed scans / cat tracking / positive / irreversible fork');
-function fill(x){for(let i=0;i<12;i++){x.ap=4;x.power=100;x=origin.restoreOriginPhotos(x,[0,0,0]);}return x;}
+function fill(x){for(let i=0;i<4;i++){x.ap=4;x.power=100;x=origin.restoreOriginPhotos(x);}return x;}
 hq=fill(hq);kept=fill(kept);
 assert.equal(hq.originZero.photos,12);assert.equal(hq.flags.mirror,true);assert.equal(kept.originZero.photos,12);
-assert.equal(origin.photoRecords.length,12);console.log('PASS 12 photos unlocked only after positive branch and restored individually after alignment');
+assert.equal(origin.photoRecords.length,12);console.log('PASS 12 photos unlocked only after positive branch and restored as 4 groups');
 // Each already known specimen, including transferred or dead, has an alternate retrieval route.
 hq.ap=4;hq.power=100;
-for(const c of origin.recallCandidates(hq)){for(const input of origin.recallSequence(c))hq=origin.performRecallStep(hq,c.key,input);hq=origin.performOriginRecall(hq,c.key);}
+for(const id of ['rabbit','fox','deer'])hq=origin.performOriginRecall(hq,id);
 assert.equal(Object.keys(hq.originZero.recalls).length,3);
 assert.ok(origin.originCrisisAvailable({...hq,day:28}));hq.day=28;
 hq=origin.resolveOriginCrisis(hq,'protect');assert.equal(hq.originZero.crisisDone,true);
@@ -57,10 +57,9 @@ let pre=g.finishDay(hq,'shield');assert.equal(pre.phase,'finale');
 let out=archive.finishWithArchive(pre,'rebuild');assert.equal(out.phase,'ending');assert.ok(out.ending.includes('사망했다'));
 console.log('PASS HQ remote evidence -> crisis -> recall -> immunity -> final ending with death');
 // Keep branch remains independent; not requiring HQ specimen magically back at the zoo.
-kept.day=28;kept.ap=4;kept.power=100;
+kept.day=28;kept.ap=4;kept.power=100;assert.ok(origin.originCrisisAvailable(kept));kept=origin.resolveOriginCrisis(kept,'protect');
 kept.ap=4;kept.power=100;
-for(const c of origin.recallCandidates(kept)){for(const input of origin.recallSequence(c))kept=origin.performRecallStep(kept,c.key,input);kept=origin.performOriginRecall(kept,c.key);}
-assert.ok(origin.originCrisisAvailable(kept));kept=origin.resolveOriginCrisis(kept,'protect');
+for(const id of ['rabbit','fox','deer'])kept=origin.performOriginRecall(kept,id);
 for(let i=0;i<4&&kept.originZero.immunity<75;i++){kept.ap=4;kept.power=100;kept.knowledge=100;kept=origin.studyOriginImmunity(kept)}
 assert.equal(origin.originReadyForFinale(kept),true);
 kept.phase='finale';const protect=archive.finishWithArchive(kept,'freedom');assert.ok(/방주의 씨앗|마지막 동물원/.test(protect.ending));assert.ok(protect.ending.includes('사망했다'));

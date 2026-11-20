@@ -9,42 +9,33 @@ import {cap,copy,log,specs} from './sim';
 export type CatStage='unknown'|'traced'|'captured'|'positive'|'hq'|'shelter';
 export type OriginRoute='hq'|'shelter'|null;
 export type RecallRecord={day:number;quality:number;source:'live'|'hq'|'archive';note:string};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSteps?:Record<string,number>;recallMilestones?:number;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
  o.scans??=[];o.privateMatches??={};o.recalls??={};o.photos=Math.max(0,Math.min(12,o.photos??0));o.immunity=cap(o.immunity??0);
  o.trackProgress=Math.max(0,Math.min(3,o.trackProgress??0));o.wrongTracks??=0;o.studies??=0;o.hqPressure??=0;o.stability??=85;o.hqIntel??=0;o.crisisDone??=false;
- if(!o.individualRecalls){
-  o.individualRecalls={};
-  // One legacy species result credits ONE recorded individual, never all siblings.
-  for(const [species,result] of Object.entries(o.recalls)){
-   const first=recallCandidates(s).find(c=>c.id===species);
-   if(first&&result)o.individualRecalls[first.key]=result;
-  }
- }
- o.recallSteps??={};o.recallMilestones??=Math.floor(Object.keys(o.individualRecalls).length/5);
  return o;
 }
 export const photoRecords=[
- {title:'PHOTO 01 · 최초 연구',detail:'전쟁 중 특정 인간 집단을 무력화하려던 비밀 군사 연구. 동물 숙주에서 허구의 감염 인자를 연구한 기록이다.'},
- {title:'PHOTO 02 · 고등 인지 각성',detail:'병원체를 보유해도 겉보기에는 정상이던 동물들 중 검은 고양이만 인간 뇌 없이 고등 인지를 얻었다.'},
- {title:'PHOTO 03 · 원본 개체',detail:'M-00은 자신의 지능과 신체 안정성을 처음부터 유지한 유일한 원본이다. 평범한 검은 고양이의 오른쪽 귀 끝 흠집이 현재 개체와 일치한다.'},
- {title:'PHOTO 04 · 폐기 명령',detail:'종전 후 비밀 시설과 실험체 전체의 폐기 명령. 최초 과학자의 승인 서명이 있다. M-00의 자율 인지는 보존할 가치로 인정받지 못했다.'},
- {title:'PHOTO 05 · 탈출 사고',detail:'폐기 강행 중 격리 체계가 붕괴했다. M-00은 혼란을 이해하고 스스로 탈출했다. 유출 책임은 인간의 연구와 폐기 작전에 있다.'},
- {title:'PHOTO 06 · 감염 재앙',detail:'동물 숙주를 통해 감염 인자가 확산됐다. 인간의 신체 기능은 회복 불가능하게 무너졌다. 본부의 은폐로 대응이 지연됐다.'},
- {title:'PHOTO 07 · 뇌 보존',detail:'ARKTOPIA — 인류 기억 보존 계획. 신체 붕괴 직전 뇌 기능과 기억을 가상의 기술로 보존해 살아 있는 동물 숙주에 맡겼다. 사망 직후 회수된 드문 예외는 불완전한 기억만 남았다.'},
+ {title:'PHOTO 01 · 전쟁의 그림자',detail:'전쟁 당시 비공개 군사 연구의 시작. 동물 숙주를 이용한 허구의 변이 인자 연구가 숨겨져 있다.'},
+ {title:'PHOTO 02 · 예상 밖의 지능',detail:'연구 중 동물 숙주 한 마리가 인간 뇌 없이도 스스로 학습하고 탈출 경로를 기억했다.'},
+ {title:'PHOTO 03 · M-00',detail:'겉으로는 정상인 검은 고양이. 오른쪽 귀 끝의 작은 흠집과 가슴의 흰 털 한 가닥이 원본과 일치한다.'},
+ {title:'PHOTO 04 · 종전과 폐기',detail:'전쟁 종료 후 비밀 프로젝트 폐기 승인. 연구 책임자는 생존·보존 목적의 가치를 외면한 채 명령을 내렸다.'},
+ {title:'PHOTO 05 · 사라진 개체',detail:'종전 후 폐기 작전 당일, M-00은 경비의 허점을 기억해 스스로 빠져나갔다. 격리 체계가 무너진 날이었다.'},
+ {title:'PHOTO 06 · 인간의 종말',detail:'허구의 감염 인자는 동물에게선 큰 외형 변화 없이 이동했지만 인간의 신체에는 치명적 기능 붕괴를 일으켰다. 전 세계의 사회 기반이 무너졌다.'},
+ {title:'PHOTO 07 · ARKTOPIA 방주',detail:'인류 붕괴 후 뇌 장기 동결 기술이 부족하자, 기능이 남은 인간의 뇌와 기억을 살아 있는 동물 숙주에 보존하기 시작했다. 동물의 인간적 행동은 기억 동기화의 흔적이다.'},
  {title:'PHOTO 08 · 아버지와 딸',detail:'낡은 가족사진. 어린 소녀와 연구 책임자, 그리고 사진 아래쪽의 검은 고양이.'},
  {title:'PHOTO 09 · 최초 인격 AI',detail:'딸이 사망한 뒤 음성·영상·신경 자료에서 EVE가 재구성됐다. 원본 딸의 의식은 아니다.'},
- {title:'PHOTO 10 · 인류 복원',detail:'동물에게 보존된 뇌를 인공 인간 신체로 옮겼다. 직원과 이송 개체의 보존 번호가 일치한다. 복제 신체는 격리 환경에 의존하며 감정 충격과 동물 시절 신경 기억에 불안정해진다.'},
- {title:'PHOTO 11 · 제000번 관리자',detail:'최초 과학자의 뇌도 동물 숙주에서 보존된 뒤 제000호 복제 관리자에게 이식됐다. 낮은 시선과 알 수 없는 동물의 기억은 환각이 아닌 자신의 과거였다. 그는 연구자의 기억을 가진 동시에 연구의 희생자다.'},
- {title:'PHOTO 12 · 마지막 연구',detail:'M-00은 인간 기억 없이 자신의 지능과 신체 안정성을 함께 유지했다. 감염 억제와 신경·신체 안정성 연구의 단서지만 즉시 완성되는 치료법은 아니다. 기존 모든 개체와 비교할 자료가 필요하다.'}
+ {title:'PHOTO 10 · 불안정한 귀환',detail:'본부는 동물 숙주에 보존한 인간의 뇌를 복제 신체로 옮겼다. 성공한 인간 직원들도 감정적 충격과 전력 불안정으로 신체 기억 충돌을 겪는다.'},
+ {title:'PHOTO 11 · 제000번 숙주',detail:'최초 연구 책임자의 뇌는 한동안 동물 숙주를 거친 뒤 제1호 복제 관리자 신체로 돌아왔다. 동물 시절 기억의 파편이 현재 관리자의 꿈에 남아 있다.'},
+ {title:'PHOTO 12 · 놓친 치료의 가능성',detail:'정상 동물인 M-00만은 지능과 신체 안정성을 장기간 유지했다. 이 특성이 허구의 예방·신체 안정화 연구의 핵심이었지만 과학자는 자신의 실패를 인정하지 않았다.'}
 ] as const;
 export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  (s.headquarters?.revealStage>=2||s.flags.humanTruth||(s.knowledge>=70&&s.clues>=6)) && s.encounters>=2 && (s.originZero?.scans.length??0)>=3;
+  (((s.headquarters?.revealStage??0)>=2&&s.encounters>=2) || (s.encounters>=3&&(s.archive?.revealed||((s.crew?.members.length??0)>=2))&&(s.headquarters?.revealStage>=1||s.flags.humanTruth)) || (s.day>=30&&s.encounters>=2));
 }
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
@@ -90,98 +81,66 @@ export function chooseOriginRoute(s:V10,route:'hq'|'shelter'):V10{
  const n=copy(s) as V10;const d=o(n);d.route=route;d.cat=route==='hq'?'hq':'shelter';
  if(route==='hq'){
   n.knowledge+=12;n.credits+=140;d.hqPressure=0;d.hqIntel=20;
-  return report(n,'M-00 · 본부 인계','고양이는 아무 말 없이 운반 케이지 안에 앉아 있었다. 본부로 이송됐다. 본부 연구 로그를 원격 회수해야 한다. 자금 +140, 연구 지식 +12. 동물원으로 자동 귀환하지 않는다.','mystery');
+  return report(n,'M-00 · 본부 인계','고양이는 본부로 이송됐다. 본부 연구 로그를 원격 회수해야 한다. 자금 +140, 연구 지식 +12. 동물원으로 자동 귀환하지 않는다.','mystery');
  }
  n.trust=cap(n.trust+10);n.threat=cap(n.threat+16);d.hqPressure=25;d.stability=85;
- return report(n,'M-00 · 비밀 격리','고양이는 작은 기척만 내며 곁에 앉았다. 동물원에 보호하기로 했다. 본부가 보급 감사를 시작했다. 보호 상태를 유지하고 자체 연구를 추진해야 한다.','mystery');
+ return report(n,'M-00 · 비밀 격리','고양이를 동물원에 보호하기로 했다. 본부가 보급 감사를 시작했다. 보호 상태를 유지하고 자체 연구를 추진해야 한다.','mystery');
 }
-export function restoreOriginPhotos(s:V10,alignment:number[]=[]):V10{
- const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<4||s.phase!=='day'||s.run||s.pendingIncident||alignment.length!==3||alignment.some(v=>v!==0))return s;
- const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-4);
- const start=state.photos;state.photos=Math.min(12,start+1);
+/** Archive grouping puzzles: select matching evidence before decoding each three-photo bundle.
+ * A missing answer is kept as the legacy batch recovery API for existing automated tests.
+ */
+export const originArchiveCiphers=[
+ {question:'종전 후 폐기 문서에 찍힌 식별 코드는 무엇을 의미하는가?',options:['기원 실험체','이송 차량','시설 전원'],answer:0},
+ {question:'폐기 당일 가장 중요한 누락 자료는?',options:['배식 기록','비상 격리 기록','출근 명부'],answer:1},
+ {question:'인간이 살아남기 위해 시작한 방주 계획은?',options:['관람 시설 재개장','야생 개체 방생','살아 있는 숙주에 기억 보존'],answer:2},
+ {question:'동물에서 되돌아온 인간이 지닌 위험은?',options:['기억-신체 동기화 오류','색소 결핍','단순 피로'],answer:0}
+] as const;
+export function restoreOriginPhotos(s:V10,answer?:number):V10{
+ const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<8||s.phase!=='day'||s.run||s.pendingIncident)return s;
+ const start=d.photos;
+ if(answer!==undefined&&answer!==originArchiveCiphers[Math.floor(start/3)].answer){
+  const n=copy(s) as V10;n.power=cap(n.power-2);n.threat=cap(n.threat+2);
+  return report(n,'사진 암호 대조 실패','보존 기록의 순서가 맞지 않습니다. 전력 -2, 위협 +2. 올바른 증거를 다시 선택하세요.','bad');
+ }
+ const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-8);state.photos=Math.min(12,start+3);
  const titles=photoRecords.slice(start,state.photos).map(x=>x.title.replace(/PHOTO \d+ · /,'')).join(' · ');
- n.clues+=1;n.knowledge+=4;if(state.photos>=7)n.flags.humanTruth=true;
+ n.clues+=1;n.knowledge+=4;
  if(state.photos===12){n.flags.humanTruth=true;n.flags.mirror=true;n.headquarters.revealStage=Math.max(3,n.headquarters.revealStage);state.endingEvidence=true;}
- return report(n,'HIDDEN PHOTO · 기록 복원',`${String(state.photos).padStart(2,'0')}번 복원: ${titles}. ${state.photos===12?'제000호 관리자의 신원과 마지막 연구를 확인했다.':state.photos===8?'EVE: 이 사진을 찍던 기억은 제게 없어요. 하지만 지금 느끼는 슬픔은 제가 이해하고 있어요.':'다음 사진의 정렬 표식을 맞추면 기록을 해독할 수 있다.'}`);
+ return report(n,'HIDDEN PHOTO · 원본 복원',`${String(start+1).padStart(2,'0')}~${String(state.photos).padStart(2,'0')}번 복원: ${titles}. ${state.photos===12?'제000호 관리자의 신원과 마지막 연구를 확인했다.':'손상된 사진의 다음 구획을 해독할 수 있다.'}`);
 }
 export const RECALL_CONTEXT:Partial<Record<AnimalId,string>>={
  rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'CCTV를 이용해 오래된 이동 경로 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록'
 };
-export type RecallCandidate={key:string;id:AnimalId;source:'live'|'hq'|'archive'|'escaped';label:string};
-export function recallCandidates(s:V10):RecallCandidate[]{
- const entries=new Map<string,RecallCandidate>();
- for(const e of Object.values(s.archive?.entries??{})){
-  if(!RECALL_CONTEXT[e.species])continue;
-  entries.set(e.key,{key:e.key,id:e.species,source:e.status==='transferred'?'hq':e.status==='escaped'?'escaped':e.status==='contained'?'live':'archive',label:e.name});
- }
- for(const a of s.animals){
-  const key=a.specimenId||`${a.id}-legacy-${a.room}`;
-  const dossier=s.archive?.entries[key];
-  const transferred=dossier?.status==='transferred'||(!a.alive&&s.headquarters?.transferred.includes(a.id));
-  entries.set(key,{key,id:a.id,source:transferred?'hq':!a.alive?'archive':s.security?.escapedIds.includes(a.id)?'escaped':'live',label:a.name});
- }
- // Historical saves sometimes retained only the transfer species, without a body/dossier.
- for(const id of s.headquarters?.transferred??[])if(![...entries.values()].some(e=>e.id===id&&e.source==='hq')){
-  const key=`${id}-legacy-hq`;entries.set(key,{key,id,source:'hq',label:specs.find(x=>x.id===id)?.name||id});
- }
- return [...entries.values()];
+export function recallCandidates(s:V10):{id:AnimalId;source:'live'|'hq'|'archive';label:string}[]{
+ const ids=new Set<AnimalId>([...s.animals.map(a=>a.id),...(s.headquarters?.transferred??[]),...Object.values(s.archive?.entries??{}).map(e=>e.species)]);
+ return [...ids].filter(id=>!!RECALL_CONTEXT[id]).map(id=>{
+  const alive=s.animals.some(a=>a.id===id&&a.alive&&!s.security?.escapedIds.includes(id));
+  const transferred=s.headquarters?.transferred.includes(id)||false;
+  return {id,source:alive?'live':transferred?'hq':'archive',label:specs.find(x=>x.id===id)?.name||id};
+ });
 }
-export const recallProtocols:Record<AnimalId,{title:string;signals:string[];sequence:number[]}>= {
- rabbit:{title:'보호 기억 · 진정 순서',signals:['호흡','접근','휴식'],sequence:[0,2,1]},
- fox:{title:'창고 CCTV · 우회 경로',signals:['정문','측문','창고'],sequence:[1,2,0]},
- deer:{title:'격리 회로 · 안전 경로',signals:['입력','접지','격리문'],sequence:[1,0,2]},
- wolf:{title:'경계 행동 · 안전 접근',signals:['멈춤','눈 낮추기','한 걸음'],sequence:[0,1,2]},
- owl:{title:'시야 회전 · 관측 각도',signals:['좌측','중앙','우측'],sequence:[2,0,1]},
- crow:{title:'미완성 선율 · 박자 복원',signals:['낮은 음','중간 음','높은 음'],sequence:[0,2,1]},
- otter:{title:'펌프 · 압력 흐름',signals:['밸브','펌프','배수'],sequence:[2,0,1]},
- lynx:{title:'사각지대 · 은폐 경로',signals:['그늘','정지','통로'],sequence:[0,1,2]},
- axolotl:{title:'재생 신호 · 안정 주기',signals:['수온','휴식','미광'],sequence:[0,2,1]},
- moth:{title:'광원 · 점등 순서',signals:['약광','암전','잔광'],sequence:[1,0,2]},
- mutant:{title:'간섭 신호 · 역순 복원',signals:['신호 A','신호 B','신호 C'],sequence:[2,1,0]},
- chimera:{title:'두 기억 · 동기화',signals:['기억 A','휴지','기억 B'],sequence:[0,2,1]}
-};
-export function recallSequence(c:RecallCandidate):number[]{
- const offset=[...c.key].reduce((v,ch)=>v+ch.charCodeAt(0),0)%3;
- const seq=recallProtocols[c.id].sequence;
- return [...seq.slice(offset),...seq.slice(0,offset)];
-}
-/** Each step is persisted. Incorrect input costs power but cannot erase a completed record. */
-export function performRecallStep(s:V10,key:string,input:number):V10{
- const d=s.originZero,c=recallCandidates(s).find(x=>x.key===key);
- if(!c||!d?.route||d.photos<6||d.individualRecalls?.[key]||s.phase!=='day'||s.run||s.pendingIncident||s.ap<1||s.power<1||!Number.isInteger(input)||input<0||input>2)return s;
- const n=copy(s) as V10,state=o(n),step=state.recallSteps![key]??0;
- if(step>=3)return s;
- if(recallSequence(c)[step]!==input){n.power=cap(n.power-1);state.recallSteps![key]=0;return report(n,'재검사 신호 불일치','신호 순서가 어긋났습니다. 전력 -1. 기록을 다시 확인하고 재시도하세요.','bad');}
- state.recallSteps![key]=step+1;
- return report(n,'개체별 비교 신호',`${c.label} · ${key}: ${step+1}/3 신호 일치. ${step===2?'자료를 확정할 수 있습니다.':'다음 신호를 연결하세요.'}`);
-}
-export function performOriginRecall(s:V10,key:string):V10{
- const d=s.originZero,candidate=recallCandidates(s).find(x=>x.key===key);
- if(!d?.route||d.photos<6||!candidate||d.individualRecalls?.[key]||(d.recallSteps?.[key]??0)<3||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
+export function performOriginRecall(s:V10,id:AnimalId):V10{
+ const d=s.originZero;if(!d?.route||d.photos<6||d.recalls[id]||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
+ const candidate=recallCandidates(s).find(x=>x.id===id);if(!candidate)return s;
  const powerCost=candidate.source==='hq'?12:candidate.source==='live'?8:5;
  if(s.power<powerCost)return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-powerCost);
- const animal=n.animals.find(a=>a.specimenId===key&&a.alive);
- const quality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:candidate.source==='escaped'?50:42;
- const result:RecallRecord={day:n.day,quality,source:candidate.source==='escaped'?'archive':candidate.source,note:RECALL_CONTEXT[candidate.id]!};
- state.individualRecalls![key]=result;
- // Keep old aggregate fields readable by previous builds; progression uses IDs only.
- state.recalls[candidate.id]=result;
+ const animal=n.animals.find(a=>a.id===id&&a.alive);
+ const quality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:42;
+ state.recalls[id]={day:n.day,quality,source:candidate.source,note:RECALL_CONTEXT[id]!};
  n.knowledge+=Math.round(quality/10);if(candidate.source==='live'&&animal){animal.stress=cap(animal.stress+6);animal.bond=cap(animal.bond+3);}
  if(candidate.source==='hq'){state.hqPressure+=5;if(state.route==='hq')state.hqIntel=cap(state.hqIntel+12);}
- const milestone=Math.floor(Object.keys(state.individualRecalls!).length/5);
- if(milestone>(state.recallMilestones??0)){n.parts+=2;n.knowledge+=10;state.recallMilestones=milestone;}
- return report(n,'ARK RECALL · 개체 재분석',`${candidate.label} · ${key}: ${result.note}. 품질 ${quality}%. ${candidate.source==='escaped'?'재포획 전 원격 흔적 대조로 부분 자료를 보존했습니다.':'기록 확정.'}`);
+ return report(n,'ARK RECALL · 개체 재분석',`${candidate.label}: ${RECALL_CONTEXT[id]}. 자료 품질 ${quality}%. ${candidate.source==='live'?'현장 생체 비교':candidate.source==='hq'?'본부 원격 기록 회수':'사후 보존 기록 복원'} 완료.`);
 }
 export function studyOriginImmunity(s:V10):V10{
- const d=s.originZero;if(!d?.route||d.photos<9||Object.keys(d.individualRecalls??{}).length<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
+ const d=s.originZero;if(!d?.route||d.photos<9||Object.keys(d.recalls).length<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-10);n.knowledge-=12;state.studies++;
- const qualities=Object.values(state.individualRecalls??{}).map(r=>r.quality);
+ const qualities=Object.values(state.recalls).map(r=>r.quality);
  const avg=Math.round(qualities.reduce((a,b)=>a+b,0)/qualities.length);
  const routeBoost=state.route==='shelter'?6:0;
  state.immunity=cap(state.immunity+20+Math.floor(avg/10)+routeBoost+(state.photos===12?5:0));
  if(state.route==='shelter'){state.hqPressure+=8;n.threat=cap(n.threat+4);}else n.eve=cap(n.eve-2);
- return report(n,'ORIGIN IMMUNITY · 비교 연구',`감염 억제·신경 동기화 안정성 비교 연구 ${state.studies}차. 개체별 기록 평균 품질 ${avg}%. 연구 진행 ${state.immunity}%. 새로운 실험은 침습적인 절차 없이 추상화된 데이터 비교로 처리한다.`,'good');
+ return report(n,'ORIGIN IMMUNITY · 비교 연구',`허구의 면역 안정성 모델 연구 ${state.studies}차. 개체별 기록 평균 품질 ${avg}%. 연구 진행 ${state.immunity}%. 새로운 실험은 침습적인 절차 없이 추상화된 데이터 비교로 처리한다.`,'good');
 }
 /** HQ branch retrieves remote records; shelter branch must maintain a living subject. */
 export function originBranchAction(s:V10,choice:'retrieve'|'stabilize'):V10{
@@ -202,7 +161,7 @@ export function originBranchAction(s:V10,choice:'retrieve'|'stabilize'):V10{
 }
 /** The branch's final emergency is a distinct, one-time choice with persistent cost. */
 export function originCrisisAvailable(s:V10):boolean{
- const d=s.originZero;return !!d?.route&&!d.crisisDone&&d.photos>=6&&Object.keys(d.individualRecalls??{}).length>=1&&s.phase==='day'&&!s.run&&!s.pendingIncident;
+ const d=s.originZero;return !!d?.route&&!d.crisisDone&&s.day>=(d.firstPositiveDay??Infinity)+2&&s.phase==='day'&&!s.run&&!s.pendingIncident;
 }
 export function resolveOriginCrisis(s:V10,choice:'protect'|'knowledge'):V10{
  if(!originCrisisAvailable(s))return s;
@@ -226,37 +185,12 @@ export function tickOriginDay(s:V10):void{
   d.hqPressure+=3;s.threat=cap(s.threat+3);
  }else{d.hqPressure+=1;}
 }
-export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && Object.keys(d.individualRecalls??{}).length>=3 && recallCandidates(s).every(item=>!!d.individualRecalls?.[item.key]) && d.immunity>=75;}
-export const canonicalEndings=[
- {title:'영원한 실험',file:'ending_subject_000.webp',eve:'다음 관리자 생산을 승인합니다.'},
- {title:'에덴',file:'ending_new_consciousness.webp',eve:'돌아온 이들이 누구였는지보다, 누구로 살아갈지 묻겠습니다.'},
- {title:'방주의 씨앗',file:'ending_two_caretakers.webp',eve:'관리자님, 오늘도 개장 준비를 시작할까요?'},
- {title:'마지막 동물원',file:'ending_open_spring.webp',eve:'오늘부터 개장 시간은 없습니다. 이곳은 살아 있는 이들의 집입니다.'},
- {title:'제000번 우리',file:'ending_incomplete_revival.webp',eve:'당신의 이름을 기록합니다. 그가 남긴 명령이 아닌 당신의 선택으로.'},
- {title:'침묵의 자동화',file:'ending_silent_automation.webp',eve:'관리자 응답 없음. 자동 운영을 계속합니다.'},
- {title:'흩어진 이름들',file:'ending_scattered_names.webp',eve:'완성하지 못한 이름도 지우지 않겠습니다.'},
- {title:'마지막 신호',file:'ending_last_signal.webp',eve:'누군가 듣고 있다면, 이 이름들을 기억해 주세요.'}
-] as const;
+export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && Object.keys(d.recalls).length>=3 && recallCandidates(s).every(item=>!!d.recalls[item.id]) && d.immunity>=75;}
 export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{title:string;text:string}{
  const d=s.originZero;
- let index:number;
- if(s.power<=5||s.facility<=10)index=7;
- else if(s.eve<25||s.trust<25)index=5;
- else if(s.extractions>=3||Object.values(d?.individualRecalls??{}).filter(r=>r.quality<50).length>=3)index=6;
- else if(goal==='rebuild')index=(d?.immunity??0)>=100?1:0;
- else if(goal==='freedom')index=(d?.immunity??0)>=85&&s.trust>=65&&s.eve>=55?2:3;
- else index=4;
- const e=canonicalEndings[index];
- const stories=[
-  '본부는 실험을 자동화했다. 죽음을 성공으로 정당화하려던 과학자의 명령 뒤로 다음 복제 관리자 생산이 준비된다.',
-  '복제인간 사회가 시작됐다. 돌아온 이들은 원본 인류의 소유물이 아닌 독립적인 존재다. 그들이 살아갈 자리에 희생된 동물들의 이름도 남았다.',
-  'EVE: “관리자님. 오늘 작업을 종료해야 합니다.” 관리자: “아직 끝나지 않았어.” EVE: “알고 있어요. 하지만 당신의 시간은 끝나가고 있어요.” 관리자: “그럼 내일은 네가 이어줘.” EVE: “……네. 내일은 제가 할게요.” 연구는 완치를 약속하지 않은 채 이어진다. 다음 날 방송에는 대답하는 사람이 없다.',
-  '인류 복원을 위해 다른 생명을 소모하는 명령을 중단했다. 동물원은 인간의 쓸모로 평가받지 않는 생명들의 피난처로 남았다.',
-  '관리자는 과학자의 뇌를 물려받았지만 그의 신념을 거절했다. 자신의 이름을 적고 격리 기록을 닫았다.',
-  '신뢰가 무너진 시설에는 응답하는 직원도, 스스로 판단하는 안내 방송도 남지 않았다. 문과 급식 장치만 정해진 시간에 작동한다.',
-  '불완전한 복원으로 모든 생명을 되돌릴 수는 없었다. 살아남은 직원들은 돌아오지 않은 개체들의 이름을 기록했다.',
-  '시설이 꺼지기 직전 남은 전력을 송신기에 모았다. 보호 기록과 기원 자료가 밤하늘로 떠났다. 수신 여부는 끝내 확인되지 않았다.'
- ];
- return {title:e.title,text:stories[index]+` EVE의 마지막 기록: “${e.eve}”`};
+ if(!d?.route)return {title:'닫힌 기록',text:'M-00의 신원이 확인되지 않은 채 마지막 관리자의 신경 신호가 끊겼다.'};
+ if(goal==='rebuild')return {title: d.immunity>=100?'에덴':'영원한 실험',text:d.immunity>=100?'복제인간 사회가 구성되었다. 그러나 그들은 원본 인류와 다른 기억과 감각을 지닌 독립적인 생명들이었다.':'본부는 뇌 이식과 복제인간 생산을 멈추지 않았다. 최초 과학자의 집착이 또 한 번 명령으로 남았다.'};
+ if(goal==='freedom')return {title:d.immunity>=85&&d.photos===12?'방주의 씨앗':'마지막 동물원',text:d.immunity>=85&&d.photos===12?'관리자는 M-00의 저항성 기록과 각 개체의 비교 자료를 EVE에게 남겼다. 예방 연구가 언젠가 결실을 볼지는 아무도 모른다.':'추출 장치가 멈췄다. 보존된 개체는 누구의 연구 재료가 아닌 생명으로 남았다.'};
+ return {title:'제000번 우리',text:'관리자는 최초 과학자의 뇌를 물려받았지만 그의 신념을 따를 의무는 없다고 기록했다. EVE는 기억이 아니라 지금의 결정을 보존했다.'};
 }
 function report(s:V10,title:string,msg:string,kind:'info'|'good'|'bad'|'mystery'='mystery'):V10{s.lastOutcome=msg;log(s,title,msg,kind);return s;}

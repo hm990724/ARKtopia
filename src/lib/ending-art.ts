@@ -1,4 +1,3 @@
-import {canonicalEndings} from './origin-zero';
 /** Ending illustrations are optional user-supplied single PNG assets. */
 export const ENDING_ASSET_DIRECTORY='/assets/endings/';
 export const ENDING_ART: ReadonlyArray<{prefix:string;file:string;label:string}>=
@@ -50,6 +49,5 @@ export const ENDING_ART: ReadonlyArray<{prefix:string;file:string;label:string}>
   }
 ] as const;
 export function findEndingArt(ending:string):{file:string;label:string}{
- const canonical=canonicalEndings.find(item=>ending.startsWith(item.title));if(canonical)return {file:canonical.file,label:canonical.title};
  return ENDING_ART.find(item=>ending.startsWith(item.prefix))??ENDING_ART[2];
 }

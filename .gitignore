@@ -4,4 +4,3 @@ out
 .env*
 *.tsbuildinfo
 .DS_Store
-tmp/

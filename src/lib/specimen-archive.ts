@@ -19,7 +19,7 @@ const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',
 export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0,rewardPolicyVersion:2});
 export function archiveOf(s:V10):ArchiveState{return s.archive??emptyArchive();}
 function updateStatus(s:V10,a:AnimalState):ArchiveStatus{
- const transferred=!!(a as AnimalState&{transferred?:boolean}).transferred||s.archive?.entries[a.specimenId??'']?.status==='transferred'||(!a.alive&&s.headquarters?.transferred.includes(a.id));
+ const transferred=s.headquarters?.transferred.includes(a.id)||!!(a as AnimalState&{transferred?:boolean}).transferred;
  return transferred?'transferred':s.security?.escapedIds.includes(a.id)?'escaped':a.alive?'contained':'deceased';
 }
 /** Migration is intentionally conservative: old saves never gain fabricated capture facts. */
@@ -217,7 +217,6 @@ export function finishWithArchive(s:V10,goal:'rebuild'|'freedom'|'preserve'):V10
  if(forced>0||handed>0||a.dispatches>0){
   n.ending+=` 최종 명세: 생체 이송 ${handed}건, 신경 조직 송신 ${a.dispatches}건, 강제 회수 ${forced}건.`;
  }
- if(!n.ending.includes('사망'))n.ending+=' 관리자는 점진적인 복제 신체 붕괴로 사망했다. 남은 생명과 기록은 그가 선택한 방향으로 이어졌다.';
  log(n,'보존 기록 최종 결산',`이송 ${handed}개체, 본부 표본 송신 ${a.dispatches}건, 강제 회수 ${forced}건, 생존 ${n.animals.filter(x=>x.alive).length}개체. 본부에 협력하지 않아도 마지막 선택은 가능합니다.`,'mystery');
  return n;
 }

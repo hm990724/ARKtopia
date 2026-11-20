@@ -1,5 +1,4 @@
 import './globals.css';
-import './v68.css';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'ANOMALY ZOO | 잔향보존구역',description:'CCTV로 변화를 발견하고, 흔적을 추적해 생명을 보호하는 동물원 생존 게임.'};
+export const metadata:Metadata={title:'잔향보존구역 | ECHO WARD',description:'80억분의 1의 가능성. 폐허의 생체 기억 보존 시설을 배경으로 한 다크 선택형 픽셀아트 비주얼 노벨.'};
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="ko"><body>{children}</body></html>}

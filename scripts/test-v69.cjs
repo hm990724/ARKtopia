@@ -1,0 +1,23 @@
+/** v69 targeted detection / capture regressions. Run with NODE_PATH when TypeScript is global. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),ts=require('typescript');
+require.extensions['.ts']=(mod,file)=>{const out=ts.transpileModule(fs.readFileSync(file,'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}});mod._compile(out.outputText,file)};
+const {beginGame}=require(path.resolve(__dirname,'../src/lib/game-v10.ts'));
+const {makeAnimal}=require(path.resolve(__dirname,'../src/lib/sim.ts'));
+const {newHunt,performHuntAction,normalizeHunt}=require(path.resolve(__dirname,'../src/lib/hidden-hunt.ts'));
+const {securityAction,cctvHotspotIndex}=require(path.resolve(__dirname,'../src/lib/security.ts'));
+let s=beginGame('artist','generator');s.day=9;s.phase='day';s.ap=4;s.power=100;s.pending=null;s.pendingIncident=null;s.animals.push(makeAnimal('wolf',1));s.security.incident={animalId:'wolf',status:'alert',camera:'CAM-02',severity:55,steps:0,description:'test',detected:false};
+const wrong=(cctvHotspotIndex(s)+1)%4;
+const missed=securityAction(s,'inspect','CAM-02',wrong);
+assert.notEqual(missed,s);assert.equal(missed.threat,s.threat+2);assert.equal(missed.security.incident.detected,false);
+const found=securityAction(s,'inspect','CAM-02',cctvHotspotIndex(s));
+assert.equal(found.security.incident.detected,true);assert.equal(found.security.incident.manualInspected,true);assert.equal(securityAction(found,'inspect','CAM-02',cctvHotspotIndex(found)),found,'one successful hotspot result per incident');assert.ok(found.security.incident.severity<s.security.incident.severity);assert.equal(s.security.incident.detected,false);console.log('PASS CCTV hotspot wrong/correct effects & immutable state');
+let e=structuredClone(s);e.security.incident.status='escaped';e.security.incident.camera='CAM-01';
+const traced=securityAction(e,'inspect','CAM-01',cctvHotspotIndex(e));
+assert.equal(traced.security.incident.tracked,true);console.log('PASS escape detection enables actual recovery tracking');
+let h=newHunt('otter',700,false);assert.equal(h.scanZone,null);assert.equal(h.actions,20);
+const waiting=performHuntAction(h,{type:'wait'});assert.equal(waiting.changed,true);assert.ok(Number.isInteger(waiting.state.scanZone));assert.equal(waiting.state.scanTurn,waiting.state.turn);console.log('PASS listening reveals coarse quarter rather than exact position');
+const net=performHuntAction(waiting.state,{type:'net',cell:waiting.state.position});assert.equal(net.won,true);assert.equal(net.state.outcome,'caught');
+console.log('PASS direct net capture succeeds after fresh listening');
+const blind=performHuntAction(h,{type:'net',cell:h.position});assert.equal(blind.won,false);assert.equal(blind.state.misses,1);console.log('PASS no blind free capture without observation');
+const old={...h,scanZone:undefined,scanTurn:undefined};assert.equal(normalizeHunt(old).scanZone,null);console.log('PASS legacy hunts migrate cleanly');

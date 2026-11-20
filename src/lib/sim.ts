@@ -55,7 +55,7 @@ export function createGame(origin:Origin,start:Start):State {const s:State={vers
 export function log(s:State,title:string,text:string,kind:EventRecord['kind']='info'){s.logs.unshift({day:s.day,title,text,kind});s.logs=s.logs.slice(0,80)}
 export function copy(s:State):State{return structuredClone(s)}
 export function spend(s:State,ap:number){if(s.phase!=='day'||s.ap<ap)return false;s.ap-=ap;return true}
-export function recalc(s:State){s.hp=100;s.stamina=cap(s.stamina);s.mind=cap(s.mind);s.radiation=cap(s.radiation);s.eve=cap(s.eve);s.power=cap(s.power);s.trust=cap(s.trust);if(s.mind<=0){s.phase='ending';s.ending='제000번 우리 — 담당자의 정신 신호가 정지했다. 복제 신체도 유지 한계를 넘었고 관리자는 사망했다. EVE는 마지막 기록을 보존했다.'}else if(s.eve<=0){s.phase='ending';s.ending='마지막 통신 — EVE 코어 정지. 모든 보존 지시가 중단되었고, 담당자는 더 이상 외부와 연결할 수 없었다. 격리 환경을 잃은 복제 신체는 무너졌고 관리자는 사망했다.'}}
+export function recalc(s:State){s.hp=100;s.stamina=cap(s.stamina);s.mind=cap(s.mind);s.radiation=cap(s.radiation);s.eve=cap(s.eve);s.power=cap(s.power);s.trust=cap(s.trust);if(s.mind<=0){s.phase='ending';s.ending='제000번 우리 — 담당자의 정신 신호가 정지했다. EVE는 끝내 그를 하나의 보존 대상으로 등록했다.'}else if(s.eve<=0){s.phase='ending';s.ending='마지막 통신 — EVE 코어 정지. 모든 보존 지시가 중단되었고, 담당자는 더 이상 외부와 연결할 수 없었다.'}}
 /** Distinct readout lets the UI warn players well before the irreversible threshold. */
 /** Moderate difficulty: single mistakes trigger warnings, not immediate permanent mutation. */
 export const MUTATION_LIMITS={stress:88,mixedStress:74,contamination:42,memory:65,severeStress:65,severeContamination:55} as const;
@@ -69,8 +69,8 @@ export function mutationRisk(a:AnimalState):{score:number;danger:boolean;descrip
 export function isMutant(a:AnimalState):boolean {
  if(a.tutorialProtected)return false;
  return !!a.mutated || !!a.awakened || a.id==='mutant' || a.id==='chimera'
-   || (a.memory>=40 && a.stress>=MUTATION_LIMITS.stress)
-   || (a.memory>=40 && a.stress>=MUTATION_LIMITS.mixedStress && (a.contamination>=MUTATION_LIMITS.contamination || a.memory>=MUTATION_LIMITS.memory))
+   || a.stress>=MUTATION_LIMITS.stress
+   || (a.stress>=MUTATION_LIMITS.mixedStress && (a.contamination>=MUTATION_LIMITS.contamination || a.memory>=MUTATION_LIMITS.memory))
    || (a.stress>=MUTATION_LIMITS.severeStress && a.contamination>=MUTATION_LIMITS.severeContamination && a.memory>=60);
 }
 export function recordMutation(s:State,a:AnimalState):boolean {
