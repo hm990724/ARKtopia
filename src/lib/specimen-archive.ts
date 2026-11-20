@@ -13,9 +13,9 @@ export type ProtocolStepRecord={stage:number;prompt:string;chosen:string;expecte
 export type ProtocolAttempt={day:number;quality:number;mode:'gentle'|'force';result:string;steps:ProtocolStepRecord[]};
 export type SpecimenDossier={key:string;species:AnimalId;name:string;firstDay:number;lastDay:number;status:ArchiveStatus;captureMethod:string;observedTraits:number[];records:ArchiveRecord[];maxStress:number;maxMemory:number;protocolAttempts?:ProtocolAttempt[]};
 export type ArchiveGift='tracking'|'power'|'serum';
-export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;processedKeys:string[];dispatches:number;};
+export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;processedKeys:string[];dispatches:number;rewardPolicyVersion?:number;};
 const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',wolf:'WF',crow:'CR',otter:'OT',lynx:'LX',axolotl:'AX',moth:'MT',mutant:'MX',chimera:'CH'};
-export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0});
+export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0,rewardPolicyVersion:2});
 export function archiveOf(s:V10):ArchiveState{return s.archive??emptyArchive();}
 function updateStatus(s:V10,a:AnimalState):ArchiveStatus{
  const transferred=s.headquarters?.transferred.includes(a.id)||!!(a as AnimalState&{transferred?:boolean}).transferred;
@@ -25,6 +25,13 @@ function updateStatus(s:V10,a:AnimalState):ArchiveStatus{
 export function ensureArchive(s:V10):ArchiveState{
  const state:ArchiveState={...emptyArchive(),...(s.archive||{}),bonuses:{...emptyArchive().bonuses,...s.archive?.bonuses}};
  state.entries??={};state.knownTraits??={};state.fieldJournal??={};state.serials??={};state.processedKeys??=[];state.giftHistory??=[];
+ // Old saves may contain premium vouchers granted by living transfers. Keep redeemed benefits
+ // but void unredeemed vouchers that were not earned from actual tissue shipments.
+ if(!s.archive?.rewardPolicyVersion){
+  const eligible=Math.max(0,(state.dispatches||0)-state.giftHistory.length);
+  state.pendingGifts=Math.max(0,Math.min(state.pendingGifts||0,eligible));
+  state.rewardPolicyVersion=2;
+ }
  s.archive=state;
  for(const animal of s.animals){
   if(!animal.specimenId){
@@ -122,7 +129,7 @@ export function applyDissection(s:V10,action:DissectionAction,specimenKey?:strin
   if(archive.samples<1||n.power<4)return s;
   archive.samples--;archive.dispatches++;archive.pendingGifts++;
   n.power=cap(n.power-4);n.credits+=180;n.trust=cap(n.trust-5);
-  log(n,'본부 표본 송신','보존 신경 조직 1개를 외부로 전송했다. CR +180. 송신 이후 본부에서 고급 지원 물품 선택을 요청했다.','bad');
+  log(n,'본부 표본 송신','보존 신경 조직 1개를 외부로 전송했다. CR +180과 고급 지원품 선택권 1건 지급. 살아 있는 개체 인계로는 지급되지 않는다.','bad');
   n.lastOutcome='본부 송신 완료 · CR +180 · 고급 지원 물품 선택 가능';
   return n;
  }
@@ -155,7 +162,7 @@ export function chooseArchiveGift(s:V10,gift:ArchiveGift):V10{
  if(gift==='power')a.bonuses.power=true;
  if(gift==='serum')n.mutantSerum+=3;
  const detail=gift==='tracking'?'본부 특수 운송 케이지 개량 · 포획 행동 기회 영구 +3':gift==='power'?'매일 새벽 전력 자동 +30':'변이 억제 혈청 +3개';
- log(n,'본부 지원품 지급',`${detail}. 외부 생체 회수에 협력한 대가로 도착한 물품입니다.`,'mystery');
+ log(n,'본부 지원품 지급',`${detail}. 본부에 신경 조직 표본을 송신한 대가로 도착한 물품입니다.`,'mystery');
  n.lastOutcome=`본부 지원품 수령: ${detail}`;
  return n;
 }
@@ -174,8 +181,18 @@ export function finishWithArchive(s:V10,goal:'rebuild'|'freedom'|'preserve'):V10
   n.ending='본부의 계승자 — 재생을 위한 자료는 충분했습니다. 그러나 담당자가 선택한 방법은 과거 연구진의 실험을 되풀이했습니다. 인간의 지식이 돌아오는 동안 생명들은 또다시 이름을 잃었습니다.';
  }else if(goal==='freedom'&&handed===0&&forced===0){
   n.ending='기록 밖의 봄 — 본부에 어떤 개체도 넘기지 않았습니다. 완성된 인간의 부활은 미뤄졌지만, 인간의 기억을 품은 생명들은 자신의 미래를 선택했습니다.';
+ }else if(goal==='rebuild'&&handed===0&&forced===0&&n.knowledge>=120){
+  n.ending='상처 없는 복원 — 누구의 살아 있는 신경 조직도 강제로 회수하지 않았습니다. 남겨진 기록만으로 새로운 의식을 설계할 수 있을지는 아직 알 수 없습니다. 하지만 그 과정에서 또 다른 희생자는 없었습니다.';
+ }else if(goal==='freedom'&&forced>=2){
+  n.ending='뒤늦은 철문 — 오늘 열린 문으로 모든 동물이 나갈 수는 없었습니다. 과거의 강제 실험으로 사라진 생명은 돌아오지 않습니다. 관리자는 그 이름까지 출입 명단에 적었습니다.';
+ }else if(goal==='preserve'&&(n.crew?.retired?.length??0)>=2){
+  n.ending='비어 있는 교대실 — 보존소는 살아남았습니다. 그러나 직원들이 앉아 있던 네 자리는 하나씩 비었습니다. EVE가 기록한 마지막 근무표에는 이제 관리자의 이름만 남았습니다.';
  }else if(goal==='preserve'&&a.revealed&&handed>0){
   n.ending+=' 본부에 보낸 개체의 처리 기록은 EVE와 담당자가 계속 보존합니다. 그 이름들이 다시 지워지지 않도록.';
+ }
+ // One compact epilogue makes the cumulative moral cost visible regardless of goal.
+ if(forced>0||handed>0||a.dispatches>0){
+  n.ending+=` 최종 명세: 생체 이송 ${handed}건, 신경 조직 송신 ${a.dispatches}건, 강제 회수 ${forced}건.`;
  }
  log(n,'보존 기록 최종 결산',`이송 ${handed}개체, 본부 표본 송신 ${a.dispatches}건, 강제 회수 ${forced}건, 생존 ${n.animals.filter(x=>x.alive).length}개체. 본부에 협력하지 않아도 마지막 선택은 가능합니다.`,'mystery');
  return n;

@@ -5,10 +5,10 @@ import {cap,log,copy} from './sim';
 export type CrewId='rabbit'|'fox'|'wolf'|'deer';
 export const CREW_IDS:CrewId[]=['rabbit','fox','wolf','deer'];
 export const CREW_PROFILES:Record<CrewId,{title:string;post:string;benefit:string;first:string;secret:string;appearance:string;personality:string}>={
- rabbit:{title:'서윤',post:'의무관',benefit:'담당자 HP +18 · 오늘의 휴식/응급처치 효과 강화',first:'...의료실은 어디죠? 흰 붕대가 있는 곳이라면 익숙해요. 전에 아픈 아이들을 돌봤던 것 같은데.',secret:'흰 장갑을 벗으면 손끝에 털이 보여요. 아까 환자에게... 당근을 주라고 했나요?',appearance:'눈처럼 흰 단발, 차분한 표정, 구식 양호실의 흰 간호복',personality:'상냥하고 말이 느린 양호선생님. 불안할 때 아이에게 말하듯 속삭인다.'},
- fox:{title:'유진',post:'보급관',benefit:'부품 +1 · 식량 +1 · CR +30',first:'물품 목록과 영수증부터 보죠. 지급하지 않은 건 지급한 게 아닙니다. ...제가 문을 잠근 적이 있나요?',secret:'어제도 재고가 맞았는데, 왜 오늘은 제 발자국이 보급실 선반 위에 남아 있죠?',appearance:'오렌지빛 짙은 갈색 장발, 얇은 사각 안경, 단정한 검정 보급 담당 제복',personality:'꼼꼼하고 차가운 여성. 사소한 물품 부족도 따지고 들지만 책임감이 높다.'},
- wolf:{title:'채아',post:'경비관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 이번엔 아무도 못 지나가요. 헤, 근데 저 철문은 왜 손톱 자국이 있죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 경비관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
- deer:{title:'하린',post:'기록관',benefit:'시설 감염 -14 · ST +7 · 오늘의 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 제가 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 기록관. 오류를 인정하고 바로 수습한다.'}
+ rabbit:{title:'의무관',post:'의무관',benefit:'담당자 정신력 +18 · 오늘의 휴식/응급처치 효과 강화',first:'...의료실은 어디죠? 흰 붕대가 있는 곳이라면 익숙해요. 전에 아픈 아이들을 돌봤던 것 같은데.',secret:'흰 장갑을 벗으면 손끝에 털이 보여요. 아까 환자에게... 당근을 주라고 했나요?',appearance:'눈처럼 흰 단발, 차분한 표정, 구식 양호실의 흰 간호복',personality:'상냥하고 말이 느린 양호선생님. 불안할 때 아이에게 말하듯 속삭인다.'},
+ fox:{title:'보급관',post:'보급관',benefit:'부품 +1 · 식량 +1 · CR +30',first:'물품 목록과 영수증부터 보죠. 지급하지 않은 건 지급한 게 아닙니다. ...제가 문을 잠근 적이 있나요?',secret:'어제도 재고가 맞았는데, 왜 오늘은 제 발자국이 보급실 선반 위에 남아 있죠?',appearance:'오렌지빛 짙은 갈색 장발, 얇은 사각 안경, 단정한 검정 보급 담당 제복',personality:'꼼꼼하고 차가운 여성. 사소한 물품 부족도 따지고 들지만 책임감이 높다.'},
+ wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 이번엔 아무도 못 지나가요. 헤, 근데 저 철문은 왜 손톱 자국이 있죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
+ deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 제가 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
 };
 export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number};
 export type CrewIncident={day:number;id:CrewId;damage:number;before:number;after:number;text:string};
@@ -34,7 +34,7 @@ export function recruitCrew(s:V10,id:AnimalId):boolean{
  const crew=ensureCrew(s);
  if(crew.members.some(m=>m.id===id)||crew.retired.includes(id)||crew.members.length>=4)return false;
  crew.members.push({id,arrivedDay:s.day,hp:85,mind:88,bond:45,lastSpokenDay:0});
- log(s,'본부 인력 등록 · 신경 세포 분화',`${CREW_PROFILES[id].post} ${CREW_PROFILES[id].title}이(가) 도착했습니다. 본부의 출생 기록은 기밀입니다.`,'mystery');
+ log(s,'본부 인력 등록 · 신경 세포 분화',`${CREW_PROFILES[id].post}이(가) 도착했습니다. 본부의 출생 기록은 기밀입니다.`,'mystery');
  return true;
 }
 export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';text:string}[]{
@@ -46,9 +46,9 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
   wolf:['경보가 울리면 몸이 먼저 뛰어요. 훈련 덕이라고 생각했는데...','어제 밤 CCTV에 제 뒷모습이 나왔어요. 저는 그때 여기 있었는데.','그만! 문 열지 마세요. 저걸 막으려던 게 아니에요. 제가 들어가려고 했어요.'],
   deer:['아침에 일지 한 장을 잘못 분류했어요. 기록은 이미 고쳤습니다!','실험실 이름을 읽는데 제 이름처럼 들렸어요. 손이 떨려서 종이를 떨어뜨렸어요.','기록이 맞지 않아요. 제가 적은 이름이 제 이름을 지워요. 저 아직 사람 맞죠?']
  };
- if(member.hp<=20||member.mind<=22)return [
+ if(member.mind<=22)return [
   {speaker:id,text:personal[id][2]},
-  {speaker:'EVE',text:`${profile.post} 생체 신호 위험. HP ${member.hp}, 정신 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`},
+  {speaker:'EVE',text:`${profile.post} 생체 신호 위험. 정신력 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`},
   {speaker:id,text:'제가 그러지 않았어요... 아니, 제가 그랬나요? 제 손이 기억을 못 해요.'}];
  if(s.headquarters.revealStage>=2||days>=12)return [
   {speaker:id,text:profile.secret},
@@ -64,15 +64,15 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
 }
 export function crewSupport(s:V10,id:CrewId):V10{
  const member=s.crew?.members.find(m=>m.id===id);
- if(!member||s.phase!=='day'||s.crew?.supportDay===s.day||member.hp<=12||member.mind<=0||s.crew?.pendingTermination)return s;
+ if(!member||s.phase!=='day'||s.crew?.supportDay===s.day||member.mind<=0||s.crew?.pendingTermination)return s;
  const n=copy(s) as V10;const crew=ensureCrew(n);const m=crew.members.find(x=>x.id===id)!;
  crew.supportDay=n.day;m.mind=cap(m.mind-5);queueCrewTerminations(n);
- if(id==='rabbit'){n.hp=cap(n.hp+18);crew.healingDay=n.day;}
+ if(id==='rabbit'){n.mind=cap(n.mind+18);crew.healingDay=n.day;}
  if(id==='fox'){n.parts++;n.food++;n.credits+=30;}
  if(id==='wolf'){n.threat=cap(n.threat-13);crew.guardDay=n.day;}
- if(id==='deer'){n.infection=cap(n.infection-14);n.stamina=cap(n.stamina+7);crew.decontamDay=n.day;}
+ if(id==='deer'){n.infection=cap(n.infection-14);crew.decontamDay=n.day;}
  log(n,`직원 지원 · ${CREW_PROFILES[id].post}`,`${CREW_PROFILES[id].benefit}. 대가: 직원 정신 -5`,'good');
- n.lastOutcome=`${CREW_PROFILES[id].title}의 ${CREW_PROFILES[id].post} 지원: ${CREW_PROFILES[id].benefit}`;
+ n.lastOutcome=`${CREW_PROFILES[id].post} 지원: ${CREW_PROFILES[id].benefit}`;
  return n;
 }
 /** Progressive deterioration. Early days are stable; prolonged duty and low vitals cause trouble. */
@@ -88,13 +88,13 @@ export function crewNight(s:V10):void{
   m.mind=cap(m.mind-drain-infectionDrain);
   if(m.mind===0)continue; // An exhausted personality has already collapsed; no assault event.
   // Staff HP is no longer automatically drained by ordinary work or passage of time.
-  if(m.hp<=25||m.mind<=28){
-   const severe=m.hp<=16||m.mind<=17;
+  if(m.mind<=28){
+   const severe=m.mind<=17;
    if(!crew.lastIncident&&((s.day+CREW_IDS.indexOf(m.id)*2)%4===0||severe)){
-    const before=s.hp;const damage=Math.min(before,severe?12:7);
-    s.hp=cap(s.hp-damage);
-    const text=`${CREW_PROFILES[m.id].post} ${CREW_PROFILES[m.id].title}이(가) 신경 혼란 중 담당자를 공격했습니다. HP ${before} → ${s.hp} (-${damage}).`;
-    crew.lastIncident={day:s.day,id:m.id,damage,before,after:s.hp,text};
+    const before=s.mind;const damage=Math.min(before,severe?12:7);
+    s.mind=cap(s.mind-damage);
+    const text=`${CREW_PROFILES[m.id].post}이(가) 신경 혼란 중 담당자를 공격했습니다. 정신력 ${before} → ${s.mind} (-${damage}).`;
+    crew.lastIncident={day:s.day,id:m.id,damage,before,after:s.mind,text};
     crew.incidentsSeen.push(`${s.day}/${m.id}`);
     log(s,'직원 안전 사고 · 야간 침입',text,'bad');
    }
@@ -125,12 +125,12 @@ export function applyCrewOpinion(s:V10,kind:CrewConflictKind,choice:CrewConflict
  crew.conflictSerial++;
  const record:CrewConflict={serial:crew.conflictSerial,day:s.day,kind,choice,first,dissent,mindBefore:before,mindAfter:member.mind};
  crew.lastConflict=record;
- log(s,`내부 의견 충돌 · ${kind==='treatment'?'치료와 배급':'개체 처분'}`,`${CREW_PROFILES[dissent].post} ${CREW_PROFILES[dissent].title}의 정신 ${before} → ${member.mind} (-${before-member.mind}).`, 'bad');
+ log(s,`내부 의견 충돌 · ${kind==='treatment'?'치료와 배급':'개체 처분'}`,`${CREW_PROFILES[dissent].post}의 정신 ${before} → ${member.mind} (-${before-member.mind}).`, 'bad');
  return record;
 }
 export function crewConflictDialogue(c:CrewConflict):{speaker:CrewId|'EVE'|'관리자';text:string}[]{
  const first=c.kind==='disposal'?[{speaker:'deer' as const,text:'잠깐만요. 저 개체에게도 살아 있을 이유가 있어요. 아직 돌이킬 수 있어요.'},{speaker:'wolf' as const,text:'위험 인자를 남겨두면 더 많은 사람이 다칩니다. 끝내야 할 건 끝내야죠.'}]:[{speaker:'fox' as const,text:'잠깐. 약품과 식량은 무한하지 않아요. 한 개체에 낭비하면 다른 개체는 굶습니다.'},{speaker:'rabbit' as const,text:'목숨을 원가표로 계산하지 말아요. 아직 치료할 수 있다면 살려야 해요.'}];
- return [...first,{speaker:'관리자',text:c.choice==='treat'?'치료를 진행한다.':c.choice==='withhold'?'지금은 물자를 아낀다.':c.choice==='dispose'?'위협을 제거한다.':'죽이지 않는다. 다른 방법을 찾는다.'},{speaker:c.dissent,text:c.dissent==='deer'?'...기록에서 이 선택을 지우지 말아 주세요.':c.dissent==='wolf'?'알겠습니다. 하지만 다음 공격이 오면 제 책임입니까?':c.dissent==='fox'?'정확한 소모량을 기록하겠어요. 다음에도 같은 결정을 한다면...':'...다른 방법은 정말 없었나요?'},{speaker:'EVE',text:`내부 신경 충돌로 ${CREW_PROFILES[c.dissent].post} ${CREW_PROFILES[c.dissent].title}의 정신력 ${c.mindBefore} → ${c.mindAfter}. 두 직원 모두 배치되어 있을 때만 이 충돌이 발생합니다. 동일한 결정을 반복하면 반대 직원의 정신력이 매번 3씩 감소하며, 대화 기록은 반복하지 않습니다.`}];
+ return [...first,{speaker:'관리자',text:c.choice==='treat'?'치료를 진행한다.':c.choice==='withhold'?'지금은 물자를 아낀다.':c.choice==='dispose'?'위협을 제거한다.':'죽이지 않는다. 다른 방법을 찾는다.'},{speaker:c.dissent,text:c.dissent==='deer'?'...기록에서 이 선택을 지우지 말아 주세요.':c.dissent==='wolf'?'알겠습니다. 하지만 다음 공격이 오면 제 책임입니까?':c.dissent==='fox'?'정확한 소모량을 기록하겠어요. 다음에도 같은 결정을 한다면...':'...다른 방법은 정말 없었나요?'},{speaker:'EVE',text:`내부 신경 충돌로 ${CREW_PROFILES[c.dissent].post}의 정신력 ${c.mindBefore} → ${c.mindAfter}. 두 직원 모두 배치되어 있을 때만 이 충돌이 발생합니다. 동일한 결정을 반복하면 반대 직원의 정신력이 매번 3씩 감소하며, 대화 기록은 반복하지 않습니다.`}];
 }
 export function resolveCrewNightVote(s:V10,selected:CrewId):V10{
  const pending=s.crew?.pendingNightVote;
@@ -140,8 +140,8 @@ export function resolveCrewNightVote(s:V10,selected:CrewId):V10{
  for(const id of pending.members){if(id===selected)continue;const member=crew.members.find(m=>m.id===id);if(!member||member.mind<=0)continue;const before=member.mind;member.mind=cap(member.mind-10);losses.push({id,before,after:member.mind});}
  let effect='';
  if(selected==='rabbit'){
-  const previous=n.hp;n.hp=cap(n.hp+8);for(const animal of n.animals.filter(a=>a.alive))animal.hp=cap(animal.hp+10);
-  effect=`담당자 HP ${previous} → ${n.hp}; 격리 개체 생명 +10`;
+  const previous=n.mind;n.mind=cap(n.mind+8);for(const animal of n.animals.filter(a=>a.alive))animal.hp=cap(animal.hp+10);
+  effect=`담당자 정신력 ${previous} → ${n.mind}; 격리 개체 생명 +10`;
  }else if(selected==='fox'){n.parts++;n.food+=2;effect='부품 +1 · 식량 +2';}
  else if(selected==='wolf'){const old=n.threat;n.threat=cap(n.threat-10);n.facility=cap(n.facility+4);effect=`외부 위협 ${old} → ${n.threat} · 시설 안정성 +4`;}
  else {n.knowledge+=6;n.infection=cap(n.infection-4);effect='지식 +6 · 시설 감염도 -4';}
@@ -161,12 +161,12 @@ export function crewDissectionShock(s:V10):void{
 
 export function treatCrew(s:V10,id:CrewId,kind:'medical'|'counsel'):V10{
  const member=s.crew?.members.find(m=>m.id===id);
- if(!member||member.mind<=0||s.crew?.pendingTermination||s.phase!=='day'||s.ap<1||((kind==='medical')?s.medicine<1:s.knowledge<5))return s;
+ if(!member||member.mind<=0||s.crew?.pendingTermination||s.phase!=='day'||s.ap<1||(kind==='medical'&&s.medicine<1))return s;
  const n=copy(s) as V10;const m=ensureCrew(n).members.find(a=>a.id===id)!;n.ap--;
- if(kind==='medical'){n.medicine--;m.hp=cap(m.hp+28);m.mind=cap(m.mind+5)}
- else{n.knowledge-=5;m.mind=cap(m.mind+23);m.hp=cap(m.hp+2)}
- log(n,`직원 관리 · ${CREW_PROFILES[id].post}`,`${kind==='medical'?'의약품 1개로 HP +28, 정신 +5':'지식 5점으로 정신 +23, HP +2'} 회복`,'good');
- n.lastOutcome=`${CREW_PROFILES[id].title}의 ${kind==='medical'?'생체 치료':'기억 안정 상담'} 완료`;
+ if(kind==='medical'){n.medicine--;m.mind=cap(m.mind+28)}
+ else{m.mind=cap(m.mind+12)}
+ log(n,`직원 관리 · ${CREW_PROFILES[id].post}`,`${kind==='medical'?'의약품 1개로 정신력 +28':'대화 안정화로 정신력 +12'} 회복`,'good');
+ n.lastOutcome=`${CREW_PROFILES[id].title}의 ${kind==='medical'?'신경 회복':'대화 안정화'} 완료`;
  return n;
 }
 
@@ -176,13 +176,13 @@ export function queueCrewTerminations(s:V10):void{
  const c=ensureCrew(s);
  if(c.pendingTermination)return;
  const next=c.members.find(m=>m.mind<=0);
- if(next){c.pendingTermination=next.id;log(s,'인력 신경 신호 소실',`${CREW_PROFILES[next.id].post} ${CREW_PROFILES[next.id].title}의 인격 신호가 0에 도달했습니다. 후속 처리가 필요합니다.`,'bad');}
+ if(next){c.pendingTermination=next.id;log(s,'인력 신경 신호 소실',`${CREW_PROFILES[next.id].post}의 인격 신호가 0에 도달했습니다. 후속 처리가 필요합니다.`,'bad');}
 }
 export const CREW_LOSS_EFFECTS:Record<CrewId,{name:string;summary:string;eve:string;quote:string[]}>={
- rabbit:{name:'의무관 공백',summary:'매일 활동 체력 ST -20',eve:'의무관 서윤이 사라졌습니다. 의료 관제의 자율 회복 루틴이 끊어졌습니다. 매일 아침 담당자님의 활동 체력(ST)이 20 감소합니다. 휴식해도 이 손실은 반복됩니다.',quote:['...환자들이 아직 기다리고 있어요.','저는... 그저 치료하고 싶을 뿐이에요.','담당자님, 부탁이에요. 오늘만큼은... 아무도 아프지 않게 해주세요.']},
- fox:{name:'보급 체계 붕괴',summary:'매일 물품 1~3개 무작위 소실',eve:'보급관 유진의 재고 체계가 정지했습니다. 무인 운송 장치가 출고 내역을 잘못 인식합니다. 매일 자재·식량·치료제·필터·전지 중 실제 보관한 물품 1~3개가 사라집니다.',quote:['재고가... 맞지 않아요. 분명 제가 확인했는데.','장부는 거짓말하지 않아요. ...그런데 왜 제 이름이 삭제됐죠?','마지막 부탁입니다. 제가 숨긴 건 없어요. 숫자만... 다시 세어 주세요.']},
- wolf:{name:'경비 관제 부재',summary:'매일 외부 위협 +20%p',eve:'경비관 채아의 순찰 신호가 끊겼습니다. 외곽 방어망의 야간 보정이 정지해 매일 외부 위협 수치가 20%p 추가 증가합니다. 침입 및 습격 사건 위험도 높아집니다.',quote:['걱정 마세요... 제가 막을게요.','이상하네. 분명 문 앞에서 지키고 있었는데, 문 안쪽에 제가 있어요.','아직 싸울 수 있어요. 부탁이에요... 저한테 문을 열지 마세요.']},
- deer:{name:'기록 무결성 붕괴',summary:'분석실 기록의 표시 순서 교란',eve:'기록관 하린의 대조 검증이 중지됐습니다. 분석실의 사건·관찰·행동 강령 기록이 뒤섞여 표시됩니다. 원본 데이터는 사라지지 않지만, 화면에 나타난 순서만으로 사실을 판단하기 어려워집니다.',quote:['제가... 정리해 둔 파일이 전부 엉망이에요.','이번엔 틀리지 않으려고 했는데... 모든 이름이 바뀌어요.','죄송해요. 딱 한 번만... 제대로 해보고 싶었는데.']}
+ rabbit:{name:'의무관 공백',summary:'매일 관리자 정신력 -8',eve:'의무관이 사라졌습니다. 의료 관제의 자율 회복 루틴이 끊어졌습니다. 매일 아침 담당자님의 정신력이 8 감소합니다. 회복하더라도 이 손실은 반복됩니다.',quote:['...환자들이 아직 기다리고 있어요.','저는... 그저 치료하고 싶을 뿐이에요.','담당자님, 부탁이에요. 오늘만큼은... 아무도 아프지 않게 해주세요.']},
+ fox:{name:'보급 체계 붕괴',summary:'매일 물품 1~3개 무작위 소실',eve:'보급관의 재고 체계가 정지했습니다. 무인 운송 장치가 출고 내역을 잘못 인식합니다. 매일 자재·식량·치료제·필터·전지 중 실제 보관한 물품 1~3개가 사라집니다.',quote:['재고가... 맞지 않아요. 분명 제가 확인했는데.','장부는 거짓말하지 않아요. ...그런데 왜 제 이름이 삭제됐죠?','마지막 부탁입니다. 제가 숨긴 건 없어요. 숫자만... 다시 세어 주세요.']},
+ wolf:{name:'경비 관제 부재',summary:'매일 외부 위협 +20%p',eve:'보안관의 순찰 신호가 끊겼습니다. 외곽 방어망의 야간 보정이 정지해 매일 외부 위협 수치가 20%p 추가 증가합니다. 침입 및 습격 사건 위험도 높아집니다.',quote:['걱정 마세요... 제가 막을게요.','이상하네. 분명 문 앞에서 지키고 있었는데, 문 안쪽에 제가 있어요.','아직 싸울 수 있어요. 부탁이에요... 저한테 문을 열지 마세요.']},
+ deer:{name:'기록 무결성 붕괴',summary:'분석실 기록의 표시 순서 교란',eve:'서기관의 대조 검증이 중지됐습니다. 분석실의 사건·관찰·행동 강령 기록이 뒤섞여 표시됩니다. 원본 데이터는 사라지지 않지만, 화면에 나타난 순서만으로 사실을 판단하기 어려워집니다.',quote:['제가... 정리해 둔 파일이 전부 엉망이에요.','이번엔 틀리지 않으려고 했는데... 모든 이름이 바뀌어요.','죄송해요. 딱 한 번만... 제대로 해보고 싶었는데.']}
 };
 /** Single available ending choice; after acknowledgement the staff member is gone permanently. */
 export function terminateCrew(s:V10,id:CrewId):V10{
@@ -207,7 +207,7 @@ export function terminateCrew(s:V10,id:CrewId):V10{
 export function applyCrewLossPenalties(s:V10):string[]{
  const retired=ensureCrew(s).retired;
  const changes:string[]=[];
- if(retired.includes('rabbit')){const before=s.stamina;s.stamina=cap(s.stamina-20);changes.push(`의료 공백 · ST ${before}→${s.stamina} (-${before-s.stamina})`);}
+ if(retired.includes('rabbit')){const before=s.mind;s.mind=cap(s.mind-8);changes.push(`의료 공백 · 정신력 ${before}→${s.mind} (-${before-s.mind})`);}
  if(retired.includes('wolf')){const before=s.threat;s.threat=cap(s.threat+20);changes.push(`경비 부재 · 외부 위협 ${before}→${s.threat} (+${s.threat-before}%p)`);}
  if(retired.includes('fox')){
   const keys=['scrap','parts','food','medicine','filters','electricCells'] as const;

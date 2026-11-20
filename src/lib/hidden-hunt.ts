@@ -1,6 +1,7 @@
 /** ECHO WARD 35 — fog-of-war observations and stale evidence tracking.
- * Invariant: UI never receives a 'current position' derived hint. Only last TURN's
- * departure footprint and its eight surrounding tiles are presented to the player.
+ * Invariant: exact current position is never exposed to the UI. Regular searched
+ * observations show historical footprints; a paid 'wait' action now grants only
+ * a broad half-board bearing after the animal moves, not its precise tile.
  * Pure state transitions, deterministic seeded noise, serializable saves.
  */
 import type {AnimalId} from './sim';
@@ -190,6 +191,10 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   if(evidence==='footprint'){text='도트 발자국 발견. 개체가 이곳에 있었던 것은 이전 턴입니다. 이미 다른 칸으로 이동했을 수 있습니다.';kind='hint';}
   else if(evidence==='rustle'){text='눌린 풀이 흔들립니다. 직전 발자국에서 한 칸 반경의 흔적입니다. 현재 위치를 뜻하지는 않습니다.';kind='hint';}
   else {text='풀숲을 열었지만 흔적이 없습니다. 이 칸은 확인한 기록으로 남고 개체는 다시 들어올 수 있습니다.';kind='warning';}
+  // A scan now returns a coarse distance band from the moment of inspection.
+  // It is not a guaranteed future position: the creature moves immediately afterward.
+  const distance=huntDistance(searchedCell,current.position);
+  text+=' · 수색 음향: '+(distance<=2?'근접 신호 (당시 2칸 이내)':distance<=4?'중거리 신호':'먼 거리 신호')+'. 다음 턴에는 위치가 바뀝니다.';
  }else if(action.type==='wait'){
   text='바람이 지나갔습니다. 개체가 움직이고 새로운 발자국이 남습니다.';
  }else if(action.type==='barrier'||action.type==='bait'||action.type==='sound'||action.type==='light'){
@@ -216,6 +221,15 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  current.previous=from;current.position=next;
  current.footprints=traces(current.species,current.seed,current.turn,from);
  current.shaking=huntGrassMotion(current.footprints);
+ // Listening is an informed alternative to blind clicking. The animal has ALREADY
+ // moved for this turn; the broad signal describes the current half-board only.
+ // It costs exactly one tracking action, so it is not a free position reveal.
+ if(action.type==='wait'){
+  const east=next%8>=4,north=Math.floor(next/8)<4;
+  const bearing=current.turn%2===0?(north?'북쪽 4개 행':'남쪽 4개 행'):(east?'동쪽 4개 열':'서쪽 4개 열');
+  text=`저주파 청음 결과: ${bearing}에서 움직임 포착. 동물이 이번 턴 이동한 뒤의 넓은 구역입니다. 다음 턴에는 다시 이동할 수 있습니다.`;
+  kind='hint';
+ }
  current.objects=current.objects.map(o=>({...o,life:o.life-1})).filter(o=>o.life>0);
  // Predator escalation is signalled before high-damage failure, never an invisible instant hit.
  const dangerous=['wolf','lynx','mutant','chimera'].includes(current.species);

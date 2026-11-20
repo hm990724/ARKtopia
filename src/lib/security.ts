@@ -63,8 +63,9 @@ export function securityAction(s:V10,action:SecurityAction):V10{
  if(s.phase!=='day'||s.run||s.pendingIncident||s.pending||!s.security)return s;
  const n=clone(s),sec=n.security;const inc=sec.incident;
  if(action==='scan'){
-  if(n.power<8||n.ap<1||sec.lastScanDay===n.day)return s;
-  n.ap--;n.power=cap(n.power-8);sec.lastScanDay=n.day;
+  const scanCost=(n.voice?.correct??0)>=2?5:8;
+  if(n.power<scanCost||n.ap<1||sec.lastScanDay===n.day)return s;
+  n.ap--;n.power=cap(n.power-scanCost);sec.lastScanDay=n.day;
   if(inc){inc.detected=true;inc.severity=cap(inc.severity-7);trace(n,'CCTV 정밀 스캔',`${n.animals.find(a=>a.id===inc.animalId)?.name}의 이동 패턴을 분석했습니다. ${securityPatterns[inc.animalId].behavior}`,'mystery')}
   else{n.threat=cap(n.threat-3);trace(n,'CCTV 정밀 스캔','이상 신호가 감지되지 않았습니다. 외곽 위험 예측이 갱신됐습니다.','good')}
   return n;
@@ -80,29 +81,29 @@ export function securityAction(s:V10,action:SecurityAction):V10{
   if(n.power<18)return s;n.power=cap(n.power-18);n.facility=cap(n.facility+3);a.stress=cap(a.stress+11);inc.severity=cap(inc.severity-32);
   trace(n,'격리문 봉쇄',`${a.name}의 이동을 막았습니다. 하지만 개체의 스트레스가 증가했습니다.`,'info');
  }else if(action==='enter'){
-  if(n.ap<1)return s;n.ap--;n.stamina=cap(n.stamina-13);n.hp=cap(n.hp-(inc.severity>62?12:4));a.bond=cap(a.bond+7);inc.severity=cap(inc.severity-(a.bond>=35?42:19));a.stress=cap(a.stress-10);
-  trace(n,'관리자 직접 접근',`${a.name}에게 직접 다가갔습니다. 생명과 체력을 걸고 개체를 안정시키려 했습니다.`,inc.severity>55?'bad':'good');
+  if(n.ap<1)return s;n.ap--;n.mind=cap(n.mind-(inc.severity>62?15:7));a.bond=cap(a.bond+7);inc.severity=cap(inc.severity-(a.bond>=35?42:19));a.stress=cap(a.stress-10);
+  trace(n,'관리자 직접 접근',`${a.name}에게 직접 다가갔습니다. 정신적 위험을 감수하고 개체를 안정시키려 했습니다.`,inc.severity>55?'bad':'good');
  }else if(action==='track'){
   if(inc.status!=='escaped'||n.ap<1||n.power<9)return s;n.ap--;n.power=cap(n.power-9);inc.detected=true;inc.tracked=true;inc.severity=cap(inc.severity-23);inc.camera=inc.camera==='CAM-01'?'CAM-04':'CAM-01';inc.lastTrace=securityPatterns[a.id].escape;
   trace(n,'탈출 개체 추적',`${a.name}가 ${inc.camera} 화면에 나타났습니다. ${securityPatterns[a.id].escape}`,'mystery');
  }else if(action==='manualTrack'){
-  if(inc.status!=='escaped'||n.ap<1||n.stamina<14)return s;
-  n.ap--;n.stamina=cap(n.stamina-14);n.hp=cap(n.hp-3);inc.detected=true;inc.tracked=true;inc.camera='CAM-01';inc.severity=cap(inc.severity-9);inc.lastTrace=securityPatterns[a.id].escape;
+  if(inc.status!=='escaped'||n.ap<1||n.mind<4)return s;
+  n.ap--;n.mind=cap(n.mind-3);inc.detected=true;inc.tracked=true;inc.camera='CAM-01';inc.severity=cap(inc.severity-9);inc.lastTrace=securityPatterns[a.id].escape;
   trace(n,'정전 수동 추적',`${a.name}: CCTV 신호 없이 외곽 흔적을 따라갔습니다. ${inc.lastTrace}`,'mystery');
  }else if(action==='serum'){
   if(!isMutant(a)||n.mutantSerum<1||n.ap<1||inc.status!=='escaped'||!inc.tracked)return s;
-  n.ap--;n.mutantSerum--;n.stamina=cap(n.stamina-8);
+  n.ap--;n.mutantSerum--;n.mind=cap(n.mind-3);
   a.suppressedUntilDay=n.day+2;a.stress=cap(a.stress-32);a.contamination=cap(a.contamination-15);
-  if(inc.severity>75)n.hp=cap(n.hp-5);
+  if(inc.severity>75)n.mind=cap(n.mind-5);
   sec.escapedIds=sec.escapedIds.filter(x=>x!==a.id);sec.incident=null;sec.resolved++;
   trace(n,'CCTV 변이체 진정·재격리',`${a.name}: 추적된 동선에서 억제 주사를 투여하고 격리실로 복귀시켰습니다. 변이 상태는 유지됩니다.`,'good');
   recalc(n);return n;
  }else if(action==='recover'){
   if(inc.status!=='escaped'||!inc.tracked||n.ap<1||n.medicine<1)return s;
-  n.ap--;n.medicine--;n.stamina=cap(n.stamina-9);
+  n.ap--;n.medicine--;n.mind=cap(n.mind-3);
   const success=inc.severity<=65||a.bond>=60;
   if(success){sec.escapedIds=sec.escapedIds.filter(id=>id!==a.id);a.stress=cap(a.stress+10);a.bond=cap(a.bond+3);sec.resolved++;sec.incident=null;trace(n,'재격리 완료',`${a.name}가 의료 케이지를 통해 무사히 돌아왔습니다. 격리실 ${a.room}번으로 복귀했습니다.`,'good')}
-  else{a.stress=cap(a.stress+8);n.hp=cap(n.hp-7);inc.severity=cap(inc.severity+9);trace(n,'재격리 실패',`${a.name}가 접근을 거부했습니다. 다른 카메라에서 이동 경로를 확인해야 합니다.`,'bad')}
+  else{a.stress=cap(a.stress+8);n.mind=cap(n.mind-7);inc.severity=cap(inc.severity+9);trace(n,'재격리 실패',`${a.name}가 접근을 거부했습니다. 다른 카메라에서 이동 경로를 확인해야 합니다.`,'bad')}
   recalc(n);return n;
  }else if(action==='release'){
   if(inc.status!=='escaped')return s;sec.escapedIds=sec.escapedIds.filter(id=>id!==a.id);a.alive=false;sec.incident=null;sec.resolved++;n.trust=cap(n.trust+2);

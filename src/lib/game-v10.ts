@@ -1,10 +1,12 @@
-import {emptyCrew,ensureCrew,recruitCrew,crewNight,crewDissectionShock,applyCrewOpinion,applyCrewLossPenalties,queueCrewTerminations,type CrewState} from './crew';
+import {emptyCrew,ensureCrew,recruitCrew,crewNight,crewDissectionShock,applyCrewOpinion,applyCrewLossPenalties,queueCrewTerminations,type CrewState,type CrewId} from './crew';
 import {performHuntAction,type HuntMode} from './hidden-hunt';
 import {emptyArchive,ensureArchive,noteSpeciesTrait,noteFieldAction,noteCapturedHunt,noteRescue,noteResonance,recordSpecimen,evaluateArchiveReveal,type ArchiveState} from './specimen-archive';
 import {AnimalId,Origin,Start,State,createGame,copy,cap,log,recalc,makeAnimal,specs,dailyWork,repair,extract,finish,isMutant,recordMutation,nightlyAnimalCondition} from './sim';
 import {applyFamiliarRoutine} from './care-interactions';
 import {initialSecurity,nightlySecurity,type SecurityState} from './security';
-import {createField,createCapture,adjacentField,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
+import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
+import {createField,createCapture,adjacentField,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 
 export type Gear='flashlight'|'filter'|'scanner'|'medkit'|'cage';
 export type RegionId='garden'|'conservatory'|'rail'|'archive'|'vault'|'tunnels';
@@ -13,7 +15,7 @@ export type Incident={id:IncidentId;title:string;desc:string;cause:string;option
 export type FieldResource='scrap'|'knowledge'|'clues';
 export type FieldCaptureRecord={id:AnimalId;result:'secured'|'treated'|'released'|'failed'};
 export type FieldSettlement={region:RegionId;reason:string;steps:number;clues:number;loot:number;rewards:Record<FieldResource|'parts'|'food'|'credits',number>;captures:FieldCaptureRecord[]};
-export type Run={region:RegionId;gear:Gear[];stage:number;integrity:number;exposure:number;loot:number;discovery:AnimalId|null;event:string;log:string[];medkitUsed?:boolean;cageUsed?:boolean;earned?:Record<FieldResource,number>;captures?:FieldCaptureRecord[];firstTutorial?:boolean};
+export type Run={region:RegionId;gear:Gear[];stage:number;integrity:number;exposure:number;loot:number;discovery:AnimalId|null;event:string;log:string[];medkitUsed?:boolean;cageUsed?:boolean;earned?:Record<FieldResource,number>;captures?:FieldCaptureRecord[];firstTutorial?:boolean;companion?:string|null};
 const freshFieldEarnings=():Record<FieldResource,number>=>({scrap:0,knowledge:0,clues:0});
 function earnDuringRun(run:Run|null|undefined,key:FieldResource,amount:number){if(!run||amount<=0)return;run.earned??=freshFieldEarnings();run.earned[key]+=amount;}
 function recordCapture(run:Run|undefined|null,id:AnimalId,result:FieldCaptureRecord['result']){if(!run)return;run.captures??=[];run.captures.push({id,result});}
@@ -27,7 +29,7 @@ export const facilityRecipes:Record<FacilityId,{name:string;scrap:number;parts:n
  infirmary:{name:'진료·검사실',scrap:7,parts:2,power:8,description:'폐진료대·환기·수질 측정 설비 정비',benefit:'밤마다 질병 수치 완화 · 치료 회복량 보조'},
  containment:{name:'격리 보강 설비',scrap:7,parts:2,power:8,description:'감금문과 생체 안정 패널 복구',benefit:'야간 시설 손상 감소 · 변이체 탈출 위험 감소'}
 };
-export type V10=State & {tutorialStep:number;scrap:number;facilities:Record<FacilityId,boolean>;mutantSerum:number;infection:number;electricCells:number;flashlight:number;filters:number;threat:number;facility:number;clues:number;daysRested:number;encounters:number;dayEvents:number;pendingIncident:IncidentId|null;lastOutcome:string;run:Run|null;lastFieldSummary?:FieldSettlement|null;field?:FieldState|null;capture?:CaptureState|null;tacticalCaptured?:boolean;pendingCage?:boolean;suppliesCollected:number;eventHistory:string[];security:SecurityState;headquarters:HeadquartersState;archive:ArchiveState;crew?:CrewState;onboardingSeen?:string[];synthesisTutorialSeen?:boolean;tutorialArchiveReviewPending?:boolean;};
+export type V10=State & {tutorialStep:number;scrap:number;facilities:Record<FacilityId,boolean>;mutantSerum:number;infection:number;electricCells:number;flashlight:number;filters:number;threat:number;facility:number;clues:number;daysRested:number;encounters:number;dayEvents:number;pendingIncident:IncidentId|null;lastOutcome:string;run:Run|null;lastFieldSummary?:FieldSettlement|null;field?:FieldState|null;capture?:CaptureState|null;tacticalCaptured?:boolean;pendingCage?:boolean;suppliesCollected:number;eventHistory:string[];security:SecurityState;headquarters:HeadquartersState;archive:ArchiveState;crew?:CrewState;voice?:VoiceState;hqOrders?:HqOrderState;onboardingSeen?:string[];synthesisTutorialSeen?:boolean;tutorialArchiveReviewPending?:boolean;nextFieldFatigued?:boolean;};
 export const regions:{id:RegionId;name:string;desc:string;art:string;danger:number;reward:number;ap:number;power:number;unlocked:number;animals:AnimalId[]}[]=[
 {id:'garden',name:'중앙 외곽',desc:'폐쇄된 매표소와 정원. 작은 개체의 흔적.',art:'gate',danger:16,reward:1,ap:1,power:9,unlocked:1,animals:['rabbit','fox']},
 {id:'conservatory',name:'온실 폐쇄동',desc:'축축한 식물과 감염 포자가 자라는 구역.',art:'sanctuary',danger:31,reward:2,ap:2,power:15,unlocked:2,animals:['deer','otter','crow']},
@@ -36,10 +38,10 @@ export const regions:{id:RegionId;name:string;desc:string;art:string;danger:numb
 {id:'vault',name:'B-3 밀폐 연구동',desc:'격리 실패 기록과 봉인된 생물 캡슐.',art:'laboratory',danger:72,reward:5,ap:3,power:30,unlocked:9,animals:['axolotl','mutant']},
 {id:'tunnels',name:'제0구역 통로',desc:'EVE의 기록에서 존재하지 않는 장소.',art:'wasteland',danger:86,reward:6,ap:3,power:37,unlocked:14,animals:['mutant']}
 ];
-export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'수동 손전등',desc:'정전 수동 탐사 · 조사 시야 반경 2칸 · 수동 출동 전지 25%'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 추가 8 · 조사 시야 반경 3칸 · 포자 노출 피해 -3'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 HP +20 · 미사용 귀환 시 반환'}];
+export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'수동 손전등',desc:'정전 수동 탐사 · 조사 시야 반경 2칸 · 수동 출동 전지 25%'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 추가 8 · 조사 시야 반경 3칸 · 포자 노출 피해 -3'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 정신력 +20 · 미사용 귀환 시 반환'}];
 export const incidentDefs:Record<IncidentId,Incident>={
 echo:{id:'echo',title:'격리실에서 들린 노래',desc:'평소 울음소리만 내던 개체가 익숙한 박자로 울고 있다. EVE는 우연이라고 말한다.',cause:'개체와의 유대 또는 관찰 기록이 누적됨',options:['소리를 녹음하고 행동을 관찰한다','개체를 진정시키고 휴식시킨다','오늘은 아무것도 하지 않는다']},
-breach:{id:'breach',title:'격리문 이상 진동',desc:'동물원 바깥에서 무언가 출입문을 두드린다. 안쪽의 동물들도 몸을 숨긴다.',cause:'외부 위협도 상승·격리 개체 증가',options:['전력 22를 사용해 격리문 봉쇄','동물부터 피신시킨다 (체력 12)','함정을 감시하고 기록한다']},
+breach:{id:'breach',title:'격리문 이상 진동',desc:'동물원 바깥에서 무언가 출입문을 두드린다. 안쪽의 동물들도 몸을 숨긴다.',cause:'외부 위협도 상승·격리 개체 증가',options:['전력 22를 사용해 격리문 봉쇄','동물부터 피신시킨다 (정신력 위험)','함정을 감시하고 기록한다']},
 blackout:{id:'blackout',title:'전력망 이상',desc:'격리동의 불빛이 하나씩 꺼진다. 배터리 전압이 급격히 떨어졌다.',cause:'전력 부족·장비 가동 누적',options:['부품 2개로 긴급 수리한다','비필수 장비를 끄고 전력을 아낀다','EVE에게 과부하 분석을 요청한다']},
 spores:{id:'spores',title:'붉은 포자 확산',desc:'외부에서 묻어 온 포자가 환기구에 침투했다. 방 안의 개체들이 기침을 시작한다.',cause:'높은 감염도·오염 지역 탐사',options:['필터를 소모해 환기구 정화','격리동을 봉쇄해 확산을 늦춘다','자원을 아끼고 경과를 관찰한다']},
 signal:{id:'signal',title:'누군가의 비상 신호',desc:'정적 사이로 사람 목소리 같은 신호가 들린다. EVE의 음성 출력이 잠시 끊긴다.',cause:'기록 복원 또는 고위험 구역 발견',options:['기록을 저장해 주파수를 분석한다','위험을 감수하고 위치를 추적한다','응답하지 않고 신호를 차단한다']},
@@ -49,7 +51,26 @@ coolant:{id:'coolant',title:'냉각수 붉은 누출',desc:'병리 장비의 냉
 rations:{id:'rations',title:'보급고의 곰팡이',desc:'수상한 냄새가 사료 배급 라인에서 퍼집니다. 이미 몇몇 개체가 먹이를 거부합니다.',cause:'보급품 노후화·높은 시설 오염',options:['식량 2개를 폐기하고 배급 라인 세척','수작업으로 오염된 사료를 가려낸다','부족한 물자를 아끼기 위해 그대로 급여']},
 intrusion:{id:'intrusion',title:'관리자 음성을 흉내 내는 신호',desc:'CCTV 스피커에서 담당자의 목소리와 같은 명령이 들립니다. 출처는 시설 내부가 아닙니다.',cause:'지식·기밀 기록 누적 또는 EVE 불안정',options:['전력 10을 사용해 전파 차단','신호를 녹음하고 발신자를 역추적','인증 절차 없이 연결을 허용']}
 };
-export function beginGame(origin:Origin,start:Start):V10{const s=createGame(origin,start) as V10;Object.assign(s,{infection:3,scrap:0,facilities:emptyFacilities(),mutantSerum:0,electricCells:2,flashlight:86,filters:2,threat:17,facility:86,clues:0,daysRested:0,encounters:0,dayEvents:0,pendingIncident:null,lastOutcome:'신호 연결 완료. 중앙 관리 구역이 열렸다.',run:null,lastFieldSummary:null,field:null,capture:null,tacticalCaptured:false,pendingCage:false,suppliesCollected:0,eventHistory:[],security:initialSecurity(),headquarters:emptyHeadquarters(),archive:emptyArchive(),crew:emptyCrew(),tutorialStep:1,onboardingSeen:[],synthesisTutorialSeen:false,tutorialArchiveReviewPending:false});s.credits=925;s.power=start==='generator'?85:65;s.shield=100;if(start==='medical')s.filters++;if(start==='generator'||start==='depot')s.electricCells++;return s}
+/** Staff are assigned on the calendar, NOT rewarded for sacrificing their matching animals.
+ * Day 1 medical officer is revealed after the first guided laboratory transmission.
+ * Day 2/3/4 arrivals are automatic and independent of rescued species.
+ * Retired employees are never re-created on a loaded save.
+ */
+export function scheduleStaffByDay(s:V10):CrewId[]{
+ const arrivals:[CrewId,number][]=[['rabbit',1],['fox',2],['wolf',3],['deer',4]];
+ const added:CrewId[]=[];
+ for(const [id,day] of arrivals){
+  if(s.day<day)continue;
+  if(id==='rabbit'&&s.day===1&&!(s.headquarters?.transferred?.includes('rabbit')||s.tutorialStep>=7))continue;
+  if(recruitCrew(s,id)){
+   const member=s.crew?.members.find(m=>m.id===id);
+   if(member)member.arrivedDay=day;
+   added.push(id);
+  }
+ }
+ return added;
+}
+export function beginGame(origin:Origin,start:Start):V10{const s=createGame(origin,start) as V10;Object.assign(s,{infection:3,scrap:0,facilities:emptyFacilities(),mutantSerum:0,electricCells:2,flashlight:86,filters:2,threat:17,facility:86,clues:0,daysRested:0,encounters:0,dayEvents:0,pendingIncident:null,lastOutcome:'신호 연결 완료. 중앙 관리 구역이 열렸다.',run:null,lastFieldSummary:null,field:null,capture:null,tacticalCaptured:false,pendingCage:false,suppliesCollected:0,eventHistory:[],security:initialSecurity(),headquarters:emptyHeadquarters(),archive:emptyArchive(),crew:emptyCrew(),voice:emptyVoice(),hqOrders:emptyHqOrders(),tutorialStep:1,onboardingSeen:[],synthesisTutorialSeen:false,tutorialArchiveReviewPending:false,nextFieldFatigued:false});s.credits=925;s.power=start==='generator'?85:65;s.shield=100;if(start==='medical')s.filters++;if(start==='generator'||start==='depot')s.electricCells++;return s}
 export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')return null;const s=raw as V10;if(!Array.isArray(s.animals)||!Number.isFinite(s.day))return null; s.animals=s.animals.filter(a=>!['dino','specter'].includes(String(a.id))); if(s.tutorialStep>=4&&s.tutorialStep<=6&&(s.tutorialStep<=5||s.headquarters?.pendingAnimal==='rabbit'||s.tutorialArchiveReviewPending)&&!s.headquarters?.transferred?.includes('rabbit')){
   // Migration for v51 saves: recover the first lesson even if old mutation thresholds fired.
   const first=s.animals.find(a=>a.id==='rabbit'&&a.alive);
@@ -58,7 +79,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  const wasComplete=(s.tutorialStep??7)>=7 && s.scrap===undefined;
  const facilities={...emptyFacilities(),...(wasComplete?{cctv:true,synthesis:true}:{}),...s.facilities};
  s.animals.forEach(a=>{a.hunger??=22;a.sickness??=0;});
- const restored=Object.assign(s,{onboardingSeen:s.onboardingSeen??[],synthesisTutorialSeen:s.synthesisTutorialSeen??false,tutorialArchiveReviewPending:s.tutorialArchiveReviewPending??false,tutorialStep:wasComplete?9:(s.tutorialStep??9),scrap:s.scrap??((s.tutorialStep??9)>=4&&(s.tutorialStep??9)<=6?16:0),facilities,mutantSerum:s.mutantSerum??0,headquarters:{...emptyHeadquarters(),...s.headquarters},crew:{...emptyCrew(),...s.crew},infection:s.infection??Math.round((s.radiation||0)/2),electricCells:s.electricCells??2,flashlight:s.flashlight??85,filters:s.filters??2,threat:s.threat??17,facility:s.facility??85,clues:s.clues??0,daysRested:s.daysRested??0,encounters:s.encounters??0,dayEvents:s.dayEvents??0,pendingIncident:s.pendingIncident??null,lastOutcome:s.lastOutcome??'',run:s.run?{...s.run,earned:s.run.earned??freshFieldEarnings(),captures:s.run.captures??[],firstTutorial:s.run.firstTutorial??((s.tutorialStep??9)<=3)}:null,lastFieldSummary:s.lastFieldSummary??null,field:s.run?(s.field??createField(s.day,s.run.region)):null,capture:s.capture?normalizeCapture(s.capture):null,tacticalCaptured:s.tacticalCaptured??false,pendingCage:s.pendingCage??false,suppliesCollected:s.suppliesCollected??0,eventHistory:s.eventHistory??[],security:s.security??initialSecurity()});ensureArchive(restored);ensureCrew(restored);queueCrewTerminations(restored);
+ const restored=Object.assign(s,{onboardingSeen:s.onboardingSeen??[],synthesisTutorialSeen:s.synthesisTutorialSeen??false,tutorialArchiveReviewPending:s.tutorialArchiveReviewPending??false,nextFieldFatigued:s.nextFieldFatigued??false,tutorialStep:wasComplete?9:(s.tutorialStep??9),scrap:s.scrap??((s.tutorialStep??9)>=4&&(s.tutorialStep??9)<=6?16:0),facilities,mutantSerum:s.mutantSerum??0,headquarters:{...emptyHeadquarters(),...s.headquarters},crew:{...emptyCrew(),...s.crew},infection:s.infection??Math.round((s.radiation||0)/2),electricCells:s.electricCells??2,flashlight:s.flashlight??85,filters:s.filters??2,threat:s.threat??17,facility:s.facility??85,clues:s.clues??0,daysRested:s.daysRested??0,encounters:s.encounters??0,dayEvents:s.dayEvents??0,pendingIncident:s.pendingIncident??null,lastOutcome:s.lastOutcome??'',run:s.run?{...s.run,earned:s.run.earned??freshFieldEarnings(),captures:s.run.captures??[],firstTutorial:s.run.firstTutorial??((s.tutorialStep??9)<=3)}:null,lastFieldSummary:s.lastFieldSummary??null,field:s.run?(s.field??createField(s.day,s.run.region)):null,capture:s.capture?normalizeCapture(s.capture):null,tacticalCaptured:s.tacticalCaptured??false,pendingCage:s.pendingCage??false,suppliesCollected:s.suppliesCollected??0,eventHistory:s.eventHistory??[],security:s.security??initialSecurity()});restored.mind=cap(restored.mind??restored.hp??80);restored.hp=100; if(!restored.run)restored.stamina=restored.nextFieldFatigued?50:100;ensureArchive(restored);ensureCrew(restored);scheduleStaffByDay(restored);ensureVoice(restored);ensureHqOrders(restored);queueCrewTerminations(restored);
  // Older interrupted v51 lessons may contain 100% memory without the HQ offer.
  const stranded=restored.animals.find(a=>a.id==='rabbit'&&a.alive&&a.memory>=100);
  if(stranded&&restored.tutorialStep===6&&!restored.headquarters.transferred.includes('rabbit')&&!restored.headquarters.pendingAnimal){
@@ -66,11 +87,11 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  }if(restored.capture?.hunt)restored.capture.hunt.revealed.forEach((known,index)=>{if(known)noteSpeciesTrait(restored,restored.capture!.hunt!.species,index)});return restored}
 export function summary(s:V10,title:string,msg:string,kind:'info'|'good'|'bad'|'mystery'='info'){s.lastOutcome=msg;log(s,title,msg,kind);return s}
 export function doBase(s:V10,type:'rest'|'recharge'|'handsearch'|'eve'|'feed'|'repair'|'crank'|'decontam'):V10{const n=copy(s) as V10;if(n.phase!=='day'||n.ap<1)return s;
-if(type==='rest'){n.ap--;n.hp=cap(n.hp+15+(n.crew?.healingDay===n.day?6:0));n.stamina=cap(n.stamina+32);n.mind=cap(n.mind+10);n.daysRested++;n.threat=cap(n.threat+3);return summary(n,'짧은 휴식','휴식하며 체력과 정신을 회복했다. 그 사이 바깥의 움직임은 계속된다.','good')}
-if(type==='decontam'){if(n.filters<1)return s;n.ap--;n.filters--;n.infection=cap(n.infection-26);n.hp=cap(n.hp+4);n.threat=cap(n.threat-3);return summary(n,'제독실 가동','바이오필터를 사용해 감염성 포자와 오염 흔적을 제거했다.','good')}
-if(type==='crank'){if(n.hp<=14)return s;n.ap--;n.hp=cap(n.hp-14);n.stamina=cap(n.stamina-6);n.mind=cap(n.mind-3);n.power=cap(n.power+17);n.flashlight=cap(n.flashlight+9);return summary(n,'수동 발전기 가동','부품이 없어 발전기를 직접 돌렸다. 생명력 14와 체력 6을 소모하고 시설 전력 17을 회복했다.','good')}
+if(type==='rest'){n.ap--;n.mind=cap(n.mind+25+(n.crew?.healingDay===n.day?6:0));n.daysRested++;n.threat=cap(n.threat+3);return summary(n,'짧은 휴식','잠시 휴식하며 정신력을 회복했다. 그 사이 바깥의 움직임은 계속된다.','good')}
+if(type==='decontam'){if(n.filters<1)return s;n.ap--;n.filters--;n.infection=cap(n.infection-26);n.mind=cap(n.mind+4);n.threat=cap(n.threat-3);return summary(n,'제독실 가동','바이오필터를 사용해 감염성 포자와 오염 흔적을 제거했다.','good')}
+if(type==='crank'){if(n.mind<=14)return s;n.ap--;n.mind=cap(n.mind-14);n.power=cap(n.power+17);n.flashlight=cap(n.flashlight+9);return summary(n,'수동 발전기 가동','부품 없이 발전기를 직접 돌렸다. 정신력 14를 소모해 시설 전력 17을 회복했다.','good')}
 if(type==='recharge'){if(n.parts<1)return s;n.ap--;n.parts--;n.power=cap(n.power+(n.origin==='engineer'?37:28));n.flashlight=cap(n.flashlight+12);return summary(n,'비상 발전기 가동','부품을 소모해 발전기를 재가동했다. 격리실과 EVE 전력 공급이 회복된다.','good')}
-if(type==='handsearch'){if(n.flashlight<16)return s;n.ap--;n.flashlight-=16;n.stamina=cap(n.stamina-9);n.food+=Math.random()<.55?1:0;n.parts+=Math.random()<.55?1:0;n.credits+=25;n.infection=cap(n.infection+Math.round(Math.random()*7));n.threat=cap(n.threat+4);return summary(n,'수동 물자 수색','전력이 없어 수동 손전등으로 폐허를 뒤졌다. 적은 물자를 회수했지만 감염 위험이 늘었다.','info')}
+if(type==='handsearch'){if(n.flashlight<16)return s;n.ap--;n.flashlight-=16;n.food+=Math.random()<.55?1:0;n.parts+=Math.random()<.55?1:0;n.credits+=25;n.infection=cap(n.infection+Math.round(Math.random()*7));n.threat=cap(n.threat+4);return summary(n,'수동 물자 수색','전력이 없어 수동 손전등으로 폐허를 뒤졌다. 적은 물자를 회수했지만 감염 위험이 늘었다.','info')}
 if(type==='eve'){if(n.power<8||n.eve<10)return s;n.ap--;n.power-=8;n.eve=cap(n.eve-3);n.knowledge+=6;n.clues++;return summary(n,'EVE 분석','EVE가 기존 기록의 모순을 한 줄 해독했다. 새로운 질문을 열 수 있다.','mystery')}
 if(type==='feed'){if(n.food<1||!n.animals.some(a=>a.alive))return s;n.ap--;const alive=n.animals.filter(a=>a.alive);const count=Math.min(n.food,alive.length);n.food-=count;alive.slice(0,count).forEach(a=>{a.hp=cap(a.hp+9);a.stress=cap(a.stress-10);a.bond=cap(a.bond+5)});applyCrewOpinion(n,'treatment','treat');return summary(n,'전체 급식',`${count}마리에게 먹이를 주었다. 격리실 안의 소리가 조금 잦아들었다.`,'good')}
 if(n.parts<1)return s;n.ap--;n.parts--;n.facility=cap(n.facility+23);n.eve=cap(n.eve+6);return summary(n,'시설 점검','환기와 격리 장비를 정비했다. 다음 사고의 피해 위험이 감소한다.','good')}
@@ -93,7 +114,7 @@ export function handleMutant(s:V10,id:AnimalId,choice:MutantDecision):V10{
   log(n,'변이체 억제 주사',n.lastOutcome,'good');
  }else if(choice==='forceExtract'){
   if(n.ap<2||n.power<10)return s;
-  n.ap-=2;n.power=cap(n.power-10);n.hp=cap(n.hp-6);n.eve=cap(n.eve-4);
+  n.ap-=2;n.power=cap(n.power-10);n.mind=cap(n.mind-6);n.eve=cap(n.eve-4);
   n.knowledge+=25+Math.floor(target.memory/10);n.clues+=2;n.extractions++;n.trust=cap(n.trust-14);n.mind=cap(n.mind-12);
   target.alive=false;target.hp=0;
   n.lastOutcome=`${target.name}의 신경 기록을 강제로 추출했습니다. 개체는 생존하지 못했습니다. 지식과 단서를 얻었지만 관리자에게도 되돌릴 수 없는 흔적이 남았습니다.`;
@@ -108,19 +129,19 @@ export function handleMutant(s:V10,id:AnimalId,choice:MutantDecision):V10{
  applyCrewOpinion(n,'disposal',choice==='serum'?'protect':'dispose');
  recalc(n);return n;
 }
-export function startRun(s:V10,region:RegionId,gear:Gear[]):V10{const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const available=n.power>=r.power+(scanner?8:0);const manual=gear.includes('flashlight')&&n.flashlight>=25&&!scanner;if(n.phase!=='day'||n.run||n.ap<r.ap||n.day<r.unlocked||(!available&&!manual)||(!available&&scanner))return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
+export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null=null):V10{const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const available=n.power>=r.power+(scanner?8:0);const manual=gear.includes('flashlight')&&n.flashlight>=25&&!scanner;if(n.phase!=='day'||n.run||n.ap<r.ap||n.day<r.unlocked||(!available&&!manual)||(!available&&scanner))return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
 n.ap-=r.ap;if(available)n.power-=r.power+(scanner?8:0);else n.flashlight=cap(n.flashlight-25);if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
-const initialRisk=r.danger+(available?0:16)-(gear.includes('filter')?13:0)-(scanner?9:0);n.run={region,gear,stage:0,integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,log:[available?'EVE 탐사 통신 연결 완료':'전력 부족. 수동 손전등으로 진입']};n.lastFieldSummary=null;n.field=createField(n.day,region);n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 초기 위험 추정 ${Math.max(5,initialRisk)}%.`;return n}
+const initialRisk=r.danger+(available?0:16)-(gear.includes('filter')?13:0)-(scanner?9:0);n.run={region,gear,stage:0,integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:s.crew?.members.some(m=>m.id===companion&&m.mind>0)?companion:null,log:[available?'EVE 탐사 통신 연결 완료':'전력 부족. 수동 손전등으로 진입']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;n.field=createField(n.day,region,n.encounters);n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
 // Reserved expedition supplies are refunded if not consumed. A cage is consumed only on capture attempt.
 function returnUnusedRunSupplies(s:V10,run:Run,hasEncounter:boolean){
  if(run.gear.includes('medkit')&&!run.medkitUsed)s.medicine++;
  if(run.gear.includes('cage')){if(hasEncounter)s.pendingCage=true;else if(!run.cageUsed)s.parts++;}
 }
 export function useFieldMedkit(s:V10):V10{
- if(!s.run||!s.run.gear.includes('medkit')||s.run.medkitUsed||s.hp>=100||s.phase!=='day')return s;
+ if(!s.run||!s.run.gear.includes('medkit')||s.run.medkitUsed||s.mind>=100||s.phase!=='day')return s;
  const n=copy(s) as V10;
- n.run!.medkitUsed=true;n.hp=cap(n.hp+20+(n.crew?.healingDay===n.day?8:0));
- return summary(n,'응급 키트 사용','탐사 중 응급 키트를 사용했습니다. 생명력이 최대 20 회복되었습니다.','good');
+ n.run!.medkitUsed=true;n.mind=cap(n.mind+20+(n.crew?.healingDay===n.day?8:0));
+ return summary(n,'응급 키트 사용','탐사 중 신경 회복제를 사용했습니다. 관리자 정신력 최대 20 회복.','good');
 }
 export function captureChance(s:V10):number{
  return Math.max(10,Math.min(95,60+(s.origin==='medic'?11:0)+(s.medicine>0?6:0)-(s.infection>45?11:0)+(s.pendingCage?15:0)));
@@ -148,16 +169,16 @@ const risk=signalModifier+region.danger+tactic+(run.stage*11)+(run.exposure*.28)
 const check=rand*100;const success=check>risk;const gain=success?(choice==='rush'?3:choice==='gear'?2:2)*region.reward:Math.max(0,region.reward-1);
 run.loot+=gain+(success&&signalAccuracy>=85?region.reward:0);run.stage++;run.exposure+=choice==='rush'?20:choice==='gear'?7:12;run.integrity=cap(run.integrity-(success?6:22)-(choice==='rush'?8:0));n.stamina=cap(n.stamina-(choice==='rush'?13:7));n.infection=cap(n.infection+(success?2:9)+Math.round(region.danger/18)-(run.gear.includes('filter')?5:0));n.threat=cap(n.threat+(success?2:6));
 if(choice==='gear'){if(run.gear.includes('flashlight')&&n.flashlight>=9)n.flashlight-=9;else if(n.power>=6)n.power-=6;else if(!run.gear.includes('scanner')&&!run.gear.includes('filter')){run.integrity=cap(run.integrity-8);run.event='작동 가능한 장비가 없어 방호 상태가 감소했다.'}}
-if(!success){n.hp=cap(n.hp-5-Math.round(region.danger/20));n.mind=cap(n.mind-5);n.facility=cap(n.facility-2)}
+if(!success){n.mind=cap(n.mind-5-Math.round(region.danger/20));n.mind=cap(n.mind-5);n.facility=cap(n.facility-2)}
 run.log.push(`신호 보정 ${signalAccuracy}점 · ${signalModifier>0?'위험 증가':signalModifier<0?'위험 감소':'보정 없음'}`);
 run.log.push(`${success?'작전 성공':'위험 발생'} · ${scene.title} · ${choice===scene.preferred?'상황에 적합한 대응':choice===scene.punished?'잘못된 접근으로 위험 증가':'기본 대응'}`);run.event=run.log[run.log.length-1];
-if(run.stage>=3||run.integrity<=15||n.hp<=0){n.parts+=Math.max(0,Math.floor(run.loot/3));n.food+=Math.max(0,Math.floor(run.loot/4));n.credits+=run.loot*24;n.suppliesCollected+=run.loot;n.encounters++;let creature:AnimalId|null=null;const candidates=region.animals.filter(id=>!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(x=>x.id===id)!.unlock<=n.day);if((success||(n.encounters===1&&region.id==='garden'))&&candidates.length&&(n.encounters===1||rand>.3))creature=candidates[(n.day+run.stage)%candidates.length];returnUnusedRunSupplies(n,run,!!creature);n.run=null;n.field=null;n.capture=null;if(creature){n.pending=creature;summary(n,'미확인 개체 발견',`${specs.find(a=>a.id===creature)?.name}이(가) 발견됐다. 구조 여부를 판단해야 한다.`,'mystery')}else summary(n,'탐사 종료',`물자 가치 ${run.loot}을 회수했다. 시설로 돌아왔으나 위협도와 감염도가 달라졌다.`,success?'good':'bad');if(n.infection>=60)n.eventRisk=cap(n.eventRisk+14)}else n.lastOutcome=run.event;
+if(run.stage>=3||run.integrity<=15||n.mind<=0){n.parts+=Math.max(0,Math.floor(run.loot/3));n.food+=Math.max(0,Math.floor(run.loot/4));n.credits+=run.loot*24;n.suppliesCollected+=run.loot;n.encounters++;let creature:AnimalId|null=null;const candidates=region.animals.filter(id=>!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(x=>x.id===id)!.unlock<=n.day);if((success||(n.encounters===1&&region.id==='garden'))&&candidates.length&&(n.encounters===1||rand>.3))creature=candidates[(n.day+run.stage)%candidates.length];returnUnusedRunSupplies(n,run,!!creature);n.run=null;n.field=null;n.capture=null;if(creature){n.pending=creature;summary(n,'미확인 개체 발견',`${specs.find(a=>a.id===creature)?.name}이(가) 발견됐다. 구조 여부를 판단해야 한다.`,'mystery')}else summary(n,'탐사 종료',`물자 가치 ${run.loot}을 회수했다. 시설로 돌아왔으나 위협도와 감염도가 달라졌다.`,success?'good':'bad');if(n.infection>=60)n.eventRisk=cap(n.eventRisk+14)}else n.lastOutcome=run.event;
 recalc(n);return n}
 export function rescueChoice(s:V10,choice:'secure'|'treat'|'release',rand=Math.random()):V10 {if(!s.pending)return s;const n=copy(s) as V10;const id=n.pending!;const sp=specs.find(a=>a.id===id)!;n.pending=null;n.tacticalCaptured=false;if(s.pendingCage&&choice!=='secure')n.parts++;n.pendingCage=false;if(choice==='release'){recordCapture(n.run,id,'released');n.trust=cap(n.trust+3);applyCrewOpinion(n,'treatment','withhold');return summary(n,'방생 선택',`${sp.name}를 현장에 남겨두었다. 그 선택이 훗날 어떤 결과를 낳을지 알 수 없다.`,'info')}if(choice==='treat'){if(n.medicine<1)return s;n.medicine--;n.trust=cap(n.trust+6);n.clues++;earnDuringRun(n.run!,'clues',1);recordCapture(n.run,id,'treated');applyCrewOpinion(n,'treatment','treat');return summary(n,'현장 치료',`${sp.name}를 치료했다. 멀어지는 발자국 곁에 이상한 행동 기록이 남았다.`,'good')}
 if(n.animals.filter(a=>a.alive).length>=n.rooms){recordCapture(n.run,id,'failed');if(s.pendingCage)n.parts++;return summary(n,'격리실 부족',`${sp.name}를 안전하게 옮길 공간이 없어 현장에 남겨두었다.`,'bad')}const chance=s.tacticalCaptured?100:captureChance(s);n.tacticalCaptured=false;if(rand*100<chance){const rooms=new Set(n.animals.filter(a=>a.alive).map(a=>a.room));let room=1;while(rooms.has(room))room++;const rescued=makeAnimal(id,room);if(id==='rabbit'&&s.lifeSaved===0&&s.tutorialStep<=4){
   // Fixed first-lesson baseline: do not generate unstable tutorial stats.
   rescued.tutorialProtected=true;rescued.hp=90;rescued.stress=18;rescued.contamination=0;rescued.bond=34;rescued.memory=0;
- }n.animals.push(rescued);noteRescue(n,id);recordCapture(n.run,id,'secured');if(id==='rabbit'&&n.lifeSaved===0&&s.tutorialStep<=4){n.scrap+=16;earnDuringRun(n.run!,'scrap',16);log(n,'시설 복구용 고철 확보','첫 구조 현장에서 고철 16개를 회수했습니다. 감시망과 합성실을 복구할 수 있습니다.','good');}n.lifeSaved++;n.trust=cap(n.trust+4);n.eventRisk=cap(n.eventRisk+4);return summary(n,'구조 완료',`${sp.name} 구조 성공 (시도 확률 ${chance}%). 격리실 ${room}번에 배정됐다.`,'good')}recordCapture(n.run,id,'failed');n.hp=cap(n.hp-7);n.threat=cap(n.threat+8);return summary(n,'구조 실패',`${sp.name}가 수색망을 벗어났다 (시도 확률 ${chance}%). 공격을 피하는 과정에서 부상을 입었다.`,'bad')}
+ }n.animals.push(rescued);noteRescue(n,id);recordCapture(n.run,id,'secured');if(id==='rabbit'&&n.lifeSaved===0&&s.tutorialStep<=4){n.scrap+=16;earnDuringRun(n.run!,'scrap',16);log(n,'시설 복구용 고철 확보','첫 구조 현장에서 고철 16개를 회수했습니다. 감시망과 합성실을 복구할 수 있습니다.','good');}n.lifeSaved++;n.trust=cap(n.trust+4);n.eventRisk=cap(n.eventRisk+4);return summary(n,'구조 완료',`${sp.name} 구조 성공 (시도 확률 ${chance}%). 격리실 ${room}번에 배정됐다.`,'good')}recordCapture(n.run,id,'failed');n.mind=cap(n.mind-7);n.threat=cap(n.threat+8);return summary(n,'구조 실패',`${sp.name}가 수색망을 벗어났다 (시도 확률 ${chance}%). 신경적 충격으로 정신력이 떨어졌다.`,'bad')}
 export function incidentWeight(s:V10){return cap(7+s.threat*.24+s.infection*.19+(100-s.facility)*.20+(100-s.power)*.16+s.animals.filter(a=>a.alive).length*3+Math.min(15,s.encounters));}
 // Event occurrence and event-type selection use INDEPENDENT random draws.
 // Repeated incidents are suppressed, but high-risk states can still cause them.
@@ -190,35 +211,35 @@ export function resolveIncident(s:V10,option:number):V10{
  const n=copy(s) as V10;n.pendingIncident=null;const def=incidentDefs[id];
  if(id==='breach'){
   if(option===0){n.power-=22;n.threat=cap(n.threat-25);n.facility=cap(n.facility+4)}
-  else if(option===1){n.hp=cap(n.hp-16);n.stamina=cap(n.stamina-13);n.animals.forEach(a=>a.stress=cap(a.stress+7));n.threat=cap(n.threat-14)}
-  else {n.hp=cap(n.hp-22);n.facility=cap(n.facility-20);n.threat=cap(n.threat+17);n.animals.forEach(a=>{a.stress=cap(a.stress+17);a.hp=cap(a.hp-7)})}
+  else if(option===1){n.mind=cap(n.mind-19);n.animals.forEach(a=>a.stress=cap(a.stress+7));n.threat=cap(n.threat-14)}
+  else {n.mind=cap(n.mind-22);n.facility=cap(n.facility-20);n.threat=cap(n.threat+17);n.animals.forEach(a=>{a.stress=cap(a.stress+17);a.hp=cap(a.hp-7)})}
  }else if(id==='blackout'){
   if(option===0){n.parts-=2;n.power=cap(n.power+16);n.facility=cap(n.facility+18)}
   else if(option===1){n.power=cap(n.power+9);n.eve=cap(n.eve-9);n.facility=cap(n.facility-7)}
-  else {n.hp=cap(n.hp-13);n.power=cap(n.power-12);n.eve=cap(n.eve-19);n.facility=cap(n.facility-17);n.knowledge+=7}
+  else {n.mind=cap(n.mind-13);n.power=cap(n.power-12);n.eve=cap(n.eve-19);n.facility=cap(n.facility-17);n.knowledge+=7}
  }else if(id==='spores'){
   if(option===0){n.filters--;n.infection=cap(n.infection-19)}
   else if(option===1){n.power=cap(n.power-12);n.infection=cap(n.infection-9);n.facility=cap(n.facility-9)}
-  else {n.hp=cap(n.hp-14);n.infection=cap(n.infection+22);n.animals.forEach(a=>{a.contamination=cap(a.contamination+19);a.sickness=cap((a.sickness??0)+9)})}
+  else {n.mind=cap(n.mind-14);n.infection=cap(n.infection+22);n.animals.forEach(a=>{a.contamination=cap(a.contamination+19);a.sickness=cap((a.sickness??0)+9)})}
  }else if(id==='echo'){
   if(option===0){n.knowledge+=12;n.clues++;n.animals.forEach(a=>a.stress=cap(a.stress+6))}
   else if(option===1){n.trust=cap(n.trust+7);n.animals.forEach(a=>a.stress=cap(a.stress-14));n.power=cap(n.power-5)}
   else {n.mind=cap(n.mind-9);n.animals.forEach(a=>{a.stress=cap(a.stress+15);a.memory=cap(a.memory+3)})}
  }else if(id==='signal'||id==='visitor'){
   if(option===0){n.knowledge+=12;n.clues++;n.eve=cap(n.eve-8)}
-  else if(option===1){n.hp=cap(n.hp-19);n.infection=cap(n.infection+12);n.knowledge+=20;n.clues+=2;n.threat=cap(n.threat+11)}
+  else if(option===1){n.mind=cap(n.mind-19);n.infection=cap(n.infection+12);n.knowledge+=20;n.clues+=2;n.threat=cap(n.threat+11)}
   else {n.threat=cap(n.threat+16);n.facility=cap(n.facility-10);n.trust=cap(n.trust-5)}
  }else if(id==='predator'){
   if(option===0){n.power-=14;n.threat=cap(n.threat-16)}
-  else if(option===1){n.hp=cap(n.hp-18);n.stamina=cap(n.stamina-16);n.threat=cap(n.threat-9)}
-  else {n.hp=cap(n.hp-24);n.facility=cap(n.facility-17);n.threat=cap(n.threat+18);n.animals.forEach(a=>a.stress=cap(a.stress+17))}
+  else if(option===1){n.mind=cap(n.mind-21);n.threat=cap(n.threat-9)}
+  else {n.mind=cap(n.mind-24);n.facility=cap(n.facility-17);n.threat=cap(n.threat+18);n.animals.forEach(a=>a.stress=cap(a.stress+17))}
  }else if(id==='coolant'){
   if(option===0){n.parts-=2;n.facility=cap(n.facility+12);n.eve=cap(n.eve+5)}
-  else if(option===1){n.hp=cap(n.hp-15);n.infection=cap(n.infection+10);n.facility=cap(n.facility-5)}
+  else if(option===1){n.mind=cap(n.mind-15);n.infection=cap(n.infection+10);n.facility=cap(n.facility-5)}
   else {n.eve=cap(n.eve-25);n.power=cap(n.power-15);n.facility=cap(n.facility-21);n.infection=cap(n.infection+10)}
  }else if(id==='rations'){
   if(option===0){n.food-=2;n.facility=cap(n.facility+3)}
-  else if(option===1){n.stamina=cap(n.stamina-18);n.infection=cap(n.infection+9);n.food= Math.max(0,n.food-1)}
+  else if(option===1){n.mind=cap(n.mind-5);n.infection=cap(n.infection+9);n.food= Math.max(0,n.food-1)}
   else {n.animals.forEach(a=>{a.sickness=cap((a.sickness??0)+22);a.stress=cap(a.stress+12);a.hp=cap(a.hp-11)});n.threat=cap(n.threat+8)}
  }else if(id==='intrusion'){
   if(option===0){n.power-=10;n.eve=cap(n.eve-4);n.threat=cap(n.threat-10)}
@@ -233,20 +254,21 @@ export function resolveIncident(s:V10,option:number):V10{
 export function previewIncident(s:V10,option:number):{available:boolean;effects:{name:string;delta:number}[]}{
  const n=resolveIncident(s,option);
  if(n===s)return {available:false,effects:[]};
- const fields:[keyof V10,string][]=[['hp','생명'],['stamina','체력'],['mind','정신'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['filters','필터'],['food','식량'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
+ const fields:[keyof V10,string][]=[['mind','정신력'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['filters','필터'],['food','식량'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
  const effects=fields.map(([key,name])=>({name,delta:Number(n[key])-Number(s[key])})).filter(x=>Number.isFinite(x.delta)&&x.delta!==0);
  const oldAnimals=s.animals.filter(a=>a.alive),newAnimals=n.animals.filter(a=>a.alive);
- if(oldAnimals.length){const oldStress=oldAnimals.reduce((v,a)=>v+a.stress,0),newStress=newAnimals.reduce((v,a)=>v+a.stress,0);if(newStress!==oldStress)effects.push({name:'개체 스트레스 합계',delta:newStress-oldStress});const oldHP=oldAnimals.reduce((v,a)=>v+a.hp,0),newHP=newAnimals.reduce((v,a)=>v+a.hp,0);if(newHP!==oldHP)effects.push({name:'개체 생명 합계',delta:newHP-oldHP});}
+ if(oldAnimals.length){const oldStress=oldAnimals.reduce((v,a)=>v+a.stress,0),newStress=newAnimals.reduce((v,a)=>v+a.stress,0);if(newStress!==oldStress)effects.push({name:'개체 스트레스 합계',delta:newStress-oldStress});const oldHealth=oldAnimals.reduce((v,a)=>v+a.hp,0),newHealth=newAnimals.reduce((v,a)=>v+a.hp,0);if(newHealth!==oldHealth)effects.push({name:'개체 건강 합계',delta:newHealth-oldHealth});}
  return {available:true,effects};
 }
-export type NightChoice='shield'|'rest'|'analyze'|'standby';
-export function finishDay(s:V10,nightChoice:NightChoice):V10{const n=copy(s) as V10;if(n.phase!=='day'||n.pending||n.run||n.pendingIncident||n.crew?.pendingNightVote)return s;const charge={shield:22,rest:5,analyze:16,standby:0}[nightChoice];const used:NightChoice=n.power<charge?'standby':nightChoice;const cost={shield:22,rest:5,analyze:16,standby:0}[used];n.power=cap(n.power-cost-6);n.facility=cap(n.facility-(n.power<20?10:3)-(used==='standby'?6:0));if(n.facilities?.containment)n.facility=cap(n.facility+3);n.threat=cap(n.threat+(used==='shield'?(n.origin==='warden'?-18:-13):used==='rest'?4:used==='analyze'?7:19));n.eventRisk=cap(n.eventRisk+(used==='standby'?17:0));n.infection=cap(n.infection+(n.facility<50?7:2)+(used==='standby'?4:0));if(used==='rest'){n.hp=cap(n.hp+12);n.stamina=cap(n.stamina+38);n.mind=cap(n.mind+7)}if(used==='analyze'){n.knowledge+=11;n.clues++;n.eve=cap(n.eve-5)}if(used==='shield')n.facility=cap(n.facility+3);
+export type NightChoice='shield'|'rest'|'standby';
+export function finishDay(s:V10,nightChoice:NightChoice):V10{const n=copy(s) as V10;if(n.phase!=='day'||n.pending||n.run||n.pendingIncident||n.crew?.pendingNightVote||n.voice?.pending||n.hqOrders?.active?.status==='offered')return s;const charge={shield:22,rest:5,standby:0}[nightChoice];const used:NightChoice=n.power<charge?'standby':nightChoice;const cost={shield:22,rest:5,standby:0}[used];n.power=cap(n.power-cost-6);n.facility=cap(n.facility-(n.power<20?10:3)-(used==='standby'?6:0));if(n.facilities?.containment)n.facility=cap(n.facility+3);n.threat=cap(n.threat+(used==='shield'?(n.origin==='warden'?-18:-13):used==='rest'?4:19));n.eventRisk=cap(n.eventRisk+(used==='standby'?17:0));n.infection=cap(n.infection+(n.facility<50?7:2)+(used==='standby'?4:0));if(used==='rest')n.mind=cap(n.mind+19);if(used==='shield')n.facility=cap(n.facility+3);
 n.animals.filter(a=>a.alive).forEach(a=>{const fed=n.food>0;if(fed){n.food--;a.stress=cap(a.stress+3);applyFamiliarRoutine(a)}else{a.stress=cap(a.stress+10)}if(n.infection>45)a.contamination=cap(a.contamination+5);if(a.contamination>65)a.hp=cap(a.hp-7);nightlyAnimalCondition(a,fed,n.facility,n.infection);if(n.facilities?.infirmary){a.sickness=cap((a.sickness??0)-8);a.contamination=cap(a.contamination-3);}if(a.hp<=0){a.alive=false;log(n,'격리 개체 사망',`${a.name}의 신호가 끊겼다.`,'bad')}});
 nightlySecurity(n);
  crewNight(n);if(n.crew?.guardDay===n.day)n.threat=cap(n.threat-7);
  for(const a of n.animals){const old=s.animals.find(x=>x.id===a.id);if(old?.alive&&!a.alive)recordSpecimen(n,a.id,'격리 개체 사망','야간 바이탈 신호가 끊겼습니다. 개체의 사후 기록이 보존됩니다.','loss');}
  const escapedNow=n.security.escapedIds.filter(id=>!s.security.escapedIds.includes(id));for(const id of escapedNow)recordSpecimen(n,id,'격리 이탈','시설 내 생체 신호 이탈. 마지막 CCTV 기록을 확인하십시오.','security');
-if(n.infection>75){n.hp=cap(n.hp-10);n.eve=cap(n.eve-3)}n.stamina=cap(n.stamina+14);applyCrewLossPenalties(n);n.day++;n.ap=n.start==='station'&&(!n.startBenefits||n.day<=2)?5:4;n.dayEvents=0;n.run=null;
+if(n.infection>75){n.mind=cap(n.mind-10);n.eve=cap(n.eve-3)}applyCrewLossPenalties(n);n.day++;scheduleStaffByDay(n);n.ap=n.start==='station'&&(!n.startBenefits||n.day<=2)?5:4;n.dayEvents=0;n.run=null;
+tickHqOrders(n);
 if(n.day>=13&&n.knowledge>=70&&n.clues>=3&&!n.flags.humanTruth){n.flags.humanTruth=true;log(n,'ARK 열람 권한','기록을 검증한 결과 동물들에게 인간의 의식과 지식이 분산 보존됐음이 확인됐다.','mystery')}
 if(n.day>=20&&n.flags.humanTruth&&n.knowledge>=145&&n.clues>=7&&!n.flags.mirror){n.flags.mirror=true;log(n,'제000번 개체','거울실의 바이탈 기록은 관리자의 신체가 인간이 아님을 가리킨다.','mystery')}
 // The facility reports to an unseen authority. Clues unfold only when the player has progressed.
@@ -256,8 +278,8 @@ if(n.day>=20&&n.flags.humanTruth&&n.knowledge>=145&&n.clues>=7&&!n.flags.mirror)
  else if(!h.pendingScene&&h.firstReport&&h.revealStage===2&&n.day>=26&&n.flags.mirror){h.revealStage=3;h.pendingScene='origin';log(n,'제000번 제조 기록','관리자의 바이탈 수치가 복제 개체 생산 기록과 일치한다.','mystery')}
  if(n.archive?.bonuses.power)n.power=cap(n.power+30);
  evaluateArchiveReveal(n);
- if((n.day>=26&&n.flags.mirror)||n.day>=38){n.phase='finale';if(h.revealStage<3){h.revealStage=3;h.pendingScene='origin';log(n,'최종 기밀 해독','보존소 본부의 지침과 개체 000의 제조 기록을 연결했다.','mystery')}}else {n.pendingIncident=determineIncident(n);n.phase='day'}
-summary(n,'하루의 종료',`전력 ${n.power}%, 감염도 ${n.infection}%, 위협 ${n.threat}%. ${used==='shield'?'방어막을 점검했다.':used==='rest'?'충분한 휴식을 취했다.':used==='analyze'?'EVE가 기록을 재분석했다.':'경비를 가동하지 못했다. 외부 위협과 격리 위험이 상승했다.'}`,'info');recalc(n);return n}
+ if((n.day>=26&&n.flags.mirror)||n.day>=38){n.phase='finale';if(h.revealStage<3){h.revealStage=3;h.pendingScene='origin';log(n,'최종 기밀 해독','보존소 본부의 지침과 개체 000의 제조 기록을 연결했다.','mystery')}}else {n.pendingIncident=determineIncident(n);n.phase='day';if((n.hqOrders?.interference??0)>=55&&n.day%5===1&&!n.pendingIncident){n.pendingIncident='intrusion';log(n,'본부 간섭 · 침입자 음성', '본부 지원 차단 이후 외곽에서 관리자 인증 신호를 도용한 생체 교란이 포착됐습니다.', 'bad');}scheduleVoiceBreach(n);}
+summary(n,'하루의 종료',`전력 ${n.power}%, 감염도 ${n.infection}%, 위협 ${n.threat}%. ${used==='shield'?'방어막을 점검했다.':used==='rest'?'충분한 휴식을 취했다.':'경비를 가동하지 못했다. 외부 위협과 격리 위험이 상승했다.'}`,'info');recalc(n);return n}
 export function registerFullResonance(before:V10,after:V10,id:AnimalId):V10 {
  const prev=before.animals.find(a=>a.id===id);const a=after.animals.find(a=>a.id===id);
  if(!a||a.memory<100||((prev?.memory??0)>=100&&!(id==='rabbit'&&before.tutorialStep===5&&!before.headquarters.firstReport)))return after;
@@ -272,19 +294,23 @@ export function registerFullResonance(before:V10,after:V10,id:AnimalId):V10 {
 export type HeadquartersChoice='transfer'|'copy'|'refuse';
 export function resolveHeadquarters(s:V10,choice:HeadquartersChoice):V10 {
  const h=s.headquarters;if(!h?.pendingAnimal)return s;
+  // First tutorial rabbit must be transmitted, otherwise the onboarding could deadlock.
+  if(h.pendingAnimal==='rabbit'&&!h.transferred.includes('rabbit')&&s.tutorialArchiveReviewPending&&choice!=='transfer')return s;
  const n=copy(s) as V10;const q=n.headquarters;const id=q.pendingAnimal!;const a=n.animals.find(a=>a.id===id);q.pendingAnimal=null;
  if(choice==='transfer'){
   if(a){a.alive=false;a.tutorialProtected=false;(a as typeof a & {transferred?:boolean}).transferred=true;}
   if(!q.transferred.includes(id))q.transferred.push(id);
-  recruitCrew(n,id);
-  ensureArchive(n).pendingGifts++;recordSpecimen(n,id,'본부 인계','생체 개체가 외부 수신처로 이동했습니다. 도착 후 처리 내용은 현재 열람 불가.','decision');
-  n.knowledge+=12;n.credits+=220;n.trust=cap(n.trust-8);evaluateArchiveReveal(n);
-  return summary(n,'개체 이송 완료',`${a?.name||id}의 생체 기록과 개체를 외부 본부로 보냈다. 이송 후 CCTV 열람 권한이 차단됐다. 보존 CR +220, 지식 +12.`,'mystery');
+   // Staff arrive according to the calendar, not animal transfer.
+  // Living transfers are NOT tissue shipments: only routine supplies and a possible crew arrival.
+  // Premium HQ selections must be earned through the later, irreversible specimen transmission.
+  recordSpecimen(n,id,'본부 생체 인계','생체 개체를 본부로 이송했습니다. 원본의 이후 행방은 열람 불가.','decision');
+  n.scrap+=3;n.food+=2;n.trust=cap(n.trust-5);evaluateArchiveReveal(n);
+  return summary(n,'본부 생체 인계 완료',`${a?.name||id}을(를) 본부로 이송했습니다. 기본 배급: 고철 +3 · 식량 +2. 고급 지원품은 신경 조직 표본 송신 시에만 발행됩니다.`, 'mystery');
  }
  if(choice==='copy'){
   if(!q.copies.includes(id))q.copies.push(id);
-  n.power=cap(n.power-12);n.clues+=2;n.eve=cap(n.eve-5);recordSpecimen(n,id,'기록 복사·인계 보류','원본 개체는 격리실에 남겼습니다. 암호화 전송 내용을 추후 다시 검토할 수 있습니다.','decision');evaluateArchiveReveal(n);
-  return summary(n,'송신 복제 기록',`${a?.name||id}은(는) 시설에 남겼다. 송신 요청을 보류하고 암호화된 이송 명세를 복사했다. 단서 +2, 전력 -12.`,'mystery');
+  n.power=cap(n.power-8);n.clues+=2;n.eve=cap(n.eve-5);recordSpecimen(n,id,'신경 데이터 전송 · 개체 보존','원본 개체는 격리실에 남기고 분석 데이터만 암호화하여 송신했습니다.','decision');evaluateArchiveReveal(n);
+  return summary(n,'신경 데이터만 전송',`${a?.name||id}은(는) 시설에 남아 있습니다. 공명 데이터만 전송했습니다. 단서 +2, 전력 -8.`,'mystery');
  }
  if(!q.retained.includes(id))q.retained.push(id);
  n.trust=cap(n.trust+6);n.threat=cap(n.threat+8);recordSpecimen(n,id,'본부 인계 거부','개체의 생존을 우선해 송신 명령을 거부했습니다.','decision');evaluateArchiveReveal(n);
@@ -314,12 +340,13 @@ export function synthesize(s:V10,first:AnimalId,second:AnimalId,rand=Math.random
 
 /** V31 grid exploration: no artificial 3-click completion. Every tile is an actual decision. */
 export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
- if(!s.run||!s.field||s.capture||s.phase!=='day'||s.pending||s.stamina<2||!adjacentField(s.field.position,destination))return s;
+ if(s.run&&s.field&&!s.capture&&s.stamina<2)return leaveField(s,'탈진 · 긴급 귀환');
+ if(!s.run||!s.field||s.capture||s.phase!=='day'||s.pending||!adjacentField(s.field.position,destination,s.field.width??7,s.field.tiles.length)||s.field.choice)return s;
  const tile=s.field.tiles[destination];if(tile==='wall')return s;
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
  field.position=destination;field.steps++;
- field.pressure=Math.min(100,(field.pressure??0)+7+Math.round(regions.find(r=>r.id===run.region)!.danger/22)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
+ field.pressure=Math.min(100,(field.pressure??0)+Math.max(3,Math.round(100/((field.width??7)+(field.height??5)+3)))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';
  field.noise=Math.max(0,field.noise+(noisy?18:pace==='normal'?7:-4));
@@ -333,13 +360,13 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    observation='발자국 간격을 기록했습니다. 동물의 이동 경로가 조금 더 분명해집니다. 지식 +2.';
   }else if(tile==='cache'){
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
-   field.loot+=gain;run.loot+=gain;n.scrap+=Math.max(1,Math.ceil(gain/2));earnDuringRun(run,'scrap',Math.max(1,Math.ceil(gain/2)));
+   field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+(run.companion==='fox'?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
   }else if(tile==='hazard'){
-   const damage=Math.max(2,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0));
+   const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-(run.companion==='wolf'?3:0));
    run.integrity=cap(run.integrity-damage);
-   n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?5:0)-(n.crew?.decontamDay===n.day?6:0)));
-   n.hp=cap(n.hp-Math.max(0,Math.floor(damage/3)));
+   n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?5:0)-(n.crew?.decontamDay===n.day?6:0)-(run.companion==='deer'?4:0)));
+   n.mind=cap(n.mind-Math.max(0,Math.floor(damage/3)));
    observation=`감염성 포자에 노출됐습니다. 방호 -${damage}, 감염 위험 증가.`;
   }else if(tile==='signal'){
    n.knowledge+=4;n.clues++;field.clues++;earnDuringRun(run,'knowledge',4);earnDuringRun(run,'clues',1);
@@ -361,15 +388,71 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   }
   if(tile!=='exit')field.tiles[destination]='empty';
  }
+ // Walking is an active exploration economy: minor salvage and exposure occur without extra clicks.
+ // The first guided rabbit mission is safe from random chip damage; later biomes scale by risk.
+ if(firstVisit && tile==='empty' && !run.firstTutorial){
+  const regionalRisk=regions.find(r=>r.id===run.region)!.danger;
+  const roll=((n.day*47+destination*71+field.steps*13+(field.sortie??0)*19)%101);
+  if(roll<22){const amount=1+Math.floor(regionalRisk/45);n.scrap+=amount;earnDuringRun(run,'scrap',amount);observation=`길가의 버려진 자재를 자동 회수했습니다. 고철 +${amount}.`;}
+  else if(roll>95-Math.floor(regionalRisk/30)){
+   const damage=1+Math.floor(regionalRisk/27);n.mind=cap(n.mind-damage);n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?2:0)));
+   observation=`발밑 포자 구름이 터졌습니다. 정신력 -${damage}.`;
+  }
+ }
+ // Optional high-stakes side discoveries. Pending choices are saveable and block further movement.
+ if(firstVisit&&!run.firstTutorial && !field.encountered && !field.choice && ['cache','signal','hazard'].includes(tile)){
+  const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;
+  if(chance<42){const danger=regions.find(r=>r.id===run.region)!.danger;
+   const kind=tile as FieldChoice['kind'];
+   field.choice={id:`${n.day}-${field.sortie??0}-${destination}`,kind,title:kind==='cache'?'봉인된 보급 컨테이너':kind==='signal'?'훼손된 기억 보관소':'포자에 잠긴 연구 상자',description:kind==='cache'?'상자를 열면 추가 물자를 얻을 수 있지만 방호 장치가 작동할 수 있습니다.':kind==='signal'?'낡은 신경 기록입니다. 강행 복원은 더 많은 단서를 남기지만 생체 신호를 교란합니다.':'잔해 아래 물자와 신호가 있습니다. 가까이 접근할수록 감염 위험이 커집니다.',danger:Math.min(85,14+Math.floor(danger*.66)),reward:1+regions.find(r=>r.id===run.region)!.reward};
+   observation+=' 조사 가능한 미확인 물체가 감지됐습니다. 행동을 선택하세요.';
+  }
+ }
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
  field.lastEvent=observation;
  n.lastOutcome=observation;
  if(tile==='exit')return leaveField(n,'정상 귀환');
- if((field.pressure??0)>=100&&!n.capture){n.hp=cap(n.hp-9);n.threat=cap(n.threat+9);return leaveField(n,'추적망 접근 · 강제 귀환 (HP -9)');}
- if(run.integrity<=0){n.hp=cap(n.hp-8);return leaveField(n,'방호 파괴 · 긴급 철수');}
- if(n.hp<=0||n.eve<=0){recalc(n);return n;}
+ if(n.stamina<=0 && !n.capture){n.mind=cap(n.mind-5);return leaveField(n,'탈진 · 긴급 귀환');}
+ if(destination===(field.origin??14)&&field.steps>1&&!n.capture)return leaveField(n,'진입 지점 회군');
+ if((field.pressure??0)>=100&&!n.capture){n.mind=cap(n.mind-9);n.threat=cap(n.threat+9);return leaveField(n,'추적망 포위 · 정신력 -9');}
+ if(run.integrity<=0){n.mind=cap(n.mind-8);return leaveField(n,'방호 파괴 · 긴급 철수');}
+ if(n.mind<=0||n.eve<=0){return leaveField(n,'신경 신호 위험 · 긴급 귀환');}
  return n;
 }
+/** Three clearly priced side-event decisions: walk away, careful scan or hazardous salvage. */
+export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Math.random()):V10{
+ if(!s.run||!s.field?.choice||s.capture)return s;
+ const n=copy(s) as V10,choice=n.field!.choice!,run=n.run!,field=n.field!;
+ field.choice=null;
+ if(action==='leave'){
+  n.lastOutcome=`${choice.title}: 위험을 무시하고 이동을 계속합니다.`;
+ }else if(action==='survey'){
+  n.stamina=cap(n.stamina-3);
+  n.knowledge+=2;earnDuringRun(run,'knowledge',2);
+  if(choice.kind==='cache'){n.scrap+=1;earnDuringRun(run,'scrap',1);}
+  n.lastOutcome=`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?' · 고철 +1':''}.`;
+ }else{
+  const win=rand*100>=choice.danger;
+  n.stamina=cap(n.stamina-6);
+  if(win){
+   const salvage=choice.reward*2;
+   n.scrap+=salvage;earnDuringRun(run,'scrap',salvage);
+   n.knowledge+=3;earnDuringRun(run,'knowledge',3);
+   run.loot+=choice.reward;field.loot+=choice.reward;
+   n.lastOutcome=`위험 감수 성공. 고철 +${salvage}, 지식 +3, 회수 점수 +${choice.reward}, ST -6.`;
+  }else{
+   const damage=Math.max(3,Math.ceil(choice.danger/7));
+   n.mind=cap(n.mind-damage);n.infection=cap(n.infection+Math.ceil(damage/2));
+   n.lastOutcome=`위험 감수 실패. 정신력 -${damage}, 감염 +${Math.ceil(damage/2)}, ST -6. 다음 행동을 선택하세요.`;
+  }
+ }
+ field.lastEvent=n.lastOutcome;
+ log(n,'현장 선택 · '+choice.title,n.lastOutcome,action==='risk'?'mystery':'info');
+ if(n.stamina<=0){n.mind=cap(n.mind-5);return leaveField(n,'탈진 · 긴급 귀환');}
+ if(n.mind<=0)return leaveField(n,'신경 신호 위험 · 긴급 귀환');
+ return n;
+}
+
 /** Any capture can be abandoned: prevents exhausted planning points from locking the player forever. */
 export function abandonTacticalCapture(s:V10):V10{
  if(!s.capture||!s.field||!s.run)return s;
@@ -382,14 +465,25 @@ export function abandonTacticalCapture(s:V10):V10{
 export function leaveField(s:V10,kind='조기 철수'):V10{
  if(!s.run||!s.field||s.capture)return s;
  const n=copy(s) as V10,run=n.run!,field=n.field!;
- const score=run.loot;
+ if(run.companion && field.steps>0){const member=n.crew?.members.find(m=>m.id===run.companion);if(member){member.mind=cap(member.mind-1);queueCrewTerminations(n);}}
+ if(run.companion==='rabbit'&&field.steps>0)n.mind=cap(n.mind+Math.min(8,Math.floor(field.steps/3)+2));
+ const exhausted=kind.includes('탈진')||n.stamina<=0; n.nextFieldFatigued=exhausted;
+ const isFull=kind==='정상 귀환'||!!run.firstTutorial;
+ const fraction=isFull?1:.30;
+ const score=Math.floor(run.loot*fraction);
+ // Loot credited during a mission is provisional until a valid extraction route is reached.
+ const deposited=run.earned??freshFieldEarnings();
+ const kept={scrap:Math.floor(deposited.scrap*fraction),knowledge:Math.floor(deposited.knowledge*fraction),clues:Math.floor(deposited.clues*fraction)};
+ n.scrap=Math.max(0,n.scrap-(deposited.scrap-kept.scrap));
+ n.knowledge=Math.max(0,n.knowledge-(deposited.knowledge-kept.knowledge));
+ n.clues=Math.max(0,n.clues-(deposited.clues-kept.clues));
  const bonuses={parts:Math.floor(score/3),food:Math.floor(score/4),credits:score*22};
  n.parts+=bonuses.parts;n.food+=bonuses.food;n.credits+=bonuses.credits;
- n.lastFieldSummary={region:run.region,reason:kind,steps:field.steps,clues:field.clues,loot:score,rewards:{...freshFieldEarnings(),...run.earned,...bonuses},captures:[...(run.captures??[])]};
+ n.lastFieldSummary={region:run.region,reason:kind,steps:field.steps,clues:field.clues,loot:score,rewards:{...kept,...bonuses},captures:[...(run.captures??[])]};
  n.suppliesCollected+=score;n.encounters++;
  returnUnusedRunSupplies(n,run,false);
- n.run=null;n.field=null;n.capture=null;
- n.lastOutcome=`${kind}: ${field.steps}칸 이동 · 흔적 ${field.clues}개 · 물자 ${score}점. 부품 +${Math.floor(score/3)}, 식량 +${Math.floor(score/4)}, CR +${score*22}.`;
+ n.run=null;n.stamina=exhausted?50:100;n.field=null;n.capture=null;
+ n.lastOutcome=`${kind}: ${field.steps}칸 이동 · 물자 ${score}점 (${isFull?'정식 귀환 100%':'귀환 지점 미사용 30%'} 확보). 고철 +${kept.scrap} · 지식 +${kept.knowledge} · 단서 +${kept.clues}, 부품 +${bonuses.parts}, 식량 +${bonuses.food}, CR +${bonuses.credits}.`;
  log(n,'격자 탐사 정산',n.lastOutcome,'info');return n;
 }
 /** v33 hidden-pursuit command; the UI never receives the living creature's actual cell. */
@@ -411,7 +505,7 @@ export function performVeiledHunt(s:V10,command:{type:HuntMode;cell?:number;clue
   n.lastOutcome=`${specs.find(x=>x.id===outcome.state.species)?.name} 은신 추적 성공. 보호 이송 준비가 완료됐습니다.`;
   log(n,'발자국 역추적 · 포획 성공',n.lastOutcome,'good');
  }else if(outcome.lost){
-  n.hp=cap(n.hp-outcome.penalty.hp);
+  n.mind=cap(n.mind-outcome.penalty.hp);
   if(outcome.penalty.parts>0){
    if(n.parts>=outcome.penalty.parts)n.parts-=outcome.penalty.parts;
    else if(n.food>0)n.food--;
@@ -422,7 +516,7 @@ export function performVeiledHunt(s:V10,command:{type:HuntMode;cell?:number;clue
   n.threat=cap(n.threat+outcome.penalty.threat);
   n.field!.encountered=true;
   n.capture=null;
-  n.lastOutcome=outcome.state.resultText+` 피해: 생명 -${outcome.penalty.hp}, 부품 -${outcome.penalty.parts}, 식량 -${outcome.penalty.food}, 감염 +${outcome.penalty.infection}.`;
+  n.lastOutcome=outcome.state.resultText+` 피해: 정신력 -${outcome.penalty.hp}, 부품 -${outcome.penalty.parts}, 식량 -${outcome.penalty.food}, 감염 +${outcome.penalty.infection}.`;
   log(n,'은신 추적 실패',n.lastOutcome,'bad');
  }
  return n;

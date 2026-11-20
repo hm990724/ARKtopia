@@ -11,7 +11,8 @@ export const FIELD_START=14;
 export const FIELD_EXIT=20;
 export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|'exit';
 export type Pace='quiet'|'normal'|'fast';
-export type FieldState={tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number};
+export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
+export type FieldState={tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -19,26 +20,40 @@ export type CaptureState={species:AnimalId;position:number;devices:TacticalDevic
 const hash=(seed:number)=>{let v=(seed^0x9e3779b9)>>>0;v^=v<<13;v^=v>>>17;v^=v<<5;return v>>>0};
 const seedFor=(day:number,region:RegionId)=>region.split('').reduce((n,c)=>hash(n+c.charCodeAt(0)),day*313+19);
 const distance=(a:number,b:number,width:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
-export const adjacentField=(a:number,b:number)=>a>=0&&a<35&&b>=0&&b<35&&distance(a,b,7)===1;
-export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||distance(f.position,i,7)<=range;
-
-export function createField(day:number,region:RegionId):FieldState {
-  const seed=seedFor(day,region);
-  const tiles:FieldTile[]=Array(35).fill('empty');
-  // Guaranteed route along the middle row: players can always reach the extraction point.
-  for(let i=0;i<35;i++){
-    const r=Math.floor(i/7),c=i%7, h=hash(seed+i*337)%100;
-    if(r!==2&&c!==0&&c!==6&&h<14)tiles[i]='wall';
-    else if(h<31)tiles[i]='hazard';
-    else if(h<50)tiles[i]='track';
-    else if(h<68)tiles[i]='cache';
-    else if(h<79)tiles[i]='signal';
-  }
-  const wildlifeIndex=(day===1&&region==='garden')?17:[9,10,17,18,23,24][seed%6];
-  tiles[FIELD_START]='empty';tiles[FIELD_EXIT]='exit';
-  tiles[15]='track';tiles[16]='track';tiles[wildlifeIndex]='animal';
-  if(wildlifeIndex!==17)tiles[17]='cache';
-  return {tiles,position:FIELD_START,visited:[FIELD_START],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,pressure:0,lastEvent:'주변 흔적을 확보하고 생체 신호를 찾아가십시오. 너무 오래 머물면 추적 위험이 증가합니다.'};
+export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({garden:{width:7,height:5},conservatory:{width:8,height:6},rail:{width:9,height:6},archive:{width:10,height:7},vault:{width:11,height:8},tunnels:{width:12,height:9}}[region]);
+export const fieldWidth=(f:FieldState)=>f.width??FIELD_COLUMNS;
+export const fieldHeight=(f:FieldState)=>f.height??FIELD_ROWS;
+export const adjacentField=(a:number,b:number,width=FIELD_COLUMNS,size=FIELD_COLUMNS*FIELD_ROWS)=>a>=0&&a<size&&b>=0&&b<size&&distance(a,b,width)===1;
+export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||distance(f.position,i,fieldWidth(f))<=range;
+/** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
+export function createField(day:number,region:RegionId,sortie=0):FieldState {
+ const {width,height}=fieldDimensions(region),size=width*height;
+ const seed=hash(seedFor(day,region)+sortie*7919);
+ const tiles:FieldTile[]=Array(size).fill('empty');
+ const startingRow=(day===1&&region==='garden')?2:1+(hash(seed+113)%(height-2));
+ const exitRow=(day===1&&region==='garden')?2:(hash(seed+337)%(height));
+ const start=startingRow*width;
+ const exit=exitRow*width+(width-1);
+ for(let i=0;i<size;i++){
+  const r=Math.floor(i/width),c=i%width,h=hash(seed+i*337)%100;
+  const corePath=r===startingRow || (c===width-1&&r>=Math.min(startingRow,exitRow)&&r<=Math.max(startingRow,exitRow));
+  if(!corePath&&h<12)tiles[i]='wall';
+  else if(h<27)tiles[i]='hazard';
+  else if(h<46)tiles[i]='track';
+  else if(h<65)tiles[i]='cache';
+  else if(h<77)tiles[i]='signal';
+ }
+ // Most early encounters sit near the protected central route. Later regions hide them farther away.
+ const wildlifeCol=(day===1&&region==='garden')?3:Math.min(width-2,2+hash(seed+971)%(Math.max(2,width-3)));
+ const wildlifeRow=(day===1&&region==='garden')?startingRow:Math.min(height-2,Math.max(1,startingRow+(hash(seed+1171)%3)-1));
+ const wildlifeIndex=wildlifeRow*width+wildlifeCol;
+ // Carve reachable corridors without opening the entire map.
+ for(let c=0;c<width;c++)tiles[startingRow*width+c]=c===width-1?tiles[startingRow*width+c]:'empty';
+ for(let r=Math.min(startingRow,exitRow);r<=Math.max(startingRow,exitRow);r++)tiles[r*width+width-1]='empty';
+ for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++)tiles[r*width+wildlifeCol]='empty';
+ tiles[start]='empty';tiles[exit]='exit';tiles[wildlifeIndex]='animal';
+ if(start+1<size&&start+1!==wildlifeIndex&&start+1!==exit)tiles[start+1]='track';
+ return {tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
