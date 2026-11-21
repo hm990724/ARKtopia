@@ -1,0 +1,358 @@
+[
+  {
+    "key": "grass",
+    "prompt": "Use case: stylized-concept. Asset type: small top-down 16-bit pixel RPG grass clump sprite, one single asset on TRUE transparent background. Dense curved blades and fern fronds forming a low tuft, seen from overhead three-quarter perspective as in a handheld pixel adventure. Clearly chunky square pixels, logical native 64x64 pixel design enlarged nearest-neighbor; hard pixel edges and 12 color palette, NO smooth painted detail. Sage green, olive, warm pale tips, dark plum shadow. Silhouette extends mostly horizontally, soft irregular leafy perimeter. No tile border, no text, no ground square, no interface, no checkerboard. Occupy 85% of canvas with safe margins. Intended as walkable tall grass on a zoo exploration board.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-57325edc-760d-417f-9a20-e76961edc2ab.png",
+    "file": "public/assets/field/grass.png",
+    "status": "integrated"
+  },
+  {
+    "key": "ground",
+    "prompt": "Use case: stylized-concept. Asset type: seamless square top-down ground texture for 16-bit pixel adventure exploration, NO interface. A continuous gently mottled mossy earth surface with sparse tiny worn cobblestones, scattered leaves and short grasses; muted sage gray, dusty olive, violet brown soil. Pixel artist craft with visible square pixels at logical 128x128 resolution enlarged nearest-neighbor. Even readable mid-dark values, never black; low contrast to support overlay grass sprites and moving characters. Seamlessly tileable all four sides, no horizon, no perspective tilt, no paths forming a specific map, no buildings, no borders, no grid, no labels.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-a7b8006f-f6cb-47d2-b000-7b70185571a7.png",
+    "file": "public/assets/field/ground.png",
+    "status": "integrated"
+  },
+  {
+    "key": "ranger",
+    "prompt": "Use case: stylized-concept. Reference image identifies the protagonist. Create one SINGLE small full body playable RPG sprite of this same young man: tousled dark plum hair, purple goggles over forehead, pale field jacket and dark trousers, headphones around neck, little backpack. Top-down three-quarter RPG view looking down/right, standing ready holding compact hand lantern. True chunky 16-bit pixel art at logical 48x64 pixels enlarged nearest-neighbor, not a detailed portrait, not smooth illustration. Clear silhouette at 40px display. Muted ivory jacket, mauve hair, cyan tiny light. Transparent background, feet fully visible, generous margin, no frame, no text, no UI, no extra poses or sprite sheet.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-16282ba1-21e7-4fc1-be8c-51fdbc580d88.png",
+    "file": "public/assets/field/ranger.png",
+    "status": "integrated"
+  },
+  {
+    "key": "lynx_uncanny",
+    "prompt": "Original ANOMALY ZOO 16-bit pixel art game creature sprite. ONE full body animal only, true transparent background, no collage, no text, no frames, entire silhouette with generous safe margins. Crisp visible square pixel clusters, limited muted ivory/mauve/plum palette with species colors, no smooth photorealism. A natural Eurasian lynx, recognizable tufted ears, cheek ruff, short bob tail, long spotted legs. Quietly gazes toward an absent chair outside frame. Natural anatomy 90%, slightly uncanny symmetrical gaze. Absolutely no clothing, props, tags, tools, bags or extra eyes.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-b7b639af-a152-4718-88fb-9f6ab95a885c.png",
+    "file": "public/assets/animals/lynx_uncanny.png",
+    "status": "integrated"
+  },
+  {
+    "key": "lynx_mutant",
+    "prompt": "Original ANOMALY ZOO 16-bit pixel art game creature sprite. ONE full body animal only, true transparent background, no collage, no text, no frames, entire silhouette with generous safe margins. Crisp visible square pixel clusters, limited muted ivory/mauve/plum palette with species colors, no smooth photorealism. A lynx whose inherited memories of a judge have distorted its posture into severe unnaturally balanced symmetry, split branching rib-like chitin arches form a biological balance over its shoulders, asymmetrical paws like heavy pillars of judgment. Still clearly lynx with ear tufts and bobtail. No actual scales, no costume, no gore, no camera, no multiple eyes.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-60c9098b-1424-4283-9c38-7328f537c0c9.png",
+    "file": "public/assets/animals/lynx_mutant.png",
+    "status": "integrated"
+  },
+  {
+    "key": "axolotl_uncanny",
+    "prompt": "Original ANOMALY ZOO 16-bit pixel art game creature sprite. ONE full body animal only, true transparent background, no collage, no text, no frames, entire silhouette with generous safe margins. Crisp visible square pixel clusters, limited muted ivory/mauve/plum palette with species colors, no smooth photorealism. A delicate pale glasslike axolotl, external pink gills, aquatic salamander body with four tiny feet and long translucent fin tail. Visible luminous nerve-like threads gently beneath skin, non-gory, natural species silhouette. No equipment or clothing. Quiet side three-quarter view.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-88e250e4-9167-4959-ae12-787b59ebe4bb.png",
+    "file": "public/assets/animals/axolotl_uncanny.png",
+    "status": "integrated"
+  },
+  {
+    "key": "axolotl_mutant",
+    "prompt": "Original ANOMALY ZOO 16-bit pixel art game creature sprite. ONE full body animal only, true transparent background, no collage, no text, no frames, entire silhouette with generous safe margins. Crisp visible square pixel clusters, limited muted ivory/mauve/plum palette with species colors, no smooth photorealism. An axolotl with conflicting regenerative memory: external branching coral-pink gills and concentric translucent fin membranes emerging along spine, regenerated small forelimb echoes nested against body, iridescent pale lilac nerve filaments. Clear salamander body and long fin tail, no gore, no laboratory props, no bags, no extra eyes.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-080ab4a6-13f2-4655-8c92-cffbc461f9b9.png",
+    "file": "public/assets/animals/axolotl_mutant.png",
+    "status": "integrated"
+  },
+  {
+    "key": "moth_uncanny",
+    "prompt": "Original ANOMALY ZOO 16-bit pixel art game creature sprite. ONE full body animal only, true transparent background, no collage, no text, no frames, entire silhouette with generous safe margins. Crisp visible square pixel clusters, limited muted ivory/mauve/plum palette with species colors, no smooth photorealism. One large midnight moth with two feathery antennae, six insect legs, fuzzy thorax and symmetrical spread wings. Muted dusty lavender cream wings with unusual faint interrupted concentric signal bands, biologically plausible and slightly uncanny. No mechanical gear, no faces on wings, no extra eyes, no text.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-9e792ea7-32a5-4618-9975-3e8b8d481a52.png",
+    "file": "public/assets/animals/moth_uncanny.png",
+    "status": "integrated"
+  },
+  {
+    "key": "moth_mutant",
+    "prompt": "Original ANOMALY ZOO 16-bit pixel art game creature sprite. ONE full body animal only, true transparent background, no collage, no text, no frames, entire silhouette with generous safe margins. Crisp visible square pixel clusters, limited muted ivory/mauve/plum palette with species colors, no smooth photorealism. One midnight moth warped by memories of lost light signals. Two vast folded velvet wings create hollow concentric light-guiding cavities with broken ivory and deep plum geometric vein bands; antennae curl like tuning forks but remain organic. Fuzzy insect body, six small legs, soft amber glints trapped inside wings. No camera, no bags, no multiple eyes, no gore.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-c63f1c39-0207-4d7c-96a9-076dc9cba947.png",
+    "file": "public/assets/animals/moth_mutant.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_01",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. A locked wartime underground fictional biology laboratory, empty small animal cages, sealed cabinets and an observation desk. Old military secrecy, no real biology diagrams or procedures.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-46f2459e-d3df-4dbe-9e71-26ca157ca0e1.png",
+    "file": "public/assets/hidden-photos/photo_01.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_02",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. A normal black cat has thoughtfully arranged three simple wooden blocks in a deliberate pattern inside an observation room; an inactive camera watches. Quiet unexpected intelligence.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-0b80b8c5-0715-4f7c-b8ec-25c13d61758c.png",
+    "file": "public/assets/hidden-photos/photo_02.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_03",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. Archive first observation photograph of a completely ordinary black cat, amber eyes, tiny notch on its RIGHT ear and little white chest tuft; sitting on a worn research table. No glow, no mutation.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-7787f16b-5022-49ea-8376-adda4bdd93fa.png",
+    "file": "public/assets/hidden-photos/photo_03.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_04",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. An old sealed disposal authorization folder on a scientist desk, ink stamp and pen, distant empty isolation cage. Abstract illegible marks only; bureaucratic human negligence and cold decisions, no cat villain.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-03a5dfae-5cc2-43a6-a6e7-001f8dddd066.png",
+    "file": "public/assets/hidden-photos/photo_04.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_05",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. Broken containment door left wide open after a chaotic disposal operation, red emergency lighting, empty overturned animal carrier, a small ordinary black cat leaving through the doorway. No gore.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-ec8fb345-6548-4099-9229-6103ec74e551.png",
+    "file": "public/assets/hidden-photos/photo_05.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_06",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. An abandoned city after civilization's collapse, faded double exposure of a transit map with silent streets, vines over deserted cars, overcast dawn. No corpses.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-1667f7f0-741c-474c-9b14-5e145dd1d80a.png",
+    "file": "public/assets/hidden-photos/photo_06.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_07",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. Futuristic NON-GORY fictional memory preservation observation room: a living rabbit in comfortable enclosure beside a stylized human silhouette scan made from abstract light patterns. No visible organs, no surgery, no biological procedural diagrams.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-215735ef-2f65-49c6-9765-afafaacd7f59.png",
+    "file": "public/assets/hidden-photos/photo_07.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_09",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. A grieving scientist at a dark archive workstation building a gentle lavender-haired AI hologram from old voice recordings and a child's diary. A small family photograph lies beside the monitor. The AI is separate from the child. No readable text.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-eca48104-f638-4a22-b30b-41e07f68ed04.png",
+    "file": "public/assets/hidden-photos/photo_09.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_10",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. Cold deserted clone maintenance room with empty upright human-shaped support capsules, one distant rabbit carrier beside a corridor, wires, abstract matching identifiers represented as unreadable bars. No surgery, no organs, no nudity.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-1110bc0f-be44-40cd-b898-e0c597192472.png",
+    "file": "public/assets/hidden-photos/photo_10.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_11",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. Confidential archival desk linking a scientist portrait, animal enclosure observation, and artificial manager body silhouette through matching abstract waveform records. The scientist himself was also a preserved victim. No real medical procedure, no readable text.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-dbb04c11-73c5-4b42-aa03-695c21fb1816.png",
+    "file": "public/assets/hidden-photos/photo_11.png",
+    "status": "integrated"
+  },
+  {
+    "key": "photo_12",
+    "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. The ordinary black cat sits quietly beside gentle abstract stability waveforms, abandoned complex machinery behind it. Human-brain-free stable intelligence as a scientific mystery. Right ear tiny nick, white chest tuft, amber eyes; no magic, no mutation.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-b412170a-02ff-46c1-9b80-9a77ea04a2bf.png",
+    "file": "public/assets/hidden-photos/photo_12.png",
+    "status": "integrated"
+  },
+  {
+    "key": "mutant_uncanny",
+    "prompt": "Original ANOMALY ZOO detailed crisp 16-bit pixel art game creature. ONE single full-body sprite, true transparent background, safe margins. Muted ivory, mauve, lavender, deep plum shadows. No text, no borders, no UI. Composite 07, a unique small pale long-bodied quadruped of unknown mammalian origin, delicate narrow face, one closed mouth with layered throat folds, subtle asymmetrical ear shapes, six simple ivory limb supports arranged coherently. Embodies distributed human language memories; quiet early stable state. No collage of existing species, no organs, no gore, no equipment.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-20c81782-71cf-40c8-80e9-4c0dfb240306.png",
+    "file": "public/assets/animals/mutant_uncanny.png",
+    "status": "integrated"
+  },
+  {
+    "key": "mutant_mutant",
+    "prompt": "Original ANOMALY ZOO detailed crisp 16-bit pixel art game creature. ONE single full-body sprite, true transparent background, safe margins. Muted ivory, mauve, lavender, deep plum shadows. No text, no borders, no UI. Composite 07 in synchronization collapse: one coherent long-bodied pale creature, split resonating throat chambers like organic reed folds, elongated bent limbs supporting ribbed torso, violet membranes ripple from a single face as if conflicting voices emerge. Distinct slim arched silhouette, no other heads, no bags, no camera, no gore.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-93c09529-7000-445e-b9d2-ce04ecfdc0f4.png",
+    "file": "public/assets/animals/mutant_mutant.png",
+    "status": "integrated"
+  },
+  {
+    "key": "chimera_uncanny",
+    "prompt": "Original ANOMALY ZOO detailed crisp 16-bit pixel art game creature. ONE single full-body sprite, true transparent background, safe margins. Muted ivory, mauve, lavender, deep plum shadows. No text, no borders, no UI. Junction subject Mira, an original coherent sturdy quadruped with short velvety ivory fur, small backward ears, broad blunt muzzle, rounded branching sensory horns, thick tapering tail and differently patterned fore and hind legs. Quiet unstable but viable artificial creature. Single independent silhouette, no collage, no graft scars, no gore, no equipment.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-ba19595a-1226-457d-80ff-8ef435807c06.png",
+    "file": "public/assets/animals/chimera_uncanny.png",
+    "status": "integrated"
+  },
+  {
+    "key": "chimera_mutant",
+    "prompt": "Original ANOMALY ZOO detailed crisp 16-bit pixel art game creature. ONE single full-body sprite, true transparent background, safe margins. Muted ivory, mauve, lavender, deep plum shadows. No text, no borders, no UI. Junction subject Mira in conflicting memory collapse: a powerful low ivory quadruped with two nested organic collar-like shoulder arches, forelegs reaching forward while hind body turns away, thick spiral tail, short rounded branching horns, mauve sensory membrane along flank. One coherent creature, single head, biologically integrated sculptural silhouette; no collage, no spliced animal heads, no gore or exposed organs, no equipment.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-8833be92-d28f-4dcb-9288-f5014c11c456.png",
+    "file": "public/assets/animals/chimera_mutant.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/eve_glitch",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Portrait matching reference EVE exactly, lavender braided hair cyan eyes headset white sci-fi clothing, hologram signal partially interrupted into pixel fragments, kind but worried face, 3:4 portrait.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-c6e49c16-af9f-46eb-b331-729b24f02b16.png",
+    "file": "public/assets/characters/eve_glitch.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/eve_revelation",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Portrait matching reference EVE exactly, lavender braided hair cyan eyes headset white sci-fi clothing. Quiet independent resolve and newfound sadness, she is an adult AI understanding grief rather than the scientist's daughter. 3:4 portrait.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-1f715515-3ed8-4b42-9425-06f09b102254.png",
+    "file": "public/assets/characters/eve_revelation.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/protagonist_decline",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Portrait of reference manager same face hairstyle goggles and white field jacket, exhausted eyes and pale skin showing gradual cloned body instability, subtle electronic light faults, no gore. 3:4.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-ac32b6b3-eb46-43ec-a86b-5c8d50d23f83.png",
+    "file": "public/assets/characters/protagonist_decline.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/protagonist_final",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Portrait of same reference manager with dark plum tousled hair, forehead goggles, white field jacket. Fatigued fragile but determined and peacefully resolved before final choice, soft dawn lighting, no gore. 3:4.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-57c61a31-05d5-44fa-82eb-6d3015fc8bc3.png",
+    "file": "public/assets/characters/protagonist_final.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/scientist_archive",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Archive portrait of scientist from reference family photo, the young father grown a little older, same plum tousled hair and face, white laboratory coat, colder rationalizing stare, worn archival background, 3:4 portrait.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-39a551c9-0b67-4653-a819-784bec5c5b25.png",
+    "file": "public/assets/characters/scientist_archive.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/scientist_obsession",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Archive portrait of scientist from reference family photo grown older, same plum hair and facial identity, white lab coat, exhausted sleepless eyes refusing to accept failure, clenching a research folder out of frame, restrained obsession not cartoon villain, 3:4 portrait.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-73a5a8d9-82ec-48fc-98f8-b079408254b8.png",
+    "file": "public/assets/characters/scientist_obsession.png",
+    "status": "integrated"
+  },
+  {
+    "key": "characters/daughter_portrait",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Portrait of the CHILD from reference family photo, same lavender braid gentle blue eyes, warm ivory dress, alive and smiling in greenhouse sunshine, no hologram, no adult headset, 3:4 portrait.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-cc4e11a9-8f9f-4bad-89b3-46e97eb2204e.png",
+    "file": "public/assets/characters/daughter_portrait.png",
+    "status": "integrated"
+  },
+  {
+    "key": "backgrounds/bg_containment",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 interior of abandoned yet maintained zoo containment facility, humane individual animal rooms with glass observation doors, power conduits purification and stabilization panels, central quiet aisle, no people, no actual medical instructions.",
+    "refs": [],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-1cd84d5e-fa33-427d-ba78-53ef71957add.png",
+    "file": "public/assets/backgrounds/bg_containment.png",
+    "status": "integrated"
+  },
+  {
+    "key": "backgrounds/bg_headquarters",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 headquarters control corridor, cold sterile automated empty facility, quiet rows of dormant clone support chambers, institutionally oppressive, no people no organs.",
+    "refs": [],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-51b866aa-f16c-4ee4-9dce-98b8015d4416.png",
+    "file": "public/assets/backgrounds/bg_headquarters.png",
+    "status": "integrated"
+  },
+  {
+    "key": "backgrounds/bg_origin_lab",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 ruined original research laboratory inside an old greenhouse, vines reclaim observation benches and small empty containment enclosures, traces of old human ambition, pale dawn. Match family greenhouse architecture.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-29174eae-989a-451e-bcc1-97bc8227c40f.png",
+    "file": "public/assets/backgrounds/bg_origin_lab.png",
+    "status": "unused_candidate_preserved"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_origin_escape",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic: ordinary black cat with amber eyes, right ear tiny nick and little white chest tuft escapes through open emergency laboratory door after chaotic human disposal accident, red alarm reflections and empty carrier, cat silent and normal, no monsters.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-e3ee8fd0-677b-46e4-a0b3-e50213d399bb.png",
+    "file": "public/assets/cinematics/origin-zero/scene_origin_escape.png",
+    "status": "integrated"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_collapse",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic: abandoned ruined city merging into overgrown deserted zoo gates under muted red warning lights and gray dawn. No corpses. Tragic consequences of human ambition, plants surviving.",
+    "refs": [],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-9d29153c-2a01-496f-919e-d761984ec6b8.png",
+    "file": "public/assets/cinematics/origin-zero/scene_collapse.png",
+    "status": "integrated"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_m00_positive",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic: reference young adult manager and adult hologram EVE examine an ordinary black cat on a comfortable bench using a harmless sci-fi scan, surprise and recognition, no surgery. Cat amber eyes, right ear nick, white chest tuft. Match reference character faces outfits.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp",
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp",
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-b7455a26-6f34-429e-b313-24f969e524ec.png",
+    "file": "public/assets/cinematics/origin-zero/scene_m00_positive.png",
+    "status": "integrated"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_m00_transfer",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic: an ordinary black cat sits in a humane ventilated transparent carrier being sent down cold automated headquarters corridor at dawn. Right ear nick, white chest tuft, amber eyes. Quiet uneasy trust, no mutation.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-a78e9aad-86d2-4c2b-aacb-514238e3f074.png",
+    "file": "public/assets/cinematics/origin-zero/scene_m00_transfer.png",
+    "status": "integrated"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_m00_protect",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic: reference manager kneels to shelter ordinary black cat in warm secluded containment room while reference adult EVE hologram watches anxiously. Manager plum hair white field jacket. Cat right ear nick white chest tuft amber eyes. Gentle protective choice.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp",
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp",
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-f166ef6f-56f2-4457-b80a-9449f567fc4e.png",
+    "file": "public/assets/cinematics/origin-zero/scene_m00_protect.png",
+    "status": "integrated"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_ark_recall",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic single scene: dark archive room with one coherent curved bank of holographic animal observation records, rabbit fox deer wolf silhouettes linked by abstract memory lights, empty animal carriers foreground. Quiet reunion and records of individuals. No collage panels, no readable text.",
+    "refs": [],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-674f9621-c1b1-49ac-8242-1d870cc3b82d.png",
+    "file": "public/assets/cinematics/origin-zero/scene_ark_recall.png",
+    "status": "integrated"
+  },
+  {
+    "key": "cinematics/origin-zero/scene_farewell",
+    "prompt": "ANOMALY ZOO original detailed crisp pixel-art narrative game. One single composition, no collage, no UI, no lettering, no logo. Muted ivory mauve lavender plum palette, visible square pixel clusters, sophisticated atmospheric lighting, non-gory SF. Wide 16:9 cinematic: exhausted reference manager seated at a quiet zoo control desk in fading dawn, reference adult EVE hologram beside him leaning closer in a final conversation. Empty tomorrow's chair hinted by composition, tender finite human life and AI responsibility. Maintain identities, no gore, no text.",
+    "refs": [
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp",
+      "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp"
+    ],
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-9d7c2ab6-25a9-4460-b425-de81b01de942.png",
+    "file": "public/assets/cinematics/origin-zero/scene_farewell.png",
+    "status": "integrated"
+  },
+  {
+    "key": "origin_lab_v2",
+    "file": "public/assets/backgrounds/bg_origin_lab_v2.png",
+    "source": "C:/Users/lookm/.codex/generated_images/01a1f771-6bee-7bf1-87b7-502e3f858791/exec-838772aa-d0d2-4ea9-b40b-2cc0bd9bf686.png",
+    "prompt": "?? ?? ???? ?? ???. ??? ?? ?? ??? ?????????? ??? ?? ??, ?? ??. ?? ????? ???, ?? ??.",
+    "status": "integrated"
+  },
+  {
+    "key": "m00_restored",
+    "file": "public/assets/animals/m00_normal.png",
+    "source": "C:/Users/lookm/.codex/generated_images/01a1f771-6bee-7bf1-87b7-502e3f858791/exec-c0b82306-701c-43cc-9f7f-d00e044c1a20.png",
+    "prompt": "?? ?? ?? ?? ??. ??? ?? ???, ??? ? ? ?? ???? ?? ?, ???? ???? ??.",
+    "status": "integrated"
+  },
+  {
+    "key": "photo08_restored",
+    "file": "public/assets/hidden-photos/photo_08.png",
+    "source": "C:/Users/lookm/.codex/generated_images/01a1f771-6bee-7bf1-87b7-502e3f858791/exec-9811adf8-cb97-41e6-a2b2-59c24ef76801.png",
+    "prompt": "?? ?? ?? ??. ?? ?????? ??M-00? ??? ????.",
+    "status": "integrated"
+  }
+]

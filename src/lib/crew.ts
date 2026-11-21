@@ -10,7 +10,7 @@ export const CREW_PROFILES:Record<CrewId,{title:string;post:string;benefit:strin
  wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 교대조가 없으면 제가 두 번 돌면 되죠. 근데 저 철문, 누가 안쪽에서 긁었죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
  deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
 };
-export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;stability?:number;sourceSpecimenId?:string;memoryEcho?:number};
+export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;stability?:number;sourceSpecimenId?:string;memoryEcho?:number;memoryStage?:number};
 export type CrewIncident={day:number;id:CrewId;damage:number;before:number;after:number;text:string};
 export type CrewConflictKind='treatment'|'disposal';
 export type CrewConflictChoice='treat'|'withhold'|'protect'|'dispose';

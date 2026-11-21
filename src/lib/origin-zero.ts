@@ -8,8 +8,8 @@ import {cap,copy,log,specs} from './sim';
 
 export type CatStage='unknown'|'traced'|'captured'|'positive'|'hq'|'shelter';
 export type OriginRoute='hq'|'shelter'|null;
-export type RecallRecord={day:number;quality:number;source:'live'|'hq'|'archive';note:string};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
@@ -111,31 +111,55 @@ export function restoreOriginPhotos(s:V10,answer?:number):V10{
 export const RECALL_CONTEXT:Partial<Record<AnimalId,string>>={
  rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'CCTV를 이용해 오래된 이동 경로 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록'
 };
-export function recallCandidates(s:V10):{id:AnimalId;source:'live'|'hq'|'archive';label:string}[]{
- const ids=new Set<AnimalId>([...s.animals.map(a=>a.id),...(s.headquarters?.transferred??[]),...Object.values(s.archive?.entries??{}).map(e=>e.species)]);
- return [...ids].filter(id=>!!RECALL_CONTEXT[id]).map(id=>{
-  const alive=s.animals.some(a=>a.id===id&&a.alive&&!s.security?.escapedIds.includes(id));
-  const transferred=s.headquarters?.transferred.includes(id)||false;
-  return {id,source:alive?'live':transferred?'hq':'archive',label:specs.find(x=>x.id===id)?.name||id};
- });
+export type RecallCandidate={key:string;id:AnimalId;source:'live'|'hq'|'archive'|'escaped';label:string};
+export function recallCandidates(s:V10):RecallCandidate[]{
+ const items=new Map<string,RecallCandidate>();
+ for(const entry of Object.values(s.archive?.entries??{})){
+  if(!RECALL_CONTEXT[entry.species])continue;
+  items.set(entry.key,{key:entry.key,id:entry.species,label:entry.name,source:entry.status==='transferred'?'hq':entry.status==='escaped'?'escaped':'archive'});
+ }
+ for(const a of s.animals){
+  const key=a.specimenId||a.id+'-legacy-'+a.room;
+  const old=s.archive?.entries[key];
+  const transferred=!!(a as typeof a&{transferred?:boolean}).transferred||(!a.alive&&(old?.status==='transferred'||(!old&&s.headquarters?.transferred.includes(a.id))));
+  items.set(key,{key,id:a.id,label:a.name,source:transferred?'hq':!a.alive?'archive':s.security?.escapedIds.includes(a.id)?'escaped':'live'});
+ }
+ for(const id of s.headquarters?.transferred??[])if(![...items.values()].some(c=>c.id===id&&c.source==='hq')){
+  const key=id+'-legacy-hq';items.set(key,{key,id,source:'hq',label:specs.find(a=>a.id===id)?.name||id});
+ }
+ return [...items.values()].sort((a,b)=>a.key.localeCompare(b.key));
 }
-export function performOriginRecall(s:V10,id:AnimalId):V10{
- const d=s.originZero;if(!d?.route||d.photos<6||d.recalls[id]||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
- const candidate=recallCandidates(s).find(x=>x.id===id);if(!candidate)return s;
+/** One old species-level completion credits one original dossier, never every future animal. */
+export function recallRecord(s:V10,c:RecallCandidate):RecallRecord|undefined{
+ const individual=s.originZero?.individualRecalls?.[c.key];if(individual)return individual;
+ const legacy=s.originZero?.recalls[c.id];if(!legacy)return undefined;
+ if(legacy.specimenId)return legacy.specimenId===c.key?legacy:undefined;
+ return recallCandidates(s).find(x=>x.id===c.id)?.key===c.key?legacy:undefined;
+}
+export function completedRecalls(s:V10){return recallCandidates(s).filter(c=>!!recallRecord(s,c));}
+export function performOriginRecall(s:V10,keyOrSpecies:string):V10{
+ const d=s.originZero;if(!d?.route||d.photos<6||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
+ const list=recallCandidates(s);
+ const candidate=list.find(c=>c.key===keyOrSpecies)||list.find(c=>c.id===keyOrSpecies&&!recallRecord(s,c));
+ if(!candidate||recallRecord(s,candidate)||candidate.source==='escaped')return s;
  const powerCost=candidate.source==='hq'?12:candidate.source==='live'?8:5;
  if(s.power<powerCost)return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-powerCost);
- const animal=n.animals.find(a=>a.id===id&&a.alive);
+ const animal=n.animals.find(a=>(a.specimenId||a.id+'-legacy-'+a.room)===candidate.key&&a.alive);
  const quality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:42;
- state.recalls[id]={day:n.day,quality,source:candidate.source,note:RECALL_CONTEXT[id]!};
- n.knowledge+=Math.round(quality/10);if(candidate.source==='live'&&animal){animal.stress=cap(animal.stress+6);animal.bond=cap(animal.bond+3);}
+ const record:RecallRecord={specimenId:candidate.key,day:n.day,quality,source:candidate.source,note:RECALL_CONTEXT[candidate.id]!};
+ state.individualRecalls??={};state.individualRecalls[candidate.key]=record;
+ // Retain the legacy species index for old save consumers and ending history.
+ state.recalls[candidate.id]??=record;
+ n.knowledge+=Math.round(quality/10);
+ if(candidate.source==='live'&&animal){animal.stress=cap(animal.stress+6);animal.bond=cap(animal.bond+3);}
  if(candidate.source==='hq'){state.hqPressure+=5;if(state.route==='hq')state.hqIntel=cap(state.hqIntel+12);}
- return report(n,'ARK RECALL · 개체 재분석',`${candidate.label}: ${RECALL_CONTEXT[id]}. 자료 품질 ${quality}%. ${candidate.source==='live'?'현장 생체 비교':candidate.source==='hq'?'본부 원격 기록 회수':'사후 보존 기록 복원'} 완료.`);
+ return report(n,'ARK RECALL · 개체 재분석',candidate.label+' ['+candidate.key+']: '+RECALL_CONTEXT[candidate.id]+'. 자료 품질 '+quality+'%. 개체 번호에 비교 기록을 보존했습니다.');
 }
 export function studyOriginImmunity(s:V10):V10{
- const d=s.originZero;if(!d?.route||d.photos<9||Object.keys(d.recalls).length<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
+ const d=s.originZero;if(!d?.route||d.photos<9||new Set(completedRecalls(s).map(c=>c.id)).size<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-10);n.knowledge-=12;state.studies++;
- const qualities=Object.values(state.recalls).map(r=>r.quality);
+ const qualities=completedRecalls(n).map(c=>recallRecord(n,c)!.quality);
  const avg=Math.round(qualities.reduce((a,b)=>a+b,0)/qualities.length);
  const routeBoost=state.route==='shelter'?6:0;
  state.immunity=cap(state.immunity+20+Math.floor(avg/10)+routeBoost+(state.photos===12?5:0));
@@ -185,7 +209,7 @@ export function tickOriginDay(s:V10):void{
   d.hqPressure+=3;s.threat=cap(s.threat+3);
  }else{d.hqPressure+=1;}
 }
-export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && Object.keys(d.recalls).length>=3 && recallCandidates(s).every(item=>!!d.recalls[item.id]) && d.immunity>=75;}
+export function originReadyForFinale(s:V10){const d=s.originZero;return !!d?.route && d.crisisDone && d.photos>=12 && new Set(completedRecalls(s).map(c=>c.id)).size>=3 && recallCandidates(s).every(item=>!!recallRecord(s,item)) && d.immunity>=75;}
 export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{title:string;text:string}{
  const d=s.originZero;
  if(!d?.route)return {title:'닫힌 기록',text:'M-00의 신원이 확인되지 않은 채 마지막 관리자의 신경 신호가 끊겼다.'};

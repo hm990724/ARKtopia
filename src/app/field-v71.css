@@ -1,0 +1,119 @@
+/* v71: readable pixel terrain, one primary board, clear action feedback. */
+.v71-click-layer {position:fixed;inset:0;pointer-events:none;z-index:99999;overflow:hidden}
+.v71-click-layer>span {position:absolute;width:16px;height:16px;margin:-8px;border:2px solid #ffe3b1;animation:v71-click .42s ease-out forwards}
+.v71-click-layer i {position:absolute;width:4px;height:4px;background:#bfe7cd;left:-7px;top:4px}
+.v71-click-layer i:nth-child(2){left:15px}.v71-click-layer i:nth-child(3){left:4px;top:-7px}.v71-click-layer i:nth-child(4){left:4px;top:15px}
+@keyframes v71-click {to{transform:scale(2.3) rotate(45deg);opacity:0}}
+.v71-field.v33-expedition .v33-mission-layout {grid-template-columns:170px minmax(320px,1fr) 230px!important;gap:12px!important;align-items:start}
+.v71-field.v33-expedition .v33-theater {grid-column:2!important;grid-row:1!important;min-width:0}
+.v71-field.v33-expedition .v44-specimen-column {grid-column:1!important;grid-row:1!important;max-height:none;position:static}
+.v71-field.v33-expedition .v33-side-console {grid-column:3!important;grid-row:1!important;max-height:none;position:static}
+.v71-field .v33-banner {padding:12px 16px!important}
+.v71-primary-tools {display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap;font-size:11px}
+.v71-primary-tools button {display:flex;align-items:center;gap:5px;min-height:36px;background:#304b42;border:1px solid #91c8ae;color:#e7f3dc;padding:5px 10px}
+.v71-primary-tools button[aria-pressed=true] {background:#624b39;border-color:#efc986}
+.v71-primary-tools span {margin-left:auto;color:#e5d9c9}
+.v71-field .v33-banner h2 {font-size:21px!important;margin:4px 0!important}
+.v71-field .v33-banner p {font-size:12px!important;margin:4px 0!important}
+.v71-field .v59-field-essentials {padding:0!important;margin:0!important}
+.v71-field {gap:8px!important}
+.v71-field .v59-field-essentials>div {padding:6px 9px!important;min-height:0!important}
+.v71-field .v57-field-vitals {margin:4px 0!important}
+.v71-field .v57-field-ring {padding:6px 10px!important;min-height:0!important}
+.v71-field .v33-banner {min-height:0!important;margin-bottom:4px!important}
+.v71-field .v33-hud {display:none!important}
+.v71-field .v58-hunt-command-bar {display:none!important}
+.v71-field .v44-specimen-image {height:125px!important;min-height:0!important}
+.v71-field .v44-specimen-image img {height:100%;object-fit:contain;image-rendering:pixelated}
+.v71-field .v61-sector-photo,.v71-field .v44-specimen-traits {display:none}
+.v71-field .v33-map-frame {padding:8px!important;background:#242a2b!important;border:1px solid #687d70}
+.v71-field.v33-expedition .v33-hidden-map {width:min(100%,max(368px,calc(100dvh - 420px)))!important;max-width:560px!important;gap:1px!important;aspect-ratio:1;background-size:280px!important;margin:8px auto!important;box-shadow:none!important}
+.v71-field.v33-expedition .v33-route-map.v57-field-map {width:100%!important;max-width:720px!important;background-size:280px!important;gap:1px!important;box-shadow:none!important;margin:8px auto!important}
+.v71-field .v33-hidden-map .v33-land,.v71-field .v33-route-map .v33-route-cell {background:#273f2c22!important;border:1px solid #d7e6c211!important;box-shadow:none;isolation:isolate}
+.v71-field.v33-expedition .v33-route-map.v57-field-map::after {background:none}
+.v71-field .v33-route-map .v33-route-cell:disabled {opacity:1;filter:none}
+.v71-field .v33-route-map .v33-route-fog {background:#20252dec!important}
+.v71-field .v33-route-fog .v33-leaf {opacity:.14}
+.v71-field .v33-leaf {inset:0!important;width:100%!important;height:100%!important;transform:none!important;opacity:.9;filter:none;display:grid;place-items:center;pointer-events:none}
+.v71-field .v71-grass {display:block;width:120%;height:115%;max-width:none;object-fit:contain;image-rendering:pixelated;filter:none;transform:translateY(3%)}
+.v71-field .v33-leaf-1 .v71-grass,.v71-field .v33-leaf-3 .v71-grass {transform:scaleX(-1) translateY(9%)}
+.v71-field .v33-leaf-2 .v71-grass {transform:scale(.86) translateY(12%);filter:hue-rotate(-12deg)}
+.v71-field .v34-cleared .v33-leaf {opacity:.32;transform:scale(.8)!important}
+.v71-field .v33-route-current .v33-leaf,.v71-field .v33-land-path .v33-leaf,.v71-field .v33-land-exit .v33-leaf {opacity:.3}
+.v71-field .v33-route-map .v33-land-wall {background:repeating-linear-gradient(135deg,#37404a,#37404a 8px,#4d5256 8px,#4d5256 12px)!important}
+.v71-field .v33-land-wall .v33-leaf {display:none}
+.v71-field .v33-route-map .v62-route-walkable {outline:1px solid #a8dfb29c;outline-offset:-2px;background:#a9c88d22!important}
+.v71-field .v62-move-indicator {font-size:10px!important;padding:2px 5px!important;bottom:2px!important;right:2px!important;background:#243c30d9!important}
+.v71-field .v33-route-player {position:absolute!important;inset:0;display:grid;place-items:center;z-index:8}
+.v71-field .v71-ranger {height:130%;width:110%;max-width:none;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 0 #15271d);transform:translateY(-10%)}
+.v71-field .v42-walker-path {width:12%;height:24%;z-index:10}
+.v71-field .v42-walker-path .v71-ranger {animation:v71-walk .15s steps(2,end) infinite}
+.v71-field .v33-hidden-map .v69-echo-zone {background:#85cdb126!important;border-color:#a0e4c177!important}
+.v71-field .v33-hidden-map .v71-trail-zone {outline:2px solid #ffe1a1;outline-offset:-3px;background:#eed28b55!important}
+.v71-field .v71-trail-zone::after {content:'✦';position:absolute;top:2px;right:4px;color:#ffe9ac;font-size:15px;z-index:8}
+.v71-hunt-loop {display:flex;gap:8px;flex-wrap:wrap;padding:9px 12px;background:#292f32;border:1px solid #63786c;margin:8px 0;font-size:12px;color:#d8dfd6}
+.v71-hunt-loop span {padding:4px 8px;border:1px solid #596363}
+.v71-hunt-loop .done {color:#aee7ca;border-color:#91baa6}
+.v71-hunt-loop .ready,.v71-hunt-loop strong {color:#ffe0a1}
+.v71-hunt-loop strong {align-self:center;margin-left:auto}
+.v71-field .v33-land:active .v33-leaf {animation:v71-rustle .25s steps(3,end)}
+.v71-field button:not(:disabled):active {filter:brightness(1.22);transform:translateY(1px)}
+.v71-field .v33-land:focus-visible,.v71-field .v33-route-cell:focus-visible {outline:3px solid #fce2a6!important;outline-offset:-3px}
+.oz-cat-image img {max-height:230px;max-width:90%;object-fit:contain;image-rendering:pixelated}
+.v71-photo-open {display:block;width:100%;padding:0;background:#151320;border:1px solid #837383;color:#edd8c6;cursor:zoom-in}
+.v71-photo-open img {width:100%;aspect-ratio:4/3;object-fit:cover;image-rendering:pixelated;display:block}
+.v71-photo-open small {display:block;padding:4px}
+.v71-photo-dialog {color:#eee0d5;background:#201c2b;border:1px solid #a69795;width:min(94vw,1000px);max-height:92dvh;padding:16px;box-sizing:border-box}
+.v71-photo-dialog::backdrop {background:#090710df}
+.v71-photo-dialog>img {display:block;max-width:100%;max-height:65dvh;object-fit:contain;margin:auto;image-rendering:pixelated}
+.v71-photo-close {display:block;margin:0 0 10px auto;background:#403449;border:1px solid #a497a2;color:#fff;padding:8px 14px}
+.v71-photo-dialog p {line-height:1.7}
+@keyframes v71-rustle {25%{rotate:-8deg}75%{rotate:8deg}}
+@keyframes v71-walk {50%{translate:0 -4px}}
+@media(max-width:1200px){
+ .v71-field.v33-expedition .v33-mission-layout {grid-template-columns:minmax(0,1fr) 220px!important}
+ .v71-field.v33-expedition .v33-theater {grid-column:1!important;grid-row:1!important}
+ .v71-field.v33-expedition .v33-side-console {grid-column:2!important;grid-row:1 / span 2!important}
+ .v71-field.v33-expedition .v44-specimen-column {grid-column:1!important;grid-row:2!important;display:grid;grid-template-columns:100px 1fr;gap:8px}
+ .v71-field .v44-specimen-column .v33-eyebrow,.v71-field .v44-specimen-column h3,.v71-field .v44-specimen-desc,.v71-field .v44-specimen-risk {display:none}
+ .v71-field .v47-trait-vault {grid-column:2;grid-row:1 / span 2}
+ .v71-field .v61-live-map-card {max-width:180px}
+}
+@media(max-width:700px){
+ .v71-field .v33-map-frame {max-width:100%;overflow-x:auto}
+ .v71-field.v33-expedition .v33-hidden-map {min-width:368px}
+ .v71-field.v33-expedition .v33-mission-layout {display:flex!important;flex-direction:column}
+ .v71-field .v33-theater,.v71-field .v33-side-console,.v71-field .v44-specimen-column {width:100%;min-width:0;box-sizing:border-box}
+ .v71-field .v33-theater {order:1}.v71-field .v33-side-console {order:2}.v71-field .v44-specimen-column {order:3}
+ .v71-field .v33-map-overline {flex-wrap:wrap;gap:4px;font-size:9px}
+ .v71-field .v57-mini-overlay {display:none}
+ .v71-field .v62-move-indicator {font-size:8px!important}
+ .v71-hunt-loop {font-size:10px;gap:4px}.v71-hunt-loop strong {width:100%;margin:0}
+}
+@media(prefers-reduced-motion:reduce){.v71-field * {animation:none!important;transition:none!important}}
+.v71-containment>.section-title {background:linear-gradient(90deg,#171622ef,#17162288),url('/assets/backgrounds/bg_containment.png') center 40%/cover;padding:20px;border:1px solid #677b70;min-height:130px}
+.v71-headquarters {background:linear-gradient(#171622d9,#171622f7 500px),url('/assets/backgrounds/bg_headquarters.png') center top/100% auto no-repeat}
+.v71-origin-lab {background:linear-gradient(#171622e8,#171622f9 500px),url('/assets/backgrounds/bg_origin_lab_v2.png') center top/100% auto no-repeat}
+.v71-story-archive {margin:18px 0;border:1px solid #776b79;padding:12px}
+.v71-story-archive summary {cursor:pointer;color:#e6cfa5;padding:4px}
+.v71-story-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:14px;margin-top:12px}
+.v71-story-grid figure {margin:0;background:#151321;border:1px solid #4c465a;overflow:hidden}
+.v71-story-grid img {width:100%;height:180px;object-fit:contain;image-rendering:pixelated;background:#100e16}
+.v71-story-grid figcaption {padding:12px}.v71-story-grid p {line-height:1.7;font-size:12px}
+.v71-farewell {display:flex;gap:16px;align-items:flex-start;margin:20px 0;padding:12px;border:1px solid #8e7f93}
+.v71-farewell>img {width:24%;max-width:140px;image-rendering:pixelated}.v71-farewell p {line-height:1.8;font-size:13px}
+.v71-last-broadcast {color:#eed7a9;border-top:1px solid #6e6274;padding-top:12px}
+@media(min-width:701px){
+ .v71-field .v33-banner {padding:7px 12px!important}
+ .v71-field .v33-banner .v33-eyebrow {display:none}
+ .v71-field .v33-banner h2 {font-size:18px!important;line-height:1.2!important;margin:2px 0!important}
+ .v71-field .v33-banner p {font-size:11px!important;line-height:1.4!important;margin:2px 0!important}
+ .v71-field .v59-field-essentials>div {gap:3px 8px!important;padding:4px 8px!important}
+ .v71-field .v71-hunt-loop {margin:2px 0;padding:5px 8px;font-size:11px}
+ .v71-field .v71-hunt-loop span {padding:2px 5px}
+}
+@media(max-width:700px){.v71-field.v33-expedition.v33-is-hunt .v33-map-frame {overflow:auto!important}}
+.v71-cctv-memory {display:flex;gap:14px;align-items:center;padding:12px;margin-bottom:12px;border:1px solid #817787;background:linear-gradient(90deg,#211e2cf0,#211e2cbd),url('/assets/backgrounds/bg_containment.png') center/cover}
+.v71-cctv-memory>img {width:70px;height:100px;object-fit:contain;image-rendering:pixelated}
+.v71-cctv-memory h3,.v71-cctv-memory p {margin:5px 0}.v71-cctv-memory small {color:#b6c5bf}
+.v71-cctv-memory button {min-height:44px;padding:6px 12px;color:#f3e4c9;border:1px solid #a99789;background:#393142}

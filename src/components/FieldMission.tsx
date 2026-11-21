@@ -15,6 +15,7 @@ import {
   HUNT_SIZE,
   huntSearchAge,
   huntSearchedCount,
+  freshTrailCells,
   observedEvidence,
   observationAge,
   type HuntMode,
@@ -125,37 +126,9 @@ function PawPixel() {
   );
 }
 function PixelFoliage({ variant }: { variant: number }) {
-  return (
-    <span className={"v33-leaf v33-leaf-" + variant} aria-hidden="true">
-      <svg
-        className="v36-grass-sprite"
-        viewBox="0 0 64 64"
-        shapeRendering="crispEdges"
-        focusable="false"
-      >
-        <path
-          fill="#192a24"
-          d="M0 48h64v16H0z M4 36h8v20H4z M18 28h7v30h-7z M42 26h7v32h-7z M54 41h7v17h-7z"
-        />
-        <path
-          fill="#436348"
-          d="M6 50h7V27h-4V17H5v12h3z M17 50h8V23h-4V9h-5v18h4z M29 56h7V34h-4V17h-5v19h4z M39 52h7V26h5V12h-6v15h-6z M51 55h6V35h5V24h-6v12h-5z"
-        />
-        <path
-          fill="#6d8450"
-          d="M7 16h4v17H7z M18 11h4v23h-4z M30 19h4v22h-4z M44 13h4v21h-4z M54 26h4v20h-4z"
-        />
-        <path
-          fill="#314b38"
-          d="M0 58h64v6H0z M10 46h11v5H10z M26 52h14v6H26z M45 46h13v4H45z"
-        />
-        <path
-          fill="#98a46a"
-          d="M10 26h4v5h-4z M19 13h3v8h-3z M33 30h3v7h-3z M48 23h3v8h-3z M57 32h3v6h-3z"
-        />
-      </svg>
-    </span>
-  );
+  return <span className={"v33-leaf v33-leaf-" + variant} aria-hidden="true">
+    <img className="v71-grass" src="/assets/field/grass.png" alt="" draggable={false}/>
+  </span>;
 }
 function Status({
   title,
@@ -407,6 +380,7 @@ export default function FieldMission({
     onHunt({ type: "net", cell });
     setMode("search");
   }
+  const trailCells = hunt ? freshTrailCells(hunt) : [];
   const zoneActive =
     !!hunt &&
     hunt.scanZone !== null &&
@@ -416,7 +390,7 @@ export default function FieldMission({
 
   return (
     <section
-      className={"v33-expedition " + (hunt ? "v33-is-hunt" : "v33-is-field")}
+      className={"v71-field v33-expedition " + (hunt ? "v33-is-hunt" : "v33-is-field")}
       aria-label="잔향 추적 — 전술형 탐사 및 은신 포획"
     >
       <header className="v33-banner">
@@ -507,6 +481,12 @@ export default function FieldMission({
               : "WASD / 방향키 이동 · 청록색 칸이 이동 가능"}
         </strong>
       </div>
+      {hunt && <div className="v71-hunt-loop" aria-live="polite">
+        <span className={zoneActive ? 'done' : ''}>① 청음 · 영역 확인</span>
+        <span className={hunt.objects.length ? 'done' : ''}>② 유인 · 이동 유도</span>
+        <span className={trailCells.length ? 'ready' : ''}>③ 그물 · 인접 1칸 포획</span>
+        <strong>{trailCells.length ? '새 흔적! 금색 4칸에 지금 그물을 던지세요' : '다음 정밀 흔적까지 ' + (5 - hunt.turn % 5) + '행동'}</strong>
+      </div>}
       <div className="v33-mission-layout">
         <aside className="v44-specimen-column" aria-label="개체와 지역 정보">
           {hunt && species ? (
@@ -542,7 +522,7 @@ export default function FieldMission({
                   <b>
                     행동 특성 · {hunt.revealed.filter(Boolean).length}/3 해독
                   </b>
-                  <small>해독 1회 = 수색 행동 1</small>
+                  <small>5·10·15턴에 무료 해독 + 정밀 흔적</small>
                 </div>
                 {species.hints.map((hint, i) => {
                   const known = !!hunt.revealed[i];
@@ -713,6 +693,11 @@ export default function FieldMission({
           )}
         </aside>
         <div className="v33-theater" data-tour="run-choice">
+          {hunt && <div className="v71-primary-tools">
+            <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'}><Radio size={16}/> 청음 · 1행동</button>
+            <button type="button" aria-pressed={mode==='net'} onClick={()=>setMode(mode==='net'?'search':'net')}><Target size={16}/> {mode==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
+            <span>남은 행동 <b>{hunt.actions}</b> · {mode==='net'?'십자 반경에 투척':'클릭하여 조사'}</span>
+          </div>}
           {hunt ? (
             <>
               <div className="v33-map-frame">
@@ -729,7 +714,7 @@ export default function FieldMission({
                   ref={mapRef}
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
-                    backgroundImage: `linear-gradient(135deg,#101b16dc,#10101ed2),url(/assets/backgrounds/${region.art}.webp)`,
+                    backgroundImage: "url(/assets/field/ground.png)",
                   }}
                   role="group"
                   aria-label="전부 가려진 추적 격자. 조사한 칸에서만 과거 흔적을 확인합니다."
@@ -781,6 +766,7 @@ export default function FieldMission({
                             ? " v33-targeting"
                             : "") +
                           (inSignalZone ? " v69-echo-zone" : "") +
+                          (freshTrailCells(hunt).includes(i) ? " v71-trail-zone" : "") +
                           (mode === "net" ? " v69-net-target" : "") +
                           (seasonalShiver === i ? " v57-nearby-rustle" : "")
                         }
@@ -1012,7 +998,7 @@ export default function FieldMission({
                       aspectRatio: `${width}/${height}`,
                       ["--v57-light-x" as string]: `${(((field.position % width) + 0.5) / width) * 100}%`,
                       ["--v57-light-y" as string]: `${((Math.floor(field.position / width) + 0.5) / height) * 100}%`,
-                      backgroundImage: `linear-gradient(125deg,#121a16db,#0a091aeb),url(/assets/backgrounds/${region.art}.webp)`,
+                      backgroundImage: "url(/assets/field/ground.png)",
                     } as CSSProperties
                   }
                   role="group"
@@ -1078,7 +1064,7 @@ export default function FieldMission({
                         <PixelFoliage variant={(i * 5) % 5} />
                         {here && !walking ? (
                           <span className="v33-route-player">
-                            <Compass size={19} /> 담당자
+                            <img className="v71-ranger" src="/assets/field/ranger.png" alt="관리자"/>
                           </span>
                         ) : !visible ? (
                           <span className="v33-route-veiled" />
@@ -1136,11 +1122,7 @@ export default function FieldMission({
                       }
                     >
                       <span className="v42-walker-shadow" />
-                      <span className="v42-walker-head" />
-                      <span className="v42-walker-body" />
-                      <span className="v42-walker-limb left" />
-                      <span className="v42-walker-limb right" />
-                      <span className="v42-walker-lantern" />
+                      <img className="v71-ranger" src="/assets/field/ranger.png" alt=""/>
                     </span>
                   )}
                 </div>

@@ -1,0 +1,1198 @@
+{
+  "images": [
+    {
+      "path": "public/assets/animals/axolotl_mutant.png",
+      "width": 1774,
+      "height": 887,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        9,
+        1774,
+        887
+      ],
+      "sha256": "d15ec7ac0bcfff8af1b8dabb9b32ab843634e604a0a08e713f20d4c6e8eea26f",
+      "dhash": "0x204c4e6723212724",
+      "bytes": 1154823
+    },
+    {
+      "path": "public/assets/animals/axolotl_uncanny.png",
+      "width": 1774,
+      "height": 887,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        9,
+        1773,
+        887
+      ],
+      "sha256": "563d5a4ae83f5020ca5242ed5c5d4d2e66e768c3d352aa6bdfbaa6186e751614",
+      "dhash": "0x605667690b2c20",
+      "bytes": 979643
+    },
+    {
+      "path": "public/assets/animals/chimera_mutant.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1535,
+        1024
+      ],
+      "sha256": "2695ac79f8fa45bd16e931c8b69f5836e572c82c00fb19d63a501b0c9dbb9319",
+      "dhash": "0x191a262b1b193d35",
+      "bytes": 2118562
+    },
+    {
+      "path": "public/assets/animals/chimera_uncanny.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        89,
+        0,
+        1516,
+        1024
+      ],
+      "sha256": "147102bd84825ab1d4a8a96580fb365d9076a6a650e9381468ec567bfce94804",
+      "dhash": "0x387c3e2f17333737",
+      "bytes": 1692423
+    },
+    {
+      "path": "public/assets/animals/crow_mutant.png",
+      "width": 964,
+      "height": 887,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        20,
+        0,
+        950,
+        887
+      ],
+      "sha256": "4a75cc152abebf050da01785d807b2a7c6922d7fc3e10906ceb72cb0281fe3f3",
+      "dhash": "0xe2f161b09091119",
+      "bytes": 1215488
+    },
+    {
+      "path": "public/assets/animals/crow_uncanny.png",
+      "width": 863,
+      "height": 887,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        24,
+        52,
+        848,
+        878
+      ],
+      "sha256": "fc0b01f49e05ddc241d1b8d47eb9c7fbf6b049de3e9e93314528f232f32fcd82",
+      "dhash": "0x30383c5e1f03191c",
+      "bytes": 798651
+    },
+    {
+      "path": "public/assets/animals/deer_mutant.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        65,
+        14,
+        1180,
+        1236
+      ],
+      "sha256": "e6cd4c6325dde8befe8ac8fa55b04ba9f0591f036c6631ca33cf4d8e4408f913",
+      "dhash": "0x2727161f13131515",
+      "bytes": 1890829
+    },
+    {
+      "path": "public/assets/animals/deer_uncanny.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        25,
+        23,
+        1240,
+        1241
+      ],
+      "sha256": "a29cb284ff3b445ff037f2c540c5edccf1aac65328ceb3f5f9655a55120bbf11",
+      "dhash": "0x60e381f17131313",
+      "bytes": 1033992
+    },
+    {
+      "path": "public/assets/animals/fox_mutant.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        38,
+        41,
+        1243,
+        1220
+      ],
+      "sha256": "4a3e2f844d0eb03440d5e4745a28adf507f129d5b2593e4a0684866bea2cb823",
+      "dhash": "0x20723391913553d",
+      "bytes": 1944457
+    },
+    {
+      "path": "public/assets/animals/fox_uncanny.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        30,
+        1234,
+        1229
+      ],
+      "sha256": "8cfbf1dca8ca3eea9be95ba15b89c9339d3a10255d00b07a5f460c6826351ef5",
+      "dhash": "0x30303c2f23212333",
+      "bytes": 1563459
+    },
+    {
+      "path": "public/assets/animals/lynx_mutant.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1500,
+        1014
+      ],
+      "sha256": "be1aa8b944f3aa87fc1e590a605fa888e9d34bf8649d0d8648a9431e23ce42f0",
+      "dhash": "0xe0f2b0f0f073737",
+      "bytes": 1584040
+    },
+    {
+      "path": "public/assets/animals/lynx_uncanny.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1514,
+        1024
+      ],
+      "sha256": "2eee40a768903b31b81390f79d745e1b591d590a269bc448fea4c0c0ce44159c",
+      "dhash": "0x381e171717171313",
+      "bytes": 1708399
+    },
+    {
+      "path": "public/assets/animals/m00_normal.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        99,
+        39,
+        1232,
+        1254
+      ],
+      "sha256": "569e15c95180275616800e0adc394064c14ed96836c1faabec0e90af8b99f757",
+      "dhash": "0x2060f0e1e160e1e",
+      "bytes": 788276
+    },
+    {
+      "path": "public/assets/animals/moth_mutant.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        29,
+        31,
+        1520,
+        1002
+      ],
+      "sha256": "79f9a419da167f7186628c461633a1e26b069b0c94eb2ce5defdc113093f1958",
+      "dhash": "0xe0e0e0f0f153171",
+      "bytes": 1761821
+    },
+    {
+      "path": "public/assets/animals/moth_uncanny.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1536,
+        1024
+      ],
+      "sha256": "06dec72d2eef07d7038c0516adbf94c8f69f09aa325f478f30e7f808a26dce1b",
+      "dhash": "0x175571692b331716",
+      "bytes": 1916941
+    },
+    {
+      "path": "public/assets/animals/mutant_mutant.png",
+      "width": 1774,
+      "height": 887,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1774,
+        887
+      ],
+      "sha256": "669c8a0e72414bbfaccacfbe62d6fbf7efb5c65ccd8b7621d7b7909ed309b250",
+      "dhash": "0x7c0e1f1d16772525",
+      "bytes": 1414611
+    },
+    {
+      "path": "public/assets/animals/mutant_uncanny.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        47,
+        17,
+        1522,
+        992
+      ],
+      "sha256": "5e22e20afef018f1af9c03cf4f14be3ee757bb4a2eb347f36f545b55d801788a",
+      "dhash": "0x70787e3f0f33372f",
+      "bytes": 1450791
+    },
+    {
+      "path": "public/assets/animals/otter_mutant.png",
+      "width": 1200,
+      "height": 1200,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        40,
+        125,
+        1160,
+        1075
+      ],
+      "sha256": "3ca7062e7e2b16c188a845620e6ba325f2466fb22c2ac3f2ac253bf62293993e",
+      "dhash": "0x80f332f192d1702",
+      "bytes": 1429853
+    },
+    {
+      "path": "public/assets/animals/otter_uncanny.png",
+      "width": 1200,
+      "height": 1200,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        195,
+        302,
+        1005,
+        898
+      ],
+      "sha256": "5cd2ff5ddf9ea8abbf00f1ddcc951f38a46544ca2beb5c2403ff24e962a0440b",
+      "dhash": "0x2034161b130600",
+      "bytes": 610602
+    },
+    {
+      "path": "public/assets/animals/owl_mutant.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1240,
+        1254
+      ],
+      "sha256": "c36cbe3c27ef4bda4d2cd153cad204fc70cc2a7a09f797c4e854fe2f903fd9ba",
+      "dhash": "0xe1f494d4d455787",
+      "bytes": 2637133
+    },
+    {
+      "path": "public/assets/animals/owl_uncanny.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        0,
+        1240,
+        1254
+      ],
+      "sha256": "f1c9c18a57f7e5b6a3b9de588fd5f39d0638ee006e43701a7b0399475f307eec",
+      "dhash": "0x2c1c1c2e36161616",
+      "bytes": 1656363
+    },
+    {
+      "path": "public/assets/animals/rabbit_mutant.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        15,
+        10,
+        1234,
+        1254
+      ],
+      "sha256": "2c5269e983afd147bb294d028e0d01703161354e36baacc29506aeed7c43b55c",
+      "dhash": "0x161f1b1b4b0f5347",
+      "bytes": 2269795
+    },
+    {
+      "path": "public/assets/animals/rabbit_uncanny.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        33,
+        0,
+        1210,
+        1242
+      ],
+      "sha256": "a866573722e36ce0e97e05f4b689c2ab90a7c8c1eeb53442a8ef8de4d5e2d8a6",
+      "dhash": "0x13061c381e07070f",
+      "bytes": 1433649
+    },
+    {
+      "path": "public/assets/animals/wolf_mutant.png",
+      "width": 1396,
+      "height": 1396,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        134,
+        1396,
+        1261
+      ],
+      "sha256": "567a38b8347466236e32c0c95e59e180565c84a17d1cc3d48e71771b2ce73d41",
+      "dhash": "0x160f2d6d385951b4",
+      "bytes": 2421920
+    },
+    {
+      "path": "public/assets/animals/wolf_uncanny.png",
+      "width": 1396,
+      "height": 1396,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        21,
+        134,
+        1374,
+        1261
+      ],
+      "sha256": "da94e3a837e9007bb96982ea28b8bd8f06a11d16593f53076189697698ad6f83",
+      "dhash": "0x20303c3e1711391b",
+      "bytes": 1534190
+    },
+    {
+      "path": "public/assets/backgrounds/bg_containment.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "aaa6d03e39c524e1241ec500bba0de29f449ab052cfc1e617265cf8fec8b9364",
+      "dhash": "0xc644a0bab32a4d0f",
+      "bytes": 2747394
+    },
+    {
+      "path": "public/assets/backgrounds/bg_headquarters.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "a602b9debb582b56c7ba93ef3b1b0e43924cab627098de4f30757d565ee07f2e",
+      "dhash": "0xa564b5a4b5b447a5",
+      "bytes": 2180029
+    },
+    {
+      "path": "public/assets/backgrounds/bg_origin_lab.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "662adaadd2644dd2d2a66e511123e51cf726a033e5194f9cf01213bd545aa51e",
+      "dhash": "0x411670daa3bcb4d",
+      "bytes": 3731826
+    },
+    {
+      "path": "public/assets/backgrounds/bg_origin_lab_v2.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "ada93d1eddf80a24d1399515df751aec073066e625265413107fa1c9a55b4386",
+      "dhash": "0x411571542cb4b11",
+      "bytes": 3704546
+    },
+    {
+      "path": "public/assets/backgrounds/dawn.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "b8eae90930601f4401a62f1f8192c55694ed8a5f09ec2d4476465ce5379fcceb",
+      "dhash": "0x503032723060603",
+      "bytes": 557310
+    },
+    {
+      "path": "public/assets/backgrounds/gate.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "e96816b270efe29509da9d7ebf8ef4c90b46a641577c036f7f6d514bd4af0be5",
+      "dhash": "0x3e6e54143c3d1f17",
+      "bytes": 614864
+    },
+    {
+      "path": "public/assets/backgrounds/hero-gate.webp",
+      "width": 1221,
+      "height": 468,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "f31c95bf7d6933fad45382c38ef7d57d457eb656ecfe11e2658989673d149a10",
+      "dhash": "0x1e6f441410393f1f",
+      "bytes": 166654
+    },
+    {
+      "path": "public/assets/backgrounds/hidden-photo.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "4794402eb883b5dc7225609e0945984d80a8d3aa93b7a476abfc32b866c7f642",
+      "dhash": "0x676c39e9c9cd5303",
+      "bytes": 531944
+    },
+    {
+      "path": "public/assets/backgrounds/laboratory.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "bc48324e9446c94c00ae6d06ea0a04291facc40d40510fb126195448a2f14e8f",
+      "dhash": "0x4e426263710c2743",
+      "bytes": 583502
+    },
+    {
+      "path": "public/assets/backgrounds/sanctuary.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "964f5547b1c632babceb94d702590f7f0bd829117b6166ca5c366d23174e7cd8",
+      "dhash": "0x713262c2d2c2b0b",
+      "bytes": 629154
+    },
+    {
+      "path": "public/assets/backgrounds/wasteland.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "8a4bce72d5149df8966d5955dbf51ce9515805a3aebd16dc195daf4e174dbddb",
+      "dhash": "0x10370d4f07672757",
+      "bytes": 632788
+    },
+    {
+      "path": "public/assets/characters/daughter_portrait.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "1beb8367078e5d397ddaaed8fa61abc8ea213dcc053e8fcca11894c0d1f26731",
+      "dhash": "0xe0d4d4f1999330f",
+      "bytes": 3465634
+    },
+    {
+      "path": "public/assets/characters/eve_glitch.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "e4b407e28311798b39a249f05b01413f277f0a0f6fa0865e2c9fffa8c97e2ade",
+      "dhash": "0x91f23676733333b",
+      "bytes": 2977839
+    },
+    {
+      "path": "public/assets/characters/eve_hologram.webp",
+      "width": 768,
+      "height": 1024,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "4fb795b1cbb8984037ec53cbc53e23096c9eab61a04411626665e58003ccb174",
+      "dhash": "0x8e1f236767333359",
+      "bytes": 288012
+    },
+    {
+      "path": "public/assets/characters/eve_revelation.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "376b39817ef67c9e38125a83688ef4783cd1d273c9d21bed9597efe1b928cb58",
+      "dhash": "0x8313634e74b75719",
+      "bytes": 2903216
+    },
+    {
+      "path": "public/assets/characters/protagonist_decline.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "da4570c1c43d92d6548e5aeeb172bd7dbf9cd3615b7df055ae78b9399d249fe9",
+      "dhash": "0x9d3d314d4959d62c",
+      "bytes": 2895483
+    },
+    {
+      "path": "public/assets/characters/protagonist_final.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "013a94542a7f54fd281b782f5173c098af3600cda62b8d50a3a1fe20ab35a16a",
+      "dhash": "0x30706464e9685c24",
+      "bytes": 3025448
+    },
+    {
+      "path": "public/assets/characters/protagonist_neutral.webp",
+      "width": 768,
+      "height": 1024,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "6418777448b990a0a58a5e3d6dc7ec771f1030d16c52ce10826669f622e879b9",
+      "dhash": "0x9e3b3646ce6c5cd6",
+      "bytes": 277612
+    },
+    {
+      "path": "public/assets/characters/scientist_archive.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "5ebd4bec503525abd5ab89459025a9bed761b4009bc6ce0bb21e69f3053fdb39",
+      "dhash": "0x1971293733139f86",
+      "bytes": 3324591
+    },
+    {
+      "path": "public/assets/characters/scientist_obsession.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "53fb80cbb07d561434cca1b8f732f7d96c6f4c1d8356a50d56f45449904b7bee",
+      "dhash": "0x8592d3b7165290b",
+      "bytes": 3322726
+    },
+    {
+      "path": "public/assets/cinematics/eve-first-meeting/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "a784f5f9e69f5c2dd3858c4c0742a2ca68707a7eb321fb8d0871d31b26711c1a",
+      "dhash": "0xcb5bcba343336759",
+      "bytes": 763504
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_ark_recall.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "0ed01a5007e79bfa7a32810b0831c4254715fbb320ff29b019c7d04e8eb3f67d",
+      "dhash": "0xcca5050d0d1c4f0f",
+      "bytes": 2445135
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_collapse.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "e672514c7a40312374c631da3feccb27355e7374b34b224b595edd1216c87513",
+      "dhash": "0xd1d1b1363632306",
+      "bytes": 3219690
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_farewell.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "71cd924c9f1ac2f52e924f9e8beab9b2e57cecde1ebb145125ede8cd1dde25ed",
+      "dhash": "0x30a468646c64d93",
+      "bytes": 3232495
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_m00_positive.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "3bb767d24948db54ef07781f313154381abee3a852c0805ec03ddf66323f55c6",
+      "dhash": "0x2e2bc34149695386",
+      "bytes": 3407086
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_m00_protect.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "8d28622f13e1980f82963982c09116c080ecd91621da811cafcaf6ae8f5e6230",
+      "dhash": "0xb139313135596165",
+      "bytes": 3176433
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_m00_transfer.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "baf0c4733afce7c0911fc60dbc46636198583407b245fc9f080249b05c48ceec",
+      "dhash": "0xd0a861696969642d",
+      "bytes": 2664268
+    },
+    {
+      "path": "public/assets/cinematics/origin-zero/scene_origin_escape.png",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "8ebfee17040a1f232ff13cc42b7c15b0366e8e0a6331bba745969ad16c27c24d",
+      "dhash": "0xb080c0e1c995a529",
+      "bytes": 3095252
+    },
+    {
+      "path": "public/assets/cinematics/staff-arrivals/deer/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "3df452ac6f58ab535aa2cbc0b830a66e7d8b8a6a1a11bbb51ce483ddf672faca",
+      "dhash": "0xca6a2c2962686567",
+      "bytes": 503778
+    },
+    {
+      "path": "public/assets/cinematics/staff-arrivals/fox/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "79848a588dae3c1e964bb8aec8fd132ea7801ac64701ea2b949bef793fb1e39d",
+      "dhash": "0x368948b014367661",
+      "bytes": 437324
+    },
+    {
+      "path": "public/assets/cinematics/staff-arrivals/rabbit/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "3f62a753be9268b11ee03aa5688e4f800c80eb358b093f5de274532c17933600",
+      "dhash": "0x5d5e9cbd3231f1e5",
+      "bytes": 418704
+    },
+    {
+      "path": "public/assets/cinematics/staff-arrivals/wolf/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "2a09d57a66792af86190b3547836543b6cebc3114347e12c17a33bb7703d39f2",
+      "dhash": "0x594c6c5171517370",
+      "bytes": 485440
+    },
+    {
+      "path": "public/assets/cinematics/staff-terminations/deer/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "e406716b21c9e9bb7befa7daf786882da2bfae01c66a9d3fc151d0c3f5b0d523",
+      "dhash": "0x5243c382c5410a6c",
+      "bytes": 337456
+    },
+    {
+      "path": "public/assets/cinematics/staff-terminations/fox/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "dba9b59ffa3decb4f324b476c34327d6f7473aafa0963c01062081f4becedc61",
+      "dhash": "0x36a76b524ba9cb33",
+      "bytes": 333572
+    },
+    {
+      "path": "public/assets/cinematics/staff-terminations/rabbit/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "b94632806f03515bb730a8d73cfac4df8b0bc52e4753e40367479f84b47dd616",
+      "dhash": "0x891c5c56b237a4e3",
+      "bytes": 356468
+    },
+    {
+      "path": "public/assets/cinematics/staff-terminations/wolf/scene.webp",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "a1877af28e6002012d7500520467bc5c398db35429dbca54c44f7f75e0af5a4f",
+      "dhash": "0xc6e2d6a624617070",
+      "bytes": 355758
+    },
+    {
+      "path": "public/assets/endings/ending_incomplete_revival.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "0e40a395b164d09eca930c7dcbc8eef8e9ac496e8a40ee21d9dbff10192be7ce",
+      "dhash": "0x8a8c1a4b0e8e0707",
+      "bytes": 349978
+    },
+    {
+      "path": "public/assets/endings/ending_last_signal.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "36c5a9fb56a11b3760ec38e68cd33bc5f7c6d0ddbbcf4583d724d5e488506096",
+      "dhash": "0x3666721227333361",
+      "bytes": 472884
+    },
+    {
+      "path": "public/assets/endings/ending_new_consciousness.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "6a621623df4ee2685e4b073f4e0d03d02f4bfb6d9fe58892e73706c95a9a8ddd",
+      "dhash": "0x17554e4e45474b4b",
+      "bytes": 460914
+    },
+    {
+      "path": "public/assets/endings/ending_open_spring.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "d92c1b1e0fb3c7a16fa6df4c28b555cb0de94691eaa53ada5f98c7bd67d94fc6",
+      "dhash": "0xc3838383a78792c0",
+      "bytes": 446346
+    },
+    {
+      "path": "public/assets/endings/ending_scattered_names.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "f62a1df87e841655f9ca09aa94d5716bc81644e27413fe8bbf4f9f694e4951f0",
+      "dhash": "0xce9f9af276345417",
+      "bytes": 393712
+    },
+    {
+      "path": "public/assets/endings/ending_silent_automation.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "f2140ab77552122f035bee07dee26bb1189e22533ff6d7d94da6e01b8a31ef29",
+      "dhash": "0xa1c18159c3c2484f",
+      "bytes": 426060
+    },
+    {
+      "path": "public/assets/endings/ending_subject_000.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "9c89ecb8af3cda8fc5939572983b11d76af0b1ce5cdf43a75338d6bd82b5415d",
+      "dhash": "0x41e969684664e571",
+      "bytes": 380244
+    },
+    {
+      "path": "public/assets/endings/ending_two_caretakers.webp",
+      "width": 1280,
+      "height": 720,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "c58bd18e198b2faa36ee1905eba1cc407d39fd9934581dd075343d657b760ede",
+      "dhash": "0x4971b51a5a8cceca",
+      "bytes": 477628
+    },
+    {
+      "path": "public/assets/field/grass.png",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        19,
+        1518,
+        1024
+      ],
+      "sha256": "f0f998307cf171867c0e20208834074f1559cc0a9c9a06e45d001acff8211e87",
+      "dhash": "0xf2b71ac3a635717",
+      "bytes": 1328585
+    },
+    {
+      "path": "public/assets/field/ground.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "380c24f992b4835c16a35b0276f3e838e4d4a223590acf31eacf674b14cbaeb0",
+      "dhash": "0x12c66353d44d0aa6",
+      "bytes": 1494589
+    },
+    {
+      "path": "public/assets/field/ranger.png",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGBA",
+      "transparent": true,
+      "alphaBounds": [
+        0,
+        23,
+        1023,
+        1448
+      ],
+      "sha256": "2201727f856ff2da3de19c18695f18c839bcc06b17f2c133f097e77c297084f8",
+      "dhash": "0x1e0e0e1e1e1414",
+      "bytes": 643376
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_01.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "c45fc365f26a6023b62df58277596233533976b6d343b1f15722d34ba837d86e",
+      "dhash": "0xd8d10c2d51131998",
+      "bytes": 3319317
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_02.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "2ac0e02b578c2d25f5e0ed84d84c3684d93297235ef0dcf37f0ca0be04fff8b7",
+      "dhash": "0x727356767439396",
+      "bytes": 3145536
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_03.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "f92e1dcac138e9bf8952fcab7bc6d6bf5548ad203c7df2cdded300950721634c",
+      "dhash": "0x8c0d915174325064",
+      "bytes": 3106436
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_04.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "1e826165af5261171155d8e67b7eab93d4a57d9bb84202ee14c2b261e7791be2",
+      "dhash": "0x8e4f6367061697e9",
+      "bytes": 3247410
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_05.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "4547d202a8446f25b992168364c90e0f267168e7e4db04bf749b0344bbac5f94",
+      "dhash": "0x263323636343926a",
+      "bytes": 3259973
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_06.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "d8ed4b71e4b86fe8476d5b94875bffc2a87048984bdc2f95b522c4186fbece7c",
+      "dhash": "0x260183cf0e4e968a",
+      "bytes": 3398672
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_07.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "2f368a21404347a88d4960e3338143a43a6be72a196752f685b69c1f5489c2f2",
+      "dhash": "0x30212721333938ba",
+      "bytes": 3168780
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_08.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "f1c6312af58dc7ed79554aed85e67b242a95e884ebc21ee16439eb95281d9b67",
+      "dhash": "0x3031172725256bc3",
+      "bytes": 3405224
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_09.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "d86301306bbeb489d1b9b0a2c4507bba3da54bffa5cd6a0003e9b908fdbe72ed",
+      "dhash": "0x74776272331d0e22",
+      "bytes": 3376543
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_10.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "902952a468633498df497a7f1ca24a67ec25d1a12fcfea97b65f26e11d3c68e1",
+      "dhash": "0x83495d5656630fae",
+      "bytes": 3187861
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_11.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "2726fad6446df88ad97c6a4721f7a9e80ec5a3f28109c78379ebdf8e26e84680",
+      "dhash": "0xe260d4d2b4c2da2",
+      "bytes": 3466412
+    },
+    {
+      "path": "public/assets/hidden-photos/photo_12.png",
+      "width": 1448,
+      "height": 1086,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "962f2805ea5dcd49ed58cecf6be3435b425cbbdf2cd9eaa0b9d3d499a9b5ef22",
+      "dhash": "0x163f1d1a0c8d4ce4",
+      "bytes": 3357481
+    },
+    {
+      "path": "public/assets/staff/deer/portrait.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "174176e9115d5e556965cd12b7f0e0fc0faa1b3e5e875f1d1fe98e35e5d33702",
+      "dhash": "0xc2f6d3b3b336396",
+      "bytes": 420288
+    },
+    {
+      "path": "public/assets/staff/deer/portrait_critical.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "2ea6ac9bc499298b44f23534c4721fc937cf73f2545786b05b9f04928ac7af8e",
+      "dhash": "0x942d6e3b7a723b30",
+      "bytes": 493592
+    },
+    {
+      "path": "public/assets/staff/deer/portrait_unstable.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "820fa18a458bd121d2826100f66c4f3d5ce84708355557c82c6e2ebc0ee9ca4c",
+      "dhash": "0x9c362e2d39343569",
+      "bytes": 449684
+    },
+    {
+      "path": "public/assets/staff/fox/portrait.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "efc959799b1a7bc753d2ecb5e34fc4ebefac276bbf8155d7f2607a54c6092ea5",
+      "dhash": "0x2c6c4e323b2a7dfc",
+      "bytes": 407140
+    },
+    {
+      "path": "public/assets/staff/fox/portrait_critical.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "c7fbdca9260f49447fe33291eecdab3ca77be32e527b0d89daf6223f2297957f",
+      "dhash": "0xdcbc2c64a436e6ee",
+      "bytes": 296608
+    },
+    {
+      "path": "public/assets/staff/fox/portrait_unstable.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "eb707ba0b67d82439e7edfed3ffc9d77bffd5041991013d84cb2ab6cb931d2b5",
+      "dhash": "0xdc3d264d79c46664",
+      "bytes": 473266
+    },
+    {
+      "path": "public/assets/staff/rabbit/portrait.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "25c92672fe9fe519932584442cf3945f235e470d82ac198c4b7417636c864c1d",
+      "dhash": "0xcf8606366b6b4ccd",
+      "bytes": 468654
+    },
+    {
+      "path": "public/assets/staff/rabbit/portrait_critical.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "ca0d484d179f0166a1a1ac38fd8250a7dc091e64db4ebc74e9e0ef1cc053e832",
+      "dhash": "0xdc1e2f337b71657c",
+      "bytes": 461154
+    },
+    {
+      "path": "public/assets/staff/rabbit/portrait_unstable.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "5ede60d7b930f9f2fcf4d3ba1a23c22415d96575fbd59a07d5c5ed0c1fa5ce3e",
+      "dhash": "0x8e0f0f8739595bda",
+      "bytes": 448096
+    },
+    {
+      "path": "public/assets/staff/wolf/portrait.webp",
+      "width": 1086,
+      "height": 1448,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "fa4bc04e302c5979c584524903771e7ab3a545522c337608ce8b25babdf6a628",
+      "dhash": "0xb266c460696de934",
+      "bytes": 462692
+    },
+    {
+      "path": "public/assets/staff/wolf/portrait_critical.webp",
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "5b65fe7981f55e5d3ba97624defdafaff7a55f600555b4d8555dd214350dec95",
+      "dhash": "0xd693963622e3c69c",
+      "bytes": 376222
+    },
+    {
+      "path": "public/assets/staff/wolf/portrait_unstable.webp",
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "transparent": false,
+      "alphaBounds": null,
+      "sha256": "0e482a4fc4e66f73868705ee7f390a7fc85c7cf5660bbfdf7334eaf8ea0c2b87",
+      "dhash": "0xe4a263e6968e86da",
+      "bytes": 336152
+    }
+  ],
+  "exactDuplicates": [],
+  "perceptualReviewCandidates": [],
+  "note": "dHash candidates are not duplicates; no image was moved or deleted."
+}

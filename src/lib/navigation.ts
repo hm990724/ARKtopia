@@ -1,5 +1,14 @@
 import type {V10} from './game-v10';
 export type GameTab='hub'|'expedition'|'animals'|'research'|'synthesis'|'supplies'|'records'|'cctv'|'hq';
+export function tutorialDestination(s:V10):GameTab{
+ if(s.tutorialStep>=9)return 'expedition';
+ if(s.tutorialStep===8)return 'cctv';
+ if(s.tutorialStep===6&&s.tutorialArchiveReviewPending)return 'hq';
+ if(s.tutorialStep>=6)return 'supplies';
+ if(s.tutorialStep===5)return 'research';
+ if(s.tutorialStep===4)return 'animals';
+ return 'expedition';
+}
 /** Screen access is independent of action points and of daily settlement. */
 export function tabLockReason(s:V10|null,id:GameTab):string|null{
  if(!s||id==='hub'||id==='expedition'||id==='supplies')return null;

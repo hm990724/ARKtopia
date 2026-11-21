@@ -2,6 +2,10 @@
 export const ENDING_ASSET_DIRECTORY='/assets/endings/';
 export const ENDING_ART: ReadonlyArray<{prefix:string;file:string;label:string}>=
 [
+  {prefix:'방주의 씨앗',file:'../cinematics/origin-zero/scene_farewell.png',label:'다음 날의 일을 EVE에게 맡기는 마지막 관리자'},
+  {prefix:'에덴',file:'ending_new_consciousness.webp',label:'새로운 몸과 기억으로 살아가는 독립적인 생명들'},
+  {prefix:'영원한 실험',file:'ending_incomplete_revival.webp',label:'끝나지 않은 인간 복원 실험'},
+  {prefix:'마지막 동물원',file:'ending_open_spring.webp',label:'연구 재료가 아닌 생명으로 남은 동물들'},
   {"prefix":"본부의 계승자","file":"ending_subject_000.webp","label":"본부의 지침을 계승한 관리자"},
   {"prefix":"상처 없는 복원","file":"ending_new_consciousness.webp","label":"희생 없는 기억 복원의 미래"},
   {"prefix":"기록 밖의 봄","file":"ending_open_spring.webp","label":"본부로 보낸 생명 없이 열린 철문"},

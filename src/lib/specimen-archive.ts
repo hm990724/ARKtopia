@@ -19,7 +19,7 @@ const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',
 export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0,rewardPolicyVersion:2});
 export function archiveOf(s:V10):ArchiveState{return s.archive??emptyArchive();}
 function updateStatus(s:V10,a:AnimalState):ArchiveStatus{
- const transferred=s.headquarters?.transferred.includes(a.id)||!!(a as AnimalState&{transferred?:boolean}).transferred;
+ const transferred=!!(a as AnimalState&{transferred?:boolean}).transferred||(!a.alive&&!!a.specimenId&&s.archive?.entries[a.specimenId]?.status==='transferred');
  return transferred?'transferred':s.security?.escapedIds.includes(a.id)?'escaped':a.alive?'contained':'deceased';
 }
 /** Migration is intentionally conservative: old saves never gain fabricated capture facts. */
@@ -35,6 +35,11 @@ export function ensureArchive(s:V10):ArchiveState{
  }
  s.archive=state;
  for(const animal of s.animals){
+  // Only an untracked legacy loss may inherit the old species-level HQ flag.
+  // A later specimen of that species must keep its own status.
+  if(!animal.alive&&(!animal.specimenId||!state.entries[animal.specimenId])&&s.headquarters?.transferred.includes(animal.id)&&!Object.values(state.entries).some(e=>e.species===animal.id&&e.status==='transferred')){
+   (animal as AnimalState&{transferred?:boolean}).transferred=true;
+  }
   if(!animal.specimenId){
    const candidate=(state.serials[animal.id]??0)+1;
    state.serials[animal.id]=candidate;

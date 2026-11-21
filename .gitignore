@@ -1,6 +1,11 @@
 node_modules
 .next
+.next-qa
 out
 .env*
 *.tsbuildinfo
 .DS_Store
+test-results/
+playwright-report/
+tmp/v71*
+tmp/v68/npm-cache/

@@ -13,7 +13,7 @@ import {createField,createCapture,adjacentField,advanceCapture,setDevice,removeD
 
 export type Gear='flashlight'|'filter'|'scanner'|'medkit'|'cage';
 export type RegionId='garden'|'conservatory'|'rail'|'archive'|'vault'|'tunnels';
-export type IncidentId='echo'|'breach'|'blackout'|'spores'|'signal'|'visitor'|'predator'|'coolant'|'rations'|'intrusion';
+export type IncidentId='echo'|'breach'|'blackout'|'spores'|'signal'|'visitor'|'predator'|'coolant'|'rations'|'intrusion'|'garden'|'keepsake'|'quiet';
 export type Incident={id:IncidentId;title:string;desc:string;cause:string;options:[string,string,string];};
 export type FieldResource='scrap'|'knowledge'|'clues';
 export type FieldCaptureRecord={id:AnimalId;result:'secured'|'treated'|'released'|'failed'};
@@ -46,6 +46,9 @@ export const regions:{id:RegionId;name:string;desc:string;art:string;danger:numb
 ];
 export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'수동 손전등',desc:'정전 수동 탐사 · 조사 시야 반경 2칸 · 수동 출동 전지 25%'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 추가 8 · 조사 시야 반경 3칸 · 포자 노출 피해 -3'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 정신력 +20 · 미사용 귀환 시 반환'}];
 export const incidentDefs:Record<IncidentId,Incident>={
+garden:{id:'garden',title:'금 간 바닥의 새싹',desc:'온실 배수구에서 작은 싹이 올라왔습니다. EVE는 잡초로 분류했지만, 오늘은 잠시 판단을 유보합니다.',cause:'시설이 버틴 밤 뒤에 찾아온 작은 회복',options:['전력 6을 들여 재배등을 켠다 · 식량 +3','씨앗과 토양을 조사한다 · 지식 +10','작은 화단으로 남긴다 · 정신력 +7']},
+keepsake:{id:'keepsake',title:'우리 앞에 놓인 작은 선물',desc:'보호 중인 동물이 깨끗한 금속 조각을 문 앞에 놓았습니다. EVE는 우연한 행동이라고 말하다가 기록 버튼을 누릅니다.',cause:'살아 있는 보호 개체와 쌓아온 일상',options:['식량 1로 응답한다 · 유대 +8, 스트레스 -8','부품으로 회수한다 · 부품 +2, 유대 -3','손대지 않고 지켜본다 · 단서 +1, 정신력 +4']},
+quiet:{id:'quiet',title:'오늘은 아무도 울지 않았다',desc:'교대 시간, 직원이 빈 의자를 하나 더 놓습니다. 누구의 자리인지 묻자 본인도 모르겠다고 합니다. 조용한 시간도 필요합니다.',cause:'파견 직원의 신경 기억과 공동생활',options:['함께 식사한다 · 식량 1, 직원 정신력 +8','기억을 기록한다 · 지식 +12, 직원 정신력 -4','함께 쉬어 간다 · 관리자 정신력 +6, 직원 정신력 +3']},
 echo:{id:'echo',title:'격리실에서 들린 노래',desc:'평소 울음소리만 내던 개체가 익숙한 박자로 울고 있다. EVE는 우연이라고 말한다.',cause:'개체와의 유대 또는 관찰 기록이 누적됨',options:['소리를 녹음하고 행동을 관찰한다','개체를 진정시키고 휴식시킨다','오늘은 아무것도 하지 않는다']},
 breach:{id:'breach',title:'격리문 이상 진동',desc:'동물원 바깥에서 무언가 출입문을 두드린다. 안쪽의 동물들도 몸을 숨긴다.',cause:'외부 위협도 상승·격리 개체 증가',options:['전력 22를 사용해 격리문 봉쇄','동물부터 피신시킨다 (정신력 위험)','함정을 감시하고 기록한다']},
 blackout:{id:'blackout',title:'전력망 이상',desc:'격리동의 불빛이 하나씩 꺼진다. 배터리 전압이 급격히 떨어졌다.',cause:'전력 부족·장비 가동 누적',options:['부품 2개로 긴급 수리한다','비필수 장비를 끄고 전력을 아낀다','EVE에게 과부하 분석을 요청한다']},
@@ -246,10 +249,13 @@ export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random(
   ['predator',8+s.threat*.25],
   ['coolant',9+(100-s.facility)*.18],
   ['rations',alive.length?8+alive.length*2.4:0],
-  ['intrusion',s.day>6?10+s.clues*1.4+hqAttention*1.5:4]
+  ['intrusion',s.day>6?10+s.clues*1.4+hqAttention*1.5:4],
+  ['garden',s.facility>=35?24:8],
+  ['keepsake',alive.length?22+alive.reduce((sum,a)=>sum+a.bond,0)/10:0],
+  ['quiet',s.crew?.members.some(m=>m.mind>0)?28:0]
  ];
  const last=s.lastEvent??'';
- const weighted=scores.filter(([,weight])=>weight>0).map(([id,weight])=>[id,Math.max(.5,weight*(incidentDefs[id].title===last?.18:1))] as [IncidentId,number]);
+ const weighted=scores.filter(([id,weight])=>weight>0&&incidentDefs[id].title!==last);
  const sum=weighted.reduce((a,[,weight])=>a+weight,0);
  let pick=Math.max(0,Math.min(.999999,typeRand))*sum;
  for(const [id,weight] of weighted){pick-=weight;if(pick<0)return id;}
@@ -257,10 +263,21 @@ export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random(
 }
 export function resolveIncident(s:V10,option:number):V10{
  const id=s.pendingIncident;
+ if((id==='keepsake'&&!s.animals.some(a=>a.alive))||(id==='quiet'&&!s.crew?.members.some(m=>m.mind>0)))return s;
+ if(option===0&&((id==='garden'&&s.power<6)||((id==='keepsake'||id==='quiet')&&s.food<1)))return s;
  if(!id||!Number.isInteger(option)||option<0||option>2||(id==='visitor'&&!s.crew?.members.some(m=>m.mind>0))||((id==='echo'||id==='rations')&&!s.animals.some(a=>a.alive)))return s;
  if((id==='breach'&&option===0&&s.power<22)||(id==='blackout'&&option===0&&s.parts<2)||(id==='spores'&&option===0&&s.filters<1)||(id==='predator'&&option===0&&s.power<14)||(id==='coolant'&&option===0&&s.parts<2)||(id==='rations'&&option===0&&s.food<2)||(id==='intrusion'&&option===0&&s.power<10))return s;
  const n=copy(s) as V10;n.pendingIncident=null;const def=incidentDefs[id];
- if(id==='breach'){
+ if(id==='garden'){
+  if(option===0){n.power-=6;n.food+=3;}else if(option===1){n.knowledge+=10;}else{n.mind=cap(n.mind+7);}
+ }else if(id==='keepsake'){
+  if(option===0){n.food--;n.animals.filter(a=>a.alive).forEach(a=>{a.bond=cap(a.bond+8);a.stress=cap(a.stress-8)});}
+  else if(option===1){n.parts+=2;n.animals.filter(a=>a.alive).forEach(a=>a.bond=cap(a.bond-3));}
+  else{n.clues++;n.mind=cap(n.mind+4);}
+ }else if(id==='quiet'){
+  if(option===0)n.food--;else if(option===1)n.knowledge+=12;else n.mind=cap(n.mind+6);
+  n.crew?.members.filter(m=>m.mind>0).forEach(m=>m.mind=cap(m.mind+(option===0?8:option===1?-4:3)));
+ }else if(id==='breach'){
   if(option===0){n.power-=22;n.threat=cap(n.threat-25);n.facility=cap(n.facility+4)}
   else if(option===1){n.mind=cap(n.mind-19);n.animals.forEach(a=>a.stress=cap(a.stress+7));n.threat=cap(n.threat-14)}
   else {n.mind=cap(n.mind-22);n.facility=cap(n.facility-20);n.threat=cap(n.threat+17);n.animals.forEach(a=>{a.stress=cap(a.stress+17);a.hp=cap(a.hp-7)})}
@@ -301,6 +318,7 @@ export function resolveIncident(s:V10,option:number):V10{
  }
  n.eventHistory=[...n.eventHistory,`${n.day}일차 ${def.title} · ${def.options[option]}`].slice(-30);
  n.lastEvent=def.title;
+ if(['garden','keepsake','quiet'].includes(id))return summary(n,def.title,`${def.options[option]} — 오늘의 작은 선택을 기록했습니다.`,'good');
  return summary(n,def.title,`${def.options[option]} — ${option===2?'대응 실패. 시설과 생체 신호에 큰 피해가 발생했습니다.':'대응 결과가 기록되었습니다. 실제 증감 수치를 확인하십시오.'}`,option===2?'bad':option===0?'good':'mystery');
 }
 // Safe, read-only preview for event choice cards; uses the same actual outcome rules.
@@ -310,6 +328,10 @@ export function previewIncident(s:V10,option:number):{available:boolean;effects:
  const fields:[keyof V10,string][]=[['mind','정신력'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['filters','필터'],['food','식량'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
  const effects=fields.map(([key,name])=>({name,delta:Number(n[key])-Number(s[key])})).filter(x=>Number.isFinite(x.delta)&&x.delta!==0);
  const oldAnimals=s.animals.filter(a=>a.alive),newAnimals=n.animals.filter(a=>a.alive);
+ const bondDelta=newAnimals.reduce((sum,a)=>sum+a.bond,0)-oldAnimals.reduce((sum,a)=>sum+a.bond,0);
+ if(bondDelta)effects.push({name:'개체 유대 합계',delta:bondDelta});
+ const crewMind=(n.crew?.members??[]).reduce((sum,m)=>sum+m.mind,0)-(s.crew?.members??[]).reduce((sum,m)=>sum+m.mind,0);
+ if(crewMind)effects.push({name:'직원 정신력 합계',delta:crewMind});
  if(oldAnimals.length){const oldStress=oldAnimals.reduce((v,a)=>v+a.stress,0),newStress=newAnimals.reduce((v,a)=>v+a.stress,0);if(newStress!==oldStress)effects.push({name:'개체 스트레스 합계',delta:newStress-oldStress});const oldHealth=oldAnimals.reduce((v,a)=>v+a.hp,0),newHealth=newAnimals.reduce((v,a)=>v+a.hp,0);if(newHealth!==oldHealth)effects.push({name:'개체 건강 합계',delta:newHealth-oldHealth});}
  return {available:true,effects};
 }
@@ -623,6 +645,7 @@ export function performVeiledHunt(s:V10,command:{type:HuntMode;cell?:number;clue
  if(!outcome.changed)return s;
  const n=copy(s) as V10;n.capture!.hunt=outcome.state;n.lastOutcome=outcome.state.lastEvent;
  if(command.type==='reveal'&&command.clue!==undefined&&outcome.state.revealed[command.clue])noteSpeciesTrait(n,outcome.state.species,command.clue);
+ outcome.state.revealed.forEach((known,i)=>{if(known&&!s.capture!.hunt!.revealed[i])noteSpeciesTrait(n,outcome.state.species,i)});
  if(['search','reveal','bait','sound','light','barrier','wait'].includes(command.type)){const cell=command.cell===undefined?'':` / 조사 칸 ${String.fromCharCode(65+(command.cell%8))}${Math.floor(command.cell/8)+1}`;noteFieldAction(n,outcome.state.species,outcome.state.lastEvent+cell);}
  if(outcome.won)noteCapturedHunt(n,outcome.state);
  if(outcome.won){

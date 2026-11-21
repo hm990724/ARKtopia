@@ -42,6 +42,8 @@ export type HuntState={
  selectedCell:number|null;lastCommand:HuntMode|null;misses:number;
  // Broad sonar quadrant, never an exact animal location. Nullable for older saves.
  scanZone?:number|null;scanTurn?:number;
+ // A four-cell snapshot earned through patient tracking; expires after movement.
+ trailZone?:number|null;trailTurn?:number;
 };
 export type HuntResult={state:HuntState;changed:boolean;won:boolean;lost:boolean;penalty:{hp:number;parts:number;food:number;infection:number;threat:number}};
 export type HuntTraits={title:string;short:string;hints:[string,string,string];speed:1|2|3;likes:HuntTool[];hates:HuntTool[];risk:string;};
@@ -72,6 +74,12 @@ export function huntSearchAge(state:HuntState,cell:number):number{
  return typeof stamp==='number'&&Number.isFinite(stamp)?Math.max(0,state.turn-stamp):-1;
 }
 export function huntSearchedCount(state:HuntState):number{return Object.keys(state.searchedAt??{}).length;}
+export function freshTrailCells(state:HuntState):number[]{
+ const z=state.trailZone;
+ if(!Number.isInteger(z)||z!<0||z!>15||state.trailTurn!==state.turn)return [];
+ const start=Math.floor(z!/4)*16+(z!%4)*2;
+ return [start,start+1,start+8,start+9];
+}
 /** Behavioural bias, not collision. An inspected cell remains traversable and searchable. */
 export function huntClearingBias(state:HuntState,cell:number):number{
  const age=huntSearchAge(state,cell);
@@ -187,7 +195,7 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   const hasFreshObservation=!!current.lastSearch&&current.turn-current.lastSearch.turn<=3&&huntDistance(current.lastSearch.cell,current.position)<=3;
   const inScanZone=current.scanZone!==null&&current.scanZone!==undefined&&current.scanTurn!==undefined&&current.turn-current.scanTurn<=2&&((current.position%8>=4?1:0)+(Math.floor(current.position/8)>=4?2:0))===current.scanZone;
   const lured=current.objects.some(o=>o.kind!=='barrier'&&o.life>0&&huntDistance(o.cell,current.position)<=2);
-  if(distance<=1&&(hasFreshObservation||inScanZone||lured)){
+  if(distance<=1&&(hasFreshObservation||inScanZone||lured||freshTrailCells(current).includes(current.position))){
    current.actions--;current.turn++;current.outcome='caught';current.selectedCell=target;current.lastCommand='net';
    current.resultText='직접 던진 포획 그물이 이동 경로를 덮었습니다. 개체를 다치게 하지 않고 안전하게 확보했습니다.';
    return {state:msg(current,current.resultText,'hint'),changed:true,won:true,lost:false,penalty:nil};
@@ -255,18 +263,22 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   text=`저주파 청음 결과: ${bearing}에서 움직임 포착. 지도에서 강조된 4×4 구역은 이 턴의 추정 영역입니다. 최대 2턴 동안 참고하세요.`;
   kind='hint';
  }
- // Timed field notes keep a long hunt readable without revealing a hidden coordinate.
- // This uses existing trait hints and does not alter movement, rewards or saves.
- if(!current.tutorial&&[5,10,15].includes(current.turn)){
-  const note=HUNT_TRAITS[current.species].hints[current.turn/5-1];
-  text+=` · 자동 관찰 메모 (${current.turn}/20): ${note}`;
+ // Every fifth spent action earns a real clue and a small search area. The
+ // snapshot is AFTER movement and valid for the next action only, never a live marker.
+ if([5,10,15].includes(current.turn)){
+  const index=current.turn/5-1;
+  current.revealed[index]=true;
+  current.trailZone=Math.floor(next/16)*4+Math.floor((next%8)/2);
+  current.trailTurn=current.turn;
+  const note=HUNT_TRAITS[current.species].hints[index];
+  text+=` · 추적 성과 ${index+1}/3: ${note} 새 흔적이 2×2 풀숲으로 좁혀졌습니다. 다음 행동에 그물을 던지세요!`;
   kind='hint';
  }
  current.objects=current.objects.map(o=>({...o,life:o.life-1})).filter(o=>o.life>0);
  // Predator escalation is signalled before high-damage failure, never an invisible instant hit.
  const dangerous=['wolf','lynx','mutant','chimera'].includes(current.species);
  current.predator=Math.min(100,current.predator+(dangerous?6:3)+(action.type==='search'?6:0));
- current.fear=Math.min(100,Math.max(0,current.fear+(action.type==='search'?7:3)));
+ current.fear=Math.min(100,Math.max(0,current.fear+(action.type==='wait'?-8:action.type==='search'?7:3)));
  if(dangerous&&current.predator>=60&&current.actions>0){text+=' EVE 경보: 포식자가 담당자님을 역추적하고 있습니다. 남은 행동이 적습니다.';kind='warning';}
  if(current.actions<=0){
   if(current.tutorial){
