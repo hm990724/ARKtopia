@@ -10,9 +10,11 @@
 | CCTV 정보·현장 추적·조명 지속 | 통과 | 회귀 및 브라우저 탐사 흐름 |
 | 야간 운영·사건·시설 수리 | 통과 | 기존 낮/밤·차단 사유 회귀 |
 | 개체 ID별 재수집 | 통과 | ARK RECALL 3단계 저장/재개 및 개체별 기록 |
-| 전 종 전용 상호작용 조작 | 미완료 | 종별 프로토콜은 다르나 현재 선택지 입력은 공유 |
+| 13종 재수집 상호작용 | 부분 통과 | 13종 위젯이 모바일 390px에서도 렌더·조작·저장됨을 확인. 일부 종끼리 입력 계열을 공유하고 장기 밸런스는 미확인 |
 | 전체 8개 엔딩의 로직 | 통과 | 별도 fixture 8개에서 제목·관리자 사망 검증 |
 | 전체 8개 엔딩 연출·브라우저 검사 | 부분 통과 | 8개 최종 선택을 실제 UI로 실행하고 제목·사망 대사·이미지 로드를 확인. 처음부터 진행하는 자연 경로는 미실행 |
 | UI 반응형·초보자 시작/탐사 튜토리얼 | 부분 통과 | 390px 포함 반응형 E2E 통과. 전체 접근성/신규 사용자 플레이테스트 미완료 |
 | Mutant 4종 레퍼런스 맞춤 아트 | 미완료 | [파일별 명세](docs/ART_REWORK_v75.md), 생성 도구 부재 |
-| 실행/타입/린트/전체 테스트/빌드 | 통과 | 최신 기록은 [QA_REPORT.md](QA_REPORT.md). 31/31 브라우저 검사 포함 |
+| 실행/타입/린트/전체 테스트/빌드 | 통과 | 최신 기록은 [QA_REPORT.md](QA_REPORT.md). 32/32 브라우저 검사 포함 |
+
+2026-11-23 continuation update: Axolotl, Lynx, Moth and Chimera mutant v75 art is connected in the game and checked for 1254x1254 RGBA format. Production build and 32/32 browser regressions passed after the route update. Visual direction remains subject to the user's art review; natural multi-day campaign play has not been fully automated.

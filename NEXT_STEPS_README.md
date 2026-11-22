@@ -1,44 +1,42 @@
-# ARKtopia ORIGIN ZERO — 다음 작업 안내
+﻿# ARKtopia / ORIGIN ZERO — 이어서 작업할 내용
 
-기준일: 2026-11-22
-저장소: `C:\Users\lookm\Documents\GitHub\ARKtopia`
+기준일: 2026-11-23
+프로젝트: `C:\Users\lookm\Documents\GitHub\ARKtopia`
 
-## 현재 진행 상태
+## 이번 작업에서 확인된 구현
 
-- 2026-11-22: ARK RECALL을 개체 ID 단위 3단계 퍼즐로 확장했다. 진행 상태는 저장/재개되고, 13종 각각의 질문과 계기판을 사용한다. 최신 타입검사·린트·회귀·QA 빌드·브라우저 검증 결과는 `QA_REPORT.md`에 기록했다. 브라우저 23/23 통과.
-- 2026-11-22: 최종 선택에 정본 8개 엔딩을 연결했다. 8개 fixture에서 고유 제목과 관리자 사망 기록을 확인하고 최신 빌드 및 브라우저 23/23을 통과했다.
+- 전쟁 후 폐기 명령과 격리 붕괴가 유출 원인이고, M-00 탈출은 별개의 사건으로 처리한다.
+- 1일 1회 출동/AP 1 제한, 장비가 부족하면 출동 불가, 열린 위치의 실시간 목격, 발자국 추적, 반경 1칸 풀 흔적, 손전등 시야를 보존한다.
+- 탐사 중 이동/경계/반격/후퇴, 전리품, 동료 지원을 연결했다.
+- CCTV 증거 대조와 순찰, 야간 사건/방어 선택, 부품·전력·식량을 쓰는 기지 업그레이드는 실제 상태와 비용에 반영한다.
+- ARK RECALL은 개체별 저장/이어하기와 13종 전용 조작 장치를 갖춘다.
+- EVE 초반 무표정, 직원별 정신 상태 초상, 주인공 규격 초상, M-00 도트 개체 및 8개 결말이 적용되어 있다.
+- 탐사 지도 셀의 테두리를 없애고 연속된 어두운 지형과 손전등 조명으로 표현했다.
+- Axolotl/Lynx/Moth/Chimera 신규 Mutant는 각각 종 특성을 반영해 생성하고 게임의 활성 경로를 v75로 바꿨다. 1254x1254 투명 PNG이며 이전 최종본은 덮어쓰지 않았다.
 
-- 2026-11-22 후속 변경: 중계기 1단계는 미확인 출구를 미니맵에 표시하고, 2단계 이상은 개체의 정확한 위치 대신 대략적인 방향·거리 신호를 제공한다. 회귀와 빌드 결과는 `QA_REPORT.md` 최신 기록을 확인한다.
+## 검증 결과
 
-- 최신 구현은 ARK RECALL 및 8개 엔딩 분기다. 양쪽 기능의 개별 회귀와 구형 저장 호환을 확인했다. 재작업 Mutant 아트 4종은 아직 생성되지 않았다.
-- 현재 최신 핸드오프는 `ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.3.zip`이다. 커밋된 전체 프로젝트를 담아 371개 항목 압축 해제 검사를 통과했다. 구형 v74/v74.1/v74.2 ZIP은 보존한다.
-- 작업 트리에서 삭제 표시된 동물 변이/늑대 시네마틱 11개는 이 작업에서 복구하거나 커밋하지 않았다. v74.3은 최신 커밋의 Git 원본을 패키징했으므로 해당 기존 파일을 포함해 보존한다.
-- 실제 Chrome 기반 브라우저 테스트 23/23가 최신 코드에서 통과했다. 새 ARK RECALL의 저장/새로고침/재개와 엔딩 로직 8/8 fixture를 검사했다.
-- 탐사·포획·전투·기지 업그레이드, 구형 저장 호환 코드가 구현돼 있다. 동작 규칙은 `GAMEPLAY_SYSTEMS.md` 참조.
-- ARK RECALL은 세 단계 공통 선택지 방식이다. 종별 단서와 시각 계기판은 있지만 13종별 독립 조작형 미니게임은 미완료다. 엔딩 UI를 통한 8개 결말 각각의 전체 플레이 E2E도 아직 없다.
-- 새 이미지의 스타일은 사용자 승인 전까지 완료로 보지 않는다. 특히 아홀로틀/키메라/스라소니/나방 변이 4종을 사용자 토끼·여우 및 사슴 레퍼런스 수준에 맞춰 다시 제작해야 한다. 세부 파일/종별 프롬프트는 `docs/ART_REWORK_v75.md`.
-- 작업 중 원래 파일이 삭제된 상태를 발견했다. 삭제된 파일을 복구하거나 덮어쓰지 않고, v74 신규 경로를 사용한다. 삭제 전 버전은 Git HEAD 및 v74 ZIP에 보존돼 있다.
+- `npm run typecheck`: 통과
+- `npm run lint`: 통과
+- `npm run test:all`: 통과 (저장/구버전/종별 연구/탐사·전투·기지/8개 결말 포함)
+- `npm run build:qa`: 통과
+- `ARK_PRODUCTION_TEST=1 npm run test:browser`: v75 활성 경로 변경 후 최종 재실행 완료: 32/32 통과. 상세는 `QA_REPORT.md`에 기록한다.
+- 빌드는 기존 CSS autoprefixer 경고와 React Hook dependency 경고를 출력하지만 성공한다.
 
-## 다음 담당자가 할 일
+## 남은 일
 
-1. 아트 생성 기능으로 아래 파일을 각각 제작: `axolotl_mutant_v75.png`, `chimera_mutant_v75.png`, `lynx_mutant_v75.png`, `moth_mutant_v75.png`.
-2. 투명 배경, 정사각 비율, 안전 여백, 종 실루엣, 붉은 유기 변이와 인물별 설정 반영을 개별 확인한다. 토끼/여우/사슴 스타일과 게임 화면 내 표시를 나란히 비교한다.
-3. 새 에셋의 경로를 `src/lib/animal-art.ts`에서 연결하고 에셋 테스트 및 브라우저 캡처를 다시 실행한다.
-4. `npm run test:all`, `npm run build:qa`, `ARK_PRODUCTION_TEST=1 npm run test:browser`는 Recall/엔딩 변경 후 통과했다. 빌드에는 기존 hook dependency 경고가 6건 남아 있다.
-5. 새 수정은 기능별로 커밋하고 핸드오프가 필요하면 버전 번호를 올려 SHA-256/압축 해제 검사를 수행한다.
-6. 남은 큰 구현: 13종별 독립 조작, 4종 Mutant 아트 재제작, 엔딩 UI 전체 경로 테스트/사후 연출, 장시간 난이도·실사용자 튜토리얼 검증.
+1. 브라우저 회귀와 QA 캡처 정리가 끝났다. 사용자 삭제 이미지 11개는 복구하지 않았다.
+2. 파일별 새 이미지 내역은 `docs/generated-assets-v75.json`, 세부 디자인 명세는 `docs/ART_REWORK_v75.md`다. 새 그림은 실제 연결·형식 검증을 마쳤지만 사용자의 최종 미술 승인은 아직 받지 못했다.
+3. QA 문서와 README는 이번 작업 결과로 갱신했다.
+4. 기능별로 선택 파일만 커밋한다. 사용자 삭제 파일은 stage/commit 대상에 포함하지 않는다.
+5. 최신 소스 커밋 후 새 버전 ZIP과 SHA-256을 별도 이름으로 만들고 압축 전체 파일을 검사한다. 기존 v74~v74.3 ZIP은 보존한다.
+6. 장기 자연 플레이는 아직 전체 캠페인 며칠 분량을 자동 진행해 확인하지 않았다. 8개 결말은 저장 조건을 주입한 UI 회귀에서 개별 확인했다.
 
-## 주요 경로
+## 핵심 참고
 
-- 첨부 개발 지시서 보관: `docs/REQUIREMENTS_ENHANCED_v74.txt`
-- 세계관 정본: `STORY_BIBLE.md` → `docs/STORY_BIBLE_WAR_ARKTOPIA_v69.md`
-- 게임 플레이 기준: `UI_GAMEPLAY_SPEC.md`, `GAMEPLAY_SYSTEMS.md`, `EVENT_MATRIX.md`
-- 엔딩 조건: `ENDING_MATRIX.md`
-- 요구사항별 판정: `QA_ACCEPTANCE.md`
-- 게임 변경 사항: `CHANGELOG.md`
-- 시스템 규칙: `GAMEPLAY_SYSTEMS.md`
-- QA: `QA_REPORT_v74.md`
-- 최신 QA: `QA_REPORT.md`
-- 전체 그림 생성 명세와 출처: `docs/generated-assets-v74.json`
-- 변이 4종 재작업 명세: `docs/ART_REWORK_v75.md`
-- 최신 프로젝트 묶음: `ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.3.zip` 및 동봉 SHA-256
+- 원본 상위 명세: `00_CODEX_MASTER_PROMPT.txt`
+- 스토리: `STORY_BIBLE.md`, `docs/STORY_BIBLE_WAR_ARKTOPIA_v69.md`
+- 게임 규칙: `GAMEPLAY_SYSTEMS.md`, `UI_GAMEPLAY_SPEC.md`, `EVENT_MATRIX.md`
+- 종료 조건: `ENDING_MATRIX.md`
+- QA: `QA_ACCEPTANCE.md`, `QA_REPORT.md`
+- 자산 감사: `ART_AUDIT.md`, `docs/generated-assets-v75.json`
