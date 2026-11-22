@@ -12,6 +12,7 @@ import {
   fieldVisible,
   fieldWidth,
   fieldHeight,
+  fieldRelayBearing,
   type Pace,
 } from "@/lib/tactical-field";
 import {
@@ -294,6 +295,8 @@ export default function FieldMission({
     field.pressure ?? clamp(field.steps * (7 + Math.round(region.danger / 22)));
   const width = fieldWidth(field),
     height = fieldHeight(field);
+  const relayLevel = Math.max(0, Math.min(3, state.baseLevels?.relay ?? 0));
+  const relayBearing = fieldRelayBearing(field, relayLevel);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
   );
@@ -983,6 +986,7 @@ export default function FieldMission({
                   <span>
                     LIVE MAP · <b>● 관리자</b>
                   </span>
+                  {relayLevel >= 1 && <small className="v74-relay-bearing">CCTV · 미니맵의 황색 표식은 귀환 출구</small>}
                   <div style={{ gridTemplateColumns: `repeat(${width},4px)` }}>
                     {field.tiles.map((t, i) => (
                       <i
@@ -994,11 +998,14 @@ export default function FieldMission({
                               ? t === "wall"
                                 ? "wall"
                                 : "seen"
+                              : relayLevel >= 1 && t === "exit"
+                                ? "signal"
                               : "unknown"
                         }
                       />
                     ))}
                   </div>
+                  {relayBearing && <small className="v74-relay-bearing" role="status">CCTV · {relayBearing}</small>}
                 </div>
                 <div
                   className={
@@ -1028,6 +1035,7 @@ export default function FieldMission({
                             : 1,
                       ),
                       here = field.position === i,
+                      relayExit = relayLevel >= 1 && tile === "exit" && !visible,
                       walk =
                         adjacentField(
                           field.position,
@@ -1110,6 +1118,7 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
+                        {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}
                         {walk && visible && !walking && (
                           <span
                             className="v62-move-indicator"

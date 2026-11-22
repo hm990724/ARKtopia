@@ -42,7 +42,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
 }
 export type UpgradeId='relay'|'battery'|'clinic';
 export const baseUpgrades:Record<UpgradeId,{name:string;effect:string;scrap:number;parts:number;power:number}>={
- relay:{name:'현장 중계기',effect:'단계마다 추적망 증가 -1 · CCTV 신호로 출구와 동물 방향 표시',scrap:8,parts:1,power:4},
+ relay:{name:'현장 중계기',effect:'단계마다 추적망 증가 -1 · 1단계부터 미니맵 출구 표시 · 2단계부터 동물의 대략적인 방향 수신',scrap:8,parts:1,power:4},
  battery:{name:'전력 축전기',effect:'단계마다 야간 전력 +5 · 탐사 손전등 소모 완화',scrap:10,parts:2,power:4},
  clinic:{name:'안정화 병동',effect:'단계마다 야간 개체 스트레스 -2 · 직원 정신 +1',scrap:9,parts:1,power:5}
 };

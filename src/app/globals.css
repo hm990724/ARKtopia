@@ -2561,6 +2561,10 @@ select{color:#ecdeea;background:#272232;border:1px solid #66576d}
 .v57-mini-overlay>span{font:700 9px ui-monospace,monospace;color:#b7c4ba;letter-spacing:.08em}.v57-mini-overlay>span b{color:#ff939c}
 .v57-mini-overlay>div{display:grid;gap:2px}.v57-mini-overlay i{width:4px;height:4px;display:block;background:#222e33}
 .v57-mini-overlay i.seen{background:#6b927e}.v57-mini-overlay i.here{background:#ff829b;box-shadow:0 0 8px #ff829b}
+.v57-mini-overlay i.signal{background:#ffd477;box-shadow:0 0 7px #ffc85e}
+.v74-relay-bearing{display:block;max-width:210px;color:#a8d8d1;font:600 10px/1.45 ui-monospace,monospace;letter-spacing:.02em}
+.v33-route-cell{position:relative}
+.v74-relay-exit{position:absolute;z-index:5;inset:auto 3px 3px auto;padding:2px 4px;background:#111a;color:#ffd477;border:1px solid #ffd477;border-radius:2px;font:800 8px/1 ui-monospace,monospace;letter-spacing:.06em;text-shadow:0 0 5px #ffc85e}
 .v57-field-choice{position:relative;z-index:8;margin:3px 0 12px;padding:12px;border:1px solid #c59d7d;background:linear-gradient(140deg,#2c2928,#191722);box-shadow:0 0 24px #be8c6c1f, inset 3px 0 #c6a47f;animation:v57-choice-arrive .25s ease-out both}
 .v57-choice-kicker{font:700 10px ui-monospace,monospace;color:#e2ba88;letter-spacing:.1em}
 .v57-field-choice h3{margin:5px 0 3px;font-size:17px!important;color:#f1d5c0}.v57-field-choice p{margin:0 0 9px;font-size:12px;line-height:1.5;color:#d7c9c8}

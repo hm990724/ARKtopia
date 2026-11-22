@@ -32,6 +32,15 @@ export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{
 }
 export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||(f.discovered??[]).includes(i)||fieldLineOfSight(f,i,range);
 export function revealField(f:FieldState,range:number){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>fieldLineOfSight(f,i,range)?[i]:[])])];}
+/** Coarse CCTV bearing only; never returns the animal's tile or coordinates. */
+export function fieldRelayBearing(f:FieldState,level:number):string|null{
+ if(level<2)return null;
+ const animalAt=f.tiles.indexOf('animal');if(animalAt<0)return null;
+ const width=fieldWidth(f),dx=animalAt%width-f.position%width,dy=Math.floor(animalAt/width)-Math.floor(f.position/width),distance=Math.abs(dx)+Math.abs(dy);
+ if(distance===0)return '현재 위치에서 생체 신호 확인';
+ const direction=`${dy<0?'북':dy>0?'남':''}${dx>0?'동':dx<0?'서':''}`;
+ return `${direction}쪽에서 약한 생체 신호${distance>5?' · 원거리':distance>2?' · 중거리':' · 근거리'}`;
+}
 
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
 export function createField(day:number,region:RegionId,sortie=0):FieldState {

@@ -11,6 +11,7 @@
 - `ARK_PRODUCTION_TEST=1 npm run test:browser`: 전체 22/22 Chrome 테스트 통과. 이후 Hidden Photo 변경 케이스 1건을 production UI에서 재확인해 통과.
 - v74 시뮬레이션 테스트: 780개 seeded 탐사, 6×6/이전 8×8 저장, 반경 1칸 풀 흔적, 이미 밝힌 칸의 실시간 발견, 전투 보상 중복 방지, 기지 업그레이드 저장을 확인.
 - 스토리 추가 회귀: 강제 폐기 중 격리 붕괴가 유출 원인이고 M-00 탈출은 별도 사건이라는 Photo 기록을 검사.
+- 2026-11-22 중계기 후속 변경 재검증: `npm run typecheck`, `npm run lint`, `npm run test:all`, `npm run build:qa` 모두 통과. `ARK_PRODUCTION_TEST=1 npm run test:browser` 22/22 통과. 새 저장 필드 없이 기존 업그레이드 단계 데이터를 사용한다.
 
 ## 빌드 경고
 
