@@ -39,8 +39,8 @@ test('new mutant sprites and matching hero portrait are consumed by the actual r
  await seed(page,s);
  await expect(page.locator('.awakening-shade')).toBeVisible();
  for(let i=0;i<6;i++)await page.locator('.awakening-next').click();
- await page.getByRole('button',{name:'격리실',exact:true}).click();await expect(page.locator('img[src="/assets/animals/axolotl_mutant_v74.png"]').first()).toBeVisible();
- await expect(page.locator('.v43-operator-head img')).toHaveAttribute('src','/assets/characters/protagonist_neutral_v74_768.png');expect(await page.locator('img[src="/assets/animals/axolotl_mutant_v74.png"]').first().evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
+ await page.getByRole('button',{name:'격리실',exact:true}).click();await expect(page.locator('img[src="/assets/animals/axolotl_mutant_v75.png"]').first()).toBeVisible();
+ await expect(page.locator('.v43-operator-head img')).toHaveAttribute('src','/assets/characters/protagonist_neutral_v74_768.png');expect(await page.locator('img[src="/assets/animals/axolotl_mutant_v75.png"]').first().evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
 });
 
 

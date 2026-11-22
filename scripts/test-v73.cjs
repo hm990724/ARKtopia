@@ -23,7 +23,8 @@ assert.equal(nightSignal(base(3)),null);
 console.log('PASS nightly animal care and perimeter choices have real costs, tutorials remain unchanged');
 const activeArt=require('../src/lib/animal-art.ts');
 for(const id of ['rabbit','fox','deer','owl','wolf','crow','otter','lynx','axolotl','moth','mutant','chimera','specter']){
- for(const mutated of [false,true]){const file=path.join(__dirname,'..','public',activeArt.animalSprite(id,mutated));const b=fs.readFileSync(file);assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);assert.ok(b.readUInt32BE(16)>0&&b.readUInt32BE(20)>0,file);if(file.includes('_v74.png'))assert.equal(b.readUInt32BE(16),b.readUInt32BE(20),file);assert.equal(b[25],6,file);}
+ for(const mutated of [false,true]){const file=path.join(__dirname,'..','public',activeArt.animalSprite(id,mutated));const b=fs.readFileSync(file);assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);assert.ok(b.readUInt32BE(16)>0&&b.readUInt32BE(20)>0,file);if(file.includes('_v74.png')||file.includes('_v75.png'))assert.equal(b.readUInt32BE(16),b.readUInt32BE(20),file);assert.equal(b[25],6,file);}
 }
-console.log('PASS all 26 active animal variants resolve to square transparent PNGs without pinning obsolete filenames');
+for(const id of ['axolotl','lynx','moth','chimera'])assert.match(activeArt.animalSprite(id,true),/_v75\.png$/);
+console.log('PASS all 26 active animal variants resolve to square transparent PNGs; role-driven mutant set uses v75');
 

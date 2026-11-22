@@ -21,3 +21,7 @@ specter_uncanny.png, specter_mutant.png는 실제종정의가 없어 미생성. 
 - 이번 작업 중 작업 디렉터리에서 기존 아홀로틀/키메라/스라소니/나방 파일과 늑대 컷신의 삭제 상태가 발견됐다. 작업 디렉터리 상태를 무단 복원하지 않았다. 기본 Git HEAD에는 종전 파일이 남아 있어 archive/clone으로 복구 가능하다.
 - 새 아홀로틀/키메라/스라소니/나방 변이 그림은 현재 v74 경로 연결까지 됐지만 사용자 기준의 토끼·여우처럼 역할이 담긴 기괴한 유기 변이인지 승인을 받지 못했다. 재작업해야 할 파일은 `docs/ART_REWORK_v75.md`에 개별 지정했다.
 - 두 기준은 다르다: 파일 존재/경로/PNG 형식은 QA 통과, 네 변이의 디자인 승인과 개체 서사 적합성은 미완료다.
+
+## v75 mutant sprite audit (2026-11-23)
+
+Generated and integrated four role-driven pixel-art mutant states: axolotl (regeneration/memory), lynx (tufts, bobtail, fractured shadow), moth (wing pattern/afterimage), and chimera (one asymmetric feather-scaled body). Files are new `*_mutant_v75.png` assets; square 1254px RGBA. Active routes point to v75. Generation sources and design summaries: `docs/generated-assets-v75.json`. No deleted user assets were restored or overwritten. Visual approval remains separate from format and route QA.

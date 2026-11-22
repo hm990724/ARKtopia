@@ -19,3 +19,14 @@
 ## 현재 상태
 
 v74 이미지는 경로에 연결돼 있지만, 위 네 파일은 아직 생성되지 않았다. 이번 실행에 로컬 이미지 생성 도구가 노출되지 않아 제작을 완료했다고 주장하지 않는다. 명세는 이미지 생성 도구에 네 파일을 각각 독립 작업으로 넘기기 위한 입력이다.
+
+## v75 delivery status (2026-11-23)
+
+Four redesigned mutant sprites were generated and integrated as separate versioned files. The species resolver now uses these v75 files for their live mutant states; v74 and original files remain untouched.
+
+- `axolotl_mutant_v75.png`: external gills, regeneration tissue, asymmetric regrown limbs and scars.
+- `lynx_mutant_v75.png`: lynx ear tufts and short bobtail remain identifiable; the split-shadow body suggests identity instability.
+- `moth_mutant_v75.png`: patterned wings and antennae with multiple afterimage-like eyes.
+- `chimera_mutant_v75.png`: one original feather-scaled silhouette, rather than a collage of existing animal sprites.
+
+All four are 1254x1254 RGBA PNGs. `npm run test:v73` checks that each active route resolves, uses alpha, and remains square. Existing art files marked deleted in the worktree were not restored or overwritten. Design is connected and technically validated; the game author has not yet approved the final visual direction.
