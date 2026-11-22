@@ -46,3 +46,12 @@
 - 종료 조건: `ENDING_MATRIX.md`
 - QA: `QA_ACCEPTANCE.md`, `QA_REPORT.md`
 - 자산 감사: `ART_AUDIT.md`, `docs/generated-assets-v75.json`
+
+## v74.6 ending and daily-event artwork — 2026-11-23
+
+- Added 19 unique, story-specific ending illustrations and six illustrated daily-event scenes in the shared mauve survival-fantasy direction.
+- Daily event artwork covers all 13 incident IDs; the ending record shows its route-specific scene.
+- Source notes: `docs/ENDING_EVENT_ART_v75.md` and `docs/generated-assets-v75-endings-events.json`.
+- Verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, and production Chrome browser tests (34/34) passed.
+- This version's full source archive is `ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.6.zip`; its SHA-256 is in the adjacent `.sha256` file. The archive was built from Git so it includes the pre-existing tracked source images that are currently deleted from the working directory, without restoring those files into the worktree.
+- The existing caveat remains: the 8 ending conditions and UI are verified with deterministic save fixtures, but a complete natural multi-day campaign has not been run end to end.
