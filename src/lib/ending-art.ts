@@ -11,6 +11,8 @@ export const ENDING_ART: ReadonlyArray<{prefix:string;file:string;label:string}>
   {"prefix":"기록 밖의 봄","file":"ending_open_spring.webp","label":"본부로 보낸 생명 없이 열린 철문"},
   {"prefix":"뒤늦은 철문","file":"ending_scattered_names.webp","label":"희생 후에 열려버린 철문"},
   {"prefix":"비어 있는 교대실","file":"ending_silent_automation.webp","label":"직원들이 사라진 보존소"},
+  {"prefix":"침묵의 자동화","file":"ending_silent_automation.webp","label":"직원들의 신호가 끊긴 뒤에도 반복되는 자동 운영"},
+  {"prefix":"마지막 신호","file":"ending_last_signal.webp","label":"관리자가 보존 자료와 구조 요청을 마지막으로 송신"},
   {
     "prefix": "인간 이후의 첫 문장",
     "file": "ending_new_consciousness.webp",

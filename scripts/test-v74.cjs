@@ -28,3 +28,21 @@ for(let stage=1;stage<3;stage++)recall=oz.answerOriginRecall(recall,recallTarget
 const recallResult=oz.recallRecord(recall,recallTarget);assert.equal(recallResult.steps.length,3);assert.equal(recallResult.steps.filter(x=>x.matched).length,3);assert.equal(recall.originZero.recallSessions[recallTarget.key],undefined);assert.ok(recallResult.quality>75);
 for(const species of sim.specs){assert.ok(protocols[species.id]);assert.equal(protocols[species.id].steps.length,3);}
 console.log('PASS specimen-specific three-stage ARK RECALL, mid-session save/resume, and 13 animal behavior protocols');
+function endingFixture({immunity=80,alive=3,coerced=0,retired=[],hqIntel=0,dispatches=0}={}){
+ const state=g.beginGame('medic','generator');state.phase='finale';state.day=40;state.ap=0;state.animals=['rabbit','fox','deer'].map((id,i)=>({...sim.makeAnimal(id,i+1),alive:i<alive}));
+ state.originZero=oz.emptyOriginZero();Object.assign(state.originZero,{route:'shelter',photos:12,immunity,crisisDone:true,hqIntel});
+ state.archive=archive.emptyArchive();state.archive.dispatches=dispatches;state.crew.retired=retired;
+ for(const animal of state.animals)state.originZero.recalls[animal.id]={day:40,quality:90,source:'archive',note:'ending fixture'};
+ for(let i=0;i<coerced;i++)state.archive.entries[`fixture-${i}`]={key:`fixture-${i}`,species:'__fixture__',records:[{title:'강제 조직 회수'}]};
+ return state;
+}
+const endingCases=[
+ ['rebuild',{immunity:99,alive:3},'영원한 실험'],['rebuild',{immunity:100,alive:3},'에덴'],
+ ['freedom',{immunity:85,alive:3},'방주의 씨앗'],['freedom',{immunity:84,alive:3},'마지막 동물원'],
+ ['freedom',{immunity:84,alive:1,coerced:2},'흩어진 이름들'],['preserve',{immunity:80,alive:3},'제000번 우리'],
+ ['preserve',{immunity:80,alive:3,retired:['medic','guard']},'침묵의 자동화'],
+ ['preserve',{immunity:80,alive:3,hqIntel:65,dispatches:1},'마지막 신호'],
+];
+for(const [goal,options,title] of endingCases){const result=archive.finishWithArchive(endingFixture(options),goal);assert.ok(result.ending.startsWith(title),`${title}: ${result.ending}`);assert.match(result.ending,/관리자는 .*사망했다/);}
+assert.equal(new Set(endingCases.map(([, ,title])=>title)).size,8);
+console.log('PASS all eight ORIGIN ZERO epilogues resolve from distinct ethical outcomes and retain manager-death canon');

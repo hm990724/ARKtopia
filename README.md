@@ -29,11 +29,11 @@ npm run test:browser
 - Daily sortie limit, AP and equipment checks with clear launch blockers.
 - Dark, persistent field map; live sightings on already discovered cells; footprints, grass movement, direct capture, and old-save migration.
 - Short contamination encounters, salvage rewards, and saved base upgrades.
-- CCTV/night-response, staff, animal-care, memory research, Hidden Photo, ARK RECALL, and legacy ending flow.
+- CCTV/night-response, staff, animal-care, memory research, Hidden Photo, specimen-specific ARK RECALL, and eight canon ending routes.
 - Animal-by-animal rescanning and recovery history.
 
 ## Project status
 
-The current integrated implementation and verification summary is in [NEXT_STEPS_README.md](NEXT_STEPS_README.md) and [QA_REPORT.md](QA_REPORT.md). Gameplay rules are in [GAMEPLAY_SYSTEMS.md](GAMEPLAY_SYSTEMS.md); art status and unresolved creature variants are in [ART_AUDIT.md](ART_AUDIT.md) and [docs/ART_REWORK_v75.md](docs/ART_REWORK_v75.md).
+The current integrated implementation and verification summary is in [NEXT_STEPS_README.md](NEXT_STEPS_README.md) and [QA_REPORT.md](QA_REPORT.md). Read the [story bible](STORY_BIBLE.md), [UI/gameplay spec](UI_GAMEPLAY_SPEC.md), [event matrix](EVENT_MATRIX.md), [ending matrix](ENDING_MATRIX.md), and [acceptance matrix](QA_ACCEPTANCE.md). Art status and unresolved creature variants are in [ART_AUDIT.md](ART_AUDIT.md) and [docs/ART_REWORK_v75.md](docs/ART_REWORK_v75.md).
 
 All pathogens and neural-preservation technology in this project are fictional. The canonical cause of the historical outbreak is the research lead's forced disposal order collapsing containment and releasing the fictional agent; M-00 escapes separately during the resulting chaos and did not cause the leak.
