@@ -391,3 +391,7 @@ Precise edit of supplied original female supply-officer portrait. Remove ONLY th
 상태: integrated
 
 Create a quiet animal-care research archive room in the same detailed anime illustration style and cool cyan/magenta color palette as the supplied reference. Landscape16:9. The room is empty of people. On a tidy curved desk are four independent holographic animal records: simple clear outlines of a rabbit, a fox, a deer and a wolf, each above its own small document station. Documents and softly luminous lines show that their health records are being compared. Show four separate complete animal outlines, each distinct with no shared body parts. One coherent wide camera view of a physical room with depth, not a collage. Finely rendered shelves, metal consoles, subtle cinematic light and deep navy/plum shadows. No words, no subtitles, no border. Peaceful non-invasive animal-care data review.
+
+## v73 눈·변이체 보정 프롬프트
+파일별 전체 프롬프트와 원본 참조는 docs/generated-assets-v73.json에 보존했습니다. 내장 imagegen 사용. 주인공4표정은 원본 protagonist_neutral.webp의 색감/복장/얼굴을 유지하고 동공과 시선을 교정했습니다. 3:4 생성본을 보존하고768×1024 별도 출력본을 연결했습니다.
+변이체5종(axolotl/chimera/lynx/moth/mutant)은 각각의 이전 이미지와 rabbit_mutant.png를 참조했습니다. 변형된 관절·불규칙한 치열·막질과 결절·비대칭 실루엣을 사용하되 종 정체성을 유지했습니다. M-00에는 적용하지 않았습니다. 생성 정사각 RGBA1254×1254를 그대로 사용합니다.

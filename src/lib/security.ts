@@ -3,8 +3,8 @@ import type {V10} from './game-v10';
 
 export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04';
 export type SecurityStatus='alert'|'breach'|'escaped';
-export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string};
-export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[]};
+export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string;containedNight?:number};
+export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[];watchPlan?:{day:number;response:import('./night-watch').WatchResponse};lastWatch?:import('./night-watch').WatchReport};
 export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0,lastScanDay:0,resolved:0,escapedIds:[],history:[]});
 export const cameras:{id:CameraId;title:string;description:string}[]=[
  {id:'CAM-01',title:'외곽·출입구',description:'탈출 이동 경로와 외부 통로'},
@@ -45,6 +45,7 @@ export function nightlySecurity(s:V10,roll=Math.random()):V10{
    sec.incident=null;sec.resolved++;
    trace(s,'변이체 안정화','주사 효과로 격리 개체의 이상 행동이 일시적으로 잦아들었습니다.','good');return s;
   }
+  if(inc.containedNight===s.day){trace(s,'야간 순찰 완료','판독한 이상 동선을 지켜 격리 단계의 악화를 막았습니다.','good');return s;}
   inc.steps++;inc.severity=cap(inc.severity+(isMutant(animal)?19:10));
   if(inc.status==='alert'&&inc.steps>=(isMutant(animal)?1:2))inc.status='breach';
   else if(inc.status==='breach'&&inc.steps>=(isMutant(animal)?2:3)){inc.status='escaped';inc.detected=false;inc.tracked=false;inc.camera='CAM-01';inc.lastTrace=securityPatterns[inc.animalId].escape;sec.escapedIds=[...new Set([...sec.escapedIds,inc.animalId])];trace(s,'격리 이탈','CCTV에서 개체가 사라졌습니다. 이동 경로를 추적해 재격리해야 합니다.','bad')}return s}
@@ -74,7 +75,7 @@ export function securityAction(s:V10,action:SecurityAction,selectedCamera?:Camer
   if(inc.camera===selectedCamera&&hotspot===cctvHotspotIndex(s)){
    inc.detected=true;inc.manualInspected=true;inc.severity=cap(inc.severity-17);
    if(inc.status==='escaped')inc.tracked=true;
-   trace(n,'CCTV 수동 판독 성공',`${inc.camera} 화면에서 이전 영상과 달라진 지점을 직접 찾아냈습니다. ${securityPatterns[inc.animalId].behavior}`,'good');
+   trace(n,'CCTV 수동 판독 성공',`${inc.camera} 화면에서 정기 점검 기준과 달라진 지점을 직접 찾아냈습니다. ${securityPatterns[inc.animalId].behavior}`,'good');
   }else{
    n.threat=cap(n.threat+2);
    trace(n,'CCTV 수동 판독 오탐','선택한 화면에 변화를 확인하지 못했습니다. 전력 3을 소모했고, 다음 감시 신호를 확인해야 합니다.','info');

@@ -1,0 +1,126 @@
+[
+  {
+    "id": "protagonist_neutral",
+    "dest": "public/assets/characters/protagonist_neutral_v73.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "alpha": false,
+    "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression relaxed restrained smile. Opaque background identical composition.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-fe0f9c84-a707-45a9-a2aa-90ade2fac73f.png",
+    "integrated": "public/assets/characters/protagonist_neutral_v73_768.png",
+    "export": {
+      "width": 768,
+      "height": 1024,
+      "method": "sharp nearest-neighbour size export; original generated PNG retained"
+    }
+  },
+  {
+    "id": "protagonist_anxious",
+    "dest": "public/assets/characters/protagonist_anxious_v73.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "alpha": false,
+    "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression worried eyebrows and slightly parted lips, normal-sized eyes, not exaggerated. Opaque background identical composition.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-b132d65a-9e48-4cb6-a7dd-b17ba5130de3.png",
+    "integrated": "public/assets/characters/protagonist_anxious_v73_768.png",
+    "export": {
+      "width": 768,
+      "height": 1024,
+      "method": "sharp nearest-neighbour size export; original generated PNG retained"
+    }
+  },
+  {
+    "id": "protagonist_critical",
+    "dest": "public/assets/characters/protagonist_critical_v73.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "alpha": false,
+    "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression exhausted and frightened, small sweat beads, tense mouth, dark under-eye shading, eyes still anatomically coherent. Opaque background identical composition.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-a7fa1aff-ef9f-443b-b6ea-c1055b7ebf8a.png",
+    "integrated": "public/assets/characters/protagonist_critical_v73_768.png",
+    "export": {
+      "width": 768,
+      "height": 1024,
+      "method": "sharp nearest-neighbour size export; original generated PNG retained"
+    }
+  },
+  {
+    "id": "protagonist_resolve",
+    "dest": "public/assets/characters/protagonist_resolve_v73.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "alpha": false,
+    "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression quiet determination, steady focused gaze and closed mouth. Opaque background identical composition.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-42804e95-abc9-4421-8d70-eb6f8e06a29c.png",
+    "integrated": "public/assets/characters/protagonist_resolve_v73_768.png",
+    "export": {
+      "width": 768,
+      "height": 1024,
+      "method": "sharp nearest-neighbour size export; original generated PNG retained"
+    }
+  },
+  {
+    "id": "axolotl_mutant",
+    "dest": "public/assets/animals/axolotl_mutant_v73.png",
+    "refs": [
+      "animals/axolotl_mutant.png",
+      "animals/rabbit_mutant.png"
+    ],
+    "alpha": true,
+    "prompt": "Game sprite redesign. First image is edit target, second rabbit is detail/palette/horror-intensity reference ONLY. A fictional mutated salamander: keep external gills and aquatic tail; replace cute smile with long uneven tooth-lined jaw, asymmetrical cloudy eyes, branching swollen gill sacs, unsettling translucent ribbed skin and extra malformed small limbs. Strong grotesque biological creature horror to match rabbit reference, clearly more disturbing than normal animal. Dense deliberate pixel-art clusters, deep plum outlines, desaturated pink/ivory highlights and dark red accents, detailed professional game sprite. Keep species identity of FIRST reference; do not add rabbit features, medical costume or human characters. Single full body, centered square 1024x1024 canvas, 6 percent transparent margin on every side, no clipped extremities, transparent background, no text, no ground, no frame. No realistic injury scene, this is an imaginary monster design.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-16a2fe53-931a-452d-9750-423e16a39b4d.png",
+    "integrated": "public/assets/animals/axolotl_mutant_v73.png"
+  },
+  {
+    "id": "chimera_mutant",
+    "dest": "public/assets/animals/chimera_mutant_v73.png",
+    "refs": [
+      "animals/chimera_mutant.png",
+      "animals/rabbit_mutant.png"
+    ],
+    "alpha": true,
+    "prompt": "Game sprite redesign. First image is edit target, second rabbit is detail/palette/horror-intensity reference ONLY. A fictional mutated quadruped chimera: multiple incompatible animal jaws and skull ridges fused along shoulders, twisted joints, asymmetrical horn growth, tendon-like membranes and sinewy elongated tongue; not an elegant fantasy dragon. Strong grotesque biological creature horror to match rabbit reference, clearly more disturbing than normal animal. Dense deliberate pixel-art clusters, deep plum outlines, desaturated pink/ivory highlights and dark red accents, detailed professional game sprite. Keep species identity of FIRST reference; do not add rabbit features, medical costume or human characters. Single full body, centered square 1024x1024 canvas, 6 percent transparent margin on every side, no clipped extremities, transparent background, no text, no ground, no frame. No realistic injury scene, this is an imaginary monster design.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-f7177d8a-284f-45c3-a2ad-01cddf74916d.png",
+    "integrated": "public/assets/animals/chimera_mutant_v73.png"
+  },
+  {
+    "id": "lynx_mutant",
+    "dest": "public/assets/animals/lynx_mutant_v73.png",
+    "refs": [
+      "animals/lynx_mutant.png",
+      "animals/rabbit_mutant.png"
+    ],
+    "alpha": true,
+    "prompt": "Game sprite redesign. First image is edit target, second rabbit is detail/palette/horror-intensity reference ONLY. A fictional mutated lynx: keep ear tufts and feline paws but stretched split jaw with irregular teeth, asymmetrical shoulders, rib-like organic growths and too many jointed digits; not a regal fantasy winged cat. Strong grotesque biological creature horror to match rabbit reference, clearly more disturbing than normal animal. Dense deliberate pixel-art clusters, deep plum outlines, desaturated pink/ivory highlights and dark red accents, detailed professional game sprite. Keep species identity of FIRST reference; do not add rabbit features, medical costume or human characters. Single full body, centered square 1024x1024 canvas, 6 percent transparent margin on every side, no clipped extremities, transparent background, no text, no ground, no frame. No realistic injury scene, this is an imaginary monster design.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-e81e9f40-2431-4bee-8ef9-0741839fb3ca.png",
+    "integrated": "public/assets/animals/lynx_mutant_v73.png"
+  },
+  {
+    "id": "moth_mutant",
+    "dest": "public/assets/animals/moth_mutant_v73.png",
+    "refs": [
+      "animals/moth_mutant.png",
+      "animals/rabbit_mutant.png"
+    ],
+    "alpha": true,
+    "prompt": "Game sprite redesign. First image is edit target, second rabbit is detail/palette/horror-intensity reference ONLY. A fictional mutated moth: damaged asymmetrical moth wings with membranous eye-like nodules, swollen segmented abdomen, long coiled proboscis, many jointed legs, fungal growths; disturbingly biological not decorative butterfly. Strong grotesque biological creature horror to match rabbit reference, clearly more disturbing than normal animal. Dense deliberate pixel-art clusters, deep plum outlines, desaturated pink/ivory highlights and dark red accents, detailed professional game sprite. Keep species identity of FIRST reference; do not add rabbit features, medical costume or human characters. Single full body, centered square 1024x1024 canvas, 6 percent transparent margin on every side, no clipped extremities, transparent background, no text, no ground, no frame. No realistic injury scene, this is an imaginary monster design.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-fe1f0ec2-f9ea-499d-af0b-de65a651f8ab.png",
+    "integrated": "public/assets/animals/moth_mutant_v73.png"
+  },
+  {
+    "id": "mutant_mutant",
+    "dest": "public/assets/animals/mutant_mutant_v73.png",
+    "refs": [
+      "animals/mutant_mutant.png",
+      "animals/rabbit_mutant.png"
+    ],
+    "alpha": true,
+    "prompt": "Game sprite redesign. First image is edit target, second rabbit is detail/palette/horror-intensity reference ONLY. A fictional mutated unknown quadruped: impossible doubled joints, long thin reaching forelimbs, distorted tooth-lined jaw, overlapping rib-like growths, parasitic nodules; retain readable four-legged silhouette. Strong grotesque biological creature horror to match rabbit reference, clearly more disturbing than normal animal. Dense deliberate pixel-art clusters, deep plum outlines, desaturated pink/ivory highlights and dark red accents, detailed professional game sprite. Keep species identity of FIRST reference; do not add rabbit features, medical costume or human characters. Single full body, centered square 1024x1024 canvas, 6 percent transparent margin on every side, no clipped extremities, transparent background, no text, no ground, no frame. No realistic injury scene, this is an imaginary monster design.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-281d29e1-914a-4a2f-b057-a255f1684eef.png",
+    "integrated": "public/assets/animals/mutant_mutant_v73.png"
+  }
+]

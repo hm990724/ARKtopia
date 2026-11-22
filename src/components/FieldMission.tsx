@@ -999,6 +999,7 @@ export default function FieldMission({
                   style={
                     {
                       gridTemplateColumns: `repeat(${width},minmax(0,1fr))`,
+                      "--field-columns": width,
                       aspectRatio: `${width}/${height}`,
                       ["--v57-light-x" as string]: `${(((field.position % width) + 0.5) / width) * 100}%`,
                       ["--v57-light-y" as string]: `${((Math.floor(field.position / width) + 0.5) / height) * 100}%`,
@@ -1119,9 +1120,9 @@ export default function FieldMission({
                       style={
                         {
                           "--walk-from-x": `${(((walking.from % width) + 0.5) / width) * 100}%`,
-                          "--walk-from-y": `${((Math.floor(walking.from / width) + 0.5) / height) * 100}%`,
+                          "--walk-from-y": `${((Math.floor(walking.from / width) + 0.85) / height) * 100}%`,
                           "--walk-to-x": `${(((walking.to % width) + 0.5) / width) * 100}%`,
-                          "--walk-to-y": `${((Math.floor(walking.to / width) + 0.5) / height) * 100}%`,
+                          "--walk-to-y": `${((Math.floor(walking.to / width) + 0.85) / height) * 100}%`,
                         } as React.CSSProperties
                       }
                     >

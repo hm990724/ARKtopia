@@ -7,6 +7,7 @@ import {emptyArchive,ensureArchive,noteSpeciesTrait,noteFieldAction,noteCaptured
 import {AnimalId,AnimalState,Origin,Start,State,createGame,copy,cap,log,recalc,makeAnimal,specs,dailyWork,repair,extract,finish,isMutant,recordMutation,nightlyAnimalCondition} from './sim';
 import {applyFamiliarRoutine} from './care-interactions';
 import {initialSecurity,nightlySecurity,type SecurityState} from './security';
+import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
 import {createField,createCapture,adjacentField,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
@@ -373,6 +374,7 @@ export function resolveNightTransition(s:V10,nightChoice:NightChoice,options:{ma
  return {state:next,success:true,blocker:null,applied:preview.applied};
 }
 export function finishDay(s:V10,nightChoice:NightChoice):V10{const n=copy(s) as V10;if(getDayEndBlocker(s))return s;const charge={shield:22,rest:5,standby:0}[nightChoice];const used:NightChoice=n.power<charge?'standby':nightChoice;const cost={shield:22,rest:5,standby:0}[used];n.power=cap(n.power-cost-6);n.facility=cap(n.facility-(n.power<20?10:3)-(used==='standby'?6:0));if(n.facilities?.containment)n.facility=cap(n.facility+3);n.threat=cap(n.threat+(used==='shield'?(n.origin==='warden'?-18:-13):used==='rest'?4:19));n.eventRisk=cap(n.eventRisk+(used==='standby'?17:0));n.infection=cap(n.infection+(n.facility<50?7:2)+(used==='standby'?4:0));if(used==='rest')n.mind=cap(n.mind+19);if(used==='shield')n.facility=cap(n.facility+3);
+resolveNightWatch(n);
 n.animals.filter(a=>a.alive).forEach(a=>{const fed=n.food>0;if(fed){n.food--;a.stress=cap(a.stress+3);applyFamiliarRoutine(a)}else{a.stress=cap(a.stress+10)}if(n.infection>45)a.contamination=cap(a.contamination+5);if(a.contamination>65)a.hp=cap(a.hp-7);nightlyAnimalCondition(a,fed,n.facility,n.infection);if(n.facilities?.infirmary){a.sickness=cap((a.sickness??0)-8);a.contamination=cap(a.contamination-3);}if(a.hp<=0){a.alive=false;log(n,'격리 개체 사망',`${a.name}의 신호가 끊겼다.`,'bad')}});
 nightlySecurity(n);
  crewNight(n);if(n.crew?.guardDay===n.day)n.threat=cap(n.threat-7);

@@ -36,6 +36,7 @@ test('night fuse wrong order resets and correct order changes the actual saved s
  const fixture=JSON.parse(fs.readFileSync(require('path').join(__dirname,'fixtures/day003-ap0.json'),'utf8'));
  const {previewNight}=require('../src/lib/game-v10.ts');
  await seed(page,fixture);await page.getByRole('button',{name:/야간 대응/}).last().click();
+ await page.locator('.v73-legacy-repair summary').click();
  const f=page.locator('.v69-fuse-buttons button');await f.nth(2).click();await f.nth(1).click();await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(0);
  for(const i of [2,0,1])await f.nth(i).click();
  await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(3);

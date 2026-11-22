@@ -9,4 +9,6 @@ test-results/
 playwright-report/
 tmp/v71*
 tmp/v72*
+tmp/v73*
+tmp/mutants-review.jpg
 tmp/v68/npm-cache/

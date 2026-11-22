@@ -1,6 +1,6 @@
 {
   "name": "anomaly-zoo",
-  "version": "72.0.0",
+  "version": "73.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
     "test:logic": "node scripts/test-logic.cjs",
     "test:v69": "node scripts/test-v69.cjs",
     "test:v70": "node scripts/test-v70.cjs",
-    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72",
+    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73",
     "lint": "next lint",
     "check:assets:v70": "node scripts/check-v70-assets.cjs",
     "test:browser": "playwright test --config=playwright.config.cjs",
@@ -19,7 +19,8 @@
     "build:qa": "node scripts/build-qa.cjs",
     "start:qa": "node scripts/start-qa.cjs",
     "check:assets:v71": "node scripts/check-v71-assets.cjs",
-    "test:v72": "node scripts/test-v72.cjs"
+    "test:v72": "node scripts/test-v72.cjs",
+    "test:v73": "node scripts/test-v73.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
