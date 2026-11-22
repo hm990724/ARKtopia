@@ -57,28 +57,28 @@ export function routineOriginScan(s:V10,id:AnimalId):void{
 export function initiateOriginTrack(s:V10):V10{
  if(!canTrackCat(s)||s.ap<1)return s;
  const n=copy(s) as V10;o(n).cat='traced';n.ap--;
- return report(n,'새로운 생체 신호','외곽 카메라에 변이 징후 없는 검은 고양이가 찍혔다. 평범한 동물처럼 행동한다. 영상의 경로를 찾아 포획하자.');
+ return report(n,'시초 개체 의심 · 미확인 실루엣','폐기 사고 구역 CCTV에 격리문을 부순 듯한 거대한 변이 실루엣이 잡혔다. 본부는 M-00, 즉 재앙의 시초일 가능성을 제기한다. 비상등과 깨진 화면 때문에 실제 크기와 정체는 확인되지 않았다.');
 }
 function o(s:V10){return ensureOriginZero(s)}
 // Player reads the camera hint and manually picks a matching view. Wrong guesses
 // increase pressure; no random automatic success and no one-click capture.
 export const catTrackFrames=[
- {hint:'세 번째 녹화 화면에서만 쓰러진 표지판이 보인다.',answer:2,frames:['출입문','지하 통로','쓰러진 표지판']},
- {hint:'바닥에 물기가 없는 유일한 화면으로 발자국이 이어진다.',answer:0,frames:['마른 복도','침수 창고','물웅덩이']},
- {hint:'작은 고양이 그림자가 붉은 비상등 아래에 멈춰 있다.',answer:1,frames:['일반 조명','붉은 비상등','파손된 창']}
+ {hint:'파손된 격리문 앞에 큰 변이 실루엣이 찍혔다. 본부는 시초 개체로 의심했지만 비상등과 깨진 화면 탓에 실제 크기는 알 수 없다.',answer:2,frames:['정문 통로 · 정상 출입문','급식실 · 빈 그릇','격리문 02 · 긁힌 차폐판']},
+ {hint:'거대한 몸집으로 보이는 화면과 달리 발자국은 좁은 동물 이동구로 이어진다. 렌즈가 흔들린 순간 실루엣도 길게 늘어났다.',answer:0,frames:['낮은 이동구 · 작은 발자국','배수로 · 끌린 오염 자국','중앙 통로 · 큰 발자국']},
+ {hint:'비상등이 꺼지자 거대한 괴물 그림자와 작은 검은 고양이가 하나로 겹쳐 보인다. 오른쪽 귀 흠집과 흰 가슴 털이 옛 사진과 일치한다.',answer:1,frames:['빈 복도 · 잔상만 남음','낮은 카메라 · 검은 고양이','격리문 · 겹친 그림자']}
 ] as const;
 export function pickOriginTrace(s:V10,frame:number):V10{
  const state=s.originZero;if(state?.cat!=='traced'||!Number.isInteger(frame)||frame<0||frame>2||s.phase!=='day')return s;
  const n=copy(s) as V10;const d=o(n);const point=catTrackFrames[d.trackProgress];
  if(frame!==point.answer){d.wrongTracks++;n.threat=cap(n.threat+3);return report(n,'영상 경로 불일치','화면의 움직임이 끊어졌다. 흔적은 아직 남아 있다. 위협 +3.','bad');}
  d.trackProgress++;
- if(d.trackProgress===3){d.cat='captured';return report(n,'정상 개체 포획','검은 고양이를 안전 케이지에 옮겼다. 변이 징후가 전혀 없다. 본부 규정에 따라 생체검사를 실시해야 한다.','good');}
+ if(d.trackProgress===3){d.cat='captured';return report(n,'시초가 아니었다 · M-00 포획','시초라고 의심한 괴물은 별개의 개체가 아니었다. 겹친 그림자와 깨진 CCTV가 작은 검은 고양이를 거대 변이체처럼 보이게 했다. 오른쪽 귀 흠집과 흰 털 한 가닥이 M-00 기록과 일치한다. 고양이가 유출을 일으켰다는 증거는 없다.');}
  return report(n,'영상 경로 확보',`감시 기록 ${d.trackProgress}/3 일치. 다음 카메라 흔적으로 이동한다.`,'good');
 }
 export function analyzeOriginCat(s:V10):V10{
  if(s.originZero?.cat!=='captured'||s.phase!=='day'||s.ap<1||s.power<6)return s;
  const n=copy(s) as V10;const d=o(n);n.ap--;n.power=cap(n.power-6);d.cat='positive';d.firstPositiveDay=n.day;d.privateMatches['ORIGIN-M00']='POSITIVE';
- return report(n,'ORIGIN SIGNATURE · POSITIVE','검사 완료. 기원 표식 일치: POSITIVE / M-00. 기존 감염 양성 판정과는 다른 검사다. 본부가 즉시 이송을 요구한다.','mystery');
+ return report(n,'M-00 표식 일치 · POSITIVE','검사 결과는 고양이의 생물학적 식별 표식이 M-00과 일치한다는 뜻이다. 감염 양성도, 인류 붕괴의 원인이라는 판정도 아니다. 본부가 즉시 이송을 요구한다.','mystery');
 }
 export function chooseOriginRoute(s:V10,route:'hq'|'shelter'):V10{
  if(s.originZero?.cat!=='positive'||s.originZero.route||s.phase!=='day')return s;

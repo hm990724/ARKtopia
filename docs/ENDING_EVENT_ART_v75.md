@@ -38,3 +38,7 @@ The ending screen now uses one separate 1536×1024 illustration for each of its 
 | echo, rations, garden, keepsake, quiet | `event_garden_v75.png` |
 
 The artwork is wired into the ending record screen and the daily incident modal. Asset provenance and content notes are in `generated-assets-v75-endings-events.json`. The new browser coverage checks every ending URL plus a mobile blackout event dialog; `test:v75` checks all 19 ending matches and all 13 incident mappings against the actual PNG files.
+
+## M-00 false lead reveal
+
+The supplied creature design appears in `m00_suspected_origin_v75.png`, a recovered CCTV still. Tracking first presents the silhouette as an unconfirmed origin candidate. Three camera choices show that its giant scale does not fit the small pawprints; when the emergency light shifts, the same shadow resolves as the ordinary black cat. The capture and marker identify it as M-00, not as the cause of the outbreak. The disposal accident remains the source of the pathogen leak. See `STORY_REVEAL_FALSE_ORIGIN_v76.md`.

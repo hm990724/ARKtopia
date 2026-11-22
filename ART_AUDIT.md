@@ -31,3 +31,9 @@ Generated and integrated four role-driven pixel-art mutant states: axolotl (rege
 - Every registered ending has a unique rose-and-mauve cinematic illustration. Daily event dialogs display contextual artwork for the 13 incident types.
 - Image mapping and per-file source records: `docs/ENDING_EVENT_ART_v75.md` and `docs/generated-assets-v75-endings-events.json`.
 - Local asset checks, all logic tests, typecheck, lint, production build, and all 34 production browser tests pass. Two test fixtures were corrected to mark unrelated onboarding briefings as seen.
+
+## v76 M-00 false origin reveal (2026-11-23)
+
+- The user's supplied grotesque mutant reference now appears as a distant CCTV silhouette in `public/assets/events/m00_suspected_origin_v75.png`; the reveal identifies it as the same cat's shadow stretched by emergency light and broken video, not a separate specimen.
+- Three evidence choices undermine the dangerous silhouette theory; a low camera reveals the normal black cat as M-00. The code explicitly says its biological marker is identity evidence and does not make the cat responsible for the leak.
+- `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, and the full 35/35 Chrome browser suite pass. See `docs/STORY_REVEAL_FALSE_ORIGIN_v76.md`.

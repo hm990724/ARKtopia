@@ -2,6 +2,7 @@ const {test,expect}=require('@playwright/test');
 const fs=require('fs'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 const {beginGame}=require('../src/lib/game-v10.ts');
+const {emptyOriginZero,catTrackFrames}=require('../src/lib/origin-zero.ts');
 const {ENDING_ART}=require('../src/lib/ending-art.ts');
 const KEY='last-enclosure-ark-v10';
 async function seed(page,s){await page.addInitScript(({s,key})=>localStorage.setItem(key,JSON.stringify(s)),{s,key:KEY});await page.goto('/')}
@@ -19,4 +20,16 @@ test('daily incident opens with a contextual scene illustration and remains usab
  const art=dialog.locator('.v75-incident-art img');await expect(art).toHaveAttribute('src','/assets/events/event_blackout_v75.png');await expect.poll(()=>art.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
  await dialog.locator('.v39-incident-options button:not([disabled])').first().click();await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).pendingIncident,KEY)).toBe(null);
+});
+
+test('CCTV false lead reveals the ordinary M-00 cat through three trace choices',async({page})=>{
+ const s=beginGame('artist','generator');s.day=26;s.tutorialStep=9;s.encounters=5;s.ap=4;s.headquarters.revealStage=2;s.onboardingSeen=['base-work','mutation','first-sortie','field-map','cctv','night-shift','first-capture'];s.originZero=emptyOriginZero();
+ await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
+ const panel=page.getByRole('region',{name:'외곽 특수 생체 신호'});await expect(panel.getByRole('heading',{name:'시초 개체 의심 · 미확인 실루엣'})).toBeVisible();
+ const suspect=panel.locator('.oz-suspect-still img');await expect(suspect).toHaveAttribute('src','/assets/events/m00_suspected_origin_v75.png');await expect.poll(()=>suspect.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+ await panel.getByRole('button',{name:/외곽 영상 추적 시작/}).click();
+ for(const cam of ['CAM 03','CAM 01','CAM 02'])await panel.getByRole('button',{name:new RegExp(cam)}).click();
+ await expect(panel.getByRole('heading',{name:'시초가 아니었다 · 검은 고양이'})).toBeVisible();await expect(panel.locator('.oz-cat-image img')).toHaveAttribute('src','/assets/animals/m00_normal_v74.png');
+ const reveal=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).lastOutcome,KEY);expect(reveal).toContain('별개의 개체가 아니었다');expect(reveal).toContain('고양이가 유출을 일으켰다는 증거는 없다');
+ expect(catTrackFrames).toHaveLength(3);
 });

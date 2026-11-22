@@ -49,3 +49,10 @@
 - New sources and per-file design notes: `docs/generated-assets-v75-endings-events.json`; the visual map is `docs/ENDING_EVENT_ART_v75.md`.
 - `npm run test:v75`: passed (19 unique ending files and 13 event mappings). `npm run test:all`, `npm run typecheck`, `npm run lint`, and `npm run build:qa`: passed.
 - Production Chrome run: 34/34 passed after correcting two test fixtures whose onboarding briefings intercepted their intended controls. The 19-ending asset test and mobile incident-art test both passed.
+
+## v76 false-lead reveal
+
+- Updated the M-00 trace: the player first sees a dangerous mutant silhouette suspected as the origin, then follows contradictory footprints and discovers the normal black cat.
+- The CCTV scene uses the attached creature reference; capture and marker text distinguish M-00's identity from the cause of the pathogen leak.
+- `npm run test:all`, `npm run typecheck`, `npm run lint`, and `npm run build:qa`: pass.
+- Production Chrome browser suite: 35/35 pass, including the complete three-camera false lead and reveal.

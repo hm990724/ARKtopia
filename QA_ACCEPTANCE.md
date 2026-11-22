@@ -26,6 +26,7 @@
 | 19 ending records each use a distinct contextual image | Pass | `npm run test:v75`; images load in browser |
 | 13 daily incident IDs receive an illustrated scene | Pass | Six scenes cover all incident mappings; mobile blackout dialog tested |
 | Typecheck, lint, logic suite, production build | Pass | Current v75 source |
-| Full production browser suite | Pass | 34/34 passed after correcting two onboarding-state fixtures; includes both new artwork flows |
+| Full production browser suite | Pass | 35/35 passed after correcting onboarding-state fixtures; includes ending/event art and the M-00 reveal |
+| M-00 origin false lead and ordinary-cat reveal | Pass | Three camera traces, reference CCTV art and marker wording |
 
 The images are integrated in `Game.tsx`; provenance is recorded in `docs/generated-assets-v75-endings-events.json`.

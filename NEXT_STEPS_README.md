@@ -55,3 +55,12 @@
 - Verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, and production Chrome browser tests (34/34) passed.
 - This version's full source archive is `ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.6.zip`; its SHA-256 is in the adjacent `.sha256` file. The archive was built from Git so it includes the pre-existing tracked source images that are currently deleted from the working directory, without restoring those files into the worktree.
 - The existing caveat remains: the 8 ending conditions and UI are verified with deterministic save fixtures, but a complete natural multi-day campaign has not been run end to end.
+
+## v74.7 M-00 false-origin reveal — 2026-11-23
+
+- The player first sees the supplied mutant design as a dangerous CCTV silhouette and suspects it is M-00/the outbreak's origin. Three camera clues reveal that lighting and broken video stretched the same cat's shadow into the apparent monster; the biological marker confirms identity only.
+- The scientist's disposal operation and containment collapse remain the outbreak cause. M-00 is a separate survivor and the origin of independent cognition, not the culprit.
+- New playable CCTV artwork: `public/assets/events/m00_suspected_origin_v75.png`. Story notes: `docs/STORY_REVEAL_FALSE_ORIGIN_v76.md`.
+- Verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, production Chrome browser suite 35/35.
+- Full project package: `ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.7.zip` with adjacent SHA-256 file. The source archive preserves tracked originals missing from the current worktree without restoring them there.
+- A complete natural multi-day campaign remains untested end to end; story and ending fixtures plus browser routes pass.
