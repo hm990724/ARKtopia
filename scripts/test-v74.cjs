@@ -1,7 +1,7 @@
 ﻿const assert=require('node:assert/strict'),fs=require('fs'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 require('./test-v74-core.cjs');
-const h=require('../src/lib/hidden-hunt.ts'),g=require('../src/lib/game-v10.ts'),sim=require('../src/lib/sim.ts'),c=require('../src/lib/field-combat.ts'),f=require('../src/lib/tactical-field.ts'),art=require('../src/lib/character-art.ts');
+const h=require('../src/lib/hidden-hunt.ts'),g=require('../src/lib/game-v10.ts'),sim=require('../src/lib/sim.ts'),c=require('../src/lib/field-combat.ts'),f=require('../src/lib/tactical-field.ts'),art=require('../src/lib/character-art.ts'),oz=require('../src/lib/origin-zero.ts'),archive=require('../src/lib/specimen-archive.ts'),protocols=require('../src/lib/protocols.ts').protocols;
 for(const size of [6,8])for(const spec of sim.specs)for(let seed=1;seed<=30;seed++){
  let hunt=h.newHunt(spec.id,seed,false,size);assert.equal(hunt.terrain.length,size*size);
  for(let k=0;k<12&&hunt.outcome==='playing';k++){hunt=h.performHuntAction(hunt,{type:'search',cell:(seed+k*7)%(size*size)}).state;assert.ok(hunt.position>=0&&hunt.position<size*size);for(const i of hunt.shaking){assert.ok(Math.abs(i%size-hunt.position%size)<=1);assert.ok(Math.abs(Math.floor(i/size)-Math.floor(hunt.position/size))<=1);}for(const i of hunt.footprints)assert.ok(hunt.trail.some(t=>t.cell===i));}
@@ -22,3 +22,9 @@ s=g.beginGame('medic','generator');s.facilities.cctv=true;s.scrap=100;s.parts=30
 const field=f.createField(4,'garden');field.position=15;field.tiles[16]='wall';assert.equal(f.fieldLineOfSight(field,17,3),false);f.revealField(field,2);const visible=[...field.discovered];field.position=0;for(const i of visible)assert.equal(f.fieldVisible(field,i,1),true);
 const relayField={...field,position:14,tiles:Array(35).fill('empty'),width:7,height:5};relayField.tiles[33]='animal';assert.equal(f.fieldRelayBearing(relayField,1),null);assert.equal(f.fieldRelayBearing(relayField,2),'남동쪽에서 약한 생체 신호 · 원거리');assert.equal(f.fieldRelayBearing({...relayField,tiles:Array(35).fill('empty')},3),null);
 console.log('PASS capped base upgrades, saved levels, wall occlusion, persistent map discovery and coarse CCTV relay bearings');
+let recall=g.beginGame('medic','generator');recall.day=12;recall.tutorialStep=9;recall.animals=[sim.makeAnimal('rabbit',1)];archive.ensureArchive(recall);recall.originZero=oz.emptyOriginZero();recall.originZero.route='shelter';recall.originZero.photos=6;
+const recallTarget=oz.recallCandidates(recall)[0];recall=oz.beginOriginRecall(recall,recallTarget.key);recall=oz.answerOriginRecall(recall,recallTarget.key,protocols.rabbit.steps[0].correct);assert.equal(recall.originZero.recallSessions[recallTarget.key].step,1);recall=g.loadGame(JSON.parse(JSON.stringify(recall)));assert.equal(recall.originZero.recallSessions[recallTarget.key].step,1);
+for(let stage=1;stage<3;stage++)recall=oz.answerOriginRecall(recall,recallTarget.key,protocols.rabbit.steps[stage].correct);
+const recallResult=oz.recallRecord(recall,recallTarget);assert.equal(recallResult.steps.length,3);assert.equal(recallResult.steps.filter(x=>x.matched).length,3);assert.equal(recall.originZero.recallSessions[recallTarget.key],undefined);assert.ok(recallResult.quality>75);
+for(const species of sim.specs){assert.ok(protocols[species.id]);assert.equal(protocols[species.id].steps.length,3);}
+console.log('PASS specimen-specific three-stage ARK RECALL, mid-session save/resume, and 13 animal behavior protocols');

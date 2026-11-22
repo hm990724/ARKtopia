@@ -5,15 +5,19 @@
 import type {V10} from './game-v10';
 import type {AnimalId} from './sim';
 import {cap,copy,log,specs} from './sim';
+import {protocols} from './protocols';
 
 export type CatStage='unknown'|'traced'|'captured'|'positive'|'hq'|'shelter';
 export type OriginRoute='hq'|'shelter'|null;
-export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type RecallTrial={stage:number;chosen:string;expected:string;matched:boolean};
+export type RecallSession={step:number;correct:number;startedDay:number;answers:RecallTrial[]};
+export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string;steps?:RecallTrial[]};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
  o.scans??=[];o.privateMatches??={};o.recalls??={};o.photos=Math.max(0,Math.min(12,o.photos??0));o.immunity=cap(o.immunity??0);
+ o.recallSessions??={};
  o.trackProgress=Math.max(0,Math.min(3,o.trackProgress??0));o.wrongTracks??=0;o.studies??=0;o.hqPressure??=0;o.stability??=85;o.hqIntel??=0;o.crisisDone??=false;
  return o;
 }
@@ -137,7 +141,29 @@ export function recallRecord(s:V10,c:RecallCandidate):RecallRecord|undefined{
  return recallCandidates(s).find(x=>x.id===c.id)?.key===c.key?legacy:undefined;
 }
 export function completedRecalls(s:V10){return recallCandidates(s).filter(c=>!!recallRecord(s,c));}
-export function performOriginRecall(s:V10,keyOrSpecies:string):V10{
+function recallCanStart(s:V10,candidate:RecallCandidate):boolean{
+ const powerCost=candidate.source==='hq'?12:candidate.source==='live'?8:5;
+ return !!s.originZero?.route&&s.originZero.photos>=6&&s.phase==='day'&&s.ap>=1&&!s.run&&!s.pendingIncident&&s.power>=powerCost&&candidate.source!=='escaped'&&!recallRecord(s,candidate);
+}
+/** Begin a specimen-specific three-stage recall. Sessions live in the save so closing the panel is safe. */
+export function beginOriginRecall(s:V10,key:string):V10{
+ const candidate=recallCandidates(s).find(c=>c.key===key);if(!candidate||!recallCanStart(s,candidate))return s;
+ if(s.originZero?.recallSessions?.[key])return s;
+ const n=copy(s) as V10;const state=o(n);state.recallSessions??={};state.recallSessions[key]={step:0,correct:0,startedDay:n.day,answers:[]};
+ n.lastOutcome=`${candidate.label} · ${protocols[candidate.id].title} 재분석 시작. 세 단계의 행동 반응을 기록하세요.`;
+ return n;
+}
+/** Record one deliberate response. The final response settles the existing recall action and resource cost. */
+export function answerOriginRecall(s:V10,key:string,choice:number):V10{
+ const candidate=recallCandidates(s).find(c=>c.key===key),session=s.originZero?.recallSessions?.[key];
+ if(!candidate||!session||!Number.isInteger(choice)||choice<0||choice>2||!recallCanStart(s,candidate))return s;
+ const stage=protocols[candidate.id].steps[session.step];if(!stage)return s;
+ const trial:RecallTrial={stage:session.step+1,chosen:stage.choices[choice],expected:stage.choices[stage.correct],matched:choice===stage.correct};
+ const n=copy(s) as V10;const saved=o(n).recallSessions![key];saved.answers.push(trial);if(trial.matched)saved.correct++;
+ if(saved.step<2){saved.step++;n.lastOutcome=trial.matched?'관찰 반응을 기록했습니다. 다음 기억 신호를 대조하세요.':'반응이 예상과 달랐습니다. 흔적은 보존했습니다. 다음 신호를 확인하세요.';return n;}
+ return performOriginRecall(n,key,saved.correct);
+}
+export function performOriginRecall(s:V10,keyOrSpecies:string,accuracy?:number):V10{
  const d=s.originZero;if(!d?.route||d.photos<6||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
  const list=recallCandidates(s);
  const candidate=list.find(c=>c.key===keyOrSpecies)||list.find(c=>c.id===keyOrSpecies&&!recallRecord(s,c));
@@ -146,9 +172,13 @@ export function performOriginRecall(s:V10,keyOrSpecies:string):V10{
  if(s.power<powerCost)return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-powerCost);
  const animal=n.animals.find(a=>(a.specimenId||a.id+'-legacy-'+a.room)===candidate.key&&a.alive);
- const quality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:42;
- const record:RecallRecord={specimenId:candidate.key,day:n.day,quality,source:candidate.source,note:RECALL_CONTEXT[candidate.id]!};
+ const baseQuality=candidate.source==='live'?Math.max(55,Math.min(95,95-Math.round((animal?.stress??10)/3))):candidate.source==='hq'?70:42;
+ const session=state.recallSessions?.[candidate.key];
+ const score=accuracy??session?.correct;
+ const quality=Math.max(25,Math.min(100,baseQuality+(score===undefined?0:(score-1)*10)));
+ const record:RecallRecord={specimenId:candidate.key,day:n.day,quality,source:candidate.source,note:RECALL_CONTEXT[candidate.id]!,steps:session?.answers};
  state.individualRecalls??={};state.individualRecalls[candidate.key]=record;
+ if(state.recallSessions)delete state.recallSessions[candidate.key];
  // Retain the legacy species index for old save consumers and ending history.
  state.recalls[candidate.id]??=record;
  n.knowledge+=Math.round(quality/10);

@@ -1,14 +1,16 @@
 'use client';
 import type {V10} from '@/lib/game-v10';
-import {canTrackCat,initiateOriginTrack,catTrackFrames,pickOriginTrace,analyzeOriginCat,chooseOriginRoute,restoreOriginPhotos,photoRecords,originArchiveCiphers,recallCandidates,recallRecord,completedRecalls,performOriginRecall,studyOriginImmunity,originBranchAction,originCrisisAvailable,resolveOriginCrisis,originReadyForFinale} from '@/lib/origin-zero';
+import {canTrackCat,initiateOriginTrack,catTrackFrames,pickOriginTrace,analyzeOriginCat,chooseOriginRoute,restoreOriginPhotos,photoRecords,originArchiveCiphers,recallCandidates,recallRecord,completedRecalls,beginOriginRecall,answerOriginRecall,studyOriginImmunity,originBranchAction,originCrisisAvailable,resolveOriginCrisis,originReadyForFinale} from '@/lib/origin-zero';
 import {useState} from 'react';
 import OriginPhotoGallery from './OriginPhotoGallery';
 import OriginStoryArtwork from './OriginStoryArtwork';
+import ArkRecallMinigame from './ArkRecallMinigame';
 
 type Mode='expedition'|'records'|'research';
 export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:Mode;onUpdate:(next:V10)=>void}){
  const d=s.originZero;
  const [showReveal,setShowReveal]=useState(false);
+ const [activeRecallKey,setActiveRecallKey]=useState<string|null>(null);
  const found=d?.cat==='traced'||d?.cat==='captured';
  const positive=!!d?.firstPositiveDay;
  const candidates=recallCandidates(s);
@@ -53,7 +55,8 @@ export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:
    {d.photos===12&&<button className="oz-action" onClick={()=>setShowReveal(true)}>마지막 사진과 이브의 기록 다시 보기</button>}
    {d.photos>=6&&<><div className="oz-heading"><h4>OPERATION ARK RECALL</h4><b>{completedRecalls(s).length}개체 분석</b></div>
    <p>모든 기존에 확보한 개체는 전원 다른 방식으로 재분석합니다. 살아 있다면 비침습 조사, 본부 이송 개체는 원격 자료, 사망 개체는 보존 기록으로 대체합니다.</p>
-   <div className="oz-recall-grid">{candidates.map(c=><button key={c.key} disabled={c.source==='escaped'||!!recallRecord(s,c)||s.ap<1||s.power<(c.source==='hq'?12:c.source==='live'?8:5)||s.phase!=='day'} onClick={()=>update(performOriginRecall(s,c.key))}><b>{c.label} · {c.key}</b><span>{recallRecord(s,c)?`분석 완료 · 품질 ${recallRecord(s,c)!.quality}%`:c.source==='escaped'?'CCTV에서 먼저 재격리':c.source==='live'?'현장 안정성 비교':c.source==='hq'?'본부 자료 원격 회수':'과거 보존 기록 회수'}</span></button>)}</div>
+   <div className="oz-recall-grid">{candidates.map(c=>{const record=recallRecord(s,c),session=d.recallSessions?.[c.key];return <button key={c.key} disabled={c.source==='escaped'||!!record||s.ap<1||s.power<(c.source==='hq'?12:c.source==='live'?8:5)||s.phase!=='day'} onClick={()=>{const next=beginOriginRecall(s,c.key);if(next!==s)update(next);if(next!==s||session)setActiveRecallKey(c.key);}}><b>{c.label} · {c.key}</b><span>{record?`분석 완료 · 품질 ${record.quality}% · 개인 기록 보존`:session?`분석 재개 · ${session.step+1}/3`:c.source==='escaped'?'CCTV에서 먼저 재격리':c.source==='live'?'비침습 안정성 비교 3단계':c.source==='hq'?'본부 자료 원격 회수 3단계':'보존 기록 재생 3단계'}</span></button>})}</div>
+   {activeRecallKey&&d.recallSessions?.[activeRecallKey]&&(()=>{const candidate=candidates.find(c=>c.key===activeRecallKey);if(!candidate)return null;return <ArkRecallMinigame id={candidate.id} name={candidate.label} session={d.recallSessions[activeRecallKey]} onClose={()=>setActiveRecallKey(null)} onAnswer={choice=>{const next=answerOriginRecall(s,activeRecallKey,choice);if(next!==s){update(next);if(!next.originZero?.recallSessions?.[activeRecallKey])setActiveRecallKey(null);}}}/>})()}
    {new Set(candidates.map(c=>c.id)).size<3&&<p className="oz-warning">기존 확보 개체가 부족합니다. 탐사에서 다른 종을 추가로 확보하면 재분석 대상이 늘어납니다.</p>}</>}
    {d.photos>=9&&<p className="oz-reminder">자료 복원 진행 중 · 면역 연구는 상단 [기억 연구]에서 진행 가능</p>}
   </>}
