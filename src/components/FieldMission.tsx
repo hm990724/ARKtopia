@@ -729,6 +729,8 @@ export default function FieldMission({
                   style={{
                     gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
                     backgroundImage: "url(/assets/field/world_ground_v74.png)",
+                    ["--v33-beam-x" as string]:hunt.lastSearch?`${((hunt.lastSearch.cell%size)+.5)/size*100}%`:'50%',
+                    ["--v33-beam-y" as string]:hunt.lastSearch?`${(Math.floor(hunt.lastSearch.cell/size)+.5)/size*100}%`:'50%',
                   }}
                   role="group"
                   aria-label="전부 가려진 추적 격자. 조사한 칸에서만 과거 흔적을 확인합니다."

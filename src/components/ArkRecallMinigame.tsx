@@ -1,23 +1,42 @@
 'use client';
+import {useEffect,useState} from 'react';
 import type {AnimalId} from '@/lib/sim';
 import {protocols} from '@/lib/protocols';
 import type {RecallSession} from '@/lib/origin-zero';
 
-const modes:Record<AnimalId,{title:string;instruction:string}>= {
- rabbit:{title:'임상 반응 순서',instruction:'자극 뒤 호흡과 앞발 반응을 차례로 대조합니다.'},
- fox:{title:'보급 동선 복원',instruction:'물자의 위치 관계와 이동 흔적을 함께 확인합니다.'},
- deer:{title:'기록 배열 복원',instruction:'명찰보다 기록 사이의 위치와 공백을 비교합니다.'},
- owl:{title:'기하 궤도 관측',instruction:'회전한 도형의 주기와 어긋난 각도를 찾습니다.'},
- wolf:{title:'경계 교대 관측',instruction:'경고와 보호 행동 사이의 순서를 판독합니다.'},
- crow:{title:'미완성 네 음',instruction:'음표와 침묵이 이어지는 위치를 대조합니다.'},
- otter:{title:'수압 회로 복원',instruction:'밸브 표식과 흐름이 바뀐 순서를 읽습니다.'},
- lynx:{title:'발자국 분기 판독',instruction:'겹친 흔적에서 첫 시선과 실제 이동을 분리합니다.'},
- axolotl:{title:'재생 신호 정렬',instruction:'손상 전후의 조직 반응을 같은 지점에서 대조합니다.'},
- moth:{title:'잔광 간격 판독',instruction:'빛이 사라진 뒤 남은 간격을 기억 기록과 맞춥니다.'},
- mutant:{title:'중첩 발화 분리',instruction:'겹친 음성 중 숨과 침묵을 지우지 않고 분리합니다.'},
- chimera:{title:'상충 신호 동기화',instruction:'서로 다른 행동이 겹치는 구간을 찾아냅니다.'},
- specter:{title:'백색 잔향 추적',instruction:'사라진 뒤에도 남는 신호의 간격을 복원합니다.'},
+const modes:Record<AnimalId,{title:string;instruction:string;action:string}>= {
+ rabbit:{title:'임상 반응 순서',instruction:'자극 뒤 호흡과 앞발 반응을 차례로 대조합니다.',action:'pulse'},
+ fox:{title:'보급 동선 복원',instruction:'물자의 위치 관계와 이동 흔적을 함께 확인합니다.',action:'shelf'},
+ deer:{title:'기록 배열 복원',instruction:'명찰보다 기록 사이의 위치와 공백을 비교합니다.',action:'archive'},
+ owl:{title:'기하 궤도 관측',instruction:'회전한 도형의 주기와 어긋난 각도를 찾습니다.',action:'orbit'},
+ wolf:{title:'경계 교대 관측',instruction:'경고와 보호 행동 사이의 순서를 판독합니다.',action:'patrol'},
+ crow:{title:'미완성 네 음',instruction:'음표와 침묵이 이어지는 위치를 대조합니다.',action:'melody'},
+ otter:{title:'수압 회로 복원',instruction:'밸브 표식과 흐름이 바뀐 순서를 읽습니다.',action:'valves'},
+ lynx:{title:'발자국 분기 판독',instruction:'겹친 흔적에서 첫 시선과 실제 이동을 분리합니다.',action:'tracks'},
+ axolotl:{title:'재생 신호 정렬',instruction:'손상 전후의 조직 반응을 같은 지점에서 대조합니다.',action:'graft'},
+ moth:{title:'잔광 간격 판독',instruction:'빛이 사라진 뒤 남은 간격을 기억 기록과 맞춥니다.',action:'afterglow'},
+ mutant:{title:'중첩 발화 분리',instruction:'겹친 음성 중 숨과 침묵을 지우지 않고 분리합니다.',action:'channels'},
+ chimera:{title:'상충 신호 동기화',instruction:'서로 다른 행동이 겹치는 구간을 찾아냅니다.',action:'sync'},
+ specter:{title:'백색 잔향 추적',instruction:'사라진 뒤에도 남는 신호의 간격을 복원합니다.',action:'echo'},
 };
+
+function RecallAction({id,choices,step,onAnswer}:{id:AnimalId;choices:string[];step:number;onAnswer:(choice:number)=>void}){
+ const [pick,setPick]=useState(1),[other,setOther]=useState(1),[valves,setValves]=useState([false,false,false]),[notes,setNotes]=useState<number[]>([]),[order,setOrder]=useState([0,1,2]),[glow,setGlow]=useState(0);
+ useEffect(()=>{setPick(1);setOther(1);setValves([false,false,false]);setNotes([]);setOrder([0,1,2]);setGlow(0)},[id,step]);
+ const submit=()=>onAnswer(pick);
+ const options=choices.map((text,index)=><span className="ark-recall-action-label" key={index}><b>0{index+1}</b>{text}</span>);
+ if(id==='fox'||id==='axolotl')return <div className={`ark-recall-action ${id}`} data-action={modes[id].action}><p>{id==='fox'?'운반 상자를 선반 구역으로 끌어놓으세요.':'재생 조직을 맞는 손상 기록에 이식하세요.'}</p><div className="ark-recall-drop-source" draggable onDragStart={event=>event.dataTransfer.setData('text/plain','specimen')} onClick={()=>setGlow((glow+1)%3)}>{id==='fox'?'▣ 물자 상자':'✚ 재생 조직'}</div><div className="ark-recall-drop-zones">{options.map((option,index)=><button type="button" key={index} onDragOver={event=>event.preventDefault()} onDrop={event=>{event.preventDefault();onAnswer(index)}} onClick={()=>onAnswer(index)} aria-label={`배치 ${index+1}: ${choices[index]}`}><span>{id==='fox'?`선반 ${index+1}`:`봉합 위치 ${index+1}`}</span>{option}</button>)}</div></div>;
+ if(id==='deer')return <div className="ark-recall-action deer" data-action="archive"><p>기록 카드를 순서대로 정렬하고 첫 번째 칸에 둘 항목을 선택하세요.</p><div className="ark-recall-sort-list">{order.map((option,index)=><button key={option} type="button" draggable onDragStart={event=>event.dataTransfer.setData('text/plain',String(option))} onDragOver={event=>event.preventDefault()} onDrop={event=>{event.preventDefault();const moving=Number(event.dataTransfer.getData('text/plain'));setOrder(current=>{const next=current.filter(item=>item!==moving);next.splice(index,0,moving);return next})}} onClick={()=>{setPick(option);setOrder(current=>[option,...current.filter(item=>item!==option)])}} aria-label={`기록 카드 ${index+1}: ${choices[option]}`}><b>{String(index+1).padStart(2,'0')}</b>{choices[option]}{index===0&&<i> · 첫 기록</i>}</button>)}</div><button className="ark-recall-action-submit" type="button" onClick={()=>onAnswer(order[0])}>기록 순서 확정</button></div>;
+ if(id==='owl'||id==='rabbit')return <div className={`ark-recall-action ${id}`} data-action={modes[id].action}><p>{id==='owl'?'관측각을 돌려 신호가 겹치는 구간에 맞추세요.':'심박 측정창을 조절해 반응이 가장 안정된 구간을 맞추세요.'}</p><div className="ark-recall-range-markers">{choices.map((text,index)=><span key={index}>{id==='owl'?`${index*120}°`:`박동 ${index+1}`}</span>)}</div><input aria-label={id==='owl'?'관측 각도':'심박 측정창'} type="range" min="0" max="2" step="1" value={pick} onChange={event=>setPick(Number(event.target.value))}/><p className="ark-recall-action-selected">선택된 기록: {choices[pick]}</p><button className="ark-recall-action-submit" type="button" onClick={submit}>{id==='owl'?'궤도 고정':'맥박 기록 확정'}</button></div>;
+ if(id==='wolf'||id==='lynx')return <div className={`ark-recall-action ${id}`} data-action={modes[id].action}><p>{id==='wolf'?'순찰 경로를 따라 목적지 표식을 고르세요.':'첫 발자국에서 이어지는 흔적의 끝을 추적하세요.'}</p><div className="ark-recall-route-map">{choices.map((text,index)=><button type="button" key={index} onClick={()=>onAnswer(index)} aria-label={`경로 ${index+1}: ${text}`}><svg viewBox="0 0 80 34" aria-hidden="true"><path d={index===0?'M4 28 C25 28 24 7 76 7':index===1?'M4 28 C25 28 35 17 76 17':'M4 28 C25 28 24 28 76 28'} stroke="currentColor" fill="none" strokeWidth="3" strokeDasharray={id==='lynx'?'3 4':'none'}/><circle cx="76" cy={index===0?7:index===1?17:28} r="4" fill="currentColor"/></svg><span>{text}</span></button>)}</div></div>;
+ if(id==='crow')return <div className="ark-recall-action crow" data-action="melody"><p>기억한 네 음을 순서대로 두드리세요. 음형이 일치하면 해당 기록이 확정됩니다.</p><div className="ark-recall-note-sequence">{notes.map((note,index)=><i key={index}>{['도','미','솔'][note]}</i>)}<small>{notes.length}/4</small></div><div className="ark-recall-note-pads">{[0,1,2].map(note=><button type="button" key={note} onClick={()=>{const next=[...notes,note];setNotes(next);if(next.length===4){const score=next.reduce((sum,n,i)=>sum+n*((i+step)%3+1),0);onAnswer(score%3)}}}>{['도','미','솔'][note]}</button>)}</div><div className="ark-recall-action-hints">{choices.map((text,index)=><span key={index}>패턴 {index+1} · {text}</span>)}</div><button type="button" className="ark-recall-action-reset" onClick={()=>setNotes([])}>선율 다시 듣기</button></div>;
+ if(id==='otter')return <div className="ark-recall-action otter" data-action="valves"><p>압력 밸브를 조절하고 물 흐름을 시험하세요.</p><div className="ark-recall-valves">{valves.map((open,index)=><button key={index} className={open?'open':''} type="button" onClick={()=>setValves(current=>current.map((value,i)=>i===index?!value:value))} aria-label={`밸브 ${index+1} ${open?'열림':'닫힘'}`}>V{index+1}<i>{open?'열림':'닫힘'}</i></button>)}</div><div className="ark-recall-action-hints">{choices.map((text,index)=><span key={index}>흐름 {index+1} · {text}</span>)}</div><button className="ark-recall-action-submit" type="button" onClick={()=>onAnswer(valves.filter(Boolean).length%3)}>펌프 가동 · 흐름 판독</button></div>;
+ if(id==='mutant')return <div className="ark-recall-action mutant" data-action="channels"><p>겹친 음성 채널을 한쪽씩 분리하고 남은 신호를 기록하세요.</p><div className="ark-recall-channels">{[0,1].map(channel=><button type="button" key={channel} className={(channel===0?pick===1:other===1)?'active':''} onClick={()=>channel===0?setPick(pick===1?0:1):setOther(other===1?0:1)}>{channel===0?'채널 A':'채널 B'} · {((channel===0?pick:other)===1)?'통과':'차단'}</button>)}</div><div className="ark-recall-action-hints">{choices.map((text,index)=><span key={index}>신호 {index+1} · {text}</span>)}</div><button className="ark-recall-action-submit" type="button" onClick={()=>onAnswer(((pick===0?1:0)+(other===0?2:0))%3)}>분리 신호 저장</button></div>;
+ if(id==='chimera')return <div className="ark-recall-action chimera" data-action="sync"><p>두 행동 신호를 같은 위상으로 맞춘 다음 교차점을 확정하세요.</p><label>본능 A <input aria-label="본능 A 위상" type="range" min="0" max="2" step="1" value={pick} onChange={event=>setPick(Number(event.target.value))}/></label><label>본능 B <input aria-label="본능 B 위상" type="range" min="0" max="2" step="1" value={other} onChange={event=>setOther(Number(event.target.value))}/></label><p>{pick===other?'두 신호가 겹쳤습니다.':'신호가 어긋나 있습니다.'} · {choices[pick]}</p><button className="ark-recall-action-submit" type="button" disabled={pick!==other} onClick={submit}>공명 교차점 기록</button></div>;
+ if(id==='moth')return <div className="ark-recall-action moth" data-action="afterglow"><p>광원이 꺼진 뒤 남은 잔광을 관측하세요.</p><div className="ark-recall-afterglow">{choices.map((text,index)=><button type="button" key={index} className={glow===index?'lit':''} onClick={()=>{setGlow(index);onAnswer(index)}} aria-label={`잔광 ${index+1}: ${text}`}><i/>{text}</button>)}</div><small>깜박임 간격이 사라지기 전에 표식을 선택합니다.</small></div>;
+ if(id==='specter')return <div className="ark-recall-action specter" data-action="echo"><p>백색 잔향이 가리키는 기억의 자리를 선택하세요.</p><div className="ark-recall-echo-grid">{choices.map((text,index)=><button type="button" key={index} onClick={()=>onAnswer(index)} aria-label={`잔향 ${index+1}: ${text}`}><span style={{animationDelay:`${index*180}ms`}}>◌</span><small>{text}</small></button>)}</div></div>;
+ return <div className="ark-recall-action lynx" data-action="tracks"><p>발자국 분기 가운데 연결이 끊기지 않은 흔적을 따라가세요.</p>{choices.map((text,index)=><button type="button" key={index} onClick={()=>onAnswer(index)}>{text}</button>)}</div>;
+}
 
 function Instrument({id,step}:{id:AnimalId;step:number}){
  const active=step+1;
@@ -44,7 +63,8 @@ export default function ArkRecallMinigame({id,name,session,onAnswer,onClose}:{id
    <header><div><span>ARK RECALL // SPECIMEN LINK</span><h3>{name} · {mode.title}</h3><p>{mode.instruction}</p></div><button type="button" onClick={onClose} aria-label="기록하고 닫기">기록 저장 · 닫기</button></header>
    <div className="ark-recall-instrument-wrap"><Instrument id={id} step={session.step}/><div className="ark-recall-meters"><span>신호 단계 <b>{session.step+1} / 3</b></span><span>일치 기록 <b>{session.correct} / {session.step}</b></span></div></div>
    <p className="ark-recall-cue">{protocol.hint}</p><h4>{stage.prompt}</h4>
-   <div className="ark-recall-choices">{ordered.map((choice,index)=><button key={choice} type="button" onClick={()=>onAnswer(choice)}><b>0{index+1}</b><span>{stage.choices[choice]}</span><i aria-hidden="true">↗</i></button>)}</div>
+   <RecallAction id={id} choices={stage.choices} step={session.step} onAnswer={onAnswer}/>
+   <div className="ark-recall-choice-reference" aria-label="판정에 사용하는 기록 후보">{ordered.map((choice,index)=><p key={choice}><b>0{index+1}</b><span>{stage.choices[choice]}</span></p>)}</div>
    <small>응답은 개체 번호와 함께 저장됩니다. 틀린 반응도 연구 자료이며 개체를 해치지 않습니다.</small>
   </section>
  </div>;
