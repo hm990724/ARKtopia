@@ -1,6 +1,6 @@
 {
   "name": "anomaly-zoo",
-  "version": "73.0.0",
+  "version": "74.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,8 +11,8 @@
     "test:logic": "node scripts/test-logic.cjs",
     "test:v69": "node scripts/test-v69.cjs",
     "test:v70": "node scripts/test-v70.cjs",
-    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73",
-    "lint": "next lint",
+    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73 && npm run test:v74",
+    "lint": "eslint src --ext .ts,.tsx --quiet",
     "check:assets:v70": "node scripts/check-v70-assets.cjs",
     "test:browser": "playwright test --config=playwright.config.cjs",
     "test:v71": "node scripts/test-v71.cjs",
@@ -20,7 +20,8 @@
     "start:qa": "node scripts/start-qa.cjs",
     "check:assets:v71": "node scripts/check-v71-assets.cjs",
     "test:v72": "node scripts/test-v72.cjs",
-    "test:v73": "node scripts/test-v73.cjs"
+    "test:v73": "node scripts/test-v73.cjs",
+    "test:v74": "node scripts/test-v74.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -33,6 +34,8 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.29",
     "typescript": "^5.8.0"
   }
 }

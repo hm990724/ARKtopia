@@ -3,6 +3,8 @@ import type {CrewId} from './crew';
 export type PortraitMood='neutral'|'anxious'|'critical'|'resolve';
 export type CharacterId='protagonist'|'eve'|CrewId;
 export function characterMood(state:V10|undefined,id:CharacterId,text='',explicit?:PortraitMood):PortraitMood{
+ // EVE learns emotional expression only after authenticated story evidence.
+ if(id==='eve'&&(!state||(!state.flags.humanTruth&&(state.originZero?.photos??0)<4)))return 'neutral';
  const value=id==='protagonist'?state?.mind:id==='eve'?state?.eve:state?.crew?.members.find(m=>m.id===id)?.mind;
  if(value!==undefined&&value<35)return 'critical';
  if(explicit)return explicit;
@@ -15,7 +17,7 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  return 'neutral';
 }
 export function characterPortrait(id:CharacterId,mood:PortraitMood):string{
- if(id==='protagonist')return `/assets/characters/protagonist_${mood}_v73_768.png`;
+ if(id==='protagonist')return `/assets/characters/protagonist_${mood}_v74_768.png`;
  if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}_v72.png`;
  if(mood==='neutral'||mood==='resolve')return `/assets/staff/${id}/portrait${id==='fox'?'_v72.png':'.webp'}`;
  return `/assets/staff/${id}/portrait_${mood==='anxious'?'unstable':'critical'}_v72.png`;

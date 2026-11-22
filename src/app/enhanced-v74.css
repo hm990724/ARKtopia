@@ -1,0 +1,44 @@
+﻿/* v74: shared readable type, continuous world presentation and stable portraits. */
+@font-face{font-family:ARKText;src:url('/fonts/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--font-body:ARKText,'Noto Sans KR','Malgun Gothic',sans-serif;--font-display:Bahnschrift,'Arial Narrow',ARKText,'Noto Sans KR','Malgun Gothic',sans-serif}
+body,button,input,select,textarea,p,small,span,label{font-family:var(--font-body)}
+h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(--font-display)!important;font-weight:700;line-height:1.35}
+button:focus-visible{outline:3px solid #d9f3be;outline-offset:3px}
+.v74-sortie-budget{padding:14px;border:1px solid #88b9a0;background:#172b29;display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:#e4eee7}
+.v74-sortie-budget p{width:100%;margin:0;color:#e3c3a4}.v74-sortie-budget button{min-height:40px}
+.v74-capture-budget{align-items:center!important;flex-wrap:wrap;position:sticky;top:0;z-index:5;background:#181c28!important;border:2px solid #9dbfa8!important}
+.v74-actions-left{display:flex;align-items:center;gap:13px;flex:1 1 270px;color:#dcebd7;padding:6px 10px}
+.v74-actions-left>span{font-size:14px;font-weight:800}.v74-actions-left strong{font-size:42px;line-height:1;white-space:nowrap}.v74-actions-left small{font-size:14px;color:#b8c7c2}.v74-actions-left p{font-size:11px;max-width:130px;line-height:1.6;margin:0}.v74-actions-left.is-low{color:#ffb6a1;background:#542b2a}
+.v74-live-animal{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain;z-index:4;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 4px 2px #06080a)}
+.v33-route-map.v57-field-map{gap:0!important;padding:0!important;background-size:100% 100%!important;isolation:isolate;border:0;box-shadow:inset 0 0 60px #080b0f}
+.v33-route-map.v57-field-map .v33-route-cell{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;opacity:1;overflow:visible}
+.v33-route-map .v33-route-cell .v71-foliage{opacity:.3}
+.v33-route-map .v33-route-fog{background:#060a10f5!important;z-index:3}
+.v33-route-map .v33-route-fog>*{visibility:hidden}
+.v33-route-map .v33-route-next::after{display:none}
+.v33-route-map .v62-move-indicator{display:none!important}
+.v33-route-map .v33-route-next:hover{background:#d5eccb17!important;box-shadow:inset 0 0 14px #c4e0b233!important}
+.v33-route-map .v33-route-next:focus-visible{outline:2px dashed #c7dbb2;outline-offset:-6px}
+.v33-route-map::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;background:radial-gradient(ellipse at var(--v57-light-x) var(--v57-light-y),transparent 2%,#151b1a10 13%,#070a12a8 40%,#04070fd6 85%);transition:background-position .45s}
+.v33-route-map .v33-route-player,.v33-route-map .v42-walker-path{z-index:5}
+.v33-route-map .v33-land-wall::before{content:'';position:absolute;inset:8% 2%;background:#212c2c;box-shadow:inset 7px 8px #3a4942,inset -6px -8px #101b20,5px 8px #070d1490;clip-path:polygon(10% 0,80% 0,80% 10%,100% 10%,100% 100%,0 100%,0 15%,10% 15%)}
+.v33-route-map .v33-route-block{display:none}.v33-route-map .v33-route-object small{background:#08121de6;color:#d9e0d6;padding:2px 5px;white-space:nowrap}
+.v74-combat{background:#151620;border:2px solid #ab7389;padding:18px;display:grid;gap:12px;color:#ecdee7}.v74-combat-stage{height:140px;position:relative;background:radial-gradient(ellipse,#4b354c,#151922);display:flex;align-items:center;justify-content:space-evenly;overflow:hidden}.v74-enemy{width:112px;height:112px;object-fit:contain;image-rendering:pixelated;animation:v74-breathe 1.8s steps(3) infinite}.v74-combat-actions{display:flex;gap:8px;flex-wrap:wrap}.v74-combat-actions button{min-height:46px;flex:1 1 130px}.v74-combat p{margin:0;line-height:1.7}.v74-combat meter{width:100%}.v74-telegraph{color:#f3cea0;border-left:3px solid #cf9e73;padding-left:12px}
+@keyframes v74-breathe{50%{transform:scale(1.04,.96) translateY(2px)}}
+.v74-reaction-stage{position:relative;height:170px;background:radial-gradient(ellipse at bottom,#3a4949,#111723 80%);overflow:hidden;border:1px solid #627176;display:grid;place-items:center}.v74-reaction-stage img{height:145px;width:150px;object-fit:contain;image-rendering:pixelated;animation:v74-breathe 3s steps(3) infinite}.v74-reaction-stage.is-responding img{animation:v74-response .7s steps(5) 2}.v74-reaction-stage span{position:absolute;left:12px;bottom:9px;font-size:12px;background:#102020dd;padding:5px 9px;color:#cee8d6}.v74-reaction-stage i{position:absolute;inset:30% 25%;border:2px solid #a1cec8;opacity:0}.v74-reaction-stage.is-responding i{animation:v74-wave 1.2s ease-out infinite}
+@keyframes v74-response{50%{transform:translateX(12px) rotate(3deg)}}@keyframes v74-wave{0%{transform:scale(.5);opacity:.7}100%{transform:scale(1.8);opacity:0}}
+.v74-upgrades{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}.v74-upgrades article{background:#1c2730;border:1px solid #667b7a;padding:15px}.v74-upgrades p{line-height:1.7;font-size:13px}.v74-upgrades button{width:100%;min-height:42px}
+@media(max-width:600px){.v74-actions-left{gap:8px;flex-basis:100%}.v74-actions-left strong{font-size:36px}.v74-actions-left p{max-width:none}.v74-combat{padding:12px}}
+@media(prefers-reduced-motion:reduce){.v74-reaction-stage img,.v74-reaction-stage i,.v74-enemy{animation:none!important}}
+
+.v44-story-eve-image{background:#151422!important;overflow:hidden;isolation:isolate}.v44-story-eve-image>img,.v44-story-eve-image .v53-staff-portrait img{object-fit:contain!important;object-position:center!important;width:100%!important;height:100%!important;transform:none!important;animation:none!important;filter:none!important}.v44-story-eve-image>i,.v44-story-eve-image::before,.v44-story-eve-image::after{display:none!important}.v45-portrait img{filter:none!important}.v74-combat-stage .v72-ranger{position:relative!important;width:72px!important;height:96px!important}
+
+.v33-route-map.v57-field-map .v33-route-fog{background:#070b12f7!important}.v33-route-map.v57-field-map::before{display:none!important}.v33-route-map .v33-leaf{opacity:.25;transform:scale(.7)}.v33-route-map .v33-route-current .v33-leaf{opacity:0}.v74-actions-left>span{margin:0!important}
+/* Angular industrial headers; readable Pretendard body */
+/* Sharp condensed Latin headings; Korean falls back to the bundled square Pretendard glyphs. */
+:root{--font-body:ARKText,'Noto Sans KR','Malgun Gothic',sans-serif;--font-display:Bahnschrift,'Arial Narrow',ARKText,'Noto Sans KR','Malgun Gothic',sans-serif}
+h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(--font-display)!important;font-weight:800!important;letter-spacing:.035em!important;line-height:1.28}
+/* Restrained terminal hierarchy without the rounded pixel font. */
+.v74-kicker,.v74-sortie-budget>strong,.v74-combat h3{letter-spacing:.12em!important;text-transform:uppercase}
+.v43-sidebar .v43-brand span,.v43-sidebar .v43-brand small{font-family:var(--font-display)!important;letter-spacing:.09em!important}
+.v73-opening footer{letter-spacing:.035em;font-family:var(--font-display)!important}

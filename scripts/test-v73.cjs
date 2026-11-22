@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict'),fs=require('fs'),ts=require('typescript');
+const assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 const {beginGame,resolveNightTransition,normalizeV10}=require('../src/lib/game-v10.ts');
 const {makeAnimal}=require('../src/lib/sim.ts');
@@ -21,7 +21,9 @@ s=base(5);s.animals=[makeAnimal('rabbit',1)];s.animals[0].stress=50;planned=choo
 s=base(6);planned=chooseNightResponse(s,'intervene');const mind=s.mind,threat=s.threat;resolveNightWatch(planned);assert.equal(planned.mind,mind-5);assert.equal(planned.threat,Math.max(0,threat-8));
 assert.equal(nightSignal(base(3)),null);
 console.log('PASS nightly animal care and perimeter choices have real costs, tutorials remain unchanged');
-const jobs=JSON.parse(fs.readFileSync('docs/generated-assets-v73.json','utf8'));
-for(const j of jobs){const b=fs.readFileSync(j.dest),w=b.readUInt32BE(16),h=b.readUInt32BE(20);assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');if(j.id.startsWith('protagonist'))assert.equal(w/h,.75);else{assert.equal(w,h);assert.equal(b[25],6);}}
-console.log('PASS all nine revised assets have matching portrait/sprite aspect ratios and mutant alpha');
+const activeArt=require('../src/lib/animal-art.ts');
+for(const id of ['rabbit','fox','deer','owl','wolf','crow','otter','lynx','axolotl','moth','mutant','chimera','specter']){
+ for(const mutated of [false,true]){const file=path.join(__dirname,'..','public',activeArt.animalSprite(id,mutated));const b=fs.readFileSync(file);assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);assert.ok(b.readUInt32BE(16)>0&&b.readUInt32BE(20)>0,file);if(file.includes('_v74.png'))assert.equal(b.readUInt32BE(16),b.readUInt32BE(20),file);assert.equal(b[25],6,file);}
+}
+console.log('PASS all 26 active animal variants resolve to square transparent PNGs without pinning obsolete filenames');
 

@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {BookOpen,Brain,CircleHelp,Activity,Footprints,LockKeyhole,FileWarning,Radio,FlaskConical,Send,ShieldAlert,HeartPulse,ArrowRight,Eye,Archive as ArchiveIcon} from 'lucide-react';
+import {BookOpen,Brain,CircleHelp,Activity,Footprints,LockKeyhole,FileWarning,Radio,FlaskConical,Send,ShieldAlert,HeartPulse,ArrowRight,Eye,Archive as ArchiveIcon} from './PixelIcons';
 import {specs,type AnimalId} from '@/lib/sim';
 import {archiveOf,knownSpeciesTraits,type DissectionAction,type SpecimenDossier} from '@/lib/specimen-archive';
 import type {V10} from '@/lib/game-v10';

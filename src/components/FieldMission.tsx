@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { V10 } from "@/lib/game-v10";
 import { regions } from "@/lib/game-v10";
+import {CombatPanel} from './EnhancedField';
+import type {CombatAction} from '@/lib/field-combat';
 import RangerSprite from './RangerSprite';
 import {directionForMove,type WalkDirection} from '@/lib/character-art';
 import type { AnimalId } from "@/lib/sim";
@@ -14,7 +16,7 @@ import {
 } from "@/lib/tactical-field";
 import {
   HUNT_TRAITS,
-  HUNT_SIZE,
+  huntSize,
   huntSearchAge,
   huntSearchedCount,
   freshTrailCells,
@@ -42,7 +44,7 @@ import {
   Lock,
   UnlockKeyhole,
   Target,
-} from "lucide-react";
+} from "./PixelIcons";
 
 type Props = {
   state: V10;
@@ -51,6 +53,7 @@ type Props = {
   onRetreat: () => void;
   onHunt: (action: { type: HuntMode; cell?: number; clue?: number }) => void;
   onMedkit: () => void;
+  onCombat: (action:CombatAction)=>void;
   onDecision: (action: "leave" | "survey" | "risk") => void;
   feedback: string;
 };
@@ -171,6 +174,7 @@ export default function FieldMission({
   onHunt,
   onMedkit,
   onDecision,
+  onCombat,
   feedback,
 }: Props) {
   const [mode, setMode] =
@@ -201,7 +205,7 @@ export default function FieldMission({
     if (
       walking ||
       !field ||
-      field.choice ||
+      (field.choice || field.combat) ||
       !adjacentField(
         field.position,
         target,
@@ -227,7 +231,7 @@ export default function FieldMission({
       if (
         !state.field ||
         state.capture ||
-        state.field.choice ||
+        (state.field.choice || state.field.combat) ||
         event.repeat ||
         event.ctrlKey ||
         event.metaKey ||
@@ -285,6 +289,7 @@ export default function FieldMission({
     );
   const region = regions.find((r) => r.id === run.region)!;
   const hunt = capture?.hunt;
+  const size=hunt?huntSize(hunt):6;
   const pressure =
     field.pressure ?? clamp(field.steps * (7 + Math.round(region.danger / 22)));
   const width = fieldWidth(field),
@@ -295,8 +300,8 @@ export default function FieldMission({
   const seasonalShiver =
     hunt && hunt.turn > 0 && hunt.turn % 3 === 0
       ? (() => {
-          const row = Math.floor(hunt.position / 8),
-            col = hunt.position % 8;
+          const row = Math.floor(hunt.position / size),
+            col = hunt.position % size;
           const neighbours = [
             [-1, -1],
             [-1, 0],
@@ -308,10 +313,10 @@ export default function FieldMission({
             [1, 1],
           ]
             .map(([dy, dx]) => [row + dy, col + dx])
-            .filter(([r, c]) => r >= 0 && r < 8 && c >= 0 && c < 8);
+            .filter(([r, c]) => r >= 0 && r < size && c >= 0 && c < size);
           const at =
             neighbours[(hunt.seed + hunt.turn * 11) % neighbours.length];
-          return at ? at[0] * 8 + at[1] : null;
+          return at ? at[0] * size + at[1] : null;
         })()
       : null;
   const species = hunt ? HUNT_TRAITS[hunt.species] : null;
@@ -329,7 +334,7 @@ export default function FieldMission({
   const lastCoord =
     lastCell === undefined
       ? ""
-      : `${String.fromCharCode(65 + (lastCell % 8))}${Math.floor(lastCell / 8) + 1}`;
+      : `${String.fromCharCode(65 + (lastCell % size))}${Math.floor(lastCell / size) + 1}`;
   const evidencePresentation =
     lastEvidence?.kind === "footprint"
       ? {
@@ -377,9 +382,9 @@ export default function FieldMission({
       setNotice("그물을 지도 안쪽에 놓아주세요.");
       return;
     }
-    const col = Math.min(7, Math.floor(((x - r.left) / r.width) * 8)),
-      row = Math.min(7, Math.floor(((y - r.top) / r.height) * 8));
-    const cell = row * 8 + col;
+    const col = Math.min(size-1, Math.floor(((x - r.left) / r.width) * size)),
+      row = Math.min(size-1, Math.floor(((y - r.top) / r.height) * size));
+    const cell = row * size + col;
     setSearchFlash(cell);
     onHunt({ type: "net", cell });
     setMode("search");
@@ -407,7 +412,7 @@ export default function FieldMission({
           <p>
             {hunt
               ? "청음으로 이동 영역을 좁히고 풀숲의 흔적을 분석한 다음 직접 그물을 던지세요. 동물은 매 턴 이동합니다."
-              : "직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 외부 추적망이 가까워집니다."}
+              : "직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 오염 추적망이 가까워집니다. 100%가 되면 강제 철수합니다."}
           </p>
         </div>
         <button
@@ -431,7 +436,7 @@ export default function FieldMission({
           <i style={{ width: `${state.mind}%` }} />
         </div>
         <div>
-          <span>추적망</span>
+          <span>추적망 포위</span>
           <b>{pressure}/100</b>
           <i style={{ width: `${pressure}%` }} />
         </div>
@@ -697,7 +702,8 @@ export default function FieldMission({
           )}
         </aside>
         <div className="v33-theater" data-tour="run-choice">
-          {hunt && <div className="v71-primary-tools">
+          {hunt && <div className="v71-primary-tools v74-capture-budget">
+            <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><span>포획 남은 행동</span><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div>
             <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'}><Radio size={16}/> 청음 · 1행동</button>
             <button type="button" aria-pressed={mode==='net'} onClick={()=>setMode(mode==='net'?'search':'net')}><Target size={16}/> {mode==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
             <span>남은 행동 <b>{hunt.actions}</b> · {mode==='net'?'십자 반경에 투척':'클릭하여 조사'}</span>
@@ -710,15 +716,16 @@ export default function FieldMission({
                     <i /> SECTOR {run.region.toUpperCase()} · THICKET SCAN
                   </span>
                   <b>
-                    GRID {HUNT_SIZE} × {HUNT_SIZE} · 수색{" "}
-                    {huntSearchedCount(hunt)}/64
+                    GRID {size} × {size} · 수색{" "}
+                    {huntSearchedCount(hunt)}/{size*size}
                   </b>
                 </div>
                 <div
                   ref={mapRef}
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
-                    backgroundImage: "url(/assets/field/ground.png)",
+                    gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
+                    backgroundImage: "url(/assets/field/world_ground_v74.png)",
                   }}
                   role="group"
                   aria-label="전부 가려진 추적 격자. 조사한 칸에서만 과거 흔적을 확인합니다."
@@ -738,18 +745,18 @@ export default function FieldMission({
                       hunt.turn - (hunt.lastSearch?.turn ?? 0) <= 1;
                     const inSignalZone =
                       zoneActive &&
-                      (i % 8 >= 4 ? 1 : 0) +
-                        (Math.floor(i / 8) >= 4 ? 2 : 0) ===
+                      (i % size >= size/2 ? 1 : 0) +
+                        (Math.floor(i / size) >= size/2 ? 2 : 0) ===
                         hunt.scanZone;
                     const label = !opened
                       ? "미수색 풀숲"
                       : foot
-                        ? "조사 당시 이전 위치 발자국"
+                        ? "실제 이동 발자국"
                         : shake
-                          ? "조사 당시 발자국 주변의 풀 흔들림"
+                          ? "현재 개체 반경 1칸의 풀 흔들림"
                           : evidence?.kind === "caught"
-                            ? "발견 완료"
-                            : "조사 당시 흔적 없음";
+                            ? "개체 현재 위치"
+                            : "현재 흔적 없음";
                     return (
                       <button
                         className={
@@ -772,14 +779,14 @@ export default function FieldMission({
                           (inSignalZone ? " v69-echo-zone" : "") +
                           (freshTrailCells(hunt).includes(i) ? " v71-trail-zone" : "") +
                           (mode === "net" ? " v69-net-target" : "") +
-                          (seasonalShiver === i ? " v57-nearby-rustle" : "")
+                          (opened&&hunt.shaking.includes(i) ? " v57-nearby-rustle" : "")
                         }
                         type="button"
                         key={i}
                         onClick={() => tap(i)}
                         disabled={hunt.outcome !== "playing"}
-                        aria-label={`${Math.floor(i / 8) + 1}행 ${(i % 8) + 1}열 · ${label}${obj ? " · " + obj.kind + " 설치됨" : ""}`}
-                        title={`${String.fromCharCode(65 + (i % 8))}${Math.floor(i / 8) + 1} · ${label}${evidence ? ` (T${evidence.turn} 기록 · 현재 위치 아님)` : ""}`}
+                        aria-label={`${Math.floor(i / size) + 1}행 ${(i % size) + 1}열 · ${label}${obj ? " · " + obj.kind + " 설치됨" : ""}`}
+                        title={`${String.fromCharCode(65 + (i % size))}${Math.floor(i / size) + 1} · ${label}${evidence ? ` (T${evidence.turn} · 확인한 구역은 계속 관측)` : ""}`}
                       >
                         {opened && (
                           <span
@@ -799,6 +806,7 @@ export default function FieldMission({
                             aria-hidden="true"
                           />
                         )}
+                        {opened&&i===hunt.position&&<img className="v74-live-animal" src={animalSrc(hunt.species)} alt="밝혀진 구역의 개체" draggable={false}/>}
                         {foot && <PawPixel />}
                         {shake && (
                           <span
@@ -829,8 +837,8 @@ export default function FieldMission({
                         )}
                         {opened && (
                           <span className="v36-tile-coord" aria-hidden="true">
-                            {String.fromCharCode(65 + (i % 8))}
-                            {Math.floor(i / 8) + 1}
+                            {String.fromCharCode(65 + (i % size))}
+                            {Math.floor(i / size) + 1}
                           </span>
                         )}
                         {evidence && (
@@ -872,7 +880,7 @@ export default function FieldMission({
                   <span>
                     <PawPixel />{" "}
                     {zoneActive
-                      ? "청음으로 확인한 4×4 영역을 강조 중 · 시간이 지나면 바뀝니다"
+                      ? "청음 추정 영역 강조 · 열린 칸은 계속 관측됩니다"
                       : "조사한 칸만 공개 · 발자국은 지난 자리"}
                   </span>
                   <span>단서 확인 → 그물을 직접 던져 구조</span>
@@ -889,8 +897,8 @@ export default function FieldMission({
                     .slice(0, 3)
                     .map(([cell, entry]) => (
                       <span key={cell} className={"v58-trace-" + entry.kind}>
-                        {String.fromCharCode(65 + (Number(cell) % 8))}
-                        {Math.floor(Number(cell) / 8) + 1} ·{" "}
+                        {String.fromCharCode(65 + (Number(cell) % size))}
+                        {Math.floor(Number(cell) / size) + 1} ·{" "}
                         {entry.kind === "footprint"
                           ? "발자국"
                           : entry.kind === "rustle"
@@ -953,7 +961,7 @@ export default function FieldMission({
               <div className="v33-stage-footnote">
                 <span className="v33-scanner-dot" />{" "}
                 {hunt.lastSearch
-                  ? `최근 수색: ${String.fromCharCode(65 + (hunt.lastSearch.cell % 8))}${Math.floor(hunt.lastSearch.cell / 8) + 1} · 기록은 과거 위치입니다.`
+                  ? `최근 수색: ${String.fromCharCode(65 + (hunt.lastSearch.cell % size))}${Math.floor(hunt.lastSearch.cell / size) + 1} · 열린 칸은 현재 상태를 보여줍니다.`
                   : "첫 수색으로 흔적 확인 · 청음은 대략적인 방향을 감지"}{" "}
                 <span key={hunt.turn} className="v55-turn-counter">
                   TURN {String(hunt.turn).padStart(2, "0")}
@@ -1015,7 +1023,7 @@ export default function FieldMission({
                         i,
                         run.gear.includes("scanner")
                           ? 3
-                          : run.gear.includes("flashlight")
+                          : (run.gear.includes("flashlight") && state.flashlight>0)
                             ? 2
                             : 1,
                       ),
@@ -1028,7 +1036,7 @@ export default function FieldMission({
                           field.tiles.length,
                         ) &&
                         tile !== "wall" &&
-                        !field.choice;
+                        !field.choice && !field.combat;
                     return (
                       <button
                         type="button"
@@ -1131,6 +1139,7 @@ export default function FieldMission({
                     </span>
                   )}
                 </div>
+                {field.combat && <CombatPanel state={state} onAction={onCombat}/>}
                 {field.choice && (
                   <section
                     className="v62-map-choice-mask"
@@ -1263,7 +1272,7 @@ export default function FieldMission({
                   </span>
                   <strong>
                     {hunt.lastSearch
-                      ? `${String.fromCharCode(65 + (hunt.lastSearch.cell % 8))}${Math.floor(hunt.lastSearch.cell / 8) + 1} 조사 완료`
+                      ? `${String.fromCharCode(65 + (hunt.lastSearch.cell % size))}${Math.floor(hunt.lastSearch.cell / size) + 1} 조사 완료`
                       : "아직 조사한 수풀이 없습니다"}
                   </strong>
                   <small>
@@ -1480,7 +1489,7 @@ export default function FieldMission({
                 </p>
               </div>
               <div className="v33-travel-status">
-                <span>추적망 접근</span>
+                <span>추적망 · 100% 시 철수</span>
                 <strong>{pressure}%</strong>
                 <i>
                   <em style={{ width: pressure + "%" }} />

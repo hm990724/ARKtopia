@@ -15,7 +15,7 @@ export type ProtocolAttempt={day:number;quality:number;mode:'gentle'|'force';res
 export type SpecimenDossier={key:string;species:AnimalId;name:string;firstDay:number;lastDay:number;status:ArchiveStatus;captureMethod:string;observedTraits:number[];records:ArchiveRecord[];maxStress:number;maxMemory:number;protocolAttempts?:ProtocolAttempt[]};
 export type ArchiveGift='tracking'|'power'|'serum';
 export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;processedKeys:string[];dispatches:number;rewardPolicyVersion?:number;};
-const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',wolf:'WF',crow:'CR',otter:'OT',lynx:'LX',axolotl:'AX',moth:'MT',mutant:'MX',chimera:'CH'};
+const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',wolf:'WF',crow:'CR',otter:'OT',lynx:'LX',axolotl:'AX',moth:'MT',mutant:'MX',chimera:'CH',specter:'SP'};
 export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0,rewardPolicyVersion:2});
 export function archiveOf(s:V10):ArchiveState{return s.archive??emptyArchive();}
 function updateStatus(s:V10,a:AnimalState):ArchiveStatus{

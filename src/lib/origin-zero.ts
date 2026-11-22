@@ -109,7 +109,7 @@ export function restoreOriginPhotos(s:V10,answer?:number):V10{
  return report(n,'HIDDEN PHOTO · 원본 복원',`${String(start+1).padStart(2,'0')}~${String(state.photos).padStart(2,'0')}번 복원: ${titles}. ${state.photos===12?'제000호 관리자의 신원과 마지막 연구를 확인했다.':'손상된 사진의 다음 구획을 해독할 수 있다.'}`);
 }
 export const RECALL_CONTEXT:Partial<Record<AnimalId,string>>={
- rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'CCTV를 이용해 오래된 이동 경로 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록'
+ rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'창고의 보급 동선과 물자 배치 기억 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록',specter:'빛이 사라진 뒤 남는 잔향과 정체성 공백 기록'
 };
 export type RecallCandidate={key:string;id:AnimalId;source:'live'|'hq'|'archive'|'escaped';label:string};
 export function recallCandidates(s:V10):RecallCandidate[]{

@@ -2,7 +2,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 const art=require('../src/lib/character-art.ts'),{beginGame}=require('../src/lib/game-v10.ts');
 const s=beginGame('medic','generator');s.crew.members=[{id:'rabbit',mind:20}];s.mind=25;s.eve=30;
-for(const id of ['protagonist','eve','rabbit'])assert.equal(art.characterMood(s,id,'고마워요','resolve'),'critical','danger takes precedence over reassuring line');
+for(const id of ['protagonist','rabbit'])assert.equal(art.characterMood(s,id,'고마워요','resolve'),'critical','danger takes precedence over reassuring line');
+assert.equal(art.characterMood(s,'eve','위험','critical'),'neutral');
+s.flags.humanTruth=true;assert.equal(art.characterMood(s,'eve'),'critical');
+assert.equal(art.characterMood(undefined,'eve','위험'),'neutral');
 assert.equal(art.characterMood(undefined,'protagonist'),'neutral');
 s.mind=80;s.eve=80;s.originZero.photos=12;assert.equal(art.characterMood(s,'eve'),'resolve');
 assert.equal(art.characterMood(s,'protagonist','제 손이 이상해요'),'critical');

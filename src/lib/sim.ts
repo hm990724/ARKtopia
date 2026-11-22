@@ -1,4 +1,4 @@
-export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera';
+export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera'|'specter';
 export type AnimalState={specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;tutorialProtected?:boolean;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
 export type Start='medical'|'greenhouse'|'station'|'observatory'|'generator'|'depot';
@@ -8,8 +8,8 @@ export type StartBenefits={huntCharges:number};
 export type State={version:9;day:number;ap:number;origin:Origin;start:Start;startBenefits?:StartBenefits;hp:number;stamina:number;mind:number;radiation:number;eve:number;power:number;credits:number;food:number;medicine:number;parts:number;knowledge:number;trust:number;animals:AnimalState[];rooms:number;flags:Flags;logs:EventRecord[];phase:'day'|'night'|'finale'|'ending';ending:string;scene:'gate'|'sanctuary'|'laboratory'|'wasteland'|'dawn';pending:AnimalId|null;pendingReport:string;daysWithoutFood:number;raidCount:number;eventRisk:number;shield:number;lastEvent:string;lifeSaved:number;extractions:number;decisions:{title:string;answer:string}[]};
 export const specs:{id:AnimalId;name:string;former:string;trait:string;site:string;unlock:number}[]=[
 {id:'rabbit',name:'흰 토끼',former:'미상의 의료 기록',trait:'다친 개체를 먼저 살핀다',site:'greenhouse',unlock:0},
-{id:'fox',name:'붉은 여우',former:'출입 통제 기록',trait:'잠긴 문을 기억한다',site:'station',unlock:0},
-{id:'deer',name:'밤사슴',former:'보존 계획 기록',trait:'낡은 명찰을 피해 다닌다',site:'observatory',unlock:1},
+{id:'fox',name:'붉은 여우',former:'물류·보급 기록',trait:'창고와 물자 배치를 기억한다',site:'station',unlock:0},
+{id:'deer',name:'밤사슴',former:'기록 보존 계획',trait:'흩어진 기록을 같은 순서로 정리한다',site:'observatory',unlock:1},
 {id:'owl',name:'흰 올빼미',former:'수학 연구 기록',trait:'바닥에 도형을 그린다',site:'observatory',unlock:2},
 {id:'wolf',name:'회색 늑대',former:'외부 경비 기록',trait:'함정 앞에서 움직이지 않는다',site:'station',unlock:3},
 {id:'crow',name:'까마귀',former:'악보 조각',trait:'아직 없는 멜로디를 흥얼거린다',site:'greenhouse',unlock:4},
@@ -18,6 +18,7 @@ export const specs:{id:AnimalId;name:string;former:string;trait:string;site:stri
 {id:'axolotl',name:'유리 아홀로틀',former:'신체 수복 기록',trait:'센서 손상 부위를 진단한다',site:'medical',unlock:9},
 {id:'moth',name:'밤나방',former:'빛 감지 기록',trait:'낡은 신호를 따라간다',site:'observatory',unlock:11},
 {id:'mutant',name:'복합체 07',former:'분산된 인간의 언어 기록',trait:'하나의 입에서 서로 다른 목소리가 섞인다',site:'medical',unlock:17},
+{id:'specter',name:'백색 잔향',former:'신원 미상 · 복구되지 않은 기록',trait:'빛이 사라진 자리에 잔향을 남긴다',site:'medical',unlock:14},
 {id:'chimera',name:'접합체 미라',former:'폐기된 접합 연구의 잔여 기록',trait:'서로 다른 동물의 반응이 충돌한다',site:'medical',unlock:20}];
 // Four selectable memory fragments. These are memories, not proof of humanity.
 export const origins:{id:Origin;title:string;desc:string;perk:string}[]=[
@@ -92,6 +93,7 @@ export const SPECIES_CARE:Record<AnimalId,{hunger:number;fragility:number;contag
  axolotl:{hunger:10,fragility:1.5,contagion:1.7,note:'수질·오염에 매우 취약'},
  moth:{hunger:12,fragility:1.4,contagion:.9,note:'조명 변화와 체력 저하에 취약'},
  mutant:{hunger:24,fragility:1.2,contagion:1.5,note:'변이로 인한 불안정과 급격한 소모'},
+ specter:{hunger:12,fragility:1.2,contagion:1.1,note:'백색 잔향 · 갑작스러운 자극에 취약'},
  chimera:{hunger:25,fragility:1.3,contagion:1.6,note:'복합 신경계 · 관리 난이도 높음'}
 };
 export function nightlyAnimalCondition(a:AnimalState,fed:boolean,facility:number,externalInfection:number){

@@ -113,7 +113,10 @@ test('first expedition tutorial reaches a durable rescued rabbit without hidden 
  await page.getByRole('button',{name:'EVE의 공명 연구 안내 듣기'}).click();
  await page.getByRole('button',{name:'공명 연구',exact:true}).click();
  await page.locator('[data-tour=research-target]').click();
- for(let i=0;i<3;i++)await page.locator('.protocol-choices button').first().click();
+ for(let i=0;i<3;i++){
+  await page.locator('.protocol-choices button:not([disabled])').first().click();
+  await page.getByRole('button',{name:'반응 기록 확정 · 다음 단계'}).click();
+ }
  await expect.poll(async()=> (await state(page)).tutorialStep).toBe(6);
  await page.addLocatorHandler(page.locator('.result-v10'),()=>page.locator('.result-v10 button').last().click(),{noWaitAfter:true});
  await page.getByRole('button',{name:'본부 통신',exact:true}).click();

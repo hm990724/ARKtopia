@@ -1,0 +1,12 @@
+﻿'use client';
+import {useEffect,useState} from 'react';
+import type {V10} from '@/lib/game-v10';
+import {combatBlock,combatIntent,type CombatAction,baseUpgrades,upgradeLevel,upgradeBlock,upgradeCost,type UpgradeId} from '@/lib/field-combat';
+import RangerSprite from './RangerSprite';
+export function CombatPanel({state,onAction}:{state:V10;onAction:(a:CombatAction)=>void}){
+ const b=state.field?.combat;if(!b)return null;
+ return <section className="v74-combat" role="region" aria-label="현장 오염 전투"><h3>{b.enemy==='slime'?'오염 점액체':'신경 잔향 덩어리'} · 대응 {b.round}/6</h3><div className="v74-combat-stage" key={b.round}><RangerSprite direction="right"/><img className="v74-enemy" src={`/assets/field/enemy_${b.enemy}_v74.png`} alt={b.enemy==='slime'?'오염 점액체':'신경 잔향 덩어리'}/></div><label>오염 핵 내구 {b.hp}/{b.maxHp}<meter min={0} max={b.maxHp} value={b.hp}/></label><p className="v74-telegraph">다음 행동: {combatIntent[b.intent]} {b.stagger?'반격 준비 완료':''}</p><p>방호 {state.run?.integrity}% · 전력 {state.power}% · 모든 대응 ST 2 · 동물 구조와 별개의 오염 제거</p><div className="v74-combat-actions">{([['strike','제압봉 타격'],['guard','방어 · 반격 준비'],['pulse','EVE 펄스 · 전력 3'],['support','동행 지원 · 정신 3'],['retreat','안전 우회 · 전리품 포기']] as [CombatAction,string][]).map(([a,label])=><button key={a} disabled={!!combatBlock(state,a)} title={combatBlock(state,a)??label} onClick={()=>onAction(a)}>{label}</button>)}</div><div role="status">{b.log.map((line,i)=><p key={i}>{line}</p>)}</div></section>;
+}
+export function BaseUpgrades({state,onUpgrade}:{state:V10;onUpgrade:(id:UpgradeId)=>void}){return <section aria-label="기지 단계 강화"><h3>회수한 자재로 기지 강화</h3><p>현장 고철 → 시설 강화 → 다음 탐사와 야간 생존 지원. 최대 3단계, AP 소모 없음.</p><div className="v74-upgrades">{(Object.keys(baseUpgrades) as UpgradeId[]).map(id=>{const r=baseUpgrades[id],c=upgradeCost(state,id),block=upgradeBlock(state,id);return <article key={id}><h4>{r.name} · {upgradeLevel(state,id)}/3</h4><p>{r.effect}</p><p>고철 {c.scrap} · 부품 {c.parts} · 전력 {c.power}</p><button disabled={!!block} onClick={()=>onUpgrade(id)}>{block??'다음 단계 강화'}</button></article>})}</div></section>}
+/** The choice shows its reaction before proceeding; keyboard and reduced-motion users can continue explicitly. */
+export function ReactionStage({src,label,responding}:{src:string;label:string;responding:boolean}){return <div className={'v74-reaction-stage'+(responding?' is-responding':'')} aria-label="개체 반응 관찰"><img src={src} alt="관찰 중인 개체"/><i aria-hidden="true"/><span role="status">{label}</span></div>}

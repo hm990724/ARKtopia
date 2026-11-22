@@ -1,0 +1,261 @@
+﻿[
+    {
+        "id":  "m00",
+        "dest":  "animals/m00_normal_v74.png",
+        "refs":  [
+                     "animals/m00_normal.png",
+                     "animals/otter_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Edit first cat into an unmistakably pixel-art game sprite. Second reference gives pixel density and shaded cluster treatment ONLY. Keep ordinary black domestic cat, natural sitting anatomy, amber eyes, one tiny nick in its RIGHT ear (viewer\u0027s left), a SINGLE tiny white chest tuft, no glow or fantasy anatomy. Coarse crisp pixel clusters with a limited dark plum/charcoal palette, not photorealistic hair. Square canvas with safe margins, transparent background, no objects or letters.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/m00_normal_v74.png"
+    },
+    {
+        "id":  "lynx_uncanny",
+        "dest":  "animals/lynx_uncanny_v74.png",
+        "refs":  [
+                     "animals/otter_uncanny.png",
+                     "animals/rabbit_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Professional pixel art animal sprite matching reference palette (ivory, dusty pink, mauve, plum shadows), deliberate crisp visible pixel clusters, no painterly airbrush, single complete animal on genuinely transparent background. Square canvas, 8% clear margin, no cropping. No words, frame or floor. Create natural lynx, pointed black ear tufts, SHORT bobtail, broad furry paws, spotted pale mauve coat, alert quiet gaze. Uncanny stage: 90 percent natural animal, restrained unease only. Absolutely no clothing, collars, necklaces, glasses, bags or equipment. Do not copy rabbit ears or medical motifs.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/lynx_uncanny_v74.png"
+    },
+    {
+        "id":  "axolotl_uncanny",
+        "dest":  "animals/axolotl_uncanny_v74.png",
+        "refs":  [
+                     "animals/otter_uncanny.png",
+                     "animals/rabbit_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Professional pixel art animal sprite matching reference palette (ivory, dusty pink, mauve, plum shadows), deliberate crisp visible pixel clusters, no painterly airbrush, single complete animal on genuinely transparent background. Square canvas, 8% clear margin, no cropping. No words, frame or floor. Create natural axolotl, external branching gills, wide head, four small limbs, broad aquatic tail, tiny irregular pale memory-like skin pattern, no clothing. Uncanny stage: 90 percent natural animal, restrained unease only. Absolutely no clothing, collars, necklaces, glasses, bags or equipment. Do not copy rabbit ears or medical motifs.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/axolotl_uncanny_v74.png"
+    },
+    {
+        "id":  "chimera_uncanny",
+        "dest":  "animals/chimera_uncanny_v74.png",
+        "refs":  [
+                     "animals/otter_uncanny.png",
+                     "animals/rabbit_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Professional pixel art animal sprite matching reference palette (ivory, dusty pink, mauve, plum shadows), deliberate crisp visible pixel clusters, no painterly airbrush, single complete animal on genuinely transparent background. Square canvas, 8% clear margin, no cropping. No words, frame or floor. Create one subtle composite quadruped, anatomically coherent pale deer-like body and feline posture, short curved horn ridges and broad paws, one head and four legs, no costume, no stitched-together collage. Uncanny stage: 90 percent natural animal, restrained unease only. Absolutely no clothing, collars, necklaces, glasses, bags or equipment. Do not copy rabbit ears or medical motifs.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/chimera_uncanny_v74.png"
+    },
+    {
+        "id":  "specter_uncanny",
+        "dest":  "animals/specter_uncanny_v74.png",
+        "refs":  [
+                     "animals/otter_uncanny.png",
+                     "animals/rabbit_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Professional pixel art animal sprite matching reference palette (ivory, dusty pink, mauve, plum shadows), deliberate crisp visible pixel clusters, no painterly airbrush, single complete animal on genuinely transparent background. Square canvas, 8% clear margin, no cropping. No words, frame or floor. Create one unknown white animal, slender mustelid-like quadruped with long pale fur and soft featherlike tail, nearly blank dark eyes, memory-absence expressed through missing pigment and hazy fur tips, recognizably a living creature, no sheets or ghost costumes. Uncanny stage: 90 percent natural animal, restrained unease only. Absolutely no clothing, collars, necklaces, glasses, bags or equipment. Do not copy rabbit ears or medical motifs.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/specter_uncanny_v74.png"
+    },
+    {
+        "id":  "hero_neutral",
+        "dest":  "characters/protagonist_neutral_v74_source.png",
+        "refs":  [
+                     "characters/protagonist_neutral.webp"
+                 ],
+        "alpha":  false,
+        "prompt":  "Identity-preserving redesign for game dialogue portrait. Same young ADULT male with violet tousled short hair, forehead goggles, magenta cat headphones, cheek bandage and dark field jacket. Fix proportions: natural neck length, head not oversized, believable shoulder width, calm centered upright three-quarter pose rather than extreme tilted head. Waist-up framing, head including hair occupies 33% of image height, both shoulders visible; eyes anatomically aligned with dark pupils looking at viewer. Neutral closed-mouth expression. Precise pixel illustration consistent with original neon magenta/plum palette. 3:4 portrait canvas, no decorative border, no second figure, no repeated face, no translucent duplicate layers. Dark unobtrusive facility background. Keep exact identity and costume, no changes of age or sex.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/characters/protagonist_neutral_v74_source.png"
+    },
+    {
+        "id":  "wolf_termination",
+        "dest":  "cinematics/staff-terminations/wolf/scene_v74.png",
+        "refs":  [
+                     "staff/wolf/portrait.webp",
+                     "cinematics/staff-terminations/deer/scene.webp"
+                 ],
+        "alpha":  false,
+        "prompt":  "Create a 16:9 dramatic game cinematic. First reference is the WOLF security officer identity: adult athletic woman, dark violet high ponytail, black combat jacket/vest and gloves, magenta eyes. Second is composition, detailed fine-line anime rendering and muted red emergency-light/plum color reference only. One security officer at a heavy containment door, desperately bracing it closed with one shoulder while her trembling free hand gestures for others to stay back. The face remains unmistakably the first character. Subtle wolf ears, fur at wrist and involuntary clawed fingers indicate unstable neural memory, no elaborate monster transformation. Exhaustion and determined sadness, her final protective act. Beautiful polished cinematic illustration, not cartoon icon, no duplicate people, no fox tail, no deer horns, no medical costume, no gore, no exposed wounds. Cinematic red low light, detailed dark corridor, 16:9 full scene with space at lower edge for separate UI captions. No embedded text.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/cinematics/staff-terminations/wolf/scene_v74.png"
+    },
+    {
+        "id":  "crow_mutant",
+        "dest":  "animals/crow_mutant_v74.png",
+        "refs":  [
+                     "animals/crow_uncanny.png",
+                     "animals/otter_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Professional pixel art animal sprite matching reference palette (ivory, dusty pink, mauve, plum shadows), deliberate crisp visible pixel clusters, no painterly airbrush, single complete animal on genuinely transparent background. Square canvas, 8% clear margin, no cropping. No words, frame or floor. One mutated crow derived from first reference. Preserve black/mauve feathered crow silhouette and beak. Composer memory expressed through FOUR hollow resonating throat chambers, feather barbs resembling strings and elegant bent rib-like acoustic structures between wings. Slightly grotesque but not overloaded, no books, no paper sheet music, no written notes, no mathematical observatory, no bags. One body, two taloned legs, recognizable crow. Medium transformation, not a different creature.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/crow_mutant_v74.png"
+    },
+    {
+        "id":  "world_ground",
+        "dest":  "field/world_ground_v74.png",
+        "refs":  [
+                     "field/ground.png"
+                 ],
+        "alpha":  false,
+        "prompt":  "Top-down orthographic dark abandoned zoo ground panorama for a pixel-art exploration game. Continuous cracked dusty path crossing grass, moss and thin puddles, subtle debris and scattered stones. Natural connected ground, no grid, no square tile boundaries, no characters, no UI, no words. No impassable walls or buildings because gameplay obstacles are drawn separately. Rich hand-pixelated 2D RPG pixel clusters, desaturated deep green, charcoal, faded umber, subtle lavender shadows. The whole image is evenly dimly lit; player flashlight is rendered in game. Landscape 3:2 composition, suitable as world floor under sprites, moderately detailed and readable.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/field/world_ground_v74.png"
+    },
+    {
+        "id":  "lynx_mutant",
+        "dest":  "animals/lynx_mutant_v74.png",
+        "refs":  [
+                     "animals/lynx_uncanny_v74.png",
+                     "animals/rabbit_mutant.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Create a mutated variant of the FIRST supplied animal, keeping its species recognizable and palette consistent. SECOND is style reference only: crisp detailed pixel art game creature, ivory dusty rose dark plum, readable jagged clusters. Keep tufted pointed ears, spotted fur and SHORT bobtail of lynx, a hunched asymmetric muscular shoulder and unsettling elongated forepaws, split ear tufts like jagged witness marks. No wings, no extra heads, no clothing. Full body centered with 8 percent safe margin on square transparent canvas. Mild organic horror, no gore, no text, no ground backdrop. Match pixel density to first reference.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/lynx_mutant_v74.png"
+    },
+    {
+        "id":  "axolotl_mutant",
+        "dest":  "animals/axolotl_mutant_v74.png",
+        "refs":  [
+                     "animals/axolotl_uncanny_v74.png",
+                     "animals/rabbit_mutant.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Create a mutated variant of the FIRST supplied animal, keeping its species recognizable and palette consistent. SECOND is style reference only: crisp detailed pixel art game creature, ivory dusty rose dark plum, readable jagged clusters. Keep external feathery gills and aquatic fin tail, translucent branching regeneration buds and asymmetric gill fans like overgrown coral, unsettling pale segmented regrowth. Still one unmistakable axolotl with four legs, no fur, no wings. Full body centered with 8 percent safe margin on square transparent canvas. Mild organic horror, no gore, no text, no ground backdrop. Match pixel density to first reference.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/axolotl_mutant_v74.png"
+    },
+    {
+        "id":  "chimera_mutant",
+        "dest":  "animals/chimera_mutant_v74.png",
+        "refs":  [
+                     "animals/chimera_uncanny_v74.png",
+                     "animals/rabbit_mutant.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Create a mutated variant of the FIRST supplied animal, keeping its species recognizable and palette consistent. SECOND is style reference only: crisp detailed pixel art game creature, ivory dusty rose dark plum, readable jagged clusters. Keep one coherent quadruped silhouette and small curved horn ridges. Asymmetric rib contours under skin and two mismatched forelimb growth patterns suggest conflicting body memories, slightly grotesque. No pasted animal heads, no wings. Full body centered with 8 percent safe margin on square transparent canvas. Mild organic horror, no gore, no text, no ground backdrop. Match pixel density to first reference.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/chimera_mutant_v74.png"
+    },
+    {
+        "id":  "moth_mutant",
+        "dest":  "animals/moth_mutant_v74.png",
+        "refs":  [
+                     "animals/moth_uncanny.png",
+                     "animals/rabbit_mutant.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Create a mutated variant of the FIRST supplied animal, keeping its species recognizable and palette consistent. SECOND is style reference only: crisp detailed pixel art game creature, ivory dusty rose dark plum, readable jagged clusters. Keep moth wing silhouette, feathery antennae and insect abdomen. Make wing eye patterns look like pale blind sockets, torn membranes and branching organic filaments, antennae twisting around faint luminous organ. No furred mammal face, no clothing. Full body centered with 8 percent safe margin on square transparent canvas. Mild organic horror, no gore, no text, no ground backdrop. Match pixel density to first reference.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/moth_mutant_v74.png"
+    },
+    {
+        "id":  "specter_mutant",
+        "dest":  "animals/specter_mutant_v74.png",
+        "refs":  [
+                     "animals/specter_uncanny_v74.png",
+                     "animals/rabbit_mutant.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Create a mutated variant of the FIRST supplied animal, keeping its species recognizable and palette consistent. SECOND is style reference only: crisp detailed pixel art game creature, ivory dusty rose dark plum, readable jagged clusters. Keep white long-furred quadruped silhouette; turn outer fur into fragmented white afterimages with a hollow translucent rib shadow and faintly misaligned duplicate limb echoes. One creature, uncanny loss of identity, no ordinary ghost sheet, no wings. Full body centered with 8 percent safe margin on square transparent canvas. Mild organic horror, no gore, no text, no ground backdrop. Match pixel density to first reference.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/animals/specter_mutant_v74.png"
+    },
+    {
+        "id":  "hero_anxious",
+        "dest":  "characters/protagonist_anxious_v74_source.png",
+        "refs":  [
+                     "characters/protagonist_neutral_v74_source.png"
+                 ],
+        "alpha":  false,
+        "prompt":  "Precise facial expression edit of supplied portrait. Change ONLY expression to slightly drawn brows, uneasy eyes, closed lips, one small sweat mark. Preserve exact framing 3:4, head size and position, hair silhouette, eyes alignment, nose, face shape, shoulders, jacket, goggles, headphones, violet-magenta colors and background. Same adult male identity, no borders, no additional portrait, no camera zoom. Pixel-art treatment identical to reference. Expression variant: anxious.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/characters/protagonist_anxious_v74_source.png"
+    },
+    {
+        "id":  "hero_critical",
+        "dest":  "characters/protagonist_critical_v74_source.png",
+        "refs":  [
+                     "characters/protagonist_neutral_v74_source.png"
+                 ],
+        "alpha":  false,
+        "prompt":  "Precise facial expression edit of supplied portrait. Change ONLY expression to exhausted half-lidded eyes with unfocused gaze, tense brows and slightly parted mouth, no injury. Preserve exact framing 3:4, head size and position, hair silhouette, eyes alignment, nose, face shape, shoulders, jacket, goggles, headphones, violet-magenta colors and background. Same adult male identity, no borders, no additional portrait, no camera zoom. Pixel-art treatment identical to reference. Expression variant: critical.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/characters/protagonist_critical_v74_source.png"
+    },
+    {
+        "id":  "hero_resolve",
+        "dest":  "characters/protagonist_resolve_v74_source.png",
+        "refs":  [
+                     "characters/protagonist_neutral_v74_source.png"
+                 ],
+        "alpha":  false,
+        "prompt":  "Precise facial expression edit of supplied portrait. Change ONLY expression to steady focused eyes and calm determined brows, mouth closed. Preserve exact framing 3:4, head size and position, hair silhouette, eyes alignment, nose, face shape, shoulders, jacket, goggles, headphones, violet-magenta colors and background. Same adult male identity, no borders, no additional portrait, no camera zoom. Pixel-art treatment identical to reference. Expression variant: resolve.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/characters/protagonist_resolve_v74_source.png"
+    },
+    {
+        "id":  "enemy_slime",
+        "dest":  "field/enemy_slime_v74.png",
+        "refs":  [
+                     "animals/otter_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Pixel-art game enemy sprite, reference only for pixel cluster rendering. An animated fictional contamination puddle: squat dark plum viscous mound with turquoise bioluminescent core and tiny broken ceramic shards suspended within. NOT an animal, no face, no clothing. Coarse crisp colored pixels, limited dusty violet and blue-green palette with pale core highlights. One enemy centered full body square transparent background, no letters or frame.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/field/enemy_slime_v74.png"
+    },
+    {
+        "id":  "enemy_echo",
+        "dest":  "field/enemy_echo_v74.png",
+        "refs":  [
+                     "animals/otter_uncanny.png"
+                 ],
+        "alpha":  true,
+        "prompt":  "Pixel-art game enemy sprite, reference only for pixel cluster rendering. A fictional abandoned laboratory residue: floating cluster of broken violet glass and white vapor ribbons around a cyan unstable core, irregular low silhouette. NOT human or animal, no face. Coarse crisp colored pixels, limited dusty violet and blue-green palette with pale core highlights. One enemy centered full body square transparent background, no letters or frame.",
+        "tool":  "builtin-imagegen",
+        "status":  "generated",
+        "source":  "v74 image generation session; source cache is not part of the project.",
+        "file":  "public/assets/field/enemy_echo_v74.png"
+    }
+]

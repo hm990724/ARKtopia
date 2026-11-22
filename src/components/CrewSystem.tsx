@@ -143,7 +143,7 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  return <div className="v49-collapse-shade" role="dialog" aria-modal="true" aria-label={`${profile.post} 인격 신호 소실`}>
   <div className="v49-collapse-window">
    <div className="v49-collapse-image">
-    {!missing&&<img src={`/assets/cinematics/staff-terminations/${id}/scene.webp`} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
+    {!missing&&<img src={id==='wolf'?'/assets/cinematics/staff-terminations/wolf/scene_v74.png':`/assets/cinematics/staff-terminations/${id}/scene.webp`} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
     <div className="v49-collapse-glitch" aria-hidden="true"/>
     <div className="v49-collapse-diagnostics"><small>STAFF / NEURAL LINK FAILURE</small><strong>{profile.post}</strong><span>MENTAL RESILIENCE: 0% · IRREVERSIBLE</span></div>
    </div>

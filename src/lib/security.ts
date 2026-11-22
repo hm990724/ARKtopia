@@ -23,6 +23,7 @@ export const securityPatterns:Record<AnimalId,{behavior:string;escape:string;voi
  axolotl:{behavior:'자기 몸의 상처를 검사하듯 유리벽을 더듬습니다.',escape:'연구 수조의 배수 밸브가 열렸습니다.',voice:'재생 속도가… 이럴 리 없는데…'},
  moth:{behavior:'점멸하는 통신 LED만 따라 움직입니다.',escape:'통신 케이블에 비늘 가루가 묻어 있습니다.',voice:'여보세요… 엄마, 들려…?'},
  mutant:{behavior:'서로 다른 여러 목소리에 반응하며 격리벽을 긁습니다.',escape:'출입구 세 곳의 센서가 동시에 작동했습니다.',voice:'우… 우리는… 하나가 아니야…'},
+ specter:{behavior:'조명이 꺼진 자리에서 백색 잔향이 늦게 사라집니다.',escape:'빈 복도에 한 박자 늦은 그림자가 남습니다.',voice:'……여기에…'},
  chimera:{behavior:'서로 반대 방향으로 움직이려는 행동을 반복합니다.',escape:'경비 루트에 서로 다른 발자국이 겹칩니다.',voice:'멈춰… 아니, 계속해…'}
 };
 const clone=(s:V10):V10=>structuredClone(s);

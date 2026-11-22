@@ -1,3 +1,4 @@
+import type {FieldCombat} from './field-combat';
 import {newHunt,normalizeHunt,type HuntState} from './hidden-hunt';
 /** ECHO WARD v31: deterministic, saveable field exploration and tactical animal behaviour.
  * Tiles are indices in a 7×5 investigation map or a 6×6 capture board.
@@ -12,7 +13,7 @@ export const FIELD_EXIT=20;
 export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|'exit';
 export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
-export type FieldState={tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={combat?:FieldCombat|null;discovered?:number[];tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -24,7 +25,14 @@ export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({g
 export const fieldWidth=(f:FieldState)=>f.width??FIELD_COLUMNS;
 export const fieldHeight=(f:FieldState)=>f.height??FIELD_ROWS;
 export const adjacentField=(a:number,b:number,width=FIELD_COLUMNS,size=FIELD_COLUMNS*FIELD_ROWS)=>a>=0&&a<size&&b>=0&&b<size&&distance(a,b,width)===1;
-export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||distance(f.position,i,fieldWidth(f))<=range;
+export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{
+ const width=fieldWidth(f);if(distance(f.position,i,width)>range)return false;
+ let x=f.position%width,y=Math.floor(f.position/width);const tx=i%width,ty=Math.floor(i/width),dx=Math.abs(tx-x),dy=-Math.abs(ty-y),sx=x<tx?1:-1,sy=y<ty?1:-1;let err=dx+dy;
+ while(x!==tx||y!==ty){const twice=2*err;if(twice>=dy){err+=dy;x+=sx}if(twice<=dx){err+=dx;y+=sy}if(x===tx&&y===ty)return true;if(f.tiles[y*width+x]==='wall')return false;}return true;
+}
+export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||(f.discovered??[]).includes(i)||fieldLineOfSight(f,i,range);
+export function revealField(f:FieldState,range:number){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>fieldLineOfSight(f,i,range)?[i]:[])])];}
+
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
 export function createField(day:number,region:RegionId,sortie=0):FieldState {
  const {width,height}=fieldDimensions(region),size=width*height;
@@ -52,14 +60,16 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  for(let r=Math.min(startingRow,exitRow);r<=Math.max(startingRow,exitRow);r++)tiles[r*width+width-1]='empty';
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++)tiles[r*width+wildlifeCol]='empty';
  tiles[start]='empty';tiles[exit]='exit';tiles[wildlifeIndex]='animal';
- if(start+1<size&&start+1!==wildlifeIndex&&start+1!==exit)tiles[start+1]='track';
+ // A connected footprint corridor leads to the animal rather than arbitrary decoy grass.
+ for(let c=1;c<wildlifeCol;c++)tiles[startingRow*width+c]='track';
+ for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
  return {tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
 export const captureBehaviours:Record<AnimalId,Behaviour>={
   rabbit:{name:'연속 도약',instinct:'큰 소리와 빛을 피하고 먹이 주변에서 멈춥니다.',memory:'의료기기 소리에 멈칫하는 반응이 있습니다.',favours:['bait'],avoids:['sound','light'],speed:2,patience:8},
-  fox:{name:'우회 경로 분석',instinct:'케이지를 알아보고 바로 들어가지 않습니다. 유인 신호를 측면에 배치하십시오.',memory:'통제실의 소리에 반응합니다.',favours:['bait','sound'],avoids:['light'],speed:1,patience:10},
+  fox:{name:'우회 경로 분석',instinct:'케이지를 알아보고 바로 들어가지 않습니다. 유인 신호를 측면에 배치하십시오.',memory:'창고 선반과 상자 배치에 반응합니다.',favours:['bait','sound'],avoids:['light'],speed:1,patience:10},
   deer:{name:'시야 우선 도주',instinct:'밝은 빛을 피해 넓은 경로로 이동합니다. 소리도 경계합니다.',memory:'익숙한 먹이 구역에서 진정합니다.',favours:['bait'],avoids:['light','sound'],speed:2,patience:7},
   owl:{name:'어둠을 따라 이동',instinct:'소음을 피하고 빛이 적은 방향을 고릅니다.',memory:'반복적인 규칙 신호에 관심을 보입니다.',favours:['bait'],avoids:['sound','light'],speed:1,patience:9},
   wolf:{name:'경계선 역추적',instinct:'소리의 방향으로 접근하지만 이송 장치에 바로 들어가지는 않습니다.',memory:'경비 신호에 훈련된 반응을 보입니다.',favours:['sound'],avoids:['light'],speed:1,patience:9},
@@ -69,6 +79,7 @@ export const captureBehaviours:Record<AnimalId,Behaviour>={
   axolotl:{name:'습한 구역 고수',instinct:'멀리 이동하지 않고 먹이 신호에 천천히 반응합니다.',memory:'특정 조명 패턴에 신경 반응을 보입니다.',favours:['bait','light'],avoids:['sound'],speed:1,patience:11},
   moth:{name:'광원 추적',instinct:'빛을 향해 빠르게 움직입니다. 먹이 신호를 무시합니다.',memory:'송신기 조명의 반복에 반응합니다.',favours:['light'],avoids:['sound'],speed:2,patience:7},
   mutant:{name:'신경 충돌',instinct:'반응이 예측 불가능합니다. 같은 신호를 계속 사용하면 도주합니다.',memory:'빛과 소리의 선호가 턴마다 역전됩니다.',favours:['sound','light'],avoids:[],speed:2,patience:6},
+  specter:{name:'잔향 따라 이동',instinct:'일정한 약한 빛에 접근하며 큰 소리를 피합니다.',memory:'기억의 주인은 아직 확인되지 않았습니다.',favours:['light'],avoids:['sound'],speed:1,patience:10},
   chimera:{name:'두 기억의 간섭',instinct:'인접한 두 신호가 충돌하면 방향을 바꿉니다.',memory:'유인이 서로 다르면 혼란이 증가합니다.',favours:['bait','sound'],avoids:['light'],speed:2,patience:7}
 };
 

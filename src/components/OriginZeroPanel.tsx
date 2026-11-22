@@ -20,7 +20,7 @@ export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:
     <p>흔적에는 오염이나 변이의 징후가 없다. 다른 동물과 달리 평범하게 걷는 검은 고양이다.</p>
     {d?.cat==='unknown'||!d?<button className="oz-action" disabled={s.ap<1} onClick={()=>update(initiateOriginTrack(s))}>외곽 영상 추적 시작 · 행동력 1</button>:null}
     {d?.cat==='traced'&&<><p className="oz-signal">SIGNAL {d.trackProgress+1} / 3 · {catTrackFrames[d.trackProgress].hint}</p><div className="oz-trace-grid">{catTrackFrames[d.trackProgress].frames.map((frame,i)=><button key={frame} onClick={()=>update(pickOriginTrace(s,i))}><span>CAM 0{i+1}</span><b>{frame}</b></button>)}</div><small>잘못된 화면을 선택하면 위협이 증가하지만 흔적은 잃지 않는다.</small></>}
-    {d?.cat==='captured'&&<><div className="oz-cat-image" role="img" aria-label="변이 없는 평범한 검은 고양이"><img src="/assets/animals/m00_normal.png" alt="오른쪽 귀의 작은 흠집과 흰 가슴 털을 가진 검은 고양이"/><p>임시 격리 케이지 · 변이 없는 검은 고양이</p></div><button className="oz-action" disabled={s.ap<1||s.power<6} onClick={()=>update(analyzeOriginCat(s))}>표준 생체검사 · 행동력 1 · 전력 6%</button></>}
+    {d?.cat==='captured'&&<><div className="oz-cat-image" role="img" aria-label="변이 없는 평범한 검은 고양이"><img src="/assets/animals/m00_normal_v74.png" alt="오른쪽 귀의 작은 흠집과 흰 가슴 털을 가진 검은 고양이"/><p>임시 격리 케이지 · 변이 없는 검은 고양이</p></div><button className="oz-action" disabled={s.ap<1||s.power<6} onClick={()=>update(analyzeOriginCat(s))}>표준 생체검사 · 행동력 1 · 전력 6%</button></>}
    </section>;
  }
  if(mode==='research'){

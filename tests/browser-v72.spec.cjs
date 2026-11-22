@@ -7,14 +7,14 @@ async function skipStory(page){await page.addLocatorHandler(page.locator('.v44-s
 test('ranger uses changing walk frames during real movement, then returns to idle',async({page})=>{
  let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',[]);
  await skipStory(page);await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
- await expect(page.locator('.v72-ranger.is-idle')).toBeVisible();
+ await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
  await page.evaluate(()=>{window.walkFrames=[];window.walkTimer=setInterval(()=>{const el=document.querySelector('.v72-ranger.is-walking>span');if(el)window.walkFrames.push(getComputedStyle(el).backgroundPositionX)},20)});
  const before=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.position,KEY);
  await page.locator('.v62-route-walkable:not([disabled])').first().click();
  await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.position,KEY)).not.toBe(before);
  const frames=await page.evaluate(()=>{clearInterval(window.walkTimer);return [...new Set(window.walkFrames)]});expect(frames.length).toBeGreaterThanOrEqual(2);
  await expect(page.locator('.v72-ranger.is-walking')).toHaveCount(0);
- await expect(page.locator('.v72-ranger.is-idle')).toBeVisible();
+ await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
  await page.screenshot({path:'docs/qa-v71/v72-field-walk.png',fullPage:true});
 });
 test('critical medic uses her own critical portrait in roster and dialogue',async({page})=>{
