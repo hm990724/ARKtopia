@@ -28,7 +28,8 @@
 .v71-field .v61-sector-photo,.v71-field .v44-specimen-traits {display:none}
 .v71-field .v33-map-frame {padding:8px!important;background:#242a2b!important;border:1px solid #687d70}
 .v71-field.v33-expedition .v33-hidden-map {width:min(100%,max(368px,calc(100dvh - 420px)))!important;max-width:560px!important;gap:1px!important;aspect-ratio:1;background-size:280px!important;margin:8px auto!important;box-shadow:none!important}
-.v71-field.v33-expedition .v33-route-map.v57-field-map {width:100%!important;max-width:720px!important;background-size:280px!important;gap:1px!important;box-shadow:none!important;margin:8px auto!important}
+.v71-field.v33-expedition .v33-route-map.v57-field-map {width:min(100%,max(340px,calc(140dvh - 476px)))!important;max-width:720px!important;background-size:280px!important;gap:1px!important;box-shadow:none!important;margin:8px auto!important}
+.v71-field .v57-mini-overlay {display:none!important}
 .v71-field .v33-hidden-map .v33-land,.v71-field .v33-route-map .v33-route-cell {background:#273f2c22!important;border:1px solid #d7e6c211!important;box-shadow:none;isolation:isolate}
 .v71-field.v33-expedition .v33-route-map.v57-field-map::after {background:none}
 .v71-field .v33-route-map .v33-route-cell:disabled {opacity:1;filter:none}
@@ -117,3 +118,23 @@
 .v71-cctv-memory>img {width:70px;height:100px;object-fit:contain;image-rendering:pixelated}
 .v71-cctv-memory h3,.v71-cctv-memory p {margin:5px 0}.v71-cctv-memory small {color:#b6c5bf}
 .v71-cctv-memory button {min-height:44px;padding:6px 12px;color:#f3e4c9;border:1px solid #a99789;background:#393142}
+.v72-ranger {display:block;position:relative;width:140%;aspect-ratio:1;flex:none;transform:translateY(-13%);pointer-events:none}
+.v72-ranger>span {display:block;width:100%;height:100%;background-image:url('/assets/field/ranger_walk_v72.png');background-size:400% 400%;background-position:33.333333% var(--walk-row);background-repeat:no-repeat;image-rendering:pixelated;transform:scaleX(var(--walk-flip))}
+.v72-ranger.is-walking>span {animation:v72-step .44s steps(1,end) infinite}
+.v42-walker-path .v72-ranger {position:absolute;left:-20%;top:0}
+@keyframes v72-step {0%{background-position-x:0%}25%{background-position-x:33.333333%}50%{background-position-x:66.666667%}75%,100%{background-position-x:100%}}
+@media(prefers-reduced-motion:reduce){.v72-ranger.is-walking>span {animation:none!important}}
+.v72-scene-open {width:100%;display:block;padding:0;border:0;color:#e8daca;background:#151321;cursor:zoom-in}
+.v72-scene-open small {display:block;padding:5px}.v71-story-grid .v72-current-scene {image-rendering:auto}
+.v72-story-dialog {width:min(1100px,96vw);max-height:94dvh;padding:0;color:#eee4ec;background:#14121e;border:1px solid #a087a6}
+.v72-story-dialog::backdrop {background:#05040bed}
+.v72-story-dialog>img {display:block;width:100%;height:min(60dvh,620px);object-fit:contain;image-rendering:auto;background:#08070b}
+.v72-story-dialog>section {padding:14px 20px}.v72-story-dialog p {font-size:14px;line-height:1.8}
+.v72-story-dialog nav {display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.v72-story-dialog button {min-height:44px;padding:8px 14px;background:#3c2e47;color:#fff;border:1px solid #95849c}
+.v72-story-dialog button:disabled {opacity:.4}
+/* The portrait itself owns its color; state feedback must not tint the whole artwork. */
+.v44-story-eve-image img,.v53-staff-portrait img {filter:none!important;mix-blend-mode:normal!important}
+.v44-story-overlay {background:#090710f2!important;animation:none!important}
+.v44-story-scene {background:#171421!important;opacity:1!important;isolation:isolate}
+.v44-story-eve-image {background:#100d18!important}

@@ -1,0 +1,19 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),ts=require('typescript');
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
+const art=require('../src/lib/character-art.ts'),{beginGame}=require('../src/lib/game-v10.ts');
+const s=beginGame('medic','generator');s.crew.members=[{id:'rabbit',mind:20}];s.mind=25;s.eve=30;
+for(const id of ['protagonist','eve','rabbit'])assert.equal(art.characterMood(s,id,'고마워요','resolve'),'critical','danger takes precedence over reassuring line');
+assert.equal(art.characterMood(undefined,'protagonist'),'neutral');
+s.mind=80;s.eve=80;s.originZero.photos=12;assert.equal(art.characterMood(s,'eve'),'resolve');
+assert.equal(art.characterMood(s,'protagonist','제 손이 이상해요'),'critical');
+console.log('PASS portraits follow mental health, crisis dialogue and evidence without changing state');
+const before=JSON.stringify(s);art.characterMood(s,'eve');assert.equal(JSON.stringify(s),before);
+for(const id of ['protagonist','eve','rabbit','fox','wolf','deer'])for(const mood of ['neutral','anxious','critical','resolve'])assert.ok(fs.existsSync(path.join(__dirname,'../public',art.characterPortrait(id,mood))),`${id}/${mood}`);
+console.log('PASS all six characters and all dialogue moods resolve to real original or versioned images');
+assert.deepEqual([art.directionForMove(15,8,7),art.directionForMove(15,22,7),art.directionForMove(15,14,7),art.directionForMove(15,16,7)],['up','down','left','right']);
+assert.equal(art.WALK_ROW.left,art.WALK_ROW.right);
+const atlas=fs.readFileSync(path.join(__dirname,'../public/assets/field/ranger_walk_v72.png'));assert.equal(atlas[25],6,'RGBA atlas');assert.equal(atlas.readUInt32BE(16),atlas.readUInt32BE(20));
+console.log('PASS four-direction movement mapping and transparent square animation atlas');
+const rows=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/generated-assets-v72.json'),'utf8'));
+for(const r of rows){const b=fs.readFileSync(path.join(__dirname,'..',r.file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a',r.file)}
+console.log(`PASS ${rows.length} new art files present and PNG headers valid`);

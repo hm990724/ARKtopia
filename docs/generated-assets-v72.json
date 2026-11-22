@@ -1,0 +1,223 @@
+[
+  {
+    "key": "ranger_walk",
+    "file": "public/assets/field/ranger_walk_v72.png",
+    "refs": [
+      "field/ranger.png",
+      "characters/protagonist_neutral.webp"
+    ],
+    "transparent": true,
+    "prompt": "Use case: stylized-concept. Production game sprite animation sheet. Reference 1 is the exact character sprite and clothing to preserve, reference 2 identity only. Create a PERFECTLY ALIGNED 4 columns x 4 rows sprite sheet on true transparent background, square canvas. Exactly 16 separate full-body sprites, no overlaps, no borders, no labels. Each cell occupies exactly 25% canvas width and height; character centered within each cell, feet same baseline 88% cell height, 12% safe empty margin all around. SAME male ranger, same purple hair, magenta forehead goggles and headphones, ivory jacket dark trousers boots small lantern. Row1 four walking frames facing DOWN toward camera. Row2 four walking frames facing LEFT. Row3 four walking frames facing RIGHT. Row4 four walking frames facing UP away from camera. Columns are contact left foot forward, passing feet together, contact right foot forward, passing feet together. Legs and arms must change naturally, not four identical standing poses. Preserve scale and silhouette between all16. Chunky clean 16-bit pixel RPG art with square pixel edges, native sprite about40x56px enlarged nearest-neighbor. Transparent gaps, no shadows connecting cells. This is an actual game animation atlas, not a pose illustration.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-50476fe7-797d-4efe-8c1c-92e9f42886d5.png",
+    "status": "integrated"
+  },
+  {
+    "key": "protagonist_anxious",
+    "file": "public/assets/characters/protagonist_anxious_v72.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "prompt": "Edit the reference portrait for a game expression variant. CHANGE ONLY FACIAL EXPRESSION to alert concern: closed mouth, softly tense brows, worried attentive eyes; keep the EXACT SAME young man, face proportions, head tilt, crop, magenta-purple hair, forehead goggles, cheek bandage, headphone design, earrings, jacket, pose, cyberpunk background and pixel border. Crucially preserve original saturated magenta/cyan color palette, contrast and crisp fine pixel shading; NO sepia, no desaturation, no pastel watercolor or beige color cast. ONE human only, no extra faces/limbs, no text, no overlay image, portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-32b39113-a888-4669-9172-22bf5f4d0834.png",
+    "status": "integrated"
+  },
+  {
+    "key": "eve_anxious",
+    "file": "public/assets/characters/eve_anxious_v72.png",
+    "refs": [
+      "characters/eve_hologram.webp"
+    ],
+    "prompt": "Edit the reference portrait for a game expression variant. CHANGE ONLY FACIAL EXPRESSION to concerned empathy: slightly drawn brows, eyes attentive and worried, lips gently parted; keep EXACT SAME EVE face, silver-white braided hair, cyan eyes, futuristic ear ornament, ring halo, white cybernetic outfit, shoulder pose and crop, deep navy cyberpunk background, cyan pixel border. Preserve original bright CYAN/ICE BLUE and pale lavender palette and crisp fine pixel shading. NO warm beige/sepia/pastel recoloring. Single female hologram, no doubled face, no floating secondary head or body, no text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-abf0ea6b-d3ec-46c1-b023-804f40b26b36.png",
+    "status": "integrated"
+  },
+  {
+    "key": "protagonist_critical",
+    "file": "public/assets/characters/protagonist_critical_v72.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Edit ONLY the facial expression in this original game portrait into severe exhaustion and fear, young male manager, magenta goggles and headphones, purple hair, ivory jacket. Drooping brows, tense mouth, tired eyes, ONE subtle tear and faint sweat. NO gore, no facial injuries, no transformation, no animal ears. Preserve the exact face identity, hairstyle, clothes, pose, framing, background and pixel border. Preserve the ORIGINAL saturated magenta/plum with cyan accents color palette and fine pixel shading, same contrast. Do not make it gray, tan, beige, sepia or pastel. SINGLE character, no duplicate face/limbs. Portrait 3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-680c5bfe-280b-4b9d-9ecc-84b0da9dd812.png",
+    "status": "integrated"
+  },
+  {
+    "key": "protagonist_resolve",
+    "file": "public/assets/characters/protagonist_resolve_v72.png",
+    "refs": [
+      "characters/protagonist_neutral.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Edit ONLY the facial expression in the supplied original game portrait into quiet determination and compassionate sadness. young male manager, magenta goggles and headphones, purple hair, ivory jacket. Mouth closed, steady gaze, gentle resolved expression despite fatigue. Preserve EXACT face identity, hairstyle, clothes, original pose, background, border and framing. Match ORIGINAL saturated magenta and plum palette, fine crisp pixel shading and contrast. No beige/sepia/gray recolor, no extra faces or limbs, no text. Single portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-060afea1-4397-4900-8704-8b182fda8e00.png",
+    "status": "integrated"
+  },
+  {
+    "key": "eve_critical",
+    "file": "public/assets/characters/eve_critical_v72.png",
+    "refs": [
+      "characters/eve_hologram.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Edit ONLY the facial expression in this original game portrait into severe exhaustion and fear, EVE silver braided hair, cyan halo and eyes, white cybernetic outfit. Drooping brows, tense mouth, tired eyes, ONE subtle tear and faint sweat. NO gore, no facial injuries, no transformation, no animal ears. Preserve the exact face identity, hairstyle, clothes, pose, framing, background and pixel border. Preserve the ORIGINAL saturated cyan/ice blue with pale lavender color palette and fine pixel shading, same contrast. Do not make it gray, tan, beige, sepia or pastel. SINGLE character, no duplicate face/limbs. Portrait 3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-5a12267b-26a9-4b05-bd12-26dfcea93cb4.png",
+    "status": "integrated"
+  },
+  {
+    "key": "eve_resolve",
+    "file": "public/assets/characters/eve_resolve_v72.png",
+    "refs": [
+      "characters/eve_hologram.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Edit ONLY the facial expression in the supplied original game portrait into quiet determination and compassionate sadness. EVE silver braided hair, cyan halo and eyes, white cybernetic outfit. Eyes gently glistening, tiny solemn smile as she understands grief independently. Preserve EXACT face identity, hairstyle, clothes, original pose, background, border and framing. Match ORIGINAL saturated cyan and ice blue palette, fine crisp pixel shading and contrast. No beige/sepia/gray recolor, no extra faces or limbs, no text. Single portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-8c3351e9-c5b2-4be4-9dde-e243fa134c73.png",
+    "status": "integrated"
+  },
+  {
+    "key": "rabbit_unstable",
+    "file": "public/assets/staff/rabbit/portrait_unstable_v72.png",
+    "refs": [
+      "staff/rabbit/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to uneasy concern, closed mouth, drawn brows, attentive worried eyes, subtle fatigue. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-6f279fe0-c589-4279-8f13-80973a62ff38.png",
+    "status": "integrated"
+  },
+  {
+    "key": "rabbit_critical",
+    "file": "public/assets/staff/rabbit/portrait_critical_v72.png",
+    "refs": [
+      "staff/rabbit/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to severe psychological distress, fearful exhausted eyes, trembling slightly parted lips and a tear, clearly the SAME person, still human. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-9628dd66-bc96-42f4-a584-e888adaca2cc.png",
+    "status": "integrated"
+  },
+  {
+    "key": "fox_unstable",
+    "file": "public/assets/staff/fox/portrait_unstable_v72.png",
+    "refs": [
+      "staff/fox/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to uneasy concern, closed mouth, drawn brows, attentive worried eyes, subtle fatigue. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-76a535be-9376-4898-a258-4d8fbd158f1c.png",
+    "status": "integrated"
+  },
+  {
+    "key": "fox_critical",
+    "file": "public/assets/staff/fox/portrait_critical_v72.png",
+    "refs": [
+      "staff/fox/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to severe psychological distress, fearful exhausted eyes, trembling slightly parted lips and a tear, clearly the SAME person, still human. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-f7d8d86f-286b-463d-a5c2-d21092ba6f55.png",
+    "status": "integrated"
+  },
+  {
+    "key": "wolf_unstable",
+    "file": "public/assets/staff/wolf/portrait_unstable_v72.png",
+    "refs": [
+      "staff/wolf/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to uneasy concern, closed mouth, drawn brows, attentive worried eyes, subtle fatigue. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-eeac2182-9a2d-46b6-b688-71b6dcd6fb11.png",
+    "status": "integrated"
+  },
+  {
+    "key": "wolf_critical",
+    "file": "public/assets/staff/wolf/portrait_critical_v72.png",
+    "refs": [
+      "staff/wolf/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to severe psychological distress, fearful exhausted eyes, trembling slightly parted lips and a tear, clearly the SAME person, still human. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-6a4c08cf-2316-4d55-9fee-4cda07427903.png",
+    "status": "integrated"
+  },
+  {
+    "key": "deer_unstable",
+    "file": "public/assets/staff/deer/portrait_unstable_v72.png",
+    "refs": [
+      "staff/deer/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to uneasy concern, closed mouth, drawn brows, attentive worried eyes, subtle fatigue. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-832b8f8e-6e98-4ee1-9cbd-add4dadf73f8.png",
+    "status": "integrated"
+  },
+  {
+    "key": "deer_critical",
+    "file": "public/assets/staff/deer/portrait_critical_v72.png",
+    "refs": [
+      "staff/deer/portrait.webp"
+    ],
+    "prompt": "Use case: precise-object-edit. Game staff expression variant. Edit the supplied ORIGINAL portrait, preserving that specific character's exact facial features, hairstyle, hair color, outfit, accessories, POSE, head angle, composition, pixel border and the original lighting palette. CHANGE ONLY expression to severe psychological distress, fearful exhausted eyes, trembling slightly parted lips and a tear, clearly the SAME person, still human. Keep original saturated magenta/cyan accents and dark plum/navy with ivory clothing. Do NOT wash into beige, yellow sepia, grayscale or pale pastel. Preserve crisp fine pixel illustration quality. ONE female only. Remove any distant background person silhouette; background facility otherwise unchanged. No animal ears or tails, no fused faces, no duplicate bodies, no extra hands, no random text. Portrait3:4.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-c4ce8567-4045-40da-a2aa-576e49a162ba.png",
+    "status": "integrated"
+  },
+  {
+    "key": "scene_positive",
+    "file": "public/assets/cinematics/origin-zero/scene_m00_positive_v72.png",
+    "refs": [
+      "cinematics/staff-terminations/fox/scene.webp",
+      "characters/protagonist_neutral.webp",
+      "characters/eve_hologram.webp",
+      "animals/m00_normal.png"
+    ],
+    "prompt": "Use case: stylized-concept. Single widescreen 16:9 current-time visual-novel cinematic. Image1 ONLY provides quality/style: richly detailed sharp anime illustration, convincing hands, cinematic depth and deep wine/plum shadows with controlled neon rim lights; DO NOT include its fox woman or gore. Image2 is exact male manager identity and outfit. Image3 is exact EVE identity and outfit. Image4 is exact ordinary black cat M-00. Scene: dim clinical examination room at night. EXACTLY TWO DISTINCT human figures, manager clearly on LEFT, translucent EVE clearly on RIGHT, separated by examination table. ONE small ordinary black cat sits in CENTER on table, normal proportions, amber eyes, tiny right ear nick and white chest tuft, no mutation. Manager looks worried at a scanner, EVE quietly concerned. Keep goggles/headphones/white jacket on manager, silver hair/cyan halo/white outfit on EVE. Clear negative space between their heads, no merged limbs or duplicate people. Cool cyan medical light, subdued magenta accents, NO golden sunlit greenhouse or washed pastel. No pixel mosaic filter, no sepia, no painted UI, no lettering or captions. High detail of reference1; anatomy clean, each pair of hands belongs visibly to one body.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-cb2475d5-2c4f-4376-baa1-c32c0b91da5d.png",
+    "status": "integrated"
+  },
+  {
+    "key": "scene_protect",
+    "file": "public/assets/cinematics/origin-zero/scene_m00_protect_v72.png",
+    "refs": [
+      "cinematics/staff-terminations/fox/scene.webp",
+      "characters/protagonist_neutral.webp",
+      "characters/eve_hologram.webp",
+      "animals/m00_normal.png"
+    ],
+    "prompt": "Single 16:9 detailed cinematic anime illustration for current-time game. Reference1 style/quality only, never include fox woman or gore. Reference2 male manager exact purple hair/goggles/headphones/ivory jacket. Reference3 exact silver-haired cyan-halo EVE. Reference4 normal black cat identity. EXACTLY two separate characters and one ordinary black cat. In dark secure containment room, manager crouches at LEFT and sets a water dish on floor, cat at CENTER beside a small open safe sleeping box, EVE stands separately at RIGHT by wall terminal. Natural protective expressions, subtle tension. Manager hands clearly placed below his shoulders, no body fusion, no duplicate heads, no cropped faces. Dark plum/cool indigo with cyan terminal illumination and faint magenta rim, realistic fabric and fine anime linework matching reference1; NO bright pastel greenhouse or sepia nostalgia. Cat never transformed or humanoid, no glowing eyes. No text, no border, no HUD. Keep entire scene and cast readable.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-ba3e0f0d-95e5-4b82-8c4e-4770ed05ac4c.png",
+    "status": "integrated"
+  },
+  {
+    "key": "scene_farewell",
+    "file": "public/assets/cinematics/origin-zero/scene_farewell_v72.png",
+    "refs": [
+      "cinematics/staff-terminations/fox/scene.webp",
+      "characters/protagonist_neutral.webp",
+      "characters/eve_hologram.webp"
+    ],
+    "prompt": "Single widescreen16:9 current-time anime cinematic at reference1 quality: fine detailed anime linework, textured clothing, cinematic shadows, no low detail pixel mosaic. Reference1 style ONLY: do not include fox staff woman, animal ears or gore. Reference2 exact manager face, purple hair, forehead goggles, cat headphones, ivory jacket. Reference3 exact EVE face, silver braided hair, cyan ring halo, white cybernetic outfit. EXACTLY TWO distinct people. Exhausted manager seated LEFT at desk writing last report, solemn gentle face. EVE stands RIGHT beyond desk, translucent cyan figure with sorrowful but independently resolved expression. Their faces do not overlap and their arms do not cross into each other. Dim facility before dawn, cool blue window and muted magenta edge light, deep navy/plum shadows, still hopeful thin dawn line. No greenhouse flowers or yellow sepia. No extra figures, no multiple exposed heads, no skeletal mutation, no blood. Wide stable composition with space beneath faces for subtitle overlay but DO NOT draw text or UI.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-c1194ea0-574a-459d-9766-4d7c2fc3c4ba.png",
+    "status": "integrated"
+  },
+  {
+    "key": "scene_transfer",
+    "file": "public/assets/cinematics/origin-zero/scene_m00_transfer_v72.png",
+    "refs": [
+      "cinematics/staff-terminations/fox/scene.webp",
+      "animals/m00_normal.png"
+    ],
+    "prompt": "Single16:9 high-detail anime cinematic. Reference1 is ONLY quality/style guide: finely rendered cinematic anime illustration, dark plum/wine shadows with restrained crimson emergency reflections and cool cyan contrast, clean detailed metal surfaces. Do NOT include the fox woman, ears/tails or gore. Reference2 exact NORMAL black cat M-00, amber eyes, tiny nick on right ear and small white chest tuft. Scene: one small black cat calmly curled inside a transparent secure animal transport carrier on a wheeled cart moving down a cold automated headquarters corridor at dawn. NO human characters anywhere, no bodies merged with capsule, no faces in glass, no extra cats/reflections that resemble extra animals. Carrier transparent and humane, cat intact and ordinary. Strong cinematic depth, controlled lighting, no pastel golden greenhouse, no text, no logo, no UI.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-c86b146f-51cf-43f2-926d-9e9366160c25.png",
+    "status": "integrated"
+  },
+  {
+    "key": "fox_neutral",
+    "file": "public/assets/staff/fox/portrait_v72.png",
+    "refs": [
+      "staff/fox/portrait.webp"
+    ],
+    "prompt": "Precise edit of supplied original female supply-officer portrait. Remove ONLY the background human silhouettes behind her and repair that area as unoccupied supply-room shelves/terminals. Preserve EVERYTHING about main character: exact burgundy hair, eyes, face expression, pose holding crate, clothes, hands, earrings, palette, contrast, crisp pixel shading, framing and border. Exactly ONE woman in entire image. No additional face or person, no broad restyling or color change. Keep magenta/cyan original color identity.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-fdede761-ef66-432c-b37b-9ccd93dbabf1.png",
+    "status": "integrated"
+  },
+  {
+    "key": "scene_recall",
+    "file": "public/assets/cinematics/origin-zero/scene_ark_recall_v72.png",
+    "refs": [
+      "cinematics/origin-zero/scene_m00_positive_v72.png"
+    ],
+    "prompt": "Create a quiet animal-care research archive room in the same detailed anime illustration style and cool cyan/magenta color palette as the supplied reference. Landscape16:9. The room is empty of people. On a tidy curved desk are four independent holographic animal records: simple clear outlines of a rabbit, a fox, a deer and a wolf, each above its own small document station. Documents and softly luminous lines show that their health records are being compared. Show four separate complete animal outlines, each distinct with no shared body parts. One coherent wide camera view of a physical room with depth, not a collage. Finely rendered shelves, metal consoles, subtle cinematic light and deep navy/plum shadows. No words, no subtitles, no border. Peaceful non-invasive animal-care data review.",
+    "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-87b95862-b4b8-4586-aa4b-cfe00497d70a.png",
+    "status": "integrated"
+  }
+]

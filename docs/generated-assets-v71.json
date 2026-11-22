@@ -338,21 +338,21 @@
     "key": "origin_lab_v2",
     "file": "public/assets/backgrounds/bg_origin_lab_v2.png",
     "source": "C:/Users/lookm/.codex/generated_images/01a1f771-6bee-7bf1-87b7-502e3f858791/exec-838772aa-d0d2-4ea9-b40b-2cc0bd9bf686.png",
-    "prompt": "?? ?? ???? ?? ???. ??? ?? ?? ??? ?????????? ??? ?? ??, ?? ??. ?? ????? ???, ?? ??.",
+    "prompt": "인물과 동물 없이 오래된 온실·실험기구·격리 시설이 남은 폐허. 동일 도트·플럼 팔레트, 단일 배경. 잘못 생성된 인물 포함 후보를 대체하는 수정본.",
     "status": "integrated"
   },
   {
     "key": "m00_restored",
     "file": "public/assets/animals/m00_normal.png",
     "source": "C:/Users/lookm/.codex/generated_images/01a1f771-6bee-7bf1-87b7-502e3f858791/exec-c0b82306-701c-43cc-9f7f-d00e044c1a20.png",
-    "prompt": "?? ?? ?? ?? ??. ??? ?? ???, ??? ? ? ?? ???? ?? ?, ???? ???? ??.",
+    "prompt": "이전 생성 원본 복구. 평범한 검은 고양이, 오른쪽 귀 끝 작은 흠집·흰 가슴 털, 말하거나 변이하지 않음.",
     "status": "integrated"
   },
   {
     "key": "photo08_restored",
     "file": "public/assets/hidden-photos/photo_08.png",
     "source": "C:/Users/lookm/.codex/generated_images/01a1f771-6bee-7bf1-87b7-502e3f858791/exec-9811adf8-cb97-41e6-a2b2-59c24ef76801.png",
-    "prompt": "?? ?? ?? ??. ?? ?????? ??M-00? ??? ????.",
+    "prompt": "이전 생성 원본 복구. 최초 과학자·어린 딸·M-00의 오래된 가족사진.",
     "status": "integrated"
   }
 ]

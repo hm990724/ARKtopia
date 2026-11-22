@@ -1,7 +1,7 @@
 """Read-only artwork audit; never rewrites or removes originals. Requires Pillow."""
 from pathlib import Path
 from PIL import Image
-import hashlib, json
+import hashlib, json, sys
 root=Path(__file__).resolve().parents[1]
 rows=[]
 for p in sorted((root/'public/assets').rglob('*')):
@@ -21,6 +21,6 @@ for i,a in enumerate(rows):
   distance=(int(a['dhash'],16)^int(b['dhash'],16)).bit_count()
   if distance<=4:similar.append({'a':a['path'],'b':b['path'],'distance':distance})
 report={'images':rows,'exactDuplicates':[v for v in groups.values() if len(v)>1],'perceptualReviewCandidates':similar,'note':'dHash candidates are not duplicates; no image was moved or deleted.'}
-(root/'docs/asset-audit-v71.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
+(root/(sys.argv[1] if len(sys.argv)>1 else 'docs/asset-audit-v71.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
 sprites=[r for r in rows if '/animals/' in r['path']]
 print(f"Raster assets: {len(rows)}; animal sprites: {len(sprites)}; transparent: {sum(r['transparent'] for r in sprites)}; exact duplicate groups: {len(report['exactDuplicates'])}; perceptual review pairs: {len(similar)}")

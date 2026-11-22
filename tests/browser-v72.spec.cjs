@@ -1,0 +1,45 @@
+const {test,expect}=require('@playwright/test'),fs=require('fs'),ts=require('typescript');
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
+const {beginGame,startRun}=require('../src/lib/game-v10.ts'),{recruitCrew}=require('../src/lib/crew.ts'),{emptyOriginZero}=require('../src/lib/origin-zero.ts');
+const KEY='last-enclosure-ark-v10';
+async function seed(page,s){await page.addInitScript(({s,KEY})=>{if(!sessionStorage.getItem('v72-seed')){localStorage.setItem(KEY,JSON.stringify(s));sessionStorage.setItem('v72-seed','1')}},{s,KEY});await page.goto('/');}
+async function skipStory(page){await page.addLocatorHandler(page.locator('.v44-story-overlay'),()=>page.locator('.v44-story-overlay .is-skip').click(),{noWaitAfter:true});}
+test('ranger uses changing walk frames during real movement, then returns to idle',async({page})=>{
+ let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',[]);
+ await skipStory(page);await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
+ await expect(page.locator('.v72-ranger.is-idle')).toBeVisible();
+ await page.evaluate(()=>{window.walkFrames=[];window.walkTimer=setInterval(()=>{const el=document.querySelector('.v72-ranger.is-walking>span');if(el)window.walkFrames.push(getComputedStyle(el).backgroundPositionX)},20)});
+ const before=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.position,KEY);
+ await page.locator('.v62-route-walkable:not([disabled])').first().click();
+ await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.position,KEY)).not.toBe(before);
+ const frames=await page.evaluate(()=>{clearInterval(window.walkTimer);return [...new Set(window.walkFrames)]});expect(frames.length).toBeGreaterThanOrEqual(2);
+ await expect(page.locator('.v72-ranger.is-walking')).toHaveCount(0);
+ await expect(page.locator('.v72-ranger.is-idle')).toBeVisible();
+ await page.screenshot({path:'docs/qa-v71/v72-field-walk.png',fullPage:true});
+});
+test('critical medic uses her own critical portrait in roster and dialogue',async({page})=>{
+ const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;recruitCrew(s,'rabbit','RB-001');s.crew.members[0].mind=20;
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // First close onboarding manually; keep the requested staff conversation open.
+ await seed(page,s);
+ for(let i=0;i<8&&await page.locator('.v44-story-overlay').isVisible();i++)await page.locator('.v44-story-overlay .is-skip').click();
+ await page.getByRole('button',{name:'의무관 직원 상세',exact:true}).click();
+ await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
+ await page.getByRole('button',{name:'대화',exact:true}).click();
+ await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
+ await expect(page.locator('.v44-story-eve-image img')).toHaveCount(1);
+ await expect(page.locator('.v44-story-scene')).toHaveCSS('background-color','rgb(23, 20, 33)');
+ const reveal=page.getByRole('button',{name:'글 즉시 펼치기'});if(await reveal.isEnabled())await reveal.click();
+ await page.screenshot({path:'docs/qa-v71/v72-critical-dialogue.png',fullPage:true});expect(errors).toEqual([]);
+});
+test('current cinematic opens without cropping or duplicate characters from UI layers',async({page})=>{
+ const s=beginGame('medic','generator');s.day=20;s.tutorialStep=9;s.originZero={...emptyOriginZero(),cat:'shelter',route:'shelter',firstPositiveDay:20,photos:9};
+ await skipStory(page);await seed(page,s);await page.getByRole('button',{name:'분석실',exact:true}).click();
+ await page.locator('.v71-story-archive summary').click();await page.getByRole('button',{name:'기원 표식 일치 장면 보기'}).click();
+ const dialog=page.getByRole('dialog',{name:'복원된 사건 영상 보기'});await expect(dialog).toBeVisible();await expect(dialog.locator('img')).toHaveCount(1);
+ await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_positive_v72/);await expect(dialog.locator('img')).toHaveCSS('object-fit','contain');
+ await expect.poll(()=>dialog.locator('img').evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
+ await page.screenshot({path:'docs/qa-v71/v72-cinematic.png',fullPage:true});
+ await dialog.getByRole('button',{name:'다음 장면'}).click();await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_protect_v72/);
+ await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
+});

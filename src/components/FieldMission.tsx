@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { V10 } from "@/lib/game-v10";
 import { regions } from "@/lib/game-v10";
+import RangerSprite from './RangerSprite';
+import {directionForMove,type WalkDirection} from '@/lib/character-art';
 import type { AnimalId } from "@/lib/sim";
 import {
   adjacentField,
@@ -181,6 +183,7 @@ export default function FieldMission({
     null,
   );
   const walkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [facing,setFacing]=useState<WalkDirection>('down');
   const fieldChoiceFirstButton = useRef<HTMLButtonElement | null>(null);
   // The field guide is a fixed quick-read panel instead of a dropdown.
   useEffect(
@@ -208,6 +211,7 @@ export default function FieldMission({
     )
       return;
     setNotice("");
+    setFacing(directionForMove(field.position,target,fieldWidth(field)));
     setWalking({ from: field.position, to: target });
     if (walkTimeout.current) clearTimeout(walkTimeout.current);
     walkTimeout.current = setTimeout(() => {
@@ -1064,7 +1068,7 @@ export default function FieldMission({
                         <PixelFoliage variant={(i * 5) % 5} />
                         {here && !walking ? (
                           <span className="v33-route-player">
-                            <img className="v71-ranger" src="/assets/field/ranger.png" alt="관리자"/>
+                            <RangerSprite direction={facing}/>
                           </span>
                         ) : !visible ? (
                           <span className="v33-route-veiled" />
@@ -1122,7 +1126,7 @@ export default function FieldMission({
                       }
                     >
                       <span className="v42-walker-shadow" />
-                      <img className="v71-ranger" src="/assets/field/ranger.png" alt=""/>
+                      <RangerSprite direction={facing} walking/>
                     </span>
                   )}
                 </div>

@@ -4,9 +4,11 @@ import {createPortal} from 'react-dom';
 import {Radio,HeartPulse,Brain,ChevronRight,ShieldAlert,Lock,BookOpen} from 'lucide-react';
 import {CREW_IDS,CREW_PROFILES,CREW_LOSS_EFFECTS,type CrewId} from '@/lib/crew';
 import type {V10} from '@/lib/game-v10';
+import {characterPortrait} from '@/lib/character-art';
 
 export function StaffPortrait({id,className='',condition='safe'}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical'}){
  const sources=[
+  characterPortrait(id,condition==='safe'?'neutral':condition==='unstable'?'anxious':'critical'),
   ...(condition==='safe'?[]:[`/assets/staff/${id}/portrait_${condition}.webp`]),
   `/assets/staff/${id}/portrait.webp`,
   `/assets/cinematics/staff-arrivals/${id}/scene.webp`

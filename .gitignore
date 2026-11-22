@@ -8,4 +8,5 @@ out
 test-results/
 playwright-report/
 tmp/v71*
+tmp/v72*
 tmp/v68/npm-cache/

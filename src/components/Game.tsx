@@ -7,6 +7,7 @@ import {cameras,securityPatterns,securityAction,cctvHotspotIndex,escapeRisk,type
 import {protocols} from '@/lib/protocols';
 import {awakeningProfiles,isAwakeningReady,isMutantVisual} from '@/lib/awakening';
 import {isMutant} from '@/lib/sim';
+import {characterMood,characterPortrait} from '@/lib/character-art';
 import {shareCrewMemory,watchEmptyCage} from '@/lib/crew-memory';
 import CrewMemoryCCTV from './CrewMemoryCCTV';
 import {OriginFarewell} from './OriginStoryArtwork';
@@ -47,8 +48,8 @@ function animalArt(a:{id:string;stress:number;contamination:number;memory:number
  return visual?`/assets/animals/${a.id}_${visual}.png`:img(a.id);
 }
 
-type StoryConversationProps={lines:Talk[];index:number;shown:number;previousTalk:()=>void;advanceTalk:()=>void;revealTalk:()=>void;skipTalk:()=>void;intro?:boolean};
-function StoryConversation({lines,index,shown,previousTalk,advanceTalk,revealTalk,skipTalk,intro=false}:StoryConversationProps){
+type StoryConversationProps={state?:V10;lines:Talk[];index:number;shown:number;previousTalk:()=>void;advanceTalk:()=>void;revealTalk:()=>void;skipTalk:()=>void;intro?:boolean};
+function StoryConversation({state,lines,index,shown,previousTalk,advanceTalk,revealTalk,skipTalk,intro=false}:StoryConversationProps){
  const historyRef=useRef<HTMLDivElement|null>(null);
  useEffect(()=>{if(historyRef.current)historyRef.current.scrollTop=historyRef.current.scrollHeight;},[index,shown]);
  useEffect(()=>{const onKey=(event:KeyboardEvent)=>{
@@ -61,12 +62,14 @@ function StoryConversation({lines,index,shown,previousTalk,advanceTalk,revealTal
  };window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[previousTalk,advanceTalk,revealTalk]);
  const active=lines[index];if(!active)return null;
  const speakerCrew=active.speaker!=='EVE'&&active.speaker!=='관리자'?active.speaker:null;
+ const actor=active.speaker==='관리자'?'protagonist':speakerCrew??'eve';
+ const mood=characterMood(state,actor,active.text);
  const visible=lines.slice(Math.max(0,index-3),index+1);
  return <div className="v44-story-overlay" role="dialog" aria-modal="true" aria-label={intro?'EVE 최초 통신':'보존구역 실시간 대화'}>
   <div className="v44-story-scene">
    <div className="v44-story-head"><div><span className="v44-story-signal"><Radio size={13}/> {intro?'FIRST CONTACT':'BIO-COMMUNICATION LINK'}</span><b>ARK // EVE 통신 채널 <em>ENCRYPTED</em></b></div><span className="v44-story-counter">{String(index+1).padStart(2,'0')} / {String(lines.length).padStart(2,'0')}</span></div>
    <div className="v44-story-main">
-    <div className="v44-story-eve"><span>{active.speaker==='관리자'?'OPERATOR // FIELD LINK':speakerCrew?'HQ PERSONNEL // BIO-LINK':'HOLOGRAPHIC TERMINAL // EVE'}</span><div className="v44-story-eve-image">{active.speaker==='관리자'?<img src={img('protagonist-young')} alt="담당자 000 초상"/>:speakerCrew?<StaffPortrait id={speakerCrew} className="v53-story-staff"/>:<img src={img('eve-hologram')} alt="EVE 홀로그램"/>}<i aria-hidden="true"/></div><strong>{active.speaker==='관리자'?'담당자 000':speakerCrew?CREW_PROFILES[speakerCrew].post:'EVE / 보존구역 안내'}</strong><small><span className="v44-story-live"/> {speakerCrew?'NEURAL LINK / UNSTABLE':'SIGNAL CONNECTED'}</small></div>
+    <div className="v44-story-eve"><span>{active.speaker==='관리자'?'OPERATOR // FIELD LINK':speakerCrew?'HQ PERSONNEL // BIO-LINK':'HOLOGRAPHIC TERMINAL // EVE'}</span><div className="v44-story-eve-image">{active.speaker==='관리자'?<img src={characterPortrait("protagonist",mood)} alt="담당자 000 초상" data-mood={mood}/>:speakerCrew?<StaffPortrait id={speakerCrew} condition={mood==="critical"?"critical":mood==="anxious"?"unstable":"safe"} className="v53-story-staff"/>:<img src={characterPortrait("eve",mood)} alt="EVE 홀로그램" data-mood={mood}/>}<i aria-hidden="true"/></div><strong>{active.speaker==='관리자'?'담당자 000':speakerCrew?CREW_PROFILES[speakerCrew].post:'EVE / 보존구역 안내'}</strong><small><span className="v44-story-live"/> {speakerCrew?'NEURAL LINK / UNSTABLE':'SIGNAL CONNECTED'}</small></div>
     <div className="v44-chat-area"><div className="v44-chat-stream" ref={historyRef} role="log" aria-live="off" aria-label="최근 대화 내역">
      {visible.map((line,j)=>{const i=Math.max(0,index-3)+j;const current=i===index;return <div key={`${i}-${line.speaker}`} className={'v44-chat-row '+(line.speaker==='EVE'?'eve':line.speaker==='관리자'?'operator':'staff')+(current?' active':' previous')}><div className="v44-chat-meta"><b>{line.speaker==='EVE'?'EVE · 안내 시스템':line.speaker==='관리자'?'담당자 000':CREW_PROFILES[line.speaker].post}</b><span>{String(i+1).padStart(2,'0')}</span></div><p>{current?line.text.slice(0,shown):line.text}{current&&shown<line.text.length&&<i className="cursor-bar"/>}</p></div>})}
     </div><div className="v44-chat-footnote"><span>CHAT LOG // <b>{active.speaker==='EVE'?'SYSTEM TRANSMISSION':'SUBJECT RESPONSE'}</b></span><span>{shown<active.text.length?'신호 수신 중':'기록 수신 완료'}</span></div></div>
@@ -853,7 +856,7 @@ return <div className={"v10-shell"+(tab==='expedition'&&!!s.run?" is-field-activ
  <div className="v10-logo v43-brand"><span>✿ 잔향보존구역 ☾</span><small>ECHO WARD</small></div>
  <div className="v10-day v43-day"><b>DAY {String(s.day).padStart(3,'0')}</b><small>● {s.phase==='day'?'운영 중':'기록 중'}</small></div>
  <section className="v43-operator-card" aria-label="담당자 상태">
-  <div className="v43-operator-head"><img src={s.day>=15||s.mind<35?"/assets/characters/protagonist_decline.png":img('protagonist-young')} alt="담당자 000"/><div><span className="v43-eyebrow">ARK / OPERATOR</span><b>담당자 000</b><VitalChip tone={subjectVital(s.mind,s.infection,s.mind)}/></div></div>
+  <div className="v43-operator-head"><img src={characterPortrait("protagonist",characterMood(s,"protagonist"))} alt="담당자 000"/><div><span className="v43-eyebrow">ARK / OPERATOR</span><b>담당자 000</b><VitalChip tone={subjectVital(s.mind,s.infection,s.mind)}/></div></div>
   <div className={'v41-operator-ap v43-ap '+(s.ap<=1?'is-low':'')} role="status" aria-label={`남은 일일 행동력 ${s.ap} / ${s.start==='station'&&(!s.startBenefits||s.day<=2)?5:4}`}>
    <div className="v41-ap-title"><span><Zap size={15}/> 행동력</span><strong><b>{s.ap}</b> <small>/ {s.start==='station'&&(!s.startBenefits||s.day<=2)?5:4} AP</small></strong></div>
    <div className="v41-ap-slots" aria-hidden="true">{Array.from({length:s.start==='station'&&(!s.startBenefits||s.day<=2)?5:4},(_,i)=><i key={i} className={i<s.ap?'charged':''}/>)}</div>
@@ -870,7 +873,7 @@ return <div className={"v10-shell"+(tab==='expedition'&&!!s.run?" is-field-activ
    </div>
   </div>
  </section>
- <div className="v43-eve-line" title="EVE 통신 단말 연결 상태"><img src={s.eve<35?"/assets/characters/eve_glitch.png":(s.originZero?.photos??0)>=12?"/assets/characters/eve_revelation.png":img('eve-hologram')} alt="EVE"/><span><b>EVE 코어 <strong>{s.eve}%</strong></b><Bar v={s.eve} color="#7de3e7"/></span><VitalChip tone={eveVital(s.eve)} compact/></div>
+ <div className="v43-eve-line" title="EVE 통신 단말 연결 상태"><img src={characterPortrait("eve",characterMood(s,"eve"))} alt="EVE"/><span><b>EVE 코어 <strong>{s.eve}%</strong></b><Bar v={s.eve} color="#7de3e7"/></span><VitalChip tone={eveVital(s.eve)} compact/></div>
  <CrewRoster state={s} onReplayArrival={id=>{setTalk([]);setCinematic(id);beep(420)}} onTalk={id=>{const next=shareCrewMemory(s,id);setS(next.state);dialogue(next.lines);beep(400)}} onSupport={id=>{const next=crewSupport(s,id);if(next===s)return;setS(next);setRunFeedback(next.lastOutcome);beep(550)}} onTreat={(id,kind)=>{const next=treatCrew(s,id,kind);if(next===s)return;setS(next);setRunFeedback(next.lastOutcome);beep(550)}}/>
  {s.security.incident&&<button className="v43-side-alert" onClick={()=>{setCamera(s.security.incident!.camera);enterTab('cctv')}}><AlertTriangle size={14}/><span>격리 이상 신호 · CCTV 확인</span><ChevronRight size={14}/></button>}
 </aside>
@@ -975,7 +978,7 @@ return <div className={"v10-shell"+(tab==='expedition'&&!!s.run?" is-field-activ
 </main>
 {v42Telemetry&&<div className="v42-telemetry" role="status" aria-live="polite" aria-label="실시간 상태 변화"><div className="v42-telemetry-head"><Radio size={12}/> EVE // 실시간 판정</div>{v42Telemetry.entries.map((event,i)=><div className={'v42-float-delta '+(event.bad?'loss':'gain')+' v42-delta-'+event.kind} key={`${v42Telemetry.tick}-${i}`} style={{animationDelay:`${i*65}ms`}}><span>{event.label}</span><b>{event.before}{event.unit} → {event.after}{event.unit} <small>({event.delta>0?'+':''}{event.delta}{event.unit})</small></b></div>)}</div>}
 {awakening&&!aftermath&&!confirmRestart&&(()=>{const profile=awakeningProfiles[awakening.id];const animal=s.animals.find(a=>a.id===awakening.id);const stage=awakening.stage;const text=[`이상 신호가 발생했습니다. ${animal?.name||'개체'}의 움직임이 멈춥니다.`,profile.animalCry,profile.firstWords,profile.secondWords,'관리자님. 해당 개체에게서 인간 언어에 가까운 발화가 검출되었습니다.',profile.manager][stage];const name=stage<2?animal?.name:stage<4?'??? · 미확인 음성':stage===4?'EVE · 안내 시스템':'담당자 000';return <div className="awakening-shade" role="dialog" aria-modal="true" aria-label="의식 이상 발현"><div className="awakening-scene"><div className="awakening-noise"/><div className="awakening-top"><span>ARK // IRREVERSIBLE MUTATION</span><b>돌연변이 임계 초과 · 개체 신경 조직 재구성</b><small>{stage+1} / 6</small></div><div className="awakening-visual">{stage===4?<img className="awakening-avatar eve" src={img('eve-hologram')} alt="EVE"/>:stage===5?<img className="awakening-avatar" src={img('protagonist-young')} alt="관리자"/>:<img className={'awakening-animal '+(stage>=2?'transformed':'')} src={animalArt(animal!)} alt={animal?.name||'개체'}/>}<div className="awakening-signal">{stage<2?'MUTANT STATE CONFIRMED':stage<4?'HUMAN VOICE DETECTED':'PERMANENT ALTERATION'}</div></div><div className="awakening-subtitle"><span>{name}</span><p>{text}</p></div><button className="awakening-next" onClick={()=>{if(stage>=5){setAwakening(null);setSelectedAnimal(awakening.id);setTab('animals')}else setAwakening(x=>x?{...x,stage:x.stage+1}:null)}}>{stage===5?'격리실로 돌아가기':'계속 보기'} <ChevronRight size={17}/></button></div></div>})()}
-{current&&!cinematic&&!confirmRestart&&<StoryConversation lines={talk} index={talkIdx} shown={letters} previousTalk={previousTalk} advanceTalk={advanceTalk} revealTalk={revealTalk} skipTalk={skipTalk}/>}
+{current&&!cinematic&&!confirmRestart&&<StoryConversation state={s??undefined} lines={talk} index={talkIdx} shown={letters} previousTalk={previousTalk} advanceTalk={advanceTalk} revealTalk={revealTalk} skipTalk={skipTalk}/>}
 
 {/* A real staff vote exists only after a 10-day night and only for already recruited people. */}
 {s.pathologyPending&&!current&&!aftermath&&!result&&!cinematic&&!awakening&&!confirmRestart&&<div className="v10-modal-shade" role="dialog" aria-modal="true" aria-label="병리 검사 후속 결정"><div className="v10-modal event-modal v67-path-event-modal"><span className="micro-label">ARK // PATHOLOGY · CASE REVIEW</span><h2>{s.pathologyPending.success?'검사 성공 · 후속 처리':'검사 실패 · 원인 보고'}</h2><p>{s.pathologyPending.detail}</p><p>이 보고서는 다음 사건과 본부 감시 수준에 영향을 줍니다. 어떤 기록을 남길까요?</p><div className="event-options"><button type="button" onClick={()=>finishPathology('archive')}><span>01</span> 내부에 기록 보관 <small>추가 조사 · 직원 신뢰 유지</small></button><button type="button" onClick={()=>finishPathology('headquarters')}><span>02</span> 본부에 결과 보고 <small>보급 확보 · 본부 관심 증가</small></button></div></div></div>}
