@@ -18,11 +18,10 @@ test('ranger uses changing walk frames during real movement, then returns to idl
  await page.screenshot({path:'docs/qa-v71/v72-field-walk.png',fullPage:true});
 });
 test('critical medic uses her own critical portrait in roster and dialogue',async({page})=>{
- const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;recruitCrew(s,'rabbit','RB-001');s.crew.members[0].mind=20;
+ const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'rabbit','RB-001');s.crew.members[0].mind=20;
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- // First close onboarding manually; keep the requested staff conversation open.
+ // Suppress the independent base-work onboarding so the staff portrait check can open its own conversation.
  await seed(page,s);
- for(let i=0;i<8&&await page.locator('.v44-story-overlay').isVisible();i++)await page.locator('.v44-story-overlay .is-skip').click();
  await page.getByRole('button',{name:'의무관 직원 상세',exact:true}).click();
  await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
  await page.getByRole('button',{name:'대화',exact:true}).click();

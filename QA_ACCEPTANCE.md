@@ -18,3 +18,14 @@
 | 실행/타입/린트/전체 테스트/빌드 | 통과 | 최신 기록은 [QA_REPORT.md](QA_REPORT.md). 32/32 브라우저 검사 포함 |
 
 2026-11-23 continuation update: Axolotl, Lynx, Moth and Chimera mutant v75 art is connected in the game and checked for 1254x1254 RGBA format. Production build and 32/32 browser regressions passed after the route update. Visual direction remains subject to the user's art review; natural multi-day campaign play has not been fully automated.
+
+## v75 ending and event art
+
+| Area | Status | Evidence |
+|---|---|---|
+| 19 ending records each use a distinct contextual image | Pass | `npm run test:v75`; images load in browser |
+| 13 daily incident IDs receive an illustrated scene | Pass | Six scenes cover all incident mappings; mobile blackout dialog tested |
+| Typecheck, lint, logic suite, production build | Pass | Current v75 source |
+| Full production browser suite | Pass | 34/34 passed after correcting two onboarding-state fixtures; includes both new artwork flows |
+
+The images are integrated in `Game.tsx`; provenance is recorded in `docs/generated-assets-v75-endings-events.json`.

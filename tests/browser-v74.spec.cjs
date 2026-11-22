@@ -22,7 +22,7 @@ test('ARK RECALL specimen puzzle persists mid-session and resolves only after th
 });
 test('13 animal recollection profiles open their own interaction instruments',async({page})=>{
  const profiles=[['rabbit','RB-001','pulse'],['fox','FX-001','shelf'],['deer','DR-001','archive'],['owl','OW-001','orbit'],['wolf','WF-001','patrol'],['crow','CR-001','melody'],['otter','OT-001','valves'],['lynx','LX-001','tracks'],['axolotl','AX-001','graft'],['moth','MT-001','afterglow'],['mutant','MX-001','channels'],['chimera','CH-001','sync'],['specter','SP-001','echo']];
- const s=beginGame('medic','generator');s.day=1;s.ap=20;s.power=100;s.tutorialStep=9;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture'];s.animals=profiles.map(([id],i)=>makeAnimal(id,i+1));s.originZero={...emptyOriginZero(),route:'shelter',firstPositiveDay:1,photos:6};archive.ensureArchive(s);
+ const s=beginGame('medic','generator');s.day=1;s.ap=20;s.power=100;s.tutorialStep=9;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work','mutation'];s.animals=profiles.map(([id],i)=>makeAnimal(id,i+1));s.originZero={...emptyOriginZero(),route:'shelter',firstPositiveDay:1,photos:6};archive.ensureArchive(s);
  await page.setViewportSize({width:390,height:844});await seed(page,s,'v74-recall-profiles');await page.getByRole('button',{name:'분석실',exact:true}).click();
  const resolve=async(id)=>{
   if(id==='rabbit')return page.getByRole('button',{name:'맥박 기록 확정'}).click();

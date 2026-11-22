@@ -25,3 +25,9 @@ specter_uncanny.png, specter_mutant.png는 실제종정의가 없어 미생성. 
 ## v75 mutant sprite audit (2026-11-23)
 
 Generated and integrated four role-driven pixel-art mutant states: axolotl (regeneration/memory), lynx (tufts, bobtail, fractured shadow), moth (wing pattern/afterimage), and chimera (one asymmetric feather-scaled body). Files are new `*_mutant_v75.png` assets; square 1254px RGBA. Active routes point to v75. Generation sources and design summaries: `docs/generated-assets-v75.json`. No deleted user assets were restored or overwritten. Visual approval remains separate from format and route QA.
+
+## v75 ending and event art
+
+- Every registered ending has a unique rose-and-mauve cinematic illustration. Daily event dialogs display contextual artwork for the 13 incident types.
+- Image mapping and per-file source records: `docs/ENDING_EVENT_ART_v75.md` and `docs/generated-assets-v75-endings-events.json`.
+- Local asset checks, all logic tests, typecheck, lint, production build, and all 34 production browser tests pass. Two test fixtures were corrected to mark unrelated onboarding briefings as seen.

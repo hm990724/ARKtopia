@@ -41,3 +41,11 @@
 ## Final verification — 2026-11-23
 
 `npm run typecheck`, `npm run lint`, `npm run test:all`, `npm run build:qa`, and the production Chrome browser suite all passed after the v75 animal art was connected. Browser suite: 32/32. The actual roster loaded `axolotl_mutant_v75.png`; every v75 animal route is checked for square RGBA PNG format. Existing build warnings are the six pre-existing Hook dependency warnings and CSS autoprefixer compatibility warnings.
+
+## v75 ending and incident art (2026-11-23)
+
+- Generated and connected 19 unique 1536×1024 ending illustrations and six incident scenes. Every one of the 13 registered incident types resolves to an illustrated scene.
+- The ending record screen animates the selected illustration; daily incident dialogs show their contextual scene above the description and response options.
+- New sources and per-file design notes: `docs/generated-assets-v75-endings-events.json`; the visual map is `docs/ENDING_EVENT_ART_v75.md`.
+- `npm run test:v75`: passed (19 unique ending files and 13 event mappings). `npm run test:all`, `npm run typecheck`, `npm run lint`, and `npm run build:qa`: passed.
+- Production Chrome run: 34/34 passed after correcting two test fixtures whose onboarding briefings intercepted their intended controls. The 19-ending asset test and mobile incident-art test both passed.
