@@ -711,7 +711,7 @@ export default function FieldMission({
         </aside>
         <div className="v33-theater" data-tour="run-choice">
           {hunt && <div className="v71-primary-tools v74-capture-budget">
-            <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><span>포획 남은 행동</span><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div>
+            <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><div className="v74-actions-copy"><span>포획 남은 행동</span><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong></div>
             <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
             <button type="button" aria-pressed={mode==='net'} onClick={()=>setMode(mode==='net'?'search':'net')}><Target size={16}/> {mode==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
             <span>{mode==='net'?'십자 반경을 맞춰 그물을 놓으세요':'발자국과 풀 흔들림을 따라 조사할 지점을 클릭하세요'}</span>

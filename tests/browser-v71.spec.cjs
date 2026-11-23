@@ -79,6 +79,9 @@ for(const [width,height] of [[1366,768],[390,844]])test(`pixel hunt fits and ren
  await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
  await expect(page.locator('.v33-hidden-map')).toBeVisible();
  const budget=page.locator('.v74-capture-budget');await expect(budget.getByRole('status')).toContainText('포획 남은 행동');
+ const captureStatus=budget.getByRole('status');await expect(captureStatus.locator('.v74-actions-copy>p')).toContainText('AP와 별도');
+ const content=await captureStatus.evaluate(el=>{const box=selector=>{const r=el.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}};return {copy:box('.v74-actions-copy'),title:box('.v74-actions-copy>span'),note:box('.v74-actions-copy>p'),count:box(':scope>strong')}});
+ expect(content.title.bottom).toBeLessThanOrEqual(content.note.y+1);expect(content.copy.right).toBeLessThanOrEqual(content.count.x+1);
  const layout=await budget.evaluate(el=>{const boxes=[...el.children].map(node=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}});return {boxes,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}});
  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth+1);
  for(let i=0;i<layout.boxes.length;i++)for(let j=i+1;j<layout.boxes.length;j++){const a=layout.boxes[i],b=layout.boxes[j];expect(Math.min(a.right,b.right)-Math.max(a.x,b.x)>0&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>0,`capture toolbar children ${i}/${j} overlap`).toBe(false)}
