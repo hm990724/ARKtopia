@@ -11,7 +11,7 @@
 - 프로덕션 QA 빌드는 통과. 빌드는 기존 CSS Autoprefixer 경고와 React Hook dependency 경고를 계속 출력한다.
 - 자연 캠페인을 며칠 이어가는 난이도/자원 밸런스와 실제 플레이테스트는 미완료다. 고유 엔딩 삽화와 동물 13종 전수 미술 검수도 아직 완료로 처리하지 않는다.
 - Final v80 verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and production Chrome `npm run test:browser` all passed; browser suite 40/40. `test:all` includes the new v76 encounter/save test. Build emits the existing Hook/Autoprefixer warnings.
-- Combat presentation follow-up: full production Chrome browser suite passes 40/40, including the actual Wolf portrait, support/guard reaction cues, and one integrated sortie from preparation through fight, rescue, and extraction. `npm run test:all` and `npm run build:qa` pass; the build reports existing Hook and Autoprefixer warnings.
+- Combat presentation follow-up: full production Chrome browser suite passes 40/40, including the actual Wolf portrait, support/guard reaction cues, and one outing from preparation through fight, rescue, cache salvage, extraction, and paid CCTV restoration. `npm run test:all` and `npm run build:qa` pass; the build reports existing Hook and Autoprefixer warnings.
 
 ## 실행 결과
 
