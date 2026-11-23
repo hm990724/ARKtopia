@@ -84,4 +84,4 @@
 - See `STORY_AUDIT.md` for canon/cast/ending review, `BALANCE_REPORT.md` for tested resource pressures and unverified natural balancing, and the latest section of `ART_AUDIT.md` for canonical art paths.
 - Still incomplete: 40 distinct dynamic incidents (current registry: 13 IDs plus other event types), state-aware cast selection and bespoke action art for endings, final high-detail ending/staff-event illustrations, and a natural full-campaign balance playthrough. The current 19 SVG ending cards are cast-safe portrait compositions, not final cinematic paintings.
 - Image generation was not available in the current tool integration; no CLI/API fallback was invoked. Existing art is connected and historical finals preserved, but the missing bespoke scenes remain explicit work.
-- No new full-project archive was generated in this continuation yet. Existing v74.7 archive is retained; package a new archive only after the final commit/source snapshot is selected.
+- Full-project ZIP generated from the verified commit snapshot: `ARKtopia_ORIGIN_ZERO_ULTIMATE_FULL_PROJECT.zip`; SHA-256 is in the adjacent `.sha256` file. The existing v74.x archives were preserved.
