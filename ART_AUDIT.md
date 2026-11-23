@@ -1,5 +1,11 @@
 ﻿# 자산 감사
 
+## 현재 세션 이미지 도구 확인 — 2026-11-23
+
+- `imagegen` 스킬 파일은 `C:\Users\lookm\.codex\skills\.system\imagegen\SKILL.md`에서 확인했다.
+- 이번 실행의 실제 도구 목록에는 호출 가능한 `image_gen` 도구가 없다. 스킬 설치와 생성 도구 연결은 별개이므로 신규 원화는 생성하지 않았다.
+- 기존 M-00, Mutant, staff-loss 및 ending 에셋을 임시 도형·SVG·코드 그림으로 덮어쓰지 않는다. 최종 고품질 삽화가 더 필요한 항목은 계속 미완료로 남긴다.
+
 파일별 생성프롬프트/원본: docs/generated-assets-v71.json 및 IMAGE_PROMPTS.md.
 전체96장 크기/알파/SHA256/dHash: docs/asset-audit-v71.json. 완전중복0으로 임의삭제하지 않음.
 추가/복구44PNG: 동물10+M00복구, 사진11+08복구, 필드3, 초상7, 컷신7, 배경3+연구소수정1.

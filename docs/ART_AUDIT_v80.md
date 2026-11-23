@@ -2,9 +2,9 @@
 
 Date: 2026-11-23
 
-## Tool availability
+## Tool availability recorded during v80 image pass
 
-The built-in image-generation tool is connected in this session. Earlier notes saying the tool was unavailable or returning `401 token_revoked` describe prior sessions. No API key or CLI fallback was used.
+The built-in image-generation tool was available during the v80 image pass. This is a historical record and does not guarantee that a later session has the tool connected. In the v81 continuation, the imagegen skill file exists but no callable `image_gen` tool appears in the active tool list; see the current check in `ART_AUDIT.md`. No API key or CLI fallback was used in the v80 pass.
 
 ## Delivered
 

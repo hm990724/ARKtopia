@@ -2,6 +2,13 @@
 
 Review date: 2026-11-23
 
+## v81 facility dispatch check
+
+- After a shield/rest/standby choice, remaining power is distributed to installed facilities in the saved priority order: CCTV 3, containment 2, infirmary 3, synthesis 2. A shed facility does not grant its associated night effect.
+- `npm run test:v81` checks low-power dispatch, reordered infirmary priority, save/load, and migration from a save without dispatch fields. Production browser test `browser-v81` confirms reorder persistence and a changed night forecast.
+- The existing deterministic idle pressure probe still reaches DAY 11 with power/facility at 0 and threat at 100. Four management-only strategy runs still reach DAY 13. Neither proves an expedition-inclusive natural campaign is balanced.
+- A fresh save with installed facilities can lose more power overnight than prior builds because facility consumption is now charged intentionally. Players can prioritize critical systems, but natural-play fairness still needs a campaign playtest.
+
 ## Current implemented pressure
 
 - A field sortie is one per day and costs AP 1. Starting it requires its selected gear. A flashlight route consumes portable charge and does not require facility power; EVE's scanner route does require facility power.
