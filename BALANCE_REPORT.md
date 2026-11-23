@@ -37,6 +37,12 @@ The registry now contains 40 incident IDs (13 original + 27 state-gated). Each n
 
 This probes only day management, incident choice and night defense. It does not simulate expeditions, capture, animal care, staff arrival, upgrades or the full story, so it is not a fresh-campaign playtest or proof of overall balance.
 
+### Expedition-inclusive seeded campaign probe
+
+`npm run balance:campaign` runs the real state handlers for 12 day transitions for Medic, Engineer, Artist and Warden starts. Each run launches three planned garden sorties on DAY 4/8/12, spends actual flashlight/cage/AP, advances three field stages with seeded random outcomes, attempts capture, buys food/parts when affordable, performs care/decontamination/repairs when thresholds trigger, resolves daily blockers, and settles nights. It asserts DAY 13 remains playable, all three sorties resolve, at least one animal is secured, and power/facility remain above zero with infection below 80.
+
+Seeded outcomes: Medic reaches DAY 13 with 1 capture `(power 40, facility 70, threat 18, infection 16, morale 100, food 3)`; Engineer reaches it with 2 `(30, 75, 21, 35, 89, 2)`; Artist with 1 `(63, 42, 30, 38, 100, 2)`; Warden with 2 `(55, 55, 31, 16, 100, 0)`. These are four scripted, seeded operations policies and do not represent novice or human play. The probe skips the tutorial and does not include HQ processing or staff recruitment; it does not certify campaign balance.
+
 ### Staff-loss morale consequence
 
 When a staff mind signal is lost, each remaining employee above zero loses 30 mind once. The loss is logged per employee and may trigger the existing subsequent staff-risk queue if anyone reaches zero. `npm run test:v71` covers the penalty and idempotence. A full campaign that exercises multiple staff-loss chains still needs a fresh-save playthrough.

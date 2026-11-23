@@ -27,7 +27,8 @@
     "test:v75": "node scripts/test-v75.cjs",
     "test:v76": "node scripts/test-v76.cjs",
     "test:v81": "node scripts/test-v81.cjs",
-    "test:ending-matrix": "node scripts/test-ending-matrix.cjs"
+    "test:ending-matrix": "node scripts/test-ending-matrix.cjs",
+    "balance:campaign": "node scripts/balance-campaign.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
