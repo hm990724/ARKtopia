@@ -65,5 +65,6 @@ The images are integrated in `Game.tsx`; provenance is recorded in `docs/generat
 
 - Selected companion portrait and role: verified with recruited Wolf in the combat panel.
 - Action-specific animation cues (support and guard): verified in focused browser test.
-- Final production browser suite after the visual follow-up: 39/39 passed.
+- Final production browser suite after the visual follow-up and integrated outing: 40/40 passed.
+- One outing drives actual preparation, mobile-enemy combat, rabbit rescue, and extraction ledger in sequence.
 - `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa`: passed. Build reports existing React Hook and Autoprefixer warnings.

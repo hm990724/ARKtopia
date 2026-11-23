@@ -10,8 +10,8 @@
 - Unit: `npm run test:v76` 확인. Browser: 기존 첫 구조 튜토리얼과 `tests/browser-v80.spec.cjs`의 편성/추적체/후퇴 테스트 확인. 전체 suite 최신 결과는 이 작업 최종 QA 줄에서 기록한다.
 - 프로덕션 QA 빌드는 통과. 빌드는 기존 CSS Autoprefixer 경고와 React Hook dependency 경고를 계속 출력한다.
 - 자연 캠페인을 며칠 이어가는 난이도/자원 밸런스와 실제 플레이테스트는 미완료다. 고유 엔딩 삽화와 동물 13종 전수 미술 검수도 아직 완료로 처리하지 않는다.
-- Final v80 verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and production Chrome `npm run test:browser` all passed; browser suite 39/39. `test:all` includes the new v76 encounter/save test. Build emits the existing Hook/Autoprefixer warnings.
-- Combat presentation follow-up: full production Chrome browser suite passes 39/39, including the actual Wolf portrait and selected support/guard reaction cues. `npm run test:all` and `npm run build:qa` pass; the build reports existing Hook and Autoprefixer warnings.
+- Final v80 verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and production Chrome `npm run test:browser` all passed; browser suite 40/40. `test:all` includes the new v76 encounter/save test. Build emits the existing Hook/Autoprefixer warnings.
+- Combat presentation follow-up: full production Chrome browser suite passes 40/40, including the actual Wolf portrait, support/guard reaction cues, and one integrated sortie from preparation through fight, rescue, and extraction. `npm run test:all` and `npm run build:qa` pass; the build reports existing Hook and Autoprefixer warnings.
 
 ## 실행 결과
 
