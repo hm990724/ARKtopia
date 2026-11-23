@@ -47,7 +47,7 @@ verify(ready({goal:'rebuild',immunity:99}),'영원한 실험','ending_eternal_ex
 verify(ready({goal:'rebuild',immunity:100}),'에덴','ending_eden_cinematic.png');
 verify(ready({goal:'freedom',immunity:85}),'방주의 씨앗','ending_seed_ark_finale.png');
 verify(ready({goal:'freedom',immunity:84}),'마지막 동물원','ending_last_zoo_cinematic.png');
-verify(ready({goal:'preserve',retired:[]}),'제000번 우리','ending_subject_000_cinematic.png');
+verify(ready({goal:'preserve',retired:[]}),'제000번 우리','ending_subject_000_choice.png');
 verify(ready({goal:'preserve',retired:['rabbit','fox']}),'침묵의 자동화','ending_silent_automation_cinematic.png');
 verify(ready({goal:'freedom',coerced:2}),'흩어진 이름들','ending_scattered_names_cinematic.png');
 verify(ready({goal:'preserve',hqIntel:65,dispatches:1}),'마지막 신호','ending_last_signal_cinematic.png');
@@ -62,7 +62,7 @@ verify(notReady('preserve',s=>{s.crew.retired=['rabbit','fox']}),'비어 있는 
 // Legacy/base endings and the EVE-loss scene still resolve to their own art.
 verifyBase('rebuild',s=>{s.flags.mirror=true;s.knowledge=155;s.animals=['rabbit','fox','deer','owl'].map((id,i)=>makeAnimal(id,i+1));},'인간 이후의 첫 문장','ending_first_sentence_cinematic.png');
 verifyBase('rebuild',s=>{s.knowledge=100;},'미완의 부활','ending_incomplete_revival_cinematic.png');
-verifyBase('rebuild',undefined,'제000번 우리','ending_subject_000_cinematic.png');
+verifyBase('rebuild',undefined,'제000번 우리','ending_subject_000_choice.png');
 verifyBase('freedom',s=>{s.trust=63;s.animals=['rabbit','fox','deer'].map((id,i)=>makeAnimal(id,i+1));},'우리 밖의 봄','ending_spring_beyond_cage_cinematic.png');
 verifyBase('freedom',s=>{s.trust=62;},'흩어진 이름들','ending_scattered_names_cinematic.png');
 verifyBase('preserve',s=>{s.eve=45;},'마지막 두 관리자','ending_two_caretakers_cinematic.png');

@@ -6,7 +6,7 @@ export const ENDING_ART: ReadonlyArray<{ prefix: string; file: string; label: st
   { prefix: '에덴', file: 'ending_eden_cinematic.png', label: '인공 새벽 아래 다시 세운 복제 사회의 정원' },
   { prefix: '방주의 씨앗', file: 'ending_seed_ark_finale.png', label: '젊은 관리자의 마지막 보고를 이어받는 EVE' },
   { prefix: '마지막 동물원', file: 'ending_last_zoo_cinematic.png', label: '인간이 사라진 뒤에도 남은 동물 피난처' },
-  { prefix: '제000번 우리', file: 'ending_subject_000_cinematic.png', label: '자기 정체를 선택하는 열린 관찰실' },
+  { prefix: '제000번 우리', file: 'ending_subject_000_choice.png', label: '자신의 정체성을 직접 선택하는 젊은 관리자와 EVE' },
   { prefix: '침묵의 자동화', file: 'ending_silent_automation_cinematic.png', label: '사람의 온기 없이 계속 작동하는 통제실' },
   { prefix: '흩어진 이름들', file: 'ending_scattered_names_cinematic.png', label: '돌아오지 못한 존재의 기록을 보존하는 추모실' },
   { prefix: '마지막 신호', file: 'ending_last_signal_cinematic.png', label: '수신 여부를 알 수 없는 마지막 구조 신호' },

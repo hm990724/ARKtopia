@@ -13,7 +13,7 @@ ORIGIN ZERO 엔딩 분기는 finale 진입 시 `finishWithArchive()`가 실행�
 | E2 | 에덴 | finale 준비 완료 + 목표 `rebuild` + 면역도 ≥ 100 | `ending_eden_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E3 | 방주의 씨앗 | 목표 `freedom` + 면역도 ≥ 85 + 사진 12장 + 강제 회수 < 2 | `ending_seed_ark_finale.png` | 젊은 관리자와 EVE의 마지막 보고 컷. 저장된 생존 직원·동물은 별도 UI에 실제 상태대로 표시합니다. |
 | E4 | 마지막 동물원 | 목표 `freedom`이며 E3·E7 조건에 해당하지 않음 | `ending_last_zoo_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
-| E5 | 제000번 우리 | 목표 `preserve`의 기본 분기 (사망 직원 < 2, 마지막 신호 조건 미충족) | `ending_subject_000_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
+| E5 | 제000번 우리 | 목표 `preserve`의 기본 분기 (사망 직원 < 2, 마지막 신호 조건 미충족) | `ending_subject_000_choice.png` | 젊은 관리자와 EVE의 정체성 선택 장면. 직원·동물 생존자는 저장 상태대로 별도 표시합니다. |
 | E6 | 침묵의 자동화 | 목표 `preserve` + 사망 직원 ≥ 2 | `ending_silent_automation_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E7 | 흩어진 이름들 | 목표 `freedom` + (강제 회수 ≥ 2 또는 생존 동물 ≤ 1), 단 E3가 우선 | `ending_scattered_names_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E8 | 마지막 신호 | 목표 `preserve` + 사망 직원 < 2 + HQ 정보 ≥ 65 + 본부 송신 ≥ 1 | `ending_last_signal_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
@@ -38,7 +38,7 @@ ORIGIN ZERO 엔딩 분기는 finale 진입 시 `finishWithArchive()`가 실행�
 | 고요한 자동화 | 기본 `finish()`의 `preserve` 기본 결과 | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | 마지막 통신 / 마지막 신호 | EVE 신호 고갈 시나리오 또는 archive의 마지막 신호 결과 | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 
-실제 19개 장면 파일은 `ENDING_ART`에 있고 각 경로는 서로 다릅니다. `LEGACY_ENDING_ART`는 이전 저장 제목을 기존 구성에 연결합니다. `findEndingArt()`는 등록되지 않은 제목에 대해 `ending_subject_000_cinematic.png`를 폴백으로 사용합니다. 이 폴백은 크래시 방지이며, 새로운 서사 결과가 추가될 때 자동으로 맞는 장면이 된다는 뜻은 아닙니다.
+실제 19개 장면 파일은 `ENDING_ART`에 있고 각 경로는 서로 다릅니다. `LEGACY_ENDING_ART`는 이전 저장 제목을 기존 구성에 연결합니다. `findEndingArt()`는 등록되지 않은 제목에 대해 `ending_subject_000_choice.png`를 폴백으로 사용합니다. 이 폴백은 크래시 방지이며, 새로운 서사 결과가 추가될 때 자동으로 맞는 장면이 된다는 뜻은 아닙니다.
 
 ## ?????? ?? ??
 
