@@ -42,6 +42,24 @@ export function fieldRelayBearing(f:FieldState,level:number):string|null{
  const direction=`${dy<0?'북':dy>0?'남':''}${dx>0?'동':dx<0?'서':''}`;
  return `${direction}쪽에서 약한 생체 신호${distance>5?' · 원거리':distance>2?' · 중거리':' · 근거리'}`;
 }
+/** Advance a roaming threat by one real-time step without spending player AP. */
+export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0):boolean{
+ const t=f.threat;if(!t||f.combat)return false;
+ const width=fieldWidth(f),distance=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
+ const detectionRange=Math.max(3,6-Math.floor(Math.max(0,relayLevel)/2));
+ const seen=fieldLineOfSight(f,t.position,detectionRange),heard=noise>=24,remembered=t.lastSeen??t.origin??t.position;
+ const target=seen||heard?f.position:distance(t.position,remembered)>0?remembered:t.origin??remembered;
+ if(seen)t.lastSeen=f.position;
+ const alertGain=Math.max(4,12-Math.max(0,relayLevel-2)*2),hearingGain=Math.max(3,8-Math.floor(Math.max(0,relayLevel)/2));
+ t.alert=Math.max(0,Math.min(100,t.alert+(seen?alertGain:heard?hearingGain:-5)));
+ const from=t.position,steps=[from-width,from+width,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&distance(from,i)===1);
+ const costs=new Map<number,number>([[target,0]]),queue=[target];
+ for(let cursor=0;cursor<queue.length;cursor++){const at=queue[cursor],nextCost=costs.get(at)!+1;for(const next of [at-width,at+width,at-1,at+1])if(next>=0&&next<f.tiles.length&&f.tiles[next]!=='wall'&&distance(at,next)===1&&!costs.has(next)){costs.set(next,nextCost);queue.push(next);}}
+ steps.sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity));
+ if(steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
+ t.mode=seen||heard?'closing':'search';
+ return distance(t.position,f.position)<=1&&t.alert>=55;
+}
 
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
 export function createField(day:number,region:RegionId,sortie=0):FieldState {

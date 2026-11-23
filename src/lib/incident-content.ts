@@ -6,7 +6,7 @@ export const EXTENDED_INCIDENT_IDS=[
  'cctv_loop','cctv_blindspot','evidence_gap','patrol_echo','generator_overheat','cable_arc','battery_swelling',
  'pump_backflow','filter_clog','fence_crack','enclosure_rattle','escape_tracks','animal_fever','feed_shortage',
  'medic_memory','guard_refusal','staff_conflict','empty_chair','neural_static','resonance_drift','data_corruption',
- 'hq_recall_order','hq_delete_order','field_scavenger','contamination_pool','construction_noise','m00_signature'
+ 'hq_recall_order','hq_delete_order','field_scavenger','contamination_pool','construction_noise','m00_signature','exposure_critical'
 ] as const;
 export type ExtendedIncidentId=typeof EXTENDED_INCIDENT_IDS[number];
 type CostKey='power'|'parts'|'filters'|'food'|'medicine'|'electricCells'|'scrap';
@@ -43,11 +43,23 @@ const defs:Content[]=[
  {id:'field_scavenger',title:'탐사 귀환품에 적힌 좌표 하나',desc:'회수한 고철 틈에서 시설 지도와 같은 좌표가 새겨진 얇은 금속 조각이 나왔습니다. 지도에는 해당 구역이 없습니다.',cause:'현장 탐사와 물자 회수 누적',weight:s=>s.encounters>=1?7:0,options:['좌표를 지도에 추가하고 경로를 조사한다','금속 조각을 분해해 부품을 회수한다','좌표를 봉인하고 탐사 로그만 남긴다'],choices:[{label:'미등록 좌표 · 정신 -3, 단서 +2, 지식 +4',delta:{mind:-3,clues:2,knowledge:4}},{label:'분해 · 전리품 부품 +2, 단서 -1',delta:{parts:2,clues:-1}},{label:'좌표 봉인 · 위협 -3, 시설 +2',delta:{threat:-3,facility:2}}]},
  {id:'contamination_pool',title:'복도 바닥의 액체가 배수구를 거슬러 오른다',desc:'검붉은 액체가 경사면을 거꾸로 올라갑니다. 손전등이 닿으면 표면에 작은 발자국 모양이 생겼다가 사라집니다.',cause:'오염도 또는 감염도 상승',weight:s=>s.infection>35||s.facility<30?8:0,options:['정화 소재로 액체를 흡수한다','배수구를 막고 표본을 채취한다','접촉을 피하고 동선을 봉쇄한다'],choices:[{label:'정화 · 필터 -1, 감염 -14',cost:{filters:1},delta:{infection:-14,facility:2}},{label:'표본 채취 · 부품 -1, 감염 +3, 지식 +10, 단서 +1',cost:{parts:1},delta:{infection:3,knowledge:10,clues:1}},{label:'동선 봉쇄 · 전력 -5, 위협 -4, 시설 -2',cost:{power:5},delta:{threat:-4,facility:-2}}]},
  {id:'construction_noise',title:'벽 너머에서 시설을 두드리는 소리',desc:'보강한 벽 안쪽에서 공사 도구를 두드리는 소리가 납니다. 작업 일지는 오늘 수리 작업이 없었다고 표시합니다.',cause:'기지 업그레이드 또는 격리 보강 시설',weight:s=>Object.values(s.baseLevels??{}).some(level=>(level??0)>0)||s.facilities.containment?6:0,options:['벽을 열지 않고 진동 센서를 붙인다','부품을 써서 내부 패널을 연다','벽을 봉인하고 건설 작업을 중단한다'],choices:[{label:'센서 부착 · 부품 -1, 단서 +1, 시설 +2',cost:{parts:1},delta:{clues:1,facility:2}},{label:'패널 개방 · 정신 -5, 지식 +9, 위협 +4',delta:{mind:-5,knowledge:9,threat:4}},{label:'구역 봉인 · 시설 -3, 위협 -5',delta:{facility:-3,threat:-5}}]},
- {id:'m00_signature',title:'검은 고양이 영상에서만 생체 표식이 안정된다',desc:'다른 개체에서는 흔들리던 표식이 검은 고양이 신호에서 잠잠해집니다. 카메라 영상에는 작은 귀 흠집과 가슴의 흰 털이 보입니다.',cause:'M-00 고양이를 발견해 보호 기록에 등록함',weight:s=>!!s.originZero?.cat&&s.originZero.cat!=='unknown'?6:0,options:['고양이를 건드리지 않고 관측 기록만 남긴다','표식 장비를 재보정해 독립 신호를 확인한다','본부 송신 전에 영상 원본을 보호한다'],choices:[{label:'비접촉 관측 · 지식 +8, 신뢰 +4',delta:{knowledge:8,trust:4,clues:1}},{label:'장비 재보정 · 부품 -1, 전력 -4, 단서 +2',cost:{parts:1,power:4},delta:{clues:2,facility:2}},{label:'영상 보호 · 위협 +5, EVE -2, 기록 보존',delta:{threat:5,eve:-2,clues:2}}]}
+ {id:'m00_signature',title:'검은 고양이 영상에서만 생체 표식이 안정된다',desc:'다른 개체에서는 흔들리던 표식이 검은 고양이 신호에서 잠잠해집니다. 카메라 영상에는 작은 귀 흠집과 가슴의 흰 털이 보입니다.',cause:'M-00 고양이를 발견해 보호 기록에 등록함',weight:s=>!!s.originZero?.cat&&s.originZero.cat!=='unknown'?6:0,options:['고양이를 건드리지 않고 관측 기록만 남긴다','표식 장비를 재보정해 독립 신호를 확인한다','본부 송신 전에 영상 원본을 보호한다'],choices:[{label:'비접촉 관측 · 지식 +8, 신뢰 +4',delta:{knowledge:8,trust:4,clues:1}},{label:'장비 재보정 · 부품 -1, 전력 -4, 단서 +2',cost:{parts:1,power:4},delta:{clues:2,facility:2}},{label:'영상 보호 · 위협 +5, EVE -2, 기록 보존',delta:{threat:5,eve:-2,clues:2}}]},
+ {id:'exposure_critical',title:'추적 신호가 임계치에 고정됐다',desc:'CCTV와 외곽 경보가 같은 좌표를 가리킵니다. 본부는 작전을 끝내라고 요구하지만, 아직 현장으로 돌아갈 길은 열려 있습니다.',cause:'외부 추적 압박이 위험 임계치에 도달함',weight:s=>s.threat>=95?18+(s.threat-95)*2:0,options:['전력 8과 필터 1개로 신호를 교란한다','경비 순찰을 재배치해 진입로를 막는다','위치를 기록하고 추적자를 역으로 관찰한다'],choices:[{label:'신호 교란 · 전력 -8, 필터 -1, 위협 -18',cost:{power:8,filters:1},delta:{threat:-18,clues:1,facility:-1}},{label:'경비 재배치 · 직원 정신 -6, 위협 -12, 시설 +3',delta:{threat:-12,facility:3},crewMind:-6},{label:'역추적 · 정신 -8, 위협 +4, 단서 +3, 지식 +8',delta:{mind:-8,threat:4,clues:3,knowledge:8}}]}
 ];
 
 export const extendedIncidentDefs:Record<ExtendedIncidentId,Incident>=Object.fromEntries(defs.map(d=>[d.id,{id:d.id,title:d.title,desc:d.desc,cause:d.cause,options:d.options}])) as Record<ExtendedIncidentId,Incident>;
-export function extendedIncidentWeight(s:V10,id:ExtendedIncidentId):number{return defs.find(d=>d.id===id)?.weight(s)??0;}
+export function extendedIncidentWeight(s:V10,id:ExtendedIncidentId):number{
+ const base=defs.find(d=>d.id===id)?.weight(s)??0;
+ const recent=(token:string,days=3)=>(s.eventHistory??[]).some(entry=>{const day=Number(entry.match(/^(\d+)일차/)?.[1]);return Number.isFinite(day)&&s.day-day>=0&&s.day-day<=days&&entry.includes(token)});
+ // Consequences of a costly choice become more likely follow-up cases for the next three days.
+ const chain:Partial<Record<ExtendedIncidentId,{token:string;bonus:number}>>={
+  filter_clog:{token:'표본 채취',bonus:9},
+  cctv_blindspot:{token:'반복 기록',bonus:8},
+  data_corruption:{token:'기록 삭제',bonus:10},
+  escape_tracks:{token:'순찰 강화',bonus:7},
+ };
+ const followup=chain[id];return base+(followup&&recent(followup.token)?followup.bonus:0);
+}
 export function resolveExtendedIncident(s:V10,id:ExtendedIncidentId,option:number):V10{
  const def=defs.find(d=>d.id===id);if(!def||s.pendingIncident!==id||!Number.isInteger(option)||option<0||option>2)return s;
  const choice=def.choices[option];for(const [key,amount] of Object.entries(choice.cost??{}) as [CostKey,number][]){if(s[key]<amount)return s;}

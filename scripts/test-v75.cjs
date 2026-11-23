@@ -37,9 +37,9 @@ for(const legacy of LEGACY_ENDING_ART){
  const canonical=ENDING_ART.find(item=>item.prefix===legacy.canonicalPrefix);assert.ok(canonical,`${legacy.prefix} must map to a canonical outcome`);
  assert.equal(findEndingArt(`${legacy.prefix} — legacy save` ).file,canonical.file,`${legacy.prefix} preserves saved ending compatibility`);
 }
-const ids=Object.keys(incidentDefs);assert.equal(ids.length,40,'13 core + 27 stateful incidents');
+const ids=Object.keys(incidentDefs);assert.equal(ids.length,41,'13 core + 28 stateful incidents');
 assert.equal(new Set(ids).size,ids.length,'incident IDs must remain unique');
-assert.equal(EXTENDED_INCIDENT_IDS.length,27);
+assert.equal(EXTENDED_INCIDENT_IDS.length,28);
 assert.equal(incidentArtFiles.length,6,'incident set should use its six distinct scene illustrations');
 for(const id of ids){
  const event=incidentDefs[id];assert.ok(event.title&&event.desc&&event.cause,id);assert.equal(event.options.length,3,id);
@@ -50,6 +50,7 @@ const eligible=beginGame('artist','generator');eligible.day=8;eligible.power=48;
 eligible.parts=30;eligible.scrap=30;eligible.food=2;eligible.medicine=20;eligible.filters=8;eligible.electricCells=8;eligible.facilities.cctv=true;eligible.facilities.containment=true;
 eligible.baseLevels={relay:1};eligible.animals=[makeAnimal('rabbit',1)];Object.assign(eligible.animals[0],{stress:70,hp:60,sickness:20,memory:55,contamination:20});
 eligible.headquarters.transferred=['rabbit'];eligible.headquarters.revealStage=2;eligible.encounters=2;eligible.originZero.cat='captured';eligible.security.escapedIds=['lynx'];
+eligible.threat=100;
 for(const id of ['rabbit','fox','wolf','deer'])recruitCrew(eligible,id,`${id}-fixture`);
 eligible.crew.retired.push('rabbit');
 for(const id of EXTENDED_INCIDENT_IDS){

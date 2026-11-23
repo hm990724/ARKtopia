@@ -422,7 +422,7 @@ export default function FieldMission({
           <p>
             {hunt
               ? "청음으로 이동 영역을 좁히고 풀숲의 흔적을 분석한 다음 직접 그물을 던지세요. 동물은 매 턴 이동합니다."
-              : "직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 오염 추적망이 가까워집니다. 100%가 되면 강제 철수합니다."}
+              : "직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 오염 추적망이 가까워집니다. 압박 75%부터 정신력 피해가 생기며, 100%에도 작전은 계속되지만 적의 접근 위험이 극심해집니다."}
           </p>
         </div>
         <button
@@ -1529,12 +1529,12 @@ export default function FieldMission({
                 </p>
               </div>
               <div className="v33-travel-status">
-                <span>추적망 · 100% 시 철수</span>
+                <span>추적 위험 · 100% 극한</span>
                 <strong>{pressure}%</strong>
                 <i>
                   <em style={{ width: pressure + "%" }} />
                 </i>
-                <p>압박 100% 시 정신력 피해와 긴급 철수.</p>
+                <p>75%부터 정신력 피해. 100%에도 퇴출되지 않으며 적 접근과 추가 피해가 위험해집니다. 숨기·교전·귀환을 선택하세요.</p>
               </div>
               <div className="v33-travel-status">
                 <span>탐사 목적</span>

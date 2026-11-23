@@ -45,16 +45,17 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
 }
 export type UpgradeId='relay'|'battery'|'clinic';
 export const baseUpgrades:Record<UpgradeId,{name:string;effect:string;scrap:number;parts:number;power:number}>={
- relay:{name:'현장 중계기',effect:'단계마다 추적망 증가 -1 · 1단계부터 미니맵 출구 표시 · 2단계부터 동물의 대략적인 방향 수신',scrap:8,parts:1,power:4},
+ relay:{name:'현장 추적망',effect:'1–5단계: 이동 압박 감소 · Lv1 출구 표시 · Lv2 동물 방위 · Lv4 적 경계 완화 · Lv5 적 감지 거리 감소',scrap:8,parts:1,power:4},
  battery:{name:'전력 축전기',effect:'단계마다 야간 전력 +5 · 탐사 손전등 소모 완화',scrap:10,parts:2,power:4},
  clinic:{name:'안정화 병동',effect:'단계마다 야간 개체 스트레스 -2 · 직원 정신 +1',scrap:9,parts:1,power:5}
 };
-export function upgradeLevel(s:V10,id:UpgradeId){return Math.max(0,Math.min(3,s.baseLevels?.[id]??0));}
+export function upgradeMaxLevel(id:UpgradeId){return id==='relay'?5:3;}
+export function upgradeLevel(s:V10,id:UpgradeId){return Math.max(0,Math.min(upgradeMaxLevel(id),s.baseLevels?.[id]??0));}
 export function upgradeCost(s:V10,id:UpgradeId){const r=baseUpgrades[id],level=upgradeLevel(s,id);return {scrap:r.scrap+level*6,parts:r.parts+level,power:r.power};}
 export function upgradeBlock(s:V10,id:UpgradeId):string|null{
  if(s.phase!=='day'||s.run||s.pending||s.pendingIncident)return '진행 중인 작업을 먼저 마치세요.';
  if(!s.facilities.cctv)return 'CCTV 감시망 복구 후 강화 가능';
- if(upgradeLevel(s,id)>=3)return '최대 단계';
+ if(upgradeLevel(s,id)>=upgradeMaxLevel(id))return '최대 단계';
  const c=upgradeCost(s,id);if(s.scrap<c.scrap||s.parts<c.parts||s.power<c.power)return '강화 자원 부족';return null;
 }
 export function upgradeBase(s:V10,id:UpgradeId):V10{if(upgradeBlock(s,id))return s;const n=structuredClone(s),c=upgradeCost(s,id);n.scrap-=c.scrap;n.parts-=c.parts;n.power-=c.power;n.baseLevels??={};n.baseLevels[id]=upgradeLevel(s,id)+1;n.lastOutcome=`${baseUpgrades[id].name} ${n.baseLevels[id]}단계 강화 완료`;log(n,'기지 강화',n.lastOutcome,'good');return n;}

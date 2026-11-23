@@ -27,8 +27,8 @@ import {CARE_ACTIONS,careMastery,getCareScenario,resolveCareChoice,quickCare,typ
 import {BaseUpgrades,ReactionStage} from './EnhancedField';
 import {FacilityPowerDispatch,NightDispatchForecast} from './FacilityPowerDispatch';
 import {setFacilityPowerPriority} from '@/lib/facility-power';
-import {resolveCombat,upgradeBase,newFieldCombat} from '@/lib/field-combat';
-import {fieldLineOfSight} from '@/lib/tactical-field';
+import {resolveCombat,upgradeBase,newFieldCombat,upgradeLevel} from '@/lib/field-combat';
+import {advanceFieldThreat} from '@/lib/tactical-field';
 import FieldMission from './FieldMission';
 import {spendCareAnalysis,CARE_ANALYSIS_COST} from '@/lib/knowledge';
 import {telemetryChanges,type TelemetryEvent} from '@/lib/telemetry';
@@ -349,17 +349,8 @@ useEffect(()=>{
  if(tab!=='expedition'||!s?.run||!s.field?.threat||s.field.combat||s.field.choice)return;
  const timer=window.setInterval(()=>setS(current=>{
   if(!current?.run||!current.field?.threat||current.field.combat)return current;
-  const next=structuredClone(current),field=next.field!,threat=field.threat!,width=field.width??7;
-  const distance=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
-  const seen=fieldLineOfSight(field,threat.position,6),heard=field.noise>=24;
-  const remembered=threat.lastSeen??threat.origin??threat.position;
-  const target=seen||heard?field.position:distance(threat.position,remembered)>0?remembered:threat.origin??remembered;
-  if(seen)threat.lastSeen=field.position;
-  threat.alert=Math.max(0,Math.min(100,threat.alert+(seen?12:heard?8:-5)));
-  const from=threat.position,steps=[from-width,from+width,from-1,from+1].filter(i=>i>=0&&i<field.tiles.length&&field.tiles[i]!=='wall'&&distance(from,i)===1);steps.sort((a,b)=>distance(a,target)-distance(b,target));
-  if(threat.alert>=20&&steps[0]!==undefined&&distance(steps[0],target)<distance(from,target))threat.position=steps[0];
-  threat.mode=seen||heard?'closing':'search';
-  if(distance(threat.position,field.position)<=1&&threat.alert>=55){field.combat=newFieldCombat(next.day+field.steps);field.combat.source='mobile';if(next.capture){next.capture=null;field.encountered=true;next.threat=Math.min(100,next.threat+6);}field.lastEvent='움직임을 멈춘 사이 오염체가 소음 신호를 따라 근접했습니다.';next.lastOutcome=field.lastEvent;}
+  const next=structuredClone(current),field=next.field!;
+  if(advanceFieldThreat(field,field.noise,upgradeLevel(next,'relay'))){field.combat=newFieldCombat(next.day+field.steps);field.combat.source='mobile';if(next.capture){next.capture=null;field.encountered=true;next.threat=Math.min(100,next.threat+6);}field.lastEvent='움직임을 멈춘 사이 오염체가 소음 신호를 따라 근접했습니다.';next.lastOutcome=field.lastEvent;}
   return next;
  }),1400);
  return ()=>window.clearInterval(timer);
