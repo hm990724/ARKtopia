@@ -43,31 +43,31 @@ function verifyBase(goal,setup,title,file){
 }
 
 // Eight main ORIGIN ZERO outcomes, driven through the real condition function.
-verify(ready({goal:'rebuild',immunity:99}),'영원한 실험','ending_eternal_experiment_v77.svg');
-verify(ready({goal:'rebuild',immunity:100}),'에덴','ending_eden_v77.svg');
-verify(ready({goal:'freedom',immunity:85}),'방주의 씨앗','ending_seed_ark_v77.svg');
-verify(ready({goal:'freedom',immunity:84}),'마지막 동물원','ending_last_zoo_v77.svg');
-verify(ready({goal:'preserve',retired:[]}),'제000번 우리','ending_subject_000_v77.svg');
-verify(ready({goal:'preserve',retired:['rabbit','fox']}),'침묵의 자동화','ending_silent_automation_v77.svg');
-verify(ready({goal:'freedom',coerced:2}),'흩어진 이름들','ending_scattered_names_v77.svg');
-verify(ready({goal:'preserve',hqIntel:65,dispatches:1}),'마지막 신호','ending_last_signal_v77.svg');
+verify(ready({goal:'rebuild',immunity:99}),'영원한 실험','ending_eternal_experiment_cinematic.png');
+verify(ready({goal:'rebuild',immunity:100}),'에덴','ending_eden_cinematic.png');
+verify(ready({goal:'freedom',immunity:85}),'방주의 씨앗','ending_seed_ark_cinematic.png');
+verify(ready({goal:'freedom',immunity:84}),'마지막 동물원','ending_last_zoo_cinematic.png');
+verify(ready({goal:'preserve',retired:[]}),'제000번 우리','ending_subject_000_cinematic.png');
+verify(ready({goal:'preserve',retired:['rabbit','fox']}),'침묵의 자동화','ending_silent_automation_cinematic.png');
+verify(ready({goal:'freedom',coerced:2}),'흩어진 이름들','ending_scattered_names_cinematic.png');
+verify(ready({goal:'preserve',hqIntel:65,dispatches:1}),'마지막 신호','ending_last_signal_cinematic.png');
 
 // Archive-specific endings remain reachable when the new route is not ready.
-verify(notReady('rebuild',s=>{s.headquarters.transferred=['rabbit','fox'];s.archive.dispatches=1;s.archive.entries['FORCED']=specimen('FORCED','deer','강제 조직 회수')}),'본부의 계승자','ending_successor_v77.svg');
-verify(notReady('rebuild',s=>{s.knowledge=120;}),'상처 없는 복원','ending_humane_restoration_v77.svg');
-verify(notReady('freedom'),'기록 밖의 봄','ending_spring_outside_records_v77.svg');
-verify(notReady('freedom',s=>{for(let i=0;i<2;i++)s.archive.entries['FORCED-'+i]=specimen('FORCED-'+i,'deer','강제 조직 회수')}),'뒤늦은 철문','ending_late_gate_v77.svg');
-verify(notReady('preserve',s=>{s.crew.retired=['rabbit','fox']}),'비어 있는 교대실','ending_empty_shiftroom_v77.svg');
+verify(notReady('rebuild',s=>{s.headquarters.transferred=['rabbit','fox'];s.archive.dispatches=1;s.archive.entries['FORCED']=specimen('FORCED','deer','강제 조직 회수')}),'본부의 계승자','ending_successor_cinematic.png');
+verify(notReady('rebuild',s=>{s.knowledge=120;}),'상처 없는 복원','ending_humane_restoration_cinematic.png');
+verify(notReady('freedom'),'기록 밖의 봄','ending_spring_outside_records_cinematic.png');
+verify(notReady('freedom',s=>{for(let i=0;i<2;i++)s.archive.entries['FORCED-'+i]=specimen('FORCED-'+i,'deer','강제 조직 회수')}),'뒤늦은 철문','ending_late_gate_cinematic.png');
+verify(notReady('preserve',s=>{s.crew.retired=['rabbit','fox']}),'비어 있는 교대실','ending_empty_shiftroom_cinematic.png');
 
 // Legacy/base endings and the EVE-loss scene still resolve to their own art.
-verifyBase('rebuild',s=>{s.flags.mirror=true;s.knowledge=155;s.animals=['rabbit','fox','deer','owl'].map((id,i)=>makeAnimal(id,i+1));},'인간 이후의 첫 문장','ending_first_sentence_v77.svg');
-verifyBase('rebuild',s=>{s.knowledge=100;},'미완의 부활','ending_incomplete_revival_v77.svg');
-verifyBase('rebuild',undefined,'제000번 우리','ending_subject_000_v77.svg');
-verifyBase('freedom',s=>{s.trust=63;s.animals=['rabbit','fox','deer'].map((id,i)=>makeAnimal(id,i+1));},'우리 밖의 봄','ending_spring_beyond_cage_v77.svg');
-verifyBase('freedom',s=>{s.trust=62;},'흩어진 이름들','ending_scattered_names_v77.svg');
-verifyBase('preserve',s=>{s.eve=45;},'마지막 두 관리자','ending_two_caretakers_v77.svg');
-verifyBase('preserve',s=>{s.eve=44;},'고요한 자동화','ending_quiet_automation_v77.svg');
-assert.equal(findEndingArt('마지막 통신 — EVE 코어 정지').file,'ending_final_transmission_v77.svg');
+verifyBase('rebuild',s=>{s.flags.mirror=true;s.knowledge=155;s.animals=['rabbit','fox','deer','owl'].map((id,i)=>makeAnimal(id,i+1));},'인간 이후의 첫 문장','ending_first_sentence_cinematic.png');
+verifyBase('rebuild',s=>{s.knowledge=100;},'미완의 부활','ending_incomplete_revival_cinematic.png');
+verifyBase('rebuild',undefined,'제000번 우리','ending_subject_000_cinematic.png');
+verifyBase('freedom',s=>{s.trust=63;s.animals=['rabbit','fox','deer'].map((id,i)=>makeAnimal(id,i+1));},'우리 밖의 봄','ending_spring_beyond_cage_cinematic.png');
+verifyBase('freedom',s=>{s.trust=62;},'흩어진 이름들','ending_scattered_names_cinematic.png');
+verifyBase('preserve',s=>{s.eve=45;},'마지막 두 관리자','ending_two_caretakers_cinematic.png');
+verifyBase('preserve',s=>{s.eve=44;},'고요한 자동화','ending_quiet_automation_cinematic.png');
+assert.equal(findEndingArt('마지막 통신 — EVE 코어 정지').file,'ending_final_transmission_cinematic.png');
 
 assert.equal(ENDING_ART.length,19);
 assert.equal(new Set(ENDING_ART.map(item=>item.file)).size,19);

@@ -46,7 +46,7 @@ import {House,Shield,Map,FlaskConical,ShoppingBag,BookOpen,Volume2,VolumeX,Moon,
 type Tab=GameTab;
 type Talk={speaker:'EVE'|'관리자'|CrewId;text:string};
 function capturedSpeciesCount(s:V10):number{return new Set([...s.animals.map(a=>a.id),...s.headquarters.transferred]).size}
-const KEY='last-enclosure-ark-v10';const SPRITE_SPECIES=new Set(['rabbit','fox','deer','owl','wolf','crow','otter','lynx','axolotl','moth','mutant','chimera','specter']);const img=(id:string)=>{if(SPRITE_SPECIES.has(id))return animalSprite(id);if(specs.some(a=>a.id===id))return '/assets/animals/unavailable-specimen.svg';if(id==='protagonist-young')return '/assets/characters/protagonist_neutral_v74_768.png';if(id==='eve-hologram')return '/assets/characters/eve_hologram.webp';if(['hero-gate','gate','sanctuary','laboratory','wasteland','hidden-photo','dawn'].includes(id))return '/assets/backgrounds/'+id+'.webp';return '/art/'+id+'.png'};
+const KEY='last-enclosure-ark-v10';const SPRITE_SPECIES=new Set(['rabbit','fox','deer','owl','wolf','crow','otter','lynx','axolotl','moth','mutant','chimera','specter']);const img=(id:string)=>{if(SPRITE_SPECIES.has(id))return animalSprite(id);if(specs.some(a=>a.id===id))return '/assets/animals/unavailable-specimen.svg';if(id==='protagonist-young')return '/assets/characters/protagonist_neutral.png';if(id==='eve-hologram')return '/assets/characters/eve_hologram.webp';if(['hero-gate','gate','sanctuary','laboratory','wasteland','hidden-photo','dawn'].includes(id))return '/assets/backgrounds/'+id+'.webp';return '/art/'+id+'.png'};
 
 // Every implemented species has its own uncanny and mutant sprite.
 // Preserve the individual and its stats when choosing the matching visual.
@@ -305,7 +305,7 @@ const [hqDebrief,setHqDebrief]=useState('');
 
 const [tab,setTab]=useState<Tab>('hub'),[selectedRegion,setSelectedRegion]=useState<RegionId>('garden'),[selectedGear,setSelectedGear]=useState<Gear[]>(['flashlight','filter']),[selectedAnimal,setSelectedAnimal]=useState<string|null>(null);
 const [camera,setCamera]=useState<CameraId>('CAM-01');
-useEffect(()=>{if(!s||s.run)return;setSelectedGear(prev=>{const next=prev.filter(g=>!gearUnavailable(s,g,selectedRegion));return next.length===prev.length?prev:next})},[s?.filters,s?.medicine,s?.parts,s?.flashlight,s?.power,s?.run,selectedRegion]);
+useEffect(()=>{if(!s||s.run)return;setSelectedGear(prev=>{const next=prev.filter(g=>!gearUnavailable(s,g,selectedRegion));return next.length===prev.length?prev:next})},[s,selectedRegion]);
 const [selectedCompanion,setSelectedCompanion]=useState<CrewId|null>(null);
 const [lockNotice,setLockNotice]=useState('');
 const [awakening,setAwakening]=useState<{id:AnimalId;stage:number}|null>(null);
@@ -350,7 +350,7 @@ useEffect(()=>{
  setV42Telemetry({tick:++telemetryCounter.current,entries:delta.slice(0,7)});
 },[s]);
 useEffect(()=>{if(!v42Telemetry)return;const timer=setTimeout(()=>setV42Telemetry(p=>p?.tick===v42Telemetry.tick?null:p),3600);return()=>clearTimeout(timer);},[v42Telemetry]);
- useEffect(()=>{if(!s||s.phase==='ending'||(s.mind>0&&s.eve>0))return;const fatal={...s,phase:'ending' as const,ending:s.mind<=0?'제000번 우리 — 담당자의 생체 신호가 정지했다. EVE는 그를 보존 개체로 분류했다.':'마지막 신호 — EVE 코어 0. 시설의 마지막 음성이 사라지고 모든 지시가 끊겼다.'};setTalk([]);setResult(null);setCaptureReveal(null);setNightView(false);setMemoryTarget(null);setS(fatal)},[s?.mind,s?.eve,s?.phase]);
+ useEffect(()=>{if(!s||s.phase==='ending'||(s.mind>0&&s.eve>0))return;const fatal={...s,phase:'ending' as const,ending:s.mind<=0?'제000번 우리 — 담당자의 생체 신호가 정지했다. EVE는 그를 보존 개체로 분류했다.':'마지막 신호 — EVE 코어 0. 시설의 마지막 음성이 사라지고 모든 지시가 끊겼다.'};setTalk([]);setResult(null);setCaptureReveal(null);setNightView(false);setMemoryTarget(null);setS(fatal)},[s]);
 
 useEffect(()=>{const line=talk[talkIdx];if(!line||talkDone||letters>=line.text.length)return;const t=setTimeout(()=>setLetters(v=>v+1),37);return()=>clearTimeout(t)},[talk,talkIdx,letters,talkDone]);
 // Reveal only after a real in-game state transition. Saves are marked once, so the scene never repeats.
@@ -786,11 +786,12 @@ const tourGuide=(!s||tutorialStep>=9||guideDismissed||careDialog)?null:(():{targ
  if(tutorialStep===7)return {target:'workshop',title:'07 · 병리·검시실 복구',body:'보급실에서 고철 9 · 부품 2 · 전력 10으로 병리 장비를 복구하세요. 생존 개체는 안전 검사를, 사망 개체는 사후 검시를 할 수 있습니다.',nav:'supplies'};
  return {target:'cctv-tab',title:'08 · CCTV 대응 체험',body:'CCTV에 들어가면 EVE가 첫 사용법을 안내합니다. 이상 경보는 음성 교감·봉쇄·진정, 탈출은 추적 후 재격리로 대응하세요.',nav:'cctv'};
 })();
+const tourTarget=tourGuide?.target;
 useEffect(()=>{
  guideFocus.current?.classList.remove('echo-tour-focus');
  guideFocus.current=null;
- if(!tourGuide||talk.length||awakening||result||nightView||memoryTarget||s?.pending||s?.pendingIncident||s?.headquarters?.pendingScene||confirmRestart||inspect)return;
- const element=document.querySelector<HTMLElement>(`[data-tour="${tourGuide.target}"]`);
+ if(!tourTarget||talk.length||awakening||result||nightView||memoryTarget||s?.pending||s?.pendingIncident||s?.headquarters?.pendingScene||confirmRestart||inspect)return;
+ const element=document.querySelector<HTMLElement>(`[data-tour="${tourTarget}"]`);
  if(!element)return;
  element.classList.add('echo-tour-focus');
  guideFocus.current=element;
@@ -800,15 +801,15 @@ useEffect(()=>{
   element.classList.remove('echo-tour-focus');
   if(guideFocus.current===element)guideFocus.current=null;
  };
-},[tourGuide?.target,tab,talk.length,awakening,result,nightView,s?.pending]);
+},[tourTarget,tab,talk.length,awakening,result,nightView,memoryTarget,s?.pending,s?.pendingIncident,s?.headquarters?.pendingScene,confirmRestart,inspect]);
 
 // The tutorial spotlight is drawn as four fixed panes surrounding the real clickable target.
 // This avoids z-index and overflow bugs from scaling nested in-game panels.
 const tourSpotActive=!!(tourGuide&&!s?.run&&!tourPaused&&!talk.length&&!awakening&&!result&&!nightView&&!memoryTarget&&!s?.pending&&!s?.pendingIncident&&!s?.headquarters?.pendingScene&&!confirmRestart&&!inspect&&!careDialog&&!fieldRewardModal);
 useEffect(()=>{setTourPaused(false)},[s?.tutorialStep,tourGuide?.target]);
 useEffect(()=>{
- if(!tourSpotActive||!tourGuide){setTourSpot(null);return;}
- const target=tourGuide.target;
+ if(!tourSpotActive||!tourTarget){setTourSpot(null);return;}
+ const target=tourTarget;
  const node=document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
  if(!node){setTourSpot(null);return;}
  let frame=0;
@@ -834,7 +835,7 @@ useEffect(()=>{
  const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(refresh):null;
  observer?.observe(node);
  return()=>{window.clearTimeout(delayed);if(frame)window.cancelAnimationFrame(frame);window.removeEventListener('resize',refresh);window.removeEventListener('scroll',refresh,true);observer?.disconnect()};
-},[tourSpotActive,tourGuide?.target,tab,s?.tutorialStep,s?.run,s?.capture,s?.pending]);
+},[tourSpotActive,tourTarget,tab,s?.tutorialStep,s?.run,s?.capture,s?.pending]);
 // Branch-specific EVE briefings. Saved on the game state so reloads do not repeat them.
 const onboardingBusy=!!(s?.hqOrders?.active?.status==='offered'||s?.voice?.pending||talk.length||cinematic||awakening||result||aftermath||nightView||inspect||memoryTarget||careDialog||captureReveal||fieldRewardModal||s?.pending||s?.pendingIncident||s?.headquarters?.pendingScene||s?.headquarters?.pendingAnimal||s?.crew?.pendingTermination||s?.crew?.pendingNightVote||confirmRestart);
 useEffect(()=>{

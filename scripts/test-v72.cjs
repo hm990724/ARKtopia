@@ -12,11 +12,11 @@ assert.equal(art.characterMood(s,'protagonist','제 손이 이상해요'),'criti
 console.log('PASS portraits follow mental health, crisis dialogue and evidence without changing state');
 const before=JSON.stringify(s);art.characterMood(s,'eve');assert.equal(JSON.stringify(s),before);
 for(const id of ['protagonist','eve','rabbit','fox','wolf','deer'])for(const mood of ['neutral','anxious','critical','resolve'])assert.ok(fs.existsSync(path.join(__dirname,'../public',art.characterPortrait(id,mood))),`${id}/${mood}`);
-console.log('PASS all six characters and all dialogue moods resolve to real original or versioned images');
+console.log('PASS all six characters and all dialogue moods resolve through canonical descriptive filenames');
 assert.deepEqual([art.directionForMove(15,8,7),art.directionForMove(15,22,7),art.directionForMove(15,14,7),art.directionForMove(15,16,7)],['up','down','left','right']);
 assert.equal(art.WALK_ROW.left,art.WALK_ROW.right);
-const atlas=fs.readFileSync(path.join(__dirname,'../public/assets/field/ranger_walk_v72.png'));assert.equal(atlas[25],6,'RGBA atlas');assert.equal(atlas.readUInt32BE(16),atlas.readUInt32BE(20));
+const atlas=fs.readFileSync(path.join(__dirname,'../public/assets/field/ranger_walk.png'));assert.equal(atlas[25],6,'RGBA atlas');assert.equal(atlas.readUInt32BE(16),atlas.readUInt32BE(20));
 console.log('PASS four-direction movement mapping and transparent square animation atlas');
-const rows=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/generated-assets-v72.json'),'utf8'));
-for(const r of rows){const b=fs.readFileSync(path.join(__dirname,'..',r.file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a',r.file)}
-console.log(`PASS ${rows.length} new art files present and PNG headers valid`);
+const activeArt=['assets/field/ranger_walk.png','assets/characters/protagonist_neutral.png','assets/characters/protagonist_anxious.png','assets/characters/protagonist_critical.png','assets/characters/protagonist_resolve.png','assets/characters/eve_hologram.webp','assets/characters/eve_anxious.png','assets/characters/eve_critical.png','assets/characters/eve_resolve.png','assets/staff/rabbit/portrait_unstable.png','assets/staff/rabbit/portrait_critical.png','assets/staff/fox/portrait.png','assets/staff/fox/portrait_unstable.png','assets/staff/fox/portrait_critical.png','assets/staff/wolf/portrait_unstable.png','assets/staff/wolf/portrait_critical.png','assets/staff/deer/portrait_unstable.png','assets/staff/deer/portrait_critical.png','assets/cinematics/origin-zero/scene_m00_positive.png','assets/cinematics/origin-zero/scene_m00_protect.png','assets/cinematics/origin-zero/scene_m00_transfer.png','assets/cinematics/origin-zero/scene_farewell.png','assets/cinematics/origin-zero/scene_ark_recall.png'];
+for(const file of activeArt){const b=fs.readFileSync(path.join(__dirname,'../public',file));if(file.endsWith('.png'))assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);else assert.equal(b.subarray(8,12).toString('ascii'),'WEBP',file)}
+console.log(`PASS ${activeArt.length} canonical active image files exist with valid formats`);

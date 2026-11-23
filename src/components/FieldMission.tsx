@@ -203,7 +203,7 @@ export default function FieldMission({
   useEffect(() => {
     if (state.field?.choice && !state.capture)
       fieldChoiceFirstButton.current?.focus();
-  }, [state.field?.choice?.id, state.capture]);
+  }, [state.field?.choice, state.capture]);
   function walkTo(target: number) {
     if (
       walking ||
@@ -227,6 +227,8 @@ export default function FieldMission({
       walkTimeout.current = null;
     }, 450);
   }
+  const walkToRef = useRef(walkTo);
+  walkToRef.current = walkTo;
 
   // Keyboard travel is disabled while an overlay or field choice is active.
   useEffect(() => {
@@ -269,13 +271,12 @@ export default function FieldMission({
       )
         return;
       event.preventDefault();
-      walkTo(at);
+      walkToRef.current(at);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [
-    state.field?.position,
-    state.field?.choice,
+    state.field,
     state.capture,
     walking,
     state.run,
@@ -738,7 +739,7 @@ export default function FieldMission({
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
                     gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
-                    backgroundImage: "url(/assets/field/world_ground_v74.png)",
+                    backgroundImage: "url(/assets/field/world_ground.png)",
                     ["--v33-beam-x" as string]:hunt.lastSearch?`${((hunt.lastSearch.cell%size)+.5)/size*100}%`:'50%',
                     ["--v33-beam-y" as string]:hunt.lastSearch?`${(Math.floor(hunt.lastSearch.cell/size)+.5)/size*100}%`:'50%',
                   }}
@@ -1143,7 +1144,7 @@ export default function FieldMission({
                         ) : null}
                         {field.threat?.position === i && visible && !here && !field.combat && (
                           <span className="v74-roaming-threat" role="img" aria-label="접근 중인 오염체">
-                            <img src={`/assets/field/enemy_${field.steps % 2 ? "echo" : "slime"}_v74.png`} alt="" />
+                            <img src={`/assets/field/enemy_${field.steps % 2 ? "echo" : "slime"}.png`} alt="" />
                             <small>{field.threat.mode === "closing" ? "접근" : "잔향"}</small>
                           </span>
                         )}

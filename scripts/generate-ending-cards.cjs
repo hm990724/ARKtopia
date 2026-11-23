@@ -3,7 +3,7 @@ const path=require('node:path');
 const out=path.join(__dirname,'../public/assets/endings');
 const portrait=(file,mime)=>`data:${mime};base64,${fs.readFileSync(path.join(__dirname,'../public/assets/characters',file)).toString('base64')}`;
 const evePortrait=portrait('eve_hologram.webp','image/webp');
-const managerPortrait=portrait('protagonist_neutral_v74_768.png','image/png');
+const managerPortrait=portrait('protagonist_neutral.png','image/png');
 const endings=[
  ['seed_ark','#9d395d','#351e36','DAWN / PRESERVATION','EVE carries the final instructions into the next morning.'],
  ['eden','#73575e','#294536','AFTER / RECLAMATION','A human witness watches an empty garden take root.'],
@@ -37,6 +37,6 @@ for(let i=0;i<endings.length;i++){
 <rect width="1536" height="864" fill="url(#bg)"/><path d="M0 720 430 300 800 720 1090 205 1536 690V864H0Z" fill="#12141d" fill-opacity=".62"/><path d="M0 650 470 0h200L135 864H0Z" fill="url(#beam)"/><path d="M1080 0h456v864h-170z" fill="#0c111a" fill-opacity=".24"/>
 <g stroke="#e7a2b8" stroke-opacity=".18" fill="none"><path d="M0 112H1536M0 744H1536M510 0v864M1018 0v864"/><path d="M548 78h420v640H548z" stroke-dasharray="8 12"/><path d="M590 132h336M590 154h198M590 176h250"/></g>${figures.join('')}${center}
 <rect width="1536" height="864" fill="url(#shade)"/><path d="M80 675H820" stroke="#ef9bb8" stroke-opacity=".45"/><text x="96" y="724" fill="#f3b7cc" font-family="Arial,sans-serif" font-size="22" letter-spacing="7">ARKTOPIA // ${esc(stamp)}</text><text x="1450" y="810" fill="#f3b7cc" fill-opacity=".7" font-family="monospace" font-size="18">${String(i+1).padStart(2,'0')} / 19</text></svg>`;
- fs.writeFileSync(path.join(out,`ending_${slug}_v77.svg`),svg);
+ fs.writeFileSync(path.join(out,`ending_${slug}_draft.svg`),svg);
 }
 console.log(`Created ${endings.length} official-cast ending cards.`);

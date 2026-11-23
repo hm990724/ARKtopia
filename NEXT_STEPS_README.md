@@ -1,4 +1,12 @@
-﻿# ARKtopia / ORIGIN ZERO — 이어서 작업할 내용
+# ARKtopia / ORIGIN ZERO — 이어서 작업할 내용
+
+## 2026-11-23 메인·파생 엔딩 작화 제작
+
+- 현재 연결된 내장 `image_gen`으로 ORIGIN ZERO 메인 엔딩 8개와 기존 파생 엔딩 11개에 고유한 고해상도 배경 PNG를 각각 제작했다. 새 아트 경로는 `ending_*_cinematic.png`이며, 기존 SVG, WEBP와 버전 파일은 삭제하거나 덮어쓰지 않았다.
+- 엔딩 배경은 인물 없는 장소/소품 장면으로 구성했다. 세이브별 생존 직원·동물 명단은 게임 UI에서 실제 상태로 표시되어 정적 그림에 죽거나 미합류한 인물을 넣지 않는다. 주인공/EVE를 포함한 인물 시네마틱은 별도 작업으로 남아 있다.
+- `src/lib/ending-art.ts`와 `docs/ENDING_MATRIX.md`의 19개 라우트 연결을 새 배경으로 갱신했다. `scripts/test-ending-matrix.cjs`와 `scripts/test-v75.cjs`는 PNG signature, 해상도, 라우트 고유성을 검사한다.
+- 이미지 자체는 1536×1024 이상 PNG로 생성됐으며, 사용자 제공 늑대/토끼 퇴장 장면의 적색·장미색 조명과 짙은 자주색 그림자를 스타일 참조로 사용했다. 기존 개체/직원 고해상도 원화는 보존했다.
+- 이 작업 뒤 전체 이미지 19개 엔딩 시각 검수, 스토리 씬의 인물 컷, 동물 고유 Mutant 교체 여부를 계속 진행한다.
 
 기준일: 2026-11-23
 프로젝트: `C:\Users\lookm\Documents\GitHub\ARKtopia`
@@ -17,7 +25,7 @@
 
 - The game keeps eight main ORIGIN ZERO endings plus older state-specific endings. Nineteen ending titles now point to nineteen distinct existing route compositions; prior saved-title aliases remain mapped. The eight original handoff WebPs and every earlier ending asset were restored and preserved after the user clarified not to remove the older set.
 - `npm run test:v75` checks all 19 unique active route compositions and the eight preserved original WebPs. The old `_v75.png` and `_v76.png` sets remain archive-only because their content does not satisfy the ending cast/scene rules.
-- **Still incomplete:** all 19 endings need bespoke red/pink painterly scenes in the user's reference style, and those scenes need cast checks against each save's living/recruited roster. Current active art is canonical manager/EVE portrait composition, not finished cinematic illustration. No native image generation tool is connected; Codex CLI confirmed it cannot generate in this session.
+- **Still incomplete:** all 19 endings need bespoke red/pink painterly scenes in the user's reference style, and those scenes need cast checks against each save's living/recruited roster. Current all 19 active endings now use distinct cinematic background art; save-specific living cast portraits are drawn separately in the ending UI. No native image generation tool is connected; Codex CLI confirmed it cannot generate in this session.
 - The ending record UI now lists portraits for living recruited staff and living in-facility animals only. Protected M-00 uses the existing pixel-art cat file; sent-away M-00 is not listed as sheltered. Browser fixture coverage checks the living-animal count and protected-cat art path.
 - `scripts/test-ending-matrix.cjs` exercises 8 ORIGIN ZERO outcomes plus 11 legacy/state-specific outcomes against actual route logic and distinct existing scene files. It is wired into `npm run test:all`; `npm run test:all`, typecheck, lint, asset check, targeted ending browser tests, and production build passed. The latest build still emits six existing React Hook dependency warnings; no Autoprefixer warning.
 - `npm run balance:campaign` now runs three seeded sorties, capture attempts, care, decontamination, supply purchases and night settlements across all four origins. All reach DAY 13 with at least one animal and without total facility/power collapse; this skips tutorial/HQ/staff progression and is not a human or novice campaign playtest. Metrics are in [`BALANCE_REPORT.md`](BALANCE_REPORT.md).
@@ -63,15 +71,13 @@
 - Outcomes and the exact policy are recorded in `BALANCE_REPORT.md`. This intentionally excludes expeditions, captures, animal care, staff and upgrades; natural full-campaign balance is still not certified.
 - At the time of the initial v80 probe, no `image_gen` tool was connected. The connection became available later in this session; see the v80 art correction below. No API/CLI fallback was used.
 
-## v80 art and crew-loss correction — 2026-11-23
+## 2026-11-23 ??? ??? ??
 
-- Rechecked `public/assets/animals`, `cinematics/staff-arrivals`, `cinematics/staff-terminations`, and staff portrait states against the actual files. Canonical animal lookups use the original species/state names; historical `_v##` files remain archival and are not runtime lookups.
-- Image generation became available in this session. Generated and visually reviewed the canonical `public/assets/animals/m00_normal.png` against the M-00 identity and existing rabbit pixel-art quality references. It is transparent RGBA 1254×1254. The replaced M-00 art was copied to `public/assets/archive/m00_normal_pre_pixel.png` before replacement.
-- A low-detail hand-drawn test sprite was discarded and is not referenced by the game. It was never committed and the source art was not modified.
-- `scripts/test-v75.cjs` now validates the generated canonical M-00 PNG header, dimensions, alpha channel, runtime path, and preservation archive.
-- One custom Seed of the Ark ending scene (`ending_seed_ark.png`) now replaces its interim card. Remaining: replace 18 interim ending cards, review/generate species art that fails the canonical design audit, and verify all ending casts against live/retired staff state. Do not call the full art work complete based on these two assets alone. Full audit: `docs/ART_AUDIT_v80.md`.
-- `ending_seed_ark.png` shows EVE alone beside the empty chair after the manager's final report. `test:v75` checks the PNG signature and dimensions; the ending-route browser test validates loading.
-- Staff termination now lowers each surviving employee's mind by 30 once when a staff member is lost. Regression test `npm run test:v71` covers the one-time penalty and the follow-on zero-mind queue.
+- 39? ?? ??? ??? ?? ??? ?? ????? ??? ?? ??? ??? ????. ?? ??, ???, ??/?? ?????, ?? ??? ??? ????.
+- ?? 19?? ?? ??? `ending_*_cinematic.png`? ????. ?? ??? ?? WebP 8?? ????, ???? ?? v75/v76 PNG? v77 SVG ???? ????.
+- ?? ??? ??? `rabbit_uncanny.png`, `lynx_mutant.png`?? ???? ???? ????. ??? ???? ???? ?? 5? ? ???? ?? ??? ??? 22?? ????. ? ??? ?? ?? ??? ????.
+- ?? ?? ??? ??? ?? ??? `public/assets/archive/` ?? ????, ?? ?? ?? ?? ???? ????.
+- ?? ??: `docs/ASSET_CLEANUP_2026-11-23.md`, ?? ?: `docs/ENDING_MATRIX.md`.
 
 ## 최신 이어받기 상태 (v77)
 
@@ -116,7 +122,8 @@
 
 - 최신 실행 검증 소스 ZIP: ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.5.zip
 - SHA-256 체크섬: 같은 이름의 .sha256 파일
-- 74.1~74.4 기존 산출물은 별도 이름으로 보존한다.
+74.1~
+74.4 기존 산출물은 별도 이름으로 보존한다.
 
 ## 핵심 참고
 

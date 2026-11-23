@@ -17,10 +17,10 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  return 'neutral';
 }
 export function characterPortrait(id:CharacterId,mood:PortraitMood):string{
- if(id==='protagonist')return `/assets/characters/protagonist_${mood}_v74_768.png`;
- if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}_v72.png`;
- if(mood==='neutral'||mood==='resolve')return `/assets/staff/${id}/portrait${id==='fox'?'_v72.png':'.webp'}`;
- return `/assets/staff/${id}/portrait_${mood==='anxious'?'unstable':'critical'}_v72.png`;
+ if(id==='protagonist')return `/assets/characters/protagonist_${mood}.png`;
+ if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}.png`;
+ if(mood==='neutral'||mood==='resolve')return `/assets/staff/${id}/portrait${id==='fox'?'.png':'.webp'}`;
+ return `/assets/staff/${id}/portrait_${mood==='anxious'?'unstable':'critical'}.png`;
 }
 export type WalkDirection='down'|'left'|'right'|'up';
 export function directionForMove(from:number,to:number,width:number):WalkDirection{

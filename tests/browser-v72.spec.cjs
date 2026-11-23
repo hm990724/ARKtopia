@@ -23,9 +23,9 @@ test('critical medic uses her own critical portrait in roster and dialogue',asyn
  // Suppress the independent base-work onboarding so the staff portrait check can open its own conversation.
  await seed(page,s);
  await page.getByRole('button',{name:'의무관 직원 상세',exact:true}).click();
- await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
+ await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.png');
  await page.getByRole('button',{name:/^대화\s/}).click();
- await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
+ await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.png');
  await expect(page.locator('.v44-story-eve-image img')).toHaveCount(1);
  await expect(page.locator('.v44-story-scene')).toHaveCSS('background-color','rgb(23, 20, 33)');
  const reveal=page.getByRole('button',{name:'글 즉시 펼치기'});if(await reveal.isEnabled())await reveal.click();
@@ -36,9 +36,9 @@ test('current cinematic opens without cropping or duplicate characters from UI l
  await skipStory(page);await seed(page,s);await page.getByRole('button',{name:'분석실',exact:true}).click();
  await page.locator('.v71-story-archive summary').click();await page.getByRole('button',{name:'기원 표식 일치 장면 보기'}).click();
  const dialog=page.getByRole('dialog',{name:'복원된 사건 영상 보기'});await expect(dialog).toBeVisible();await expect(dialog.locator('img')).toHaveCount(1);
- await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_positive_v72/);await expect(dialog.locator('img')).toHaveCSS('object-fit','contain');
+ await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_positive/);await expect(dialog.locator('img')).toHaveCSS('object-fit','contain');
  await expect.poll(()=>dialog.locator('img').evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
  await page.screenshot({path:'docs/qa-v71/v72-cinematic.png',fullPage:true});
- await dialog.getByRole('button',{name:'다음 장면'}).click();await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_protect_v72/);
+ await dialog.getByRole('button',{name:'다음 장면'}).click();await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_protect/);
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
 });

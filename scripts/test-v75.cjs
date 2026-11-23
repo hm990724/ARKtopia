@@ -20,19 +20,17 @@ assert.equal(m00Sprite[25],6,'M-00 sprite has transparent RGBA');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/lib/animal-art.ts'),'utf8'),/m00_normal\.png/);
 assert.ok(fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.png')),'replaced M-00 art is archived instead of deleted');
 const preservedOriginalFiles=['ending_incomplete_revival.webp','ending_new_consciousness.webp','ending_two_caretakers.webp','ending_open_spring.webp','ending_subject_000.webp','ending_silent_automation.webp','ending_scattered_names.webp','ending_last_signal.webp'];
-const expectedEndingFiles=['ending_eternal_experiment_v77.svg','ending_eden_v77.svg','ending_seed_ark_v77.svg','ending_last_zoo_v77.svg','ending_subject_000_v77.svg','ending_silent_automation_v77.svg','ending_scattered_names_v77.svg','ending_last_signal_v77.svg','ending_successor_v77.svg','ending_humane_restoration_v77.svg','ending_spring_outside_records_v77.svg','ending_late_gate_v77.svg','ending_empty_shiftroom_v77.svg','ending_first_sentence_v77.svg','ending_incomplete_revival_v77.svg','ending_spring_beyond_cage_v77.svg','ending_two_caretakers_v77.svg','ending_quiet_automation_v77.svg','ending_final_transmission_v77.svg'];
+const expectedEndingFiles=['ending_eternal_experiment_cinematic.png','ending_eden_cinematic.png','ending_seed_ark_cinematic.png','ending_last_zoo_cinematic.png','ending_subject_000_cinematic.png','ending_silent_automation_cinematic.png','ending_scattered_names_cinematic.png','ending_last_signal_cinematic.png','ending_successor_cinematic.png','ending_humane_restoration_cinematic.png','ending_spring_outside_records_cinematic.png','ending_late_gate_cinematic.png','ending_empty_shiftroom_cinematic.png','ending_first_sentence_cinematic.png','ending_incomplete_revival_cinematic.png','ending_spring_beyond_cage_cinematic.png','ending_two_caretakers_cinematic.png','ending_quiet_automation_cinematic.png','ending_final_transmission_cinematic.png'];
 assert.equal(ENDING_ART.length,19,'all nineteen ending scenes remain separately addressable');
 assert.deepEqual(ENDING_ART.map(x=>x.file),expectedEndingFiles,'each ending keeps its own existing scene asset');
 assert.equal(new Set(ENDING_ART.map(x=>x.file)).size,19,'all ending routes use distinct scene assets');
 const endingFiles=fs.readdirSync(path.join(base,'assets/endings'));
 for(const file of [...expectedEndingFiles,...preservedOriginalFiles])assert.ok(endingFiles.includes(file),`ending artwork remains available: ${file}`);
-const preservedRouteCards=endingFiles.filter(file=>/^ending_[a-z0-9_]+_v77\.svg$/.test(file));
-assert.equal(preservedRouteCards.length,19,'all nineteen prior route-specific ending compositions remain preserved');
-for(const file of preservedRouteCards)assert.ok(fs.statSync(path.join(base,'assets/endings',file)).size>100000,`${file}: preserved ending composition is intact`);
+assert.equal(endingFiles.filter(file=>/^ending_[a-z0-9_]+_v(?:75|76)\.png$|^ending_[a-z0-9_]+_v77\.svg$/.test(file)).length,0,'obsolete unreferenced ending variants are removed');
 for(const ending of ENDING_ART){
  const art=findEndingArt(`${ending.prefix} — test outcome`);assert.equal(art.file,ending.file);
  const file=path.join(base,'assets/endings',art.file);
- const svg=fs.readFileSync(file,'utf8');assert.match(svg,/^<svg\b/,file);assert.ok(svg.length>100000,`${file}: preserved route composition must remain intact`);
+ const png=fs.readFileSync(file);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);assert.ok(png.readUInt32BE(16)>=1600&&png.readUInt32BE(20)>=800,`${file}: cinematic resolution`);assert.ok(png.length>1000000,`${file}: ending illustration must retain full quality`);
 }
 for(const file of preservedOriginalFiles){const webp=fs.readFileSync(path.join(base,'assets/endings',file));assert.equal(webp.subarray(0,4).toString(),'RIFF',file);assert.equal(webp.subarray(8,12).toString(),'WEBP',file);assert.ok(webp.length>250000,`${file}: original handoff artwork must remain intact`)}
 for(const legacy of LEGACY_ENDING_ART){
@@ -65,7 +63,7 @@ for(const id of EXTENDED_INCIDENT_IDS){
 const stale=beginGame('artist','generator');const staleBefore=JSON.stringify(stale);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(stale,0),stale,'a missing pending event must not resolve');assert.equal(JSON.stringify(stale),staleBefore,'a rejected event choice must not mutate the save');
 const unaffordable=beginGame('artist','generator');unaffordable.pendingIncident='cctv_loop';unaffordable.facilities.cctv=true;unaffordable.parts=0;const unaffordableBefore=JSON.stringify(unaffordable);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(unaffordable,0),unaffordable,'an unaffordable response must be rejected');assert.equal(JSON.stringify(unaffordable),unaffordableBefore,'an unaffordable response must not partially mutate the save');
 const previewState=beginGame('artist','generator');previewState.pendingIncident='battery_swelling';const cellPreview=previewIncident(previewState,0);assert.ok(cellPreview.effects.some(x=>x.name==='전지'&&x.delta===-1),'new event cards must show battery costs');
-const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin_v75.png'));assert.equal(suspect.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(suspect.readUInt32BE(16)>=1200&&suspect.readUInt32BE(20)>=800);
+const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin.png'));assert.equal(suspect.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(suspect.readUInt32BE(16)>=1200&&suspect.readUInt32BE(20)>=800);
 assert.match(origin.catTrackFrames[0].hint,/시초 개체로 의심/);assert.doesNotMatch(origin.catTrackFrames[0].hint,/검은 고양이/);assert.match(origin.catTrackFrames[2].hint,/작은 검은 고양이/);
 const route=beginGame('artist','generator');route.day=26;route.tutorialStep=9;route.encounters=5;route.ap=4;route.headquarters.revealStage=2;route.originZero=emptyOriginZero();
 assert.equal(origin.canTrackCat(route),true);let traced=origin.initiateOriginTrack(route);assert.match(traced.lastOutcome,/시초일 가능성을 제기/);
