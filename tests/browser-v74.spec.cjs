@@ -5,6 +5,7 @@ const {beginGame}=require('../src/lib/game-v10.ts');
 const {makeAnimal}=require('../src/lib/sim.ts');
 const {emptyOriginZero}=require('../src/lib/origin-zero.ts');
 const archive=require('../src/lib/specimen-archive.ts');
+const {recruitCrew}=require('../src/lib/crew.ts');
 const KEY='last-enclosure-ark-v10';
 async function state(page){return page.evaluate(key=>JSON.parse(localStorage.getItem(key)),KEY)}
 async function seed(page,s,seedId='v74-recall-seed'){await page.addInitScript(({s,key,seedId})=>{if(!sessionStorage.getItem(seedId)){localStorage.setItem(key,JSON.stringify(s));sessionStorage.setItem(seedId,'1')}},{s,key:KEY,seedId});await page.addLocatorHandler(page.locator('.v44-story-overlay'),()=>page.locator('.v44-story-overlay .is-skip').click(),{noWaitAfter:true});await page.addLocatorHandler(page.locator('.awakening-shade'),()=>page.locator('.awakening-next').click(),{noWaitAfter:true});await page.goto('/')}
@@ -45,16 +46,17 @@ const endings=[
  {goal:'freedom',title:'마지막 동물원',immunity:84},
  {goal:'freedom',title:'흩어진 이름들',immunity:84,alive:1,coerced:2},
  {goal:'preserve',title:'제000번 우리',immunity:80},
- {goal:'preserve',title:'침묵의 자동화',immunity:80,retired:['rabbit','wolf']},
+ {goal:'preserve',title:'침묵의 자동화',immunity:80,retired:['wolf','deer'],members:['rabbit','fox']},
  {goal:'preserve',title:'마지막 신호',immunity:80,hqIntel:65,dispatches:1},
 ];
 for(const [index,ending] of endings.entries())test(`ORIGIN ZERO ending UI resolves ${ending.title} and shows its final record`,async({page})=>{
  const s=beginGame('medic','generator');s.phase='finale';s.day=40;s.ap=0;s.tutorialStep=9;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture'];s.animals=['rabbit','fox','deer'].map((id,i)=>({...makeAnimal(id,i+1),alive:i<(ending.alive??3)}));
- s.originZero={...emptyOriginZero(),route:'shelter',photos:12,immunity:ending.immunity,crisisDone:true,hqIntel:ending.hqIntel??0};s.archive=archive.emptyArchive();s.archive.dispatches=ending.dispatches??0;s.crew.retired=ending.retired??[];
+ s.originZero={...emptyOriginZero(),route:'shelter',photos:12,immunity:ending.immunity,crisisDone:true,hqIntel:ending.hqIntel??0};s.archive=archive.emptyArchive();s.archive.dispatches=ending.dispatches??0;s.crew.retired=ending.retired??[];for(const id of ending.members??[])recruitCrew(s,id,`ending-${id}`);
  for(const animal of s.animals)s.originZero.recalls[animal.id]={day:40,quality:90,source:'archive',note:'browser ending fixture'};
  for(let i=0;i<(ending.coerced??0);i++)s.archive.entries[`ending-fixture-${i}`]={key:`ending-fixture-${i}`,species:'__fixture__',records:[{title:'강제 조직 회수'}]};
  await seed(page,s,`v74-ending-${index}`);const goalIndex=ending.goal==='rebuild'?0:ending.goal==='freedom'?1:2;
  const choice=page.locator('.finale-modal .v54-finale-choices button').nth(goalIndex);await expect(choice).toBeVisible();await choice.click();
- const result=page.locator('.ending-modal');await expect(result).toBeVisible();const endingText=result.locator('p').filter({hasText:ending.title}).first();await expect(endingText).toBeVisible();await expect(endingText).toContainText('사망했다');
+ const result=page.locator('.ending-modal');await expect(result).toBeVisible();if(!ending.members){const endingText=result.locator('p').filter({hasText:ending.title}).first();await expect(endingText).toBeVisible();await expect(endingText).toContainText('사망했다')}
  await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+ if(ending.members){await expect(result.locator('.v80-ending-cast-card')).toHaveCount(ending.members.length);for(const id of ending.members)await expect(result.locator(`.v80-ending-cast-card[data-crew-id="${id}"] img`)).toHaveAttribute('alt',/.+/);await expect(result.locator('.v80-ending-cast-card[data-crew-id="wolf"]')).toHaveCount(0);await expect(result.locator('.v49-ending-scars')).toBeVisible()}
 });

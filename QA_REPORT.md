@@ -13,6 +13,7 @@
 - Final v80 verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and production Chrome `npm run test:browser` all passed; browser suite 40/40. `test:all` includes the new v76 encounter/save test. Build emits the existing Hook/Autoprefixer warnings.
 - Combat presentation follow-up: full production Chrome browser suite passes 40/40, including the actual Wolf portrait, support/guard reaction cues, and one outing from preparation through fight, rescue, cache salvage, extraction, and paid CCTV restoration. `npm run test:all` and `npm run build:qa` pass; the build reports existing Hook and Autoprefixer warnings.
 - Facility restoration now has an assembly → wiring → power-on completion sequence with ONLINE feedback and reduced-motion handling. The integrated production browser test asserts the sequence after CCTV repair.
+- Ending cast display is now save-aware: only recruited, living crew receive portraits; retired crew remain in the loss record without being shown as active. The 40-case production browser suite includes a mixed living/retired roster fixture.
 - Final rerun after the facility animation: `npm run test:all`, `npm run check:assets`, and production Chrome `npm run test:browser` passed; browser suite 40/40. Typecheck, lint, and `npm run build:qa` passed with existing React Hook and Autoprefixer warnings.
 - `scripts/test-v76.cjs` now checks all four recruitable companions' distinct support effects; focused run passes.
 

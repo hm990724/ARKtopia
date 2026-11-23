@@ -70,4 +70,5 @@ The images are integrated in `Game.tsx`; provenance is recorded in `docs/generat
 - `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa`: passed. Build reports existing React Hook and Autoprefixer warnings.
 - Four crew support actions: each role has a distinct effect and the unit regression passes for rabbit, fox, deer, and wolf.
 - Facility repair presentation: verified the paid CCTV restoration displays assembly, wiring, and ONLINE completion feedback; reduced-motion users get the static completion state.
+- Ending cast: verified only recruited, living employees receive ending portraits, while retired staff appear only in the loss record.
 - Final rerun including facility repair presentation: `npm run test:all`, `npm run check:assets`, and production Chrome browser suite 40/40 passed. `typecheck`, `lint`, and `build:qa` pass with existing Hook/Autoprefixer warnings.
