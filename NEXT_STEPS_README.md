@@ -86,3 +86,4 @@
 - Still incomplete: 40 distinct dynamic incidents (current registry: 13 IDs plus other event types), state-aware cast selection and bespoke action art for endings, final high-detail ending/staff-event illustrations, and a natural full-campaign balance playthrough. The current 19 SVG ending cards are cast-safe portrait compositions, not final cinematic paintings.
 - Image generation was not available in the current tool integration; no CLI/API fallback was invoked. Existing art is connected and historical finals preserved, but the missing bespoke scenes remain explicit work.
 - Full-project ZIP generated from the verified commit snapshot: `ARKtopia_ORIGIN_ZERO_ULTIMATE_FULL_PROJECT.zip`; SHA-256 is in the adjacent `.sha256` file. The existing v74.x archives were preserved.
+- Latest gameplay/source commit: `cfbb1f7` (`Add deterministic ten-day neglect result`). The continuation integration commit is `f647c89`; package documentation was recorded in `d00c216`.
