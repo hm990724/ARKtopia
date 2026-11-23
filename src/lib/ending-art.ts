@@ -2,7 +2,7 @@
 export const ENDING_ASSET_DIRECTORY = '/assets/endings/';
 
 export const ENDING_ART: ReadonlyArray<{ prefix: string; file: string; label: string }> = [
-  { prefix: '방주의 씨앗', file: 'ending_seed_ark_v77.svg', label: 'EVE와 직원이 보존 시설의 다음 날을 준비하는 장면' },
+  { prefix: '방주의 씨앗', file: 'ending_seed_ark.png', label: '관리자 없는 통제실에서 EVE가 다음 날의 개장표를 드는 장면' },
   { prefix: '에덴', file: 'ending_eden_v77.svg', label: '생존한 직원들이 새 보금자리의 아침을 맞는 장면' },
   { prefix: '영원한 실험', file: 'ending_eternal_experiment_v77.svg', label: '연구자가 격리 시설에서 실험 기록을 마주하는 장면' },
   { prefix: '마지막 동물원', file: 'ending_last_zoo_v77.svg', label: '직원들이 열린 시설 출구 앞에서 각자의 길을 택하는 장면' },

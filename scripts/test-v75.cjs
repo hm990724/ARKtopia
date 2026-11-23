@@ -23,13 +23,20 @@ assert.equal(ENDING_ART.length,19,'all known ending prefixes must have an ending
 assert.equal(new Set(ENDING_ART.map(x=>x.file)).size,ENDING_ART.length,'each ending route must resolve to its own asset URL');
 for(const ending of ENDING_ART){
  const art=findEndingArt(`${ending.prefix} — test outcome`);assert.equal(art.file,ending.file);
- const file=path.join(base,'assets/endings',art.file),svg=fs.readFileSync(file,'utf8');
- assert.match(svg,/^<svg xmlns=/,file);
- assert.match(svg,/href="data:image\/(webp|png);base64,/,file);
- assert.ok(svg.includes(fs.readFileSync(path.join(base,'assets/characters','eve_hologram.webp')).toString('base64'))||svg.includes(fs.readFileSync(path.join(base,'assets/characters','protagonist_neutral_v74_768.png')).toString('base64')),file);
- assert.doesNotMatch(svg,/href="\/assets\//,file);
- assert.doesNotMatch(svg.replace(/data:image\/(?:webp|png);base64,[^\"]+/g,''),/mutant|rabbit|fox|wolf|deer|cat/i,file);
+ const file=path.join(base,'assets/endings',art.file);
+ if(art.file.endsWith('.svg')){
+  const svg=fs.readFileSync(file,'utf8');
+  assert.match(svg,/^<svg xmlns=/,file);
+  assert.match(svg,/href="data:image\/(webp|png);base64,/,file);
+  assert.ok(svg.includes(fs.readFileSync(path.join(base,'assets/characters','eve_hologram.webp')).toString('base64'))||svg.includes(fs.readFileSync(path.join(base,'assets/characters','protagonist_neutral_v74_768.png')).toString('base64')),file);
+  assert.doesNotMatch(svg,/href="\/assets\//,file);
+  assert.doesNotMatch(svg.replace(/data:image\/(?:webp|png);base64,[^\"]+/g,''),/mutant|rabbit|fox|wolf|deer|cat/i,file);
+ }else{
+  const png=fs.readFileSync(file);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);
+  assert.ok(png.readUInt32BE(16)>=1500&&png.readUInt32BE(20)>=900,`${file}: cinematic resolution`);
+ }
 }
+assert.equal(ENDING_ART.filter(ending=>ending.file.endsWith('.png')).length,1,'the first custom cinematic is a unique raster scene');
 const ids=Object.keys(incidentDefs);assert.equal(ids.length,40,'13 core + 27 stateful incidents');
 assert.equal(new Set(ids).size,ids.length,'incident IDs must remain unique');
 assert.equal(EXTENDED_INCIDENT_IDS.length,27);
