@@ -126,3 +126,10 @@
 - Production Chrome browser suite: **37/37 passed** after fixes. Covers tutorial rescue, capture budget, persistent field discovery, night low-power warning, staff portrait dialogue, mobile/desktop layout, ARK RECALL, eight ending UI outcomes, all 19 ending asset routes, M-00 reveal and local fonts.
 - The ending assets remain portrait-based SVG compositions, not the requested bespoke per-ending cinematic scenes. Natural fresh-save campaign balance, the 40-event target and complete narrative state/cast playthrough remain unverified. See `STORY_AUDIT.md`, `BALANCE_REPORT.md`, and `ART_AUDIT.md`.
 - A separate fixed-seed no-operation probe (`npm run balance:soak`) completes ten neglected day transitions and reaches DAY 11 still playable with power/facility 0, threat 100, infection 74 and morale 80. It asserts no hard-coded DAY 10 game-over; strategic-vs-idle natural play remains untested.
+
+## v81 night facility dispatch
+
+- Added saved, configurable priority order for CCTV, containment, infirmary, and synthesis power draws. Night settlement powers facilities in order and visibly sheds lower priorities when the remaining supply is insufficient.
+- Only powered systems provide their night bonus. Shed CCTV no longer prevents routine incident escalation; a shed infirmary does not heal animals overnight.
+- Night preview reports the facilities expected to remain online after defense, battery generation, and circuit maintenance.
+- Validation: `npm run test:all`, `npm run test:v81`, production Chrome `npm run test:browser` (41/41), `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa` passed. Build retains existing React Hook and Autoprefixer warnings.

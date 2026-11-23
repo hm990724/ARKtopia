@@ -45,7 +45,8 @@ test('night fuse wrong order resets and correct order changes the actual saved s
  const before=await state(page),expected=previewNight(before,'shield',{maintained:true});
  await page.getByRole('button',{name:/야간 운영 확정|무방비로 다음 날/}).last().click();
  await expect.poll(async()=> (await state(page)).day).toBe(4);
- expect((await state(page)).power).toBe(expected.powerAfter);
+ // Night power preview is before automatic facility dispatch; settlement also pays each powered facility draw.
+ expect((await state(page)).power).toBe(expected.powerAfter-expected.facilityDispatch.spent);
  await page.reload();expect((await state(page)).ap).toBe(4);
 });
 test('tutorial facility mission routes to supplies even with zero AP',async({page})=>{

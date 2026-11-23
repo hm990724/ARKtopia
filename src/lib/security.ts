@@ -1,5 +1,6 @@
 import {AnimalId,AnimalState,cap,log,recalc,isMutant,recordMutation} from './sim';
 import type {V10} from './game-v10';
+import {isFacilityPowered} from './facility-power';
 
 export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04';
 export type SecurityStatus='alert'|'breach'|'escaped';
@@ -57,7 +58,7 @@ export function nightlySecurity(s:V10,roll=Math.random()):V10{
  const chosen=candidates[0];const mutating=isMutant(chosen.a);
  const p=mutating?Math.min(.78,Math.max(.1,(chosen.risk-16)/115)):Math.min(.48,Math.max(.025,(chosen.risk-19)/190));
  if(roll>=p)return s;
- const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20};sec.lastIncidentDay=s.day;
+ const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20&&(!s.facilities?.cctv||isFacilityPowered(s,'cctv'))};sec.lastIncidentDay=s.day;
  trace(s,'CCTV 이상 행동',`${a.name}: ${securityPatterns[a.id].behavior}`,'mystery');return s;
 }
 export type SecurityAction='scan'|'inspect'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum';
