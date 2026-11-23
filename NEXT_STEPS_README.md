@@ -79,6 +79,7 @@
 
 - Latest browser run: **37/37 production Chrome tests passed**. Two stale assumptions in the night-circuit and staff-dialogue browser checks were corrected; the game UI now follows the displayed voltage order and the accessible button label.
 - Latest logic suite, TypeScript check, lint and local asset check all pass. Production `build:qa` passed; existing CSS compatibility and React Hook dependency warnings remain.
+- Fixed-seed no-operation probe (`npm run balance:soak`) completes ten neglected transitions: DAY 11 remains playable at power/facility 0, threat 100, infection 98 and morale 35. It guards against a forced DAY 10 game over. A strategic comparison and natural campaign playthrough are still needed.
 - The Ultimate Master prompt has now been read and cross-checked. Current code/docs keep the M-00 false lead, 13 species identities, one expedition per day/AP 1, lasting explored cells, current footprints/radius-one grass, staff care costs, power crisis, field salvage, and species-specific recall.
 - Historical Axolotl/Lynx/Chimera/Moth/M-00/Wolf art variants were restored from the existing v74.7 archive and preserved alongside canonical files. Runtime animal paths continue to use original species names with state suffixes, not `_vNN` assets.
 - See `STORY_AUDIT.md` for canon/cast/ending review, `BALANCE_REPORT.md` for tested resource pressures and unverified natural balancing, and the latest section of `ART_AUDIT.md` for canonical art paths.

@@ -16,7 +16,11 @@ Review date: 2026-11-23
 
 Automated regression covers input costs, zero-resource refusal, save migration, repeated-day blockers, event outcomes, night settlement, field action and seeded hunting. The full browser suite validates the live UI at desktop and 390px widths.
 
-The master prompt's no-action DAY 10 survival target is **not yet certified**. A manual fresh-save multi-day playthrough and a strategy-vs-idle comparison are still needed. The current systems apply escalating losses, but the actual campaign can still be too easy or too punishing depending on event rolls, upgrade timing and acquired staff.
+The master prompt's no-action DAY 10 pressure target has a deterministic idle probe, but is **not fully certified**. A manual fresh-save multi-day playthrough and a strategy-vs-idle comparison are still needed. The current systems apply escalating losses, but the actual campaign can still be too easy or too punishing depending on event rolls, upgrade timing and acquired staff.
+
+### Deterministic idle pressure probe
+
+`npm run balance:soak` starts a fresh Generator game with a fixed random seed, spends no AP on player operations, clears only forced incident/voice blockers with the first available response, and selects standby each night. After ten neglected day transitions (at DAY 11), the state is still playable but has power 0, facility 0, threat 100, infection 98 and manager morale 35. The probe asserts there is no hard-coded DAY 10 game-over. This is a severe but recoverable pressure state; a strategic fresh-save run is still needed to confirm that normal play can stabilize it.
 
 The prompt's requested 40 materially distinct incidents are also **not yet present**: the current registry contains 13 incident IDs, with additional peaceful/day, night and field decisions. Expanding the director should add chained consequences and state-aware event eligibility without relying on text-only variants.
 
