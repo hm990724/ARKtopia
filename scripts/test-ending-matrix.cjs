@@ -50,7 +50,7 @@ verify(ready({goal:'freedom',immunity:84}),'마지막 동물원','ending_last_zo
 verify(ready({goal:'preserve',retired:[]}),'제000번 우리','ending_subject_000_choice.png');
 verify(ready({goal:'preserve',retired:['rabbit','fox']}),'침묵의 자동화','ending_silent_automation_cinematic.png');
 verify(ready({goal:'freedom',coerced:2}),'흩어진 이름들','ending_scattered_names_cinematic.png');
-verify(ready({goal:'preserve',hqIntel:65,dispatches:1}),'마지막 신호','ending_last_signal_cinematic.png');
+verify(ready({goal:'preserve',hqIntel:65,dispatches:1}),'마지막 신호','ending_last_signal_finale.png');
 
 // Archive-specific endings remain reachable when the new route is not ready.
 verify(notReady('rebuild',s=>{s.headquarters.transferred=['rabbit','fox'];s.archive.dispatches=1;s.archive.entries['FORCED']=specimen('FORCED','deer','강제 조직 회수')}),'본부의 계승자','ending_successor_cinematic.png');

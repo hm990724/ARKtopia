@@ -9,7 +9,7 @@ export const ENDING_ART: ReadonlyArray<{ prefix: string; file: string; label: st
   { prefix: '제000번 우리', file: 'ending_subject_000_choice.png', label: '자신의 정체성을 직접 선택하는 젊은 관리자와 EVE' },
   { prefix: '침묵의 자동화', file: 'ending_silent_automation_cinematic.png', label: '사람의 온기 없이 계속 작동하는 통제실' },
   { prefix: '흩어진 이름들', file: 'ending_scattered_names_cinematic.png', label: '돌아오지 못한 존재의 기록을 보존하는 추모실' },
-  { prefix: '마지막 신호', file: 'ending_last_signal_cinematic.png', label: '수신 여부를 알 수 없는 마지막 구조 신호' },
+  { prefix: '마지막 신호', file: 'ending_last_signal_finale.png', label: '비바람 속 마지막 송신을 마치는 젊은 관리자와 EVE' },
   { prefix: '본부의 계승자', file: 'ending_successor_cinematic.png', label: '복제 계획을 이어받는 본부 지휘실' },
   { prefix: '상처 없는 복원', file: 'ending_humane_restoration_cinematic.png', label: '비침습 연구와 생명 보존을 함께 남긴 실험실' },
   { prefix: '기록 밖의 봄', file: 'ending_spring_outside_records_cinematic.png', label: '공식 기록 바깥으로 이어지는 야생의 봄' },

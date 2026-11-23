@@ -16,7 +16,7 @@ ORIGIN ZERO 엔딩 분기는 finale 진입 시 `finishWithArchive()`가 실행�
 | E5 | 제000번 우리 | 목표 `preserve`의 기본 분기 (사망 직원 < 2, 마지막 신호 조건 미충족) | `ending_subject_000_choice.png` | 젊은 관리자와 EVE의 정체성 선택 장면. 직원·동물 생존자는 저장 상태대로 별도 표시합니다. |
 | E6 | 침묵의 자동화 | 목표 `preserve` + 사망 직원 ≥ 2 | `ending_silent_automation_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E7 | 흩어진 이름들 | 목표 `freedom` + (강제 회수 ≥ 2 또는 생존 동물 ≤ 1), 단 E3가 우선 | `ending_scattered_names_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
-| E8 | 마지막 신호 | 목표 `preserve` + 사망 직원 < 2 + HQ 정보 ≥ 65 + 본부 송신 ≥ 1 | `ending_last_signal_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
+| E8 | 마지막 신호 | 목표 `preserve` + 사망 직원 < 2 + HQ 정보 ≥ 65 + 본부 송신 ≥ 1 | `ending_last_signal_finale.png` | 젊은 관리자와 홀로그램 EVE가 폭풍 속 송신을 마친다. 수신자나 구조 인물은 그리지 않으며 엔딩 UI는 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 
 `originEndEpilogue()`는 `rebuild`와 `freedom`을 먼저 처리한 뒤 `preserve`에 대해 E6/E8/E5를 평가합니다. 따라서 E6·E8·E5는 `preserve` 선택에서만 도달합니다. E3 조건은 E7보다 먼저 적용됩니다.
 
