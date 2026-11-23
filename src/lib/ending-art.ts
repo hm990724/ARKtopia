@@ -4,7 +4,7 @@ export const ENDING_ASSET_DIRECTORY = '/assets/endings/';
 export const ENDING_ART: ReadonlyArray<{ prefix: string; file: string; label: string }> = [
   { prefix: '영원한 실험', file: 'ending_eternal_experiment_cinematic.png', label: '끝없이 되풀이되는 빈 복제 실험실' },
   { prefix: '에덴', file: 'ending_eden_cinematic.png', label: '인공 새벽 아래 다시 세운 복제 사회의 정원' },
-  { prefix: '방주의 씨앗', file: 'ending_seed_ark_cinematic.png', label: '동물 보호 구역에서 이어지는 예방 연구의 씨앗' },
+  { prefix: '방주의 씨앗', file: 'ending_seed_ark_finale.png', label: '젊은 관리자의 마지막 보고를 이어받는 EVE' },
   { prefix: '마지막 동물원', file: 'ending_last_zoo_cinematic.png', label: '인간이 사라진 뒤에도 남은 동물 피난처' },
   { prefix: '제000번 우리', file: 'ending_subject_000_cinematic.png', label: '자기 정체를 선택하는 열린 관찰실' },
   { prefix: '침묵의 자동화', file: 'ending_silent_automation_cinematic.png', label: '사람의 온기 없이 계속 작동하는 통제실' },

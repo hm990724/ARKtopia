@@ -100,7 +100,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
   <div className="v45-roster-head"><span><Radio size={12}/> HQ / STAFF</span><b>{crew?.members.length??0} / 4</b><button className="v69-roster-toggle" type="button" aria-expanded={rosterOpen} aria-controls="v69-roster-content" onClick={()=>setRosterOpen(v=>!v)}>{rosterOpen?"직원 접기":"직원 펼치기"} <ChevronRight size={14}/></button></div>
   <div id="v69-roster-content" className={"v69-roster-content "+(rosterOpen?"is-open":"")}>
   <div className="v45-roster-grid">{CREW_IDS.map(id=>{const member=crew?.members.find(m=>m.id===id);const lost=retired.includes(id);return <button key={id} className={'v45-roster-item '+(member?'arrived':lost?'v49-retired':'locked')+(selected===id?' selected':'')} disabled={!member} type="button" onClick={()=>setSelected(v=>v===id?null:id)} aria-label={`${CREW_PROFILES[id].post} ${member?`직원 상세`: lost?'영구 처리 · 복귀 불가':'아직 미배치'}`}>
-   {member?<StaffPortrait key={`${id}-${member.mind<35?'critical':member.mind<62?'unstable':'safe'}`} id={id} condition={member.mind<35?'critical':member.mind<62?'unstable':'safe'}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
+   {member?<StaffPortrait id={id}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
    <span className="v60-staff-info"><b>{CREW_PROFILES[id].post}</b><small>{member?`정신력 ${member.mind} · ${member.mind<35?'위험':member.mind<62?'주의':'안정'}`:lost?'인격 신호 소실':'미배치'}</small>{member&&<span className="v60-staff-progress"><i style={{width:`${member.mind}%`}}/></span>}</span>
    {member&&<i className={member.mind<35?'v45-staff-danger':member.mind<62?'v45-staff-warning':'v45-staff-ok'}/>}
   </button>})}</div>
@@ -109,7 +109,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
   </div>
   {selectedMember&&selected&&createPortal(<div className="v67-staff-overlay" role="presentation" onMouseDown={(event)=>{if(event.target===event.currentTarget)setSelected(null)}}>
     <div className="v67-staff-modal" role="dialog" aria-modal="true" aria-labelledby="v67-staff-title" key={selected}>
-     <div className="v67-staff-hero"><StaffPortrait id={selected} condition={selectedMember.mind<35?'critical':selectedMember.mind<62?'unstable':'safe'} className="v67-staff-hero-art"/><span className="v67-staff-hero-tint"/><div className="v67-staff-hero-label">ARK // PERSONNEL RECORD <b>{CREW_PROFILES[selected].post}</b></div></div>
+     <div className="v67-staff-hero"><StaffPortrait id={selected} className="v67-staff-hero-art"/><span className="v67-staff-hero-tint"/><div className="v67-staff-hero-label">ARK // PERSONNEL RECORD <b>{CREW_PROFILES[selected].post}</b></div></div>
      <div className="v67-staff-content">
       <div className="v67-staff-heading"><div><span className="micro-label">HQ // PERSONNEL</span><h2 id="v67-staff-title">{CREW_PROFILES[selected].post}</h2><p>{CREW_PROFILES[selected].personality}</p></div><button className="v67-staff-close" type="button" aria-label="직원 정보 닫기" onClick={()=>setSelected(null)}>×</button></div>
       <div className="v67-staff-mind"><span>정신 안정도</span><strong>{selectedMember.mind}<small> / 100</small></strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.mind}%`}}/></div></div>
@@ -136,6 +136,9 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  const [shown,setShown]=useState(0);
  const textTimer=useRef<number|null>(null);
  const profile=CREW_PROFILES[id],effect=CREW_LOSS_EFFECTS[id];
+ const terminationArt=id==='wolf'
+  ? '/assets/cinematics/staff-terminations/wolf/wolf_identity_collapse.png'
+  : `/assets/cinematics/staff-terminations/${id}/scene.webp`;
  const lines=effect.quote;
  const line=lines[step]??'';
  useEffect(()=>{setShown(0);let i=0;const timer=window.setInterval(()=>{i=Math.min(line.length,i+1);setShown(i);if(i===line.length){window.clearInterval(timer);textTimer.current=null;}},31);textTimer.current=timer;return()=>{window.clearInterval(timer);textTimer.current=null;}},[line,step]);
@@ -143,7 +146,7 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  return <div className="v49-collapse-shade" role="dialog" aria-modal="true" aria-label={`${profile.post} 인격 신호 소실`}>
   <div className="v49-collapse-window">
    <div className="v49-collapse-image">
-    {!missing&&<img src={`/assets/cinematics/staff-terminations/${id}/scene.webp`} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
+    {!missing&&<img src={terminationArt} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
     <div className="v49-collapse-glitch" aria-hidden="true"/>
     <div className="v49-collapse-diagnostics"><small>STAFF / NEURAL LINK FAILURE</small><strong>{profile.post}</strong><span>MENTAL RESILIENCE: 0% · IRREVERSIBLE</span></div>
    </div>

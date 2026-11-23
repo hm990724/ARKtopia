@@ -17,19 +17,28 @@ test('ranger uses changing walk frames during real movement, then returns to idl
  await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
  await page.screenshot({path:'docs/qa-v71/v72-field-walk.png',fullPage:true});
 });
-test('critical medic uses her own critical portrait in roster and dialogue',async({page})=>{
+test('staff stays neutral in roster and switches to its critical portrait during dialogue',async({page})=>{
  const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'rabbit','RB-001');s.crew.members[0].mind=20;
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  // Suppress the independent base-work onboarding so the staff portrait check can open its own conversation.
  await seed(page,s);
  await page.getByRole('button',{name:'의무관 직원 상세',exact:true}).click();
- await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.png');
+ await expect(page.locator('.v45-roster-item.arrived img')).toHaveAttribute('src','/assets/staff/rabbit/portrait.webp');
+ await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait.webp');
  await page.getByRole('button',{name:/^대화\s/}).click();
  await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.png');
  await expect(page.locator('.v44-story-eve-image img')).toHaveCount(1);
  await expect(page.locator('.v44-story-scene')).toHaveCSS('background-color','rgb(23, 20, 33)');
  const reveal=page.getByRole('button',{name:'글 즉시 펼치기'});if(await reveal.isEnabled())await reveal.click();
  await page.screenshot({path:'docs/qa-v71/v72-critical-dialogue.png',fullPage:true});expect(errors).toEqual([]);
+});
+test('wolf guard neural collapse displays the dedicated transformation cinematic',async({page})=>{
+ const {queueCrewTerminations}=require('../src/lib/crew.ts');
+ const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'wolf','WF-001');s.crew.members[0].mind=0;queueCrewTerminations(s);
+ await seed(page,s);
+ const scene=page.locator('.v49-collapse-image img');
+ await expect(scene).toHaveAttribute('src','/assets/cinematics/staff-terminations/wolf/wolf_identity_collapse.png');
+ await expect.poll(()=>scene.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
 });
 test('current cinematic opens without cropping or duplicate characters from UI layers',async({page})=>{
  const s=beginGame('medic','generator');s.day=20;s.tutorialStep=9;s.originZero={...emptyOriginZero(),cat:'shelter',route:'shelter',firstPositiveDay:20,photos:9};

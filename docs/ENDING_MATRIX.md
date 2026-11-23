@@ -11,7 +11,7 @@ ORIGIN ZERO 엔딩 분기는 finale 진입 시 `finishWithArchive()`가 실행�
 |---|---|---|---|---|
 | E1 | 영원한 실험 | finale 준비 완료 + 목표 `rebuild` + 면역도 < 100 | `ending_eternal_experiment_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E2 | 에덴 | finale 준비 완료 + 목표 `rebuild` + 면역도 ≥ 100 | `ending_eden_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
-| E3 | 방주의 씨앗 | 목표 `freedom` + 면역도 ≥ 85 + 사진 12장 + 강제 회수 < 2 | `ending_seed_ark_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
+| E3 | 방주의 씨앗 | 목표 `freedom` + 면역도 ≥ 85 + 사진 12장 + 강제 회수 < 2 | `ending_seed_ark_finale.png` | 젊은 관리자와 EVE의 마지막 보고 컷. 저장된 생존 직원·동물은 별도 UI에 실제 상태대로 표시합니다. |
 | E4 | 마지막 동물원 | 목표 `freedom`이며 E3·E7 조건에 해당하지 않음 | `ending_last_zoo_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E5 | 제000번 우리 | 목표 `preserve`의 기본 분기 (사망 직원 < 2, 마지막 신호 조건 미충족) | `ending_subject_000_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 | E6 | 침묵의 자동화 | 목표 `preserve` + 사망 직원 ≥ 2 | `ending_silent_automation_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |

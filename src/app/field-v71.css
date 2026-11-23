@@ -102,6 +102,7 @@
 .v71-story-grid img {width:100%;height:180px;object-fit:contain;image-rendering:pixelated;background:#100e16}
 .v71-story-grid figcaption {padding:12px}.v71-story-grid p {line-height:1.7;font-size:12px}
 .v71-farewell {display:flex;gap:16px;align-items:flex-start;margin:20px 0;padding:12px;border:1px solid #8e7f93}
+.v71-farewell>div {width:100%}
 .v71-farewell>img {width:24%;max-width:140px;image-rendering:pixelated}.v71-farewell p {line-height:1.8;font-size:13px}
 .v71-last-broadcast {color:#eed7a9;border-top:1px solid #6e6274;padding-top:12px}
 @media(min-width:701px){

@@ -45,7 +45,7 @@ function verifyBase(goal,setup,title,file){
 // Eight main ORIGIN ZERO outcomes, driven through the real condition function.
 verify(ready({goal:'rebuild',immunity:99}),'영원한 실험','ending_eternal_experiment_cinematic.png');
 verify(ready({goal:'rebuild',immunity:100}),'에덴','ending_eden_cinematic.png');
-verify(ready({goal:'freedom',immunity:85}),'방주의 씨앗','ending_seed_ark_cinematic.png');
+verify(ready({goal:'freedom',immunity:85}),'방주의 씨앗','ending_seed_ark_finale.png');
 verify(ready({goal:'freedom',immunity:84}),'마지막 동물원','ending_last_zoo_cinematic.png');
 verify(ready({goal:'preserve',retired:[]}),'제000번 우리','ending_subject_000_cinematic.png');
 verify(ready({goal:'preserve',retired:['rabbit','fox']}),'침묵의 자동화','ending_silent_automation_cinematic.png');

@@ -58,6 +58,7 @@ for(const [index,ending] of endings.entries())test(`ORIGIN ZERO ending UI resolv
  const choice=page.locator('.finale-modal .v54-finale-choices button').nth(goalIndex);await expect(choice).toBeVisible();await choice.click();
  const result=page.locator('.ending-modal');await expect(result).toBeVisible();if(!ending.members){const endingText=result.locator('p').filter({hasText:ending.title}).first();await expect(endingText).toBeVisible();await expect(endingText).toContainText('사망했다')}
  await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+ if(ending.title==='방주의 씨앗'){await expect(result.locator('.ending-art-display img')).toHaveAttribute('src','/assets/endings/ending_seed_ark_finale.png');await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);await expect(result.locator('.v71-farewell>img')).toHaveCount(0);await expect(result.locator('.v71-farewell')).toContainText('그럼 내일은 네가 이어줘.')}
  await expect(result.locator('.v82-ending-specimen-card')).toHaveCount(ending.alive??3);
  if(ending.members){await expect(result.locator('.v80-ending-cast-card')).toHaveCount(ending.members.length);for(const id of ending.members)await expect(result.locator(`.v80-ending-cast-card[data-crew-id="${id}"] img`)).toHaveAttribute('alt',/.+/);await expect(result.locator('.v80-ending-cast-card[data-crew-id="wolf"]')).toHaveCount(0);await expect(result.locator('.v49-ending-scars')).toBeVisible()}
 });

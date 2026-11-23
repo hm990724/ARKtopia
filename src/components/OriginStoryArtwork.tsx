@@ -1,7 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import type {V10} from '@/lib/game-v10';
-import {characterPortrait} from '@/lib/character-art';
 
 /** Recovered illustrations are shown only after their corresponding evidence. */
 export default function OriginStoryArtwork({state:s}:{state:V10}){
@@ -25,5 +24,5 @@ export default function OriginStoryArtwork({state:s}:{state:V10}){
 
 export function OriginFarewell({ending}:{ending:string}){
  if(!ending.startsWith('방주의 씨앗'))return null;
- return <section className="v71-farewell" aria-label="관리자님의 마지막 보고"><img src={characterPortrait('protagonist','resolve')} alt="마지막 보고를 남기는 젊은 관리자"/><div><p>EVE: “관리자님. 오늘 작업을 종료해야 합니다.”</p><p>관리자: “아직 끝나지 않았어.”</p><p>EVE: “알고 있어요. 하지만 당신의 시간은 끝나가고 있어요.”</p><p>관리자: “그럼 내일은 네가 이어줘.”</p><p>EVE: “……네. 내일은 제가 할게요.”</p><p className="v71-last-broadcast">다음 날 — “관리자님, 오늘도 개장 준비를 시작할까요?”<br/>이번에는 대답하는 사람이 없었다.</p></div></section>;
+ return <section className="v71-farewell" aria-label="관리자님의 마지막 보고"><div><p>EVE: “관리자님. 오늘 작업을 종료해야 합니다.”</p><p>관리자: “아직 끝나지 않았어.”</p><p>EVE: “알고 있어요. 하지만 당신의 시간은 끝나가고 있어요.”</p><p>관리자: “그럼 내일은 네가 이어줘.”</p><p>EVE: “……네. 내일은 제가 할게요.”</p><p className="v71-last-broadcast">다음 날 — “관리자님, 오늘도 개장 준비를 시작할까요?”<br/>이번에는 대답하는 사람이 없었다.</p></div></section>;
 }
