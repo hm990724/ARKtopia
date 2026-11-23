@@ -12,10 +12,12 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
 import {revealField,createField,createCapture,adjacentField,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 
 export type Gear='flashlight'|'filter'|'scanner'|'medkit'|'cage';
 export type RegionId='garden'|'conservatory'|'rail'|'archive'|'vault'|'tunnels';
-export type IncidentId='echo'|'breach'|'blackout'|'spores'|'signal'|'visitor'|'predator'|'coolant'|'rations'|'intrusion'|'garden'|'keepsake'|'quiet';
+export type CoreIncidentId='echo'|'breach'|'blackout'|'spores'|'signal'|'visitor'|'predator'|'coolant'|'rations'|'intrusion'|'garden'|'keepsake'|'quiet';
+export type IncidentId=CoreIncidentId|ExtendedIncidentId;
 export type Incident={id:IncidentId;title:string;desc:string;cause:string;options:[string,string,string];};
 export type FieldResource='scrap'|'knowledge'|'clues';
 export type FieldCaptureRecord={id:AnimalId;result:'secured'|'treated'|'released'|'failed'};
@@ -48,7 +50,7 @@ export const regions:{id:RegionId;name:string;desc:string;art:string;danger:numb
 {id:'tunnels',name:'제0구역 통로',desc:'EVE의 기록에서 존재하지 않는 장소.',art:'wasteland',danger:86,reward:6,ap:1,power:37,unlocked:14,animals:['specter','mutant','chimera']}
 ];
 export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'수동 손전등',desc:'정전 수동 탐사 · 조사 시야 반경 2칸 · 수동 출동 전지 25%'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 추가 8 · 조사 시야 반경 3칸 · 포자 노출 피해 -3'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 정신력 +20 · 미사용 귀환 시 반환'}];
-export const incidentDefs:Record<IncidentId,Incident>={
+const coreIncidentDefs:Record<CoreIncidentId,Incident>={
 garden:{id:'garden',title:'금 간 바닥의 새싹',desc:'온실 배수구에서 작은 싹이 올라왔습니다. EVE는 잡초로 분류했지만, 오늘은 잠시 판단을 유보합니다.',cause:'시설이 버틴 밤 뒤에 찾아온 작은 회복',options:['전력 6을 들여 재배등을 켠다 · 식량 +3','씨앗과 토양을 조사한다 · 지식 +10','작은 화단으로 남긴다 · 정신력 +7']},
 keepsake:{id:'keepsake',title:'우리 앞에 놓인 작은 선물',desc:'보호 중인 동물이 깨끗한 금속 조각을 문 앞에 놓았습니다. EVE는 우연한 행동이라고 말하다가 기록 버튼을 누릅니다.',cause:'살아 있는 보호 개체와 쌓아온 일상',options:['식량 1로 응답한다 · 유대 +8, 스트레스 -8','부품으로 회수한다 · 부품 +2, 유대 -3','손대지 않고 지켜본다 · 단서 +1, 정신력 +4']},
 quiet:{id:'quiet',title:'오늘은 아무도 울지 않았다',desc:'교대 시간, 직원이 빈 의자를 하나 더 놓습니다. 누구의 자리인지 묻자 본인도 모르겠다고 합니다. 조용한 시간도 필요합니다.',cause:'파견 직원의 신경 기억과 공동생활',options:['함께 식사한다 · 식량 1, 직원 정신력 +8','기억을 기록한다 · 지식 +12, 직원 정신력 -4','함께 쉬어 간다 · 관리자 정신력 +6, 직원 정신력 +3']},
@@ -63,6 +65,7 @@ coolant:{id:'coolant',title:'냉각수 붉은 누출',desc:'병리 장비의 냉
 rations:{id:'rations',title:'보급고의 곰팡이',desc:'수상한 냄새가 사료 배급 라인에서 퍼집니다. 이미 몇몇 개체가 먹이를 거부합니다.',cause:'보급품 노후화·높은 시설 오염',options:['식량 2개를 폐기하고 배급 라인 세척','수작업으로 오염된 사료를 가려낸다','부족한 물자를 아끼기 위해 그대로 급여']},
 intrusion:{id:'intrusion',title:'관리자 음성을 흉내 내는 신호',desc:'CCTV 스피커에서 담당자의 목소리와 같은 명령이 들립니다. 출처는 시설 내부가 아닙니다.',cause:'지식·기밀 기록 누적 또는 EVE 불안정',options:['전력 10을 사용해 전파 차단','신호를 녹음하고 발신자를 역추적','인증 절차 없이 연결을 허용']}
 };
+export const incidentDefs:Record<IncidentId,Incident>={...coreIncidentDefs,...extendedIncidentDefs};
 /** DAY-based recruitment is intentionally removed. A healthy, 100%-resonant
  * rabbit/fox/wolf/deer must first be physically transferred to HQ.
  * Even with multiple pending transfers, only ONE returned human arrives per day.
@@ -282,6 +285,7 @@ export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random(
   ['keepsake',alive.length?22+alive.reduce((sum,a)=>sum+a.bond,0)/10:0],
   ['quiet',s.crew?.members.some(m=>m.mind>0)?28:0]
  ];
+ for(const id of EXTENDED_INCIDENT_IDS)scores.push([id,extendedIncidentWeight(s,id)]);
  const last=s.lastEvent??'';
  const weighted=scores.filter(([id,weight])=>weight>0&&incidentDefs[id].title!==last);
  const sum=weighted.reduce((a,[,weight])=>a+weight,0);
@@ -291,6 +295,8 @@ export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random(
 }
 export function resolveIncident(s:V10,option:number):V10{
  const id=s.pendingIncident;
+ if(!id||!Number.isInteger(option)||option<0||option>2)return s;
+ if(!(id in coreIncidentDefs))return resolveExtendedIncident(s,id as ExtendedIncidentId,option);
  if((id==='keepsake'&&!s.animals.some(a=>a.alive))||(id==='quiet'&&!s.crew?.members.some(m=>m.mind>0)))return s;
  if(option===0&&((id==='garden'&&s.power<6)||((id==='keepsake'||id==='quiet')&&s.food<1)))return s;
  if(!id||!Number.isInteger(option)||option<0||option>2||(id==='visitor'&&!s.crew?.members.some(m=>m.mind>0))||((id==='echo'||id==='rations')&&!s.animals.some(a=>a.alive)))return s;
@@ -353,7 +359,7 @@ export function resolveIncident(s:V10,option:number):V10{
 export function previewIncident(s:V10,option:number):{available:boolean;effects:{name:string;delta:number}[]}{
  const n=resolveIncident(s,option);
  if(n===s)return {available:false,effects:[]};
- const fields:[keyof V10,string][]=[['mind','정신력'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['filters','필터'],['food','식량'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
+ const fields:[keyof V10,string][]=[['mind','정신력'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['scrap','고철'],['electricCells','전지'],['filters','필터'],['medicine','의약품'],['food','식량'],['credits','크레딧'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
  const effects=fields.map(([key,name])=>({name,delta:Number(n[key])-Number(s[key])})).filter(x=>Number.isFinite(x.delta)&&x.delta!==0);
  const oldAnimals=s.animals.filter(a=>a.alive),newAnimals=n.animals.filter(a=>a.alive);
  const bondDelta=newAnimals.reduce((sum,a)=>sum+a.bond,0)-oldAnimals.reduce((sum,a)=>sum+a.bond,0);

@@ -1,6 +1,6 @@
 # 이벤트·게임 시스템 매트릭스
 
-실제 이벤트 정의는 `src/lib/game-v10.ts`의 `incidentDefs`, 날짜/위협도 선택은 `incidentWeight` 및 `resolveIncident`가 담당한다. 발생 조건은 확률 가중치와 시설 상태에 따라 달라진다.
+실제 이벤트 정의는 `src/lib/game-v10.ts`의 `incidentDefs`, 날짜/위협도 선택은 `incidentWeight` 및 `resolveIncident`가 담당한다. 기존 13개와 상태 조건을 가진 신규 27개를 합쳐 40종이며, 발생 조건은 확률 가중치와 시설·직원·동물·본부 상태에 따라 달라진다. 상세 개별 선택지와 결과는 `src/lib/incident-content.ts`를 정본으로 삼는다.
 
 | ID | 화면 사건 | 실제 선택 결과의 축 |
 |---|---|---|
@@ -18,4 +18,19 @@
 | `keepsake` | 우리 앞에 놓인 작은 선물 | 유대 보답·부품 회수·관찰, 유대·스트레스·단서 |
 | `quiet` | 오늘은 아무도 울지 않았다 | 직원 식사·기억 기록·공동 휴식, 직원/관리자 정신력·지식 |
 
-별도 시스템: 상시 CCTV 이상 비교, 야간 방어/수리, 일일 1회 장비 기반 탐사, 추적·그물 포획, 현장 전투·전리품, 개체별 ARK RECALL, 기지 업그레이드. 세부 판정은 [GAMEPLAY_SYSTEMS.md](GAMEPLAY_SYSTEMS.md), QA 범위는 [QA_REPORT.md](QA_REPORT.md). 이벤트마다 전용 장편 시네마틱이 있는 것은 아니다.
+## 상태 기반 사건 27종
+
+| ID | 발생 조건의 축 | 대표 대응 결과 |
+|---|---|---|
+| `cctv_loop`, `cctv_blindspot`, `evidence_gap` | CCTV 수리, 위협, 축적 단서 | 부품/전력을 써 영상 복구 또는 흔적 보존 |
+| `patrol_echo`, `guard_refusal`, `staff_conflict`, `medic_memory`, `empty_chair` | 늑대 경비관, 직원 정신력·합류·퇴장, 본부 이송 | 동행·근무 조정·기억 보호 및 직원 부담 변화 |
+| `generator_overheat`, `cable_arc`, `battery_swelling`, `pump_backflow`, `filter_clog`, `construction_noise` | 전력·시설 노후, 예비 전지, 시설 업그레이드 | 부품/전지/필터/전력을 소비해 수리·차단하거나 위험을 감수 |
+| `fence_crack`, `escape_tracks`, `field_scavenger`, `contamination_pool` | 외곽 위협, 탈출 기록, 탐사 귀환품, 감염 | 방어 강화·흔적 추적·전리품 회수·오염 억제 |
+| `enclosure_rattle`, `animal_fever`, `feed_shortage` | 생존 동물, 건강·스트레스, 식량 부족 | 식량과 시설 자원으로 개체를 돌보거나 피해를 감수 |
+| `neural_static`, `resonance_drift`, `data_corruption` | 동물 기억·공명·연구 데이터 | 지식·단서 확보와 데이터/개체 안정성 간 선택 |
+| `hq_recall_order`, `hq_delete_order` | 본부 이송 및 기밀 공개 단계 | 명령을 따르거나 지연·거부해 신뢰/위협을 조정 |
+| `m00_signature` | M-00 추적 단계 진입 | 비접촉 관측 및 독립 인지 증거 보호 |
+
+신규 사건은 각각 세 선택지를 제공하며, 비용이 있는 선택은 자원이 모자라면 저장 상태를 바꾸지 않는다. 사건마다 독립된 삽화 40장을 제작한 것은 아니다. 기존 6개 컨텍스트 장면을 사건 범주에 따라 재사용한다.
+
+별도 시스템: 상시 CCTV 이상 비교, 야간 방어/수리, 일일 1회 장비 기반 탐사, 추적·그물 포획, 현장 전투·전리품, 개체별 ARK RECALL, 기지 업그레이드. 세부 판정은 [GAMEPLAY_SYSTEMS.md](GAMEPLAY_SYSTEMS.md), QA 범위는 [QA_REPORT.md](QA_REPORT.md). 사건마다 전용 장편 시네마틱이 있는 것은 아니다.

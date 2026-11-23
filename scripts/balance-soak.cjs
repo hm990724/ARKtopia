@@ -38,6 +38,6 @@ assert.equal(state.phase, 'day', 'neglect pressure should not be a hard-coded DA
 assert.equal(state.power, 0);
 assert.equal(state.facility, 0);
 assert.equal(state.threat, 100);
-assert.equal(state.infection, 98);
-assert.equal(state.mind, 35);
+assert.equal(state.infection, 74);
+assert.equal(state.mind, 80);
 process.stdout.write(`${JSON.stringify(days, null, 2)}\n`);

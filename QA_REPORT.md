@@ -31,6 +31,13 @@
 
 ## Latest continuation status
 
+### v79 incident registry expansion — 2026-11-23
+
+- Expanded the actual incident registry from 13 to 40 (27 new state-gated events); all new incidents have three concrete responses and apply their stated costs/effects to persisted state.
+- Added automated checks for 27 eligibility gates, all 81 response paths, event-history recording, and missing-pending-event immutability. Existing six event illustrations are reused by category; bespoke art for each event is still outstanding.
+- `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa` pass after the expansion. Production Chrome browser suite: 37/37 passed.
+- Natural new-save playtesting of event frequencies and resource balance remains outstanding.
+
 - Four new species-specific mutant sprites are connected through `src/lib/animal-art.ts`; 26 active variants and their transparent square PNG format are checked in `npm run test:v73`.
 - The field map now suppresses visible cell seams, uses persistent clearings and evidence, and places a moving flashlight pool on the last inspected location.
 - ARK RECALL presents 13 species-specific input instruments and is covered by a 390px interaction test.
