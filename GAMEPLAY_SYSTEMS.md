@@ -30,3 +30,13 @@
 - Trust conversation costs AP 1 and food 1 but does not restore morale. Counseling costs AP 2 and food 1, restores 9 morale once per day; medical support costs AP 2 and one medicine, restores 20 once per staff per day. Staff morale deteriorates with elapsed days.
 - The event system currently has 13 registered incident IDs plus daily peaceful decisions and state-based night/field events. The master prompt's 40 materially distinct incident scenarios are not implemented yet; do not describe that target as complete.
 - Natural multi-day survival balance and expert play remain unverified. Deterministic checks cover costs, blockers, state changes, legacy saves and the day transition, not a full player campaign.
+
+
+## v80 gameplay rebuild ? 2026-11-23
+
+- The expedition loop now includes a preflight loadout, a saved roaming contaminant, a blocking tactical encounter, action-specific support from the selected employee, one-time salvage on victory, retreat without salvage, and safe extraction. One sortie per day and AP 1 remain the launch rule.
+- A complete production-browser outing links loadout, moving-threat combat, rabbit trail tracking/rescue, cache salvage, extraction, and rebuilding CCTV from recovered scrap, parts, and power. CCTV repair shows an assembly/wiring/power-on sequence and ONLINE status.
+- The live ending record displays portraits only for employees present in the save's active crew; retired staff are reported as losses and are not presented as living cast. This is a roster-aware UI layer, not bespoke ending scene art.
+- The current incident registry is 40 distinct IDs: 13 original and 27 state-gated additions. This supersedes the historical v78 note above, which described the registry before those additions. Six existing incident illustrations are reused; forty unique cinematic illustrations are not present.
+- Verification after these changes: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and the production browser suite (40/40) pass. Existing React Hook and Autoprefixer warnings remain.
+- Still not certified: natural multi-day campaign difficulty and novice accessibility through a human playthrough, per-facility power priority controls, custom high-quality artwork for all 13 species and 18 interim ending routes, and an actual hosting deployment.

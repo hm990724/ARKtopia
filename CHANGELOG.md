@@ -39,3 +39,12 @@
 - 아홀로틀·키메라·스라소니·나방·M-00·Wolf의 역사적 버전 파일 6개를 기존 v74.7 전체 프로젝트 ZIP에서 복구해 canonical 이미지 옆에 보존했다. 게임은 버전 없는 종/상태 이미지 경로를 계속 사용한다.
 - 최신 스토리·아트·밸런스 감사를 `STORY_AUDIT.md`, `ART_AUDIT.md`, `BALANCE_REPORT.md`에 반영했다. 40개 사건 목표, 자연 캠페인 밸런스, 엔딩별 고유 시네마틱 아트는 완료로 표시하지 않았다.
 - `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, 프로덕션 빌드 통과.
+
+
+## 2026-11-23 ? v80 field and ending follow-up
+
+- Added a linked field outing from preflight through roaming-threat combat, tracked animal rescue, salvage, extraction, and salvage-funded CCTV repair.
+- Added action-specific ranger, enemy, defense, EVE, and companion combat feedback; verified all four crew support effects.
+- Facility repair now animates assembly, wiring, and power-on completion with an ONLINE state and reduced-motion support.
+- Ending records now show active recruited staff portraits from the save and keep retired staff in the loss record without presenting them as alive.
+- Verification: logic regression suite passed; production browser suite passed 40/40; typecheck, lint, asset check, and production QA build passed. Known build warnings and remaining art/campaign-balance work are recorded in `NEXT_STEPS_README.md` and `QA_REPORT.md`.
