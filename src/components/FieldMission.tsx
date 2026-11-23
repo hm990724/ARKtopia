@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { V10 } from "@/lib/game-v10";
 import { regions } from "@/lib/game-v10";
@@ -24,6 +24,7 @@ import {
   observedEvidence,
   observationAge,
   type HuntMode,
+  type HuntSetting,
   type HuntTool,
 } from "@/lib/hidden-hunt";
 import {
@@ -52,7 +53,7 @@ type Props = {
   animalSrc: (id: AnimalId) => string;
   onMove: (index: number, pace: Pace) => void;
   onRetreat: () => void;
-  onHunt: (action: { type: HuntMode; cell?: number; clue?: number }) => void;
+  onHunt: (action: { type: HuntMode; cell?: number; clue?: number; setting?: HuntSetting }) => void;
   onMedkit: () => void;
   onCombat: (action:CombatAction)=>void;
   onDecision: (action: "leave" | "survey" | "risk") => void;
@@ -180,6 +181,7 @@ export default function FieldMission({
 }: Props) {
   const [mode, setMode] =
     useState<Exclude<HuntMode, "wait" | "reveal">>("search");
+  const [huntSetting, setHuntSetting] = useState<HuntSetting>("cool-clean");
   const [notice, setNotice] = useState("");
   const [searchFlash, setSearchFlash] = useState<number | null>(null);
   const [netDrag, setNetDrag] = useState<{ x: number; y: number } | null>(null);
@@ -339,7 +341,9 @@ export default function FieldMission({
       ? ""
       : `${String.fromCharCode(65 + (lastCell % size))}${Math.floor(lastCell / size) + 1}`;
   const evidencePresentation =
-    lastEvidence?.kind === "footprint"
+    lastEvidence?.kind === "regrowth" ? {label:"재생 조직 흔적",description:"아홀로틀이 물가에서 남긴 발자국을 덮은 새살입니다. 수질과 수온 설정을 바꿔 반응을 비교하세요.",tone:"foot"}
+    : lastEvidence?.kind === "decoy" ? {label:"오염 거짓 흔적",description:"특수 변이체가 남긴 오염 신호입니다. 생체 발자국으로 계산하지 말고 주변을 추가 조사하세요.",tone:"rustle"}
+    : lastEvidence?.kind === "footprint"
       ? {
           label: "발자국 확인",
           description:
@@ -374,7 +378,7 @@ export default function FieldMission({
       setSearchFlash(i);
       window.setTimeout(() => setSearchFlash((x) => (x === i ? null : x)), 440);
     }
-    onHunt({ type: mode, cell: i });
+    onHunt({ type: mode, cell: i, setting: huntSetting });
     if (mode !== "search") setMode("search");
   }
   function dropNet(x: number, y: number) {
@@ -393,6 +397,7 @@ export default function FieldMission({
     setMode("search");
   }
   const trailCells = hunt ? freshTrailCells(hunt) : [];
+  const cameraZoneActive = !!hunt && hunt.species === "specter" && hunt.cameraZone != null && hunt.cameraTurn != null && hunt.turn - hunt.cameraTurn <= 2;
   const zoneActive =
     !!hunt &&
     hunt.scanZone !== null &&
@@ -707,12 +712,17 @@ export default function FieldMission({
         <div className="v33-theater" data-tour="run-choice">
           {hunt && <div className="v71-primary-tools v74-capture-budget">
             <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><span>포획 남은 행동</span><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div>
-            <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'}><Radio size={16}/> 청음 · 1행동</button>
+            <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
             <button type="button" aria-pressed={mode==='net'} onClick={()=>setMode(mode==='net'?'search':'net')}><Target size={16}/> {mode==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
-            <span>남은 행동 <b>{hunt.actions}</b> · {mode==='net'?'십자 반경에 투척':'클릭하여 조사'}</span>
+            <span>{mode==='net'?'십자 반경을 맞춰 그물을 놓으세요':'발자국과 풀 흔들림을 따라 조사할 지점을 클릭하세요'}</span>
           </div>}
           {hunt ? (
             <>
+          {hunt && (hunt.species==='moth'||hunt.species==='axolotl') && <div className="v74-species-setting" role="group" aria-label="종별 환경 조절">
+            <b>{hunt.species==='moth'?'나방 광량 제어':'아홀로틀 수질·수온 제어'}</b>
+            {(hunt.species==='moth'?[['dim','약광 유인'],['bright','강광 차단']]:[['cool-clean','저온·청정'],['warm-clean','온수·청정'],['cool-dirty','저온·오염'],['warm-dirty','온수·오염']]).map(([value,label])=><button type="button" key={value} aria-pressed={huntSetting===value} onClick={()=>setHuntSetting(value as HuntSetting)}>{label}</button>)}
+            <span>설정을 고른 뒤 광원 또는 먹이 표식을 지도에 놓으세요. 설치 행동은 1회 소모됩니다.</span>
+          </div>}
               <div className="v33-map-frame">
                 <div className="v33-map-overline">
                   <span>
@@ -743,7 +753,9 @@ export default function FieldMission({
                     const evidence = observedEvidence(hunt, i),
                       evidenceAge = observationAge(hunt, i);
                     const foot = evidence?.kind === "footprint",
-                      shake = evidence?.kind === "rustle";
+                      shake = evidence?.kind === "rustle",
+                      regrowth = evidence?.kind === "regrowth",
+                      decoy = evidence?.kind === "decoy";
                     const newlyInspected = !!evidence && evidenceAge <= 1;
                     const wasLast =
                       hunt.lastSearch?.cell === i &&
@@ -773,7 +785,7 @@ export default function FieldMission({
                             ? " v35-observed-foot"
                             : shake
                               ? " v35-observed-rustle"
-                              : "") +
+                              : regrowth ? " v74-regrowth-trace" : decoy ? " v74-decoy-trace" : "") +
                           (obj ? " v33-placed v33-placed-" + obj.kind : "") +
                           (opened ? " v34-cleared" : "") +
                           (recent ? " v34-fresh-clearing" : "") +
@@ -782,6 +794,7 @@ export default function FieldMission({
                             ? " v33-targeting"
                             : "") +
                           (inSignalZone ? " v69-echo-zone" : "") +
+                          (cameraZoneActive && (i % size >= size/2 ? 1 : 0) + (Math.floor(i / size) >= size/2 ? 2 : 0) === hunt.cameraZone ? " v74-camera-echo" : "") +
                           (freshTrailCells(hunt).includes(i) ? " v71-trail-zone" : "") +
                           (mode === "net" ? " v69-net-target" : "") +
                           (opened&&hunt.shaking.includes(i) ? " v57-nearby-rustle" : "")
@@ -813,6 +826,8 @@ export default function FieldMission({
                         )}
                         {opened&&i===hunt.position&&<img className="v74-live-animal" src={animalSrc(hunt.species)} alt="밝혀진 구역의 개체" draggable={false}/>}
                         {foot && <PawPixel />}
+                        {regrowth && <span className="v74-regrowth-mark" aria-label="재생 조직 흔적">✣</span>}
+                        {decoy && <span className="v74-decoy-mark" aria-label="오염 거짓 흔적">⌁</span>}
                         {shake && (
                           <span
                             className="v35-rustle-signal"
@@ -884,9 +899,11 @@ export default function FieldMission({
                 <div className="v33-map-bottom">
                   <span>
                     <PawPixel />{" "}
-                    {zoneActive
-                      ? "청음 추정 영역 강조 · 열린 칸은 계속 관측됩니다"
-                      : "조사한 칸만 공개 · 발자국은 지난 자리"}
+                    {cameraZoneActive
+                      ? "점선 = CCTV 잔상 구역 · 청음 = 현재 추정 구역 · 열린 칸은 계속 관측"
+                      : zoneActive
+                        ? "청음 추정 영역 강조 · 열린 칸은 계속 관측됩니다"
+                        : "조사한 칸만 공개 · 발자국은 지난 자리"}
                   </span>
                   <span>단서 확인 → 그물을 직접 던져 구조</span>
                 </div>
@@ -908,6 +925,10 @@ export default function FieldMission({
                           ? "발자국"
                           : entry.kind === "rustle"
                             ? "풀 흔들림"
+                            : entry.kind === "regrowth"
+                              ? "재생 조직"
+                              : entry.kind === "decoy"
+                                ? "오염 거짓 흔적"
                             : entry.kind === "caught"
                               ? "개체 발견"
                               : "흔적 없음"}{" "}
@@ -943,7 +964,7 @@ export default function FieldMission({
                     onHunt({ type: "wait" });
                   }}
                 >
-                  <Clock3 size={16} /> 청음 · 1행동 <MoveRight size={15} />
+                  <Clock3 size={16} /> {hunt.species==='lynx'?'청음·은밀 접근':'청음'} · 1행동 <MoveRight size={15} />
                 </button>
               </div>
               <div

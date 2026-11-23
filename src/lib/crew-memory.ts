@@ -14,13 +14,14 @@ const reactions:Record<CrewId,string>={
  wolf:'제가 그 늑대였군요. 동물일 때도 지키려던 존재가 있었어요. 그 마음까지 본부의 소유는 아니에요.',
  deer:'제가 그 사슴이었군요. 제 기록을 복사해 주세요. 제가 누구였는지, 지금 무엇을 선택했는지 증명하고 싶어요.',
 };
-/** Conversation rewards are once per employee per day; replay is free of side effects. */
+/** Conversations cost daily provisions and build trust; mental recovery is a separate scarce action. */
 export function shareCrewMemory(s:V10,id:CrewId):{state:V10;lines:Line[]}{
  const old=s.crew?.members.find(m=>m.id===id);
  if(!old||old.mind<=0||s.phase!=='day'||s.run||s.pendingIncident||s.crew?.pendingTermination)return {state:s,lines:[]};
  if(old.lastSpokenDay===s.day)return {state:s,lines:(old.memoryStage??0)>=2?[{speaker:id,text:reactions[id]}]:crewDialog(s,id)};
+ if(s.ap<1||s.food<1)return {state:s,lines:[{speaker:'EVE',text:'오늘은 상담에 쓸 행동력이나 식량이 부족합니다. 오늘의 하루 배급을 먼저 확인해 주세요.'}]};
  const n=copy(s) as V10,m=n.crew!.members.find(x=>x.id===id)!;
- m.lastSpokenDay=n.day;m.bond=cap(m.bond+4);m.mind=cap(m.mind+3);
+ n.ap--;n.food--;m.lastSpokenDay=n.day;m.bond=cap(m.bond+4);
  const key=m.sourceSpecimenId,entry=key?n.archive?.entries[key]:undefined;
  const matched=!!entry&&entry.species===id&&entry.status==='transferred';
  const age=n.day-m.arrivedDay,stage=m.memoryStage??0;
@@ -41,7 +42,7 @@ export function shareCrewMemory(s:V10,id:CrewId):{state:V10;lines:Line[]}{
   log(n,'직원 기억의 파편 · '+CREW_PROFILES[id].post,fragments[id],'mystery');
  }else if(stage>=2)lines=[{speaker:id,text:reactions[id]},{speaker:'관리자',text:'기억을 되찾은 뒤에 어떤 삶을 살지는 네가 결정해.'}];
  else lines=crewDialog(n,id);
- n.lastOutcome=`${CREW_PROFILES[id].post}와 대화 · 신뢰 +${m.bond-old.bond} · 정신 +${m.mind-old.mind}`;
+ n.lastOutcome=`${CREW_PROFILES[id].post}와 대화 · AP -1 · 식량 -1 · 신뢰 +${m.bond-old.bond} · 정신력은 회복되지 않음`;
  return {state:n,lines};
 }
 export function emptyCageAvailable(s:V10){return !!s.crew?.members.some(m=>m.id==='rabbit'&&m.mind>0)&&s.headquarters.transferred.includes('rabbit');}

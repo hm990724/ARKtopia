@@ -11,19 +11,25 @@ export const HUNT_CELLS=HUNT_SIZE*HUNT_SIZE;
 export type HuntTool='bait'|'sound'|'light'|'barrier';
 export type HuntMode='search'|'net'|HuntTool|'wait'|'reveal';
 export type Terrain='thicket'|'path'|'mud'|'water'|'ruin'|'root';
-export type HuntObject={cell:number;kind:HuntTool;life:number};
+export type HuntSetting='quiet'|'dim'|'bright'|'cool-clean'|'warm-clean'|'cool-dirty'|'warm-dirty';
+export type HuntObject={cell:number;kind:HuntTool;life:number;setting?:HuntSetting};
 export type HuntLog={turn:number;message:string;kind:'hint'|'warning'|'event'|'error'};
-/** Evidence is a snapshot taken BEFORE the animal moves; it never updates passively.
- * Unknown squares have no observation record, even if the hidden engine knows
- * their footprints and rustle. Historical observations remain stale until rescanned.
+/** Previously cleared squares remain visible. A live animal or its newest footprint
+ * takes precedence over an old snapshot so movement stays observable in open ground.
+ * Unsearched squares never reveal evidence from hidden engine state.
  */
-export type HuntEvidence='footprint'|'rustle'|'empty'|'caught';
+export type HuntEvidence='footprint'|'rustle'|'regrowth'|'decoy'|'empty'|'caught';
 export type HuntObservation={kind:HuntEvidence;turn:number};
 export function observedEvidence(state:HuntState,cell:number):HuntObservation|null{
  if(!Number.isInteger(cell)||cell<0||cell>=huntSize(state)**2||!Object.hasOwn(state.searchedAt??{},String(cell)))return null;
  if(cell===state.position)return {kind:'caught',turn:state.turn};
  const trace=state.trail?.filter(t=>t.cell===cell&&state.turn-t.turn<=6).at(-1);
- if(trace)return {kind:'footprint',turn:trace.turn};
+ if(trace){
+  if(state.species==='axolotl'&&state.terrain[cell]==='water')return {kind:'regrowth',turn:trace.turn};
+  if(state.species==='chimera'&&trace.turn%3===1)return {kind:'rustle',turn:trace.turn};
+  return {kind:'footprint',turn:trace.turn};
+ }
+ const snapshot=state.observations?.[String(cell)];if(snapshot)return snapshot;
  if(state.footprints.includes(cell))return {kind:'footprint',turn:Math.max(0,state.turn-1)};
  if(ring8(state.position,huntSize(state)).includes(cell))return {kind:'rustle',turn:state.turn};
  return {kind:'empty',turn:state.turn};
@@ -48,6 +54,8 @@ export type HuntState={
  selectedCell:number|null;lastCommand:HuntMode|null;misses:number;
  // Broad sonar quadrant, never an exact animal location. Nullable for older saves.
  scanZone?:number|null;scanTurn?:number;
+ cameraZone?:number|null;cameraTurn?:number;
+ quietTurn?:number;
  // A four-cell snapshot earned through patient tracking; expires after movement.
  trailZone?:number|null;trailTurn?:number;
 };
@@ -61,12 +69,12 @@ export const HUNT_TRAITS:Record<AnimalId,HuntTraits>={
  wolf:{title:'추적자',short:'소리를 단서로 담당자 쪽으로 접근할 수 있습니다.',hints:['늑대는 소리 자극에 반응해 경계하며 접근합니다.','막힌 길을 여러 번 확인하면 우회로를 학습합니다.','압박 신호가 최대치에 가까워지면 다음 탐색 실패에 공격합니다.'],speed:2,likes:['sound'],hates:['light'],risk:'추적 실패 시 HP 손상'},
  crow:{title:'미끼 절도',short:'반짝이는 광원과 소리를 교대로 추적합니다.',hints:['까마귀는 깜빡이는 불빛에 관심을 보입니다.','같은 소리에 두 번 이상 노출되면 반응이 약해집니다.','한 곳에 오래 놓인 먹이를 먼저 건드립니다.'],speed:2,likes:['light','sound'],hates:[],risk:'전지 또는 작은 부품 손실'},
  otter:{title:'물길 우회',short:'수로를 타면 육상 흔적이 희미합니다.',hints:['수달은 먹이에 강하게 반응합니다.','습지 타일에서는 긴 소리보다 먹이를 선호합니다.','물길에서 벗어나면 한 칸씩 조심스럽게 이동합니다.'],speed:1,likes:['bait','sound'],hates:['light'],risk:'회수 물자 일부 유실'},
- lynx:{title:'측면 기습',short:'소리 반대편으로 우회하며 움직입니다.',hints:['스라소니는 소리의 반대쪽을 우선 확인합니다.','차단막 옆에는 잠깐 머무르지 않습니다.','발자국 근처를 무턱대고 뒤지면 기습 경계가 올라갑니다.'],speed:2,likes:['bait'],hates:['sound','light'],risk:'기습 시 HP 손실'},
- axolotl:{title:'수중 잠복',short:'습한 칸에 머물며 아주 천천히 움직입니다.',hints:['아홀로틀은 물길을 선호합니다.','먹이에 반응하지만 자극이 너무 강하면 멈춥니다.','발자국 대신 진흙 흔적을 남길 때가 있습니다.'],speed:1,likes:['bait'],hates:['sound'],risk:'감염 위험 상승'},
- moth:{title:'광원 주회',short:'빛을 중심으로 돌다가 방향을 바꿉니다.',hints:['나방은 밝은 빛이 있으면 그쪽으로 이동합니다.','먹이 냄새에는 거의 반응하지 않습니다.','같은 광원을 오래 사용하면 다른 광원을 찾습니다.'],speed:2,likes:['light'],hates:['sound'],risk:'장비 전력 손실'},
- mutant:{title:'역방향 기억',short:'자극을 학습해 유리한 방향에서 역습합니다.',hints:['변이 개체는 불규칙한 두 칸 이동을 반복합니다.','같은 신호를 반복하면 선호가 반대로 바뀝니다.','다음 탐색에 실패하면 공격 위험이 급증합니다.'],speed:2,likes:['sound','light'],hates:[],risk:'심각한 HP 손상'},
- specter:{title:'백색 잔향',short:'잔향을 남기며 약한 빛을 따라갑니다.',hints:['빛에 천천히 다가옵니다.','갑작스러운 소리를 피합니다.','열린 구역의 잔향은 실제 지나간 경로입니다.'],speed:1,likes:['light'],hates:['sound'],risk:'신호 교란으로 위협 상승'},
- chimera:{title:'교란된 두 기억',short:'서로 다른 신호가 충돌할 때 가장 불규칙합니다.',hints:['접합체는 두 가지 자극이 겹치는 곳을 경계합니다.','동일한 빛을 반복하면 반대편으로 이동합니다.','기억 교란이 심해지면 한 번에 세 칸 이동합니다.'],speed:2,likes:['bait','sound'],hates:['light'],risk:'HP·감염 동시 상승'}
+ lynx:{title:'사각지대 감시',short:'소리를 먼저 감지하고 CCTV의 사각을 따라 조용히 움직입니다.',hints:['스라소니는 청음 신호를 유인 신호로 받아들입니다.','조용히 접근하면 경계와 추적 위험이 낮아집니다.','귀술과 짧은 꼬리, 등과 목의 생체 레이더를 찾으세요.'],speed:2,likes:['sound'],hates:['light'],risk:'기습 시 HP 손실'},
+ axolotl:{title:'불완전 재생',short:'수로를 따라 움직이고 물에 잠긴 흔적은 새살 자국으로 남습니다.',hints:['깨끗하고 차가운 수역을 선호합니다.','오염되거나 따뜻한 물은 재생 흔적을 흐리게 합니다.','발자국 대신 물가의 재생 조직 흔적을 따라가세요.'],speed:1,likes:['bait'],hates:['sound'],risk:'감염 위험 상승'},
+ moth:{title:'점멸 회로',short:'어두운 빛에 다가오지만 강한 조명에는 정전을 일으키며 달아납니다.',hints:['약한 조명을 켜면 천천히 접근합니다.','강한 조명은 도주 반응을 일으킬 수 있습니다.','회로처럼 갈라진 날개와 불규칙한 점멸을 관찰하세요.'],speed:2,likes:['light'],hates:['sound'],risk:'장비 전력 손실'},
+ mutant:{title:'동기화 붕괴',short:'고정된 형태를 유지하지 못하며 오염 흔적으로 추적을 교란합니다.',hints:['불규칙한 이동은 실제 발자국과 거짓 흔적을 남깁니다.','오염 흔적을 생체 발자국으로 착각하지 마세요.','신경 다발과 연구 장비를 조작하려는 손의 흔적을 찾으세요.'],speed:2,likes:['sound','light'],hates:[],risk:'심각한 HP 손상'},
+ specter:{title:'기록 잔향',short:'CCTV 잔상과 실제 청음 위치가 서로 어긋납니다.',hints:['청음은 현재 위치의 넓은 구역을 가리킵니다.','CCTV에는 직전 위치의 잔상만 남습니다.','조명·기록·음향을 함께 비교해 이동 방향을 추정하세요.'],speed:1,likes:['light'],hates:['sound'],risk:'신호 교란으로 위협 상승'},
+ chimera:{title:'다중 기억 주기',short:'구조·치료·격리 기억이 교차하며 서로 다른 흔적을 남깁니다.',hints:['기억 주기에 따라 행동과 선호 자극이 바뀝니다.','발자국·풀 흔들림·거짓 흔적을 구분하세요.','한 사람의 행동으로 단정하지 말고 주기를 기록하세요.'],speed:2,likes:['bait','sound'],hates:['light'],risk:'HP·감염 동시 상승'}
 };
 const mix=(n:number)=>{let x=n>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;return x>>>0};
 const randomAt=(seed:number,turn:number,salt:number)=>mix(seed+turn*1013+salt*9176)/4294967296;
@@ -120,7 +128,7 @@ export function normalizeHunt(raw:HuntState):HuntState {
   const cell=Number(key);
   if(!Number.isInteger(cell)||cell<0||cell>=cells||!val||typeof val!=='object')continue;
   const evidence=val as HuntObservation;
-  if(!['footprint','rustle','empty','caught'].includes(evidence.kind)||!Number.isFinite(evidence.turn))continue;
+  if(!['footprint','rustle','regrowth','decoy','empty','caught'].includes(evidence.kind)||!Number.isFinite(evidence.turn))continue;
   if(!Object.hasOwn(searchedAt,key))continue; // a clue must have been personally inspected
   observations[key]={kind:evidence.kind,turn:Math.max(0,Math.min(raw.turn,evidence.turn))};
  }
@@ -145,7 +153,8 @@ export function newHunt(species:AnimalId,seed:number,tutorial=false,size:6|8=6):
 const nil={hp:0,parts:0,food:0,infection:0,threat:0};
 const msg=(state:HuntState,message:string,kind:HuntLog['kind']='event'):HuntState=>({...state,lastEvent:message,log:[{turn:state.turn,message,kind},...state.log].slice(0,5)});
 function rate(state:HuntState,kind:HuntTool){const b=HUNT_TRAITS[state.species];const learned=(state.habits[kind]??0)>=2;
- const loved=b.likes.includes(kind),hated=b.hates.includes(kind);
+ let loved=b.likes.includes(kind),hated=b.hates.includes(kind);
+ if(state.species==='chimera'){const phase=state.turn%3;loved=(phase===0&&kind==='bait')||(phase===1&&kind==='sound');hated=phase===2&&kind==='light';}
  if(state.species==='mutant'&&state.turn%2===1)return loved?-1:hated?1:0;
  return learned?loved?-1:0:loved?1:hated?-1:0;
 }
@@ -175,7 +184,9 @@ function chooseStep(state:HuntState):number{
   if(['otter','axolotl'].includes(state.species)&&terrain==='water')points+=4;
   if(['owl','lynx'].includes(state.species)&&terrain==='thicket')points+=2;
   if(state.species==='moth'&&terrain==='ruin')points+=.6;
-  for(const obj of food){const d=huntDistance(cell,obj.cell,size),prevDist=huntDistance(state.position,obj.cell,size),affinity=rate(state,obj.kind);
+  for(const obj of food){const d=huntDistance(cell,obj.cell,size),prevDist=huntDistance(state.position,obj.cell,size);let affinity=rate(state,obj.kind);
+   if(state.species==='axolotl'&&obj.kind==='bait')affinity=obj.setting==='cool-clean'&&terrain==='water'?1:obj.setting?.includes('dirty')||obj.setting?.includes('warm')?-1:affinity;
+   if(state.species==='moth'&&obj.kind==='light')affinity=obj.setting==='dim'?1:obj.setting==='bright'?-1:affinity;
    if(affinity>0)points+=(prevDist-d)*(obj.kind==='bait'?13:6.2)/(1+Math.max(0,d-3)*.12);
    if(affinity<0)points+=(d-prevDist)*6;
   }
@@ -187,7 +198,7 @@ function chooseStep(state:HuntState):number{
  return scored[0].cell;
 }
 function finishPenalty(state:HuntState){switch(state.species){case 'rabbit':return {...nil};case 'fox':return {...nil,parts:1};case 'crow':return {...nil,parts:1};case 'deer':return {...nil,threat:7};case 'owl':return {...nil,threat:3};case 'otter':return {...nil,food:2};case 'axolotl':return {...nil,infection:9};case 'moth':return {...nil,threat:4};case 'wolf':return {...nil,hp:22,threat:8};case 'lynx':return {...nil,hp:17};case 'mutant':return {...nil,hp:31,infection:8};case 'specter':return {...nil,threat:6};case 'chimera':return {...nil,hp:26,infection:12};}}
-export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:number;clue?:number}):HuntResult{
+export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:number;clue?:number;setting?:HuntSetting}):HuntResult{
  const size=huntSize(raw),half=size/2;
  const unchanged: HuntResult={state:raw,changed:false,won:false,lost:false,penalty:nil};
  if(raw.outcome!=='playing'||raw.actions<=0)return unchanged;
@@ -218,7 +229,8 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   const searchedCell=action.cell!;
   // Mark before testing: both an empty clearing and a successful discovery open the grass.
   current.searchedAt[String(searchedCell)]=current.turn+1;
-  const evidence:HuntEvidence=searchedCell===current.position?'caught':current.footprints.includes(searchedCell)?'footprint':current.shaking.includes(searchedCell)?'rustle':'empty';
+  const isDecoy=current.species==='mutant'&&current.terrain[searchedCell]==='ruin'&&((current.seed+searchedCell*17+current.turn*13)%5===0);
+  const evidence:HuntEvidence=searchedCell===current.position?'caught':isDecoy?'decoy':current.species==='axolotl'&&current.terrain[searchedCell]==='water'&&current.footprints.includes(searchedCell)?'regrowth':current.footprints.includes(searchedCell)?'footprint':current.shaking.includes(searchedCell)?'rustle':'empty';
   // Never expose global footprints/shaking: only the selected square is sampled.
   current.observations[String(searchedCell)]={kind:evidence,turn:current.turn};
   current.lastSearch={cell:searchedCell,found:searchedCell===current.position,turn:current.turn+1};
@@ -243,11 +255,11 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   if(prior>=0){current.objects.splice(prior,1);text='기존 장치를 회수했습니다. 한 턴이 지났습니다.';}
   else {
    if(current.objects.length>=3)return unchanged;
-   current.objects.push({cell:place,kind:action.type,life:6});
+   current.objects.push({cell:place,kind:action.type,life:6,setting:action.setting});
    current.habits[action.type]=(current.habits[action.type]??0)+1;
    text=action.type==='barrier'?'차단막을 전개했습니다. 해당 칸이 붉게 봉쇄되고 우회가 시작됩니다.':
-    action.type==='bait'?'먹이를 놓았습니다. 해당 냄새에 반응하는 개체는 한 칸씩 접근할 수 있습니다.':
-    action.type==='sound'?'잔향 신호가 퍼집니다. 개체마다 접근 또는 도주 반응이 다릅니다.':'조명을 켰습니다. 광원 주위의 생체 반응이 달라집니다.';
+    action.type==='bait'?(current.species==='axolotl'?`수조 표식 설치: ${action.setting==='cool-clean'?'차갑고 깨끗한 물':'수질·수온 조건'}을 설정했습니다.`:'먹이를 놓았습니다. 해당 냄새에 반응하는 개체는 한 칸씩 접근할 수 있습니다.'):
+    action.type==='sound'?'잔향 신호가 퍼집니다. 개체마다 접근 또는 도주 반응이 다릅니다.':(current.species==='moth'?`조명 밝기 ${action.setting==='dim'?'낮음':'높음'} 설정. 강한 빛은 나방을 밀어냅니다.`:'조명을 켰습니다. 광원 주위의 생체 반응이 달라집니다.');
    if((current.habits[action.type]??0)>=3)text+=' 같은 자극을 반복해 개체가 패턴을 학습했습니다.';
   }
  }else if(action.type==='reveal'){
@@ -269,6 +281,7 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   const east=next%size>=half,north=Math.floor(next/size)<half;
   const bearing=`${north?'북':'남'}${east?'동':'서'}쪽 ${half}×${half} 구역`;
   current.scanZone=(east?1:0)+(north?0:2);current.scanTurn=current.turn;
+  if(current.species==='specter'){const oldEast=from%size>=half,oldNorth=Math.floor(from/size)<half;current.cameraZone=(oldEast?1:0)+(oldNorth?0:2);current.cameraTurn=current.turn;}
   text=`저주파 청음 결과: ${bearing}에서 움직임 포착. 지도에서 강조된 ${half}×${half} 구역은 이 턴의 추정 영역입니다. 최대 2턴 동안 참고하세요.`;
   kind='hint';
  }
@@ -287,7 +300,9 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  // Predator escalation is signalled before high-damage failure, never an invisible instant hit.
  const dangerous=['wolf','lynx','mutant','chimera'].includes(current.species);
  current.predator=Math.min(100,current.predator+(dangerous?6:3)+(action.type==='search'?6:0));
- current.fear=Math.min(100,Math.max(0,current.fear+(action.type==='wait'?-8:action.type==='search'?7:3)));
+ if(action.type==='wait'&&current.species==='lynx')current.quietTurn=current.turn;
+ current.fear=Math.min(100,Math.max(0,current.fear+(action.type==='wait'?-(current.species==='lynx'?14:8):action.type==='search'?7:3)));
+ if(action.type==='wait'&&current.species==='lynx')current.predator=Math.max(0,current.predator-12);
  if(dangerous&&current.predator>=60&&current.actions>0){text+=' EVE 경보: 포식자가 담당자님을 역추적하고 있습니다. 남은 행동이 적습니다.';kind='warning';}
  if(current.actions<=0){
   if(current.tutorial){

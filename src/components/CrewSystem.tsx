@@ -113,15 +113,15 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
      <div className="v67-staff-content">
       <div className="v67-staff-heading"><div><span className="micro-label">HQ // PERSONNEL</span><h2 id="v67-staff-title">{CREW_PROFILES[selected].post}</h2><p>{CREW_PROFILES[selected].personality}</p></div><button className="v67-staff-close" type="button" aria-label="직원 정보 닫기" onClick={()=>setSelected(null)}>×</button></div>
       <div className="v67-staff-mind"><span>정신 안정도</span><strong>{selectedMember.mind}<small> / 100</small></strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.mind}%`}}/></div></div>
-      <p className="v71-staff-trust">신뢰 {selectedMember.bond}% · {selectedMember.lastSpokenDay===state.day?'오늘의 교감 완료':'하루 한 번 대화로 신뢰와 정신 회복'}{(selectedMember.memoryStage??0)>0&&<><br/>{selectedMember.memoryStage===2?'자신의 보존 기록을 확인했다.':'설명할 수 없는 기억의 파편을 나눴다.'}</>}</p>
+      <p className="v71-staff-trust">신뢰 {selectedMember.bond}% · {selectedMember.lastSpokenDay===state.day?'오늘의 대화 완료':'대화는 하루 1회 · AP 1과 식량 1 소모 · 신뢰만 회복'}{(selectedMember.memoryStage??0)>0&&<><br/>{selectedMember.memoryStage===2?'자신의 보존 기록을 확인했다.':'설명할 수 없는 기억의 파편을 나눴다.'}</>}</p>
       {(state.originZero?.photos??0)>=7&&<div className="v69-staff-body-status"><span>복제 신체 안정도</span><strong>{selectedMember.stability??88}%</strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.stability??88}%`,background:(selectedMember.stability??88)<35?'#e68da2':'#82c5c7'}}/></div><small>기억 잔향 {selectedMember.memoryEcho??0}% · 연결 보존 번호 {selectedMember.sourceSpecimenId??'기록 복구 중'}</small></div>}
       <p className="v67-staff-brief">{({rabbit:'응급처치와 회복을 돕습니다.',fox:'식량과 보급품을 추가로 확보합니다.',wolf:'야간 경계와 시설 방어를 지원합니다.',deer:'오염 관리와 기록 분석을 지원합니다.'} as Record<CrewId,string>)[selected]}</p>
       {selectedMember.mind<=28&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 위험 상태 · 조속한 안정 조치가 필요합니다.</div>}
       <div className="v67-staff-action-grid">
-       <button type="button" onClick={()=>{setSelected(null);onTalk(selected)}}><BookOpen size={16}/> 대화</button>
+       <button type="button" disabled={selectedMember.lastSpokenDay!==state.day&&(state.ap<1||state.food<1)} onClick={()=>{setSelected(null);onTalk(selected)}}><BookOpen size={16}/> 대화 <small>{selectedMember.lastSpokenDay===state.day?'오늘 대화 다시 보기':'AP -1 · 식량 -1 · 신뢰만 회복'}</small></button>
        <button type="button" className="primary" disabled={!!used||selectedMember.mind<=0||!!state.crew?.pendingTermination} onClick={()=>{setSelected(null);onSupport(selected)}}>오늘 지원</button>
-       <button type="button" disabled={selectedMember.mind<=0||state.ap<1||state.medicine<1} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={16}/> 의료 지원</button>
-       <button type="button" disabled={selectedMember.mind<=0||state.ap<1} onClick={()=>onTreat(selected,'counsel')}><Brain size={16}/> 상담</button>
+       <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.medicine<1||selectedMember.lastCareDay===state.day} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={16}/> 의료 지원 <small>AP -2 · 치료제 -1 · 정신 +20</small></button>
+       <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.food<1||state.crew?.counselDay===state.day} onClick={()=>onTreat(selected,'counsel')}><Brain size={16}/> 상담 <small>AP -2 · 식량 -1 · 정신 +9 · 하루 1회</small></button>
       </div>
       {onReplayArrival&&<button type="button" className="v67-staff-replay" onClick={()=>{setSelected(null);onReplayArrival(selected)}}>도착 장면 다시 보기 <ChevronRight size={15}/></button>}
      </div>
@@ -143,7 +143,7 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  return <div className="v49-collapse-shade" role="dialog" aria-modal="true" aria-label={`${profile.post} 인격 신호 소실`}>
   <div className="v49-collapse-window">
    <div className="v49-collapse-image">
-    {!missing&&<img src={id==='wolf'?'/assets/cinematics/staff-terminations/wolf/scene_v74.png':`/assets/cinematics/staff-terminations/${id}/scene.webp`} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
+    {!missing&&<img src={`/assets/cinematics/staff-terminations/${id}/scene.webp`} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
     <div className="v49-collapse-glitch" aria-hidden="true"/>
     <div className="v49-collapse-diagnostics"><small>STAFF / NEURAL LINK FAILURE</small><strong>{profile.post}</strong><span>MENTAL RESILIENCE: 0% · IRREVERSIBLE</span></div>
    </div>

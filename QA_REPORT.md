@@ -24,7 +24,6 @@
 
 ## 미완료
 
-- 아홀로틀·키메라·스라소니·나방 Mutant 그림을 토끼/여우 예시 스타일로 생성/검수/게임 연결하는 작업은 진행 중이다. 파일별 명세: `docs/ART_REWORK_v75.md`.
 - 실제 장시간 플레이에서 난이도/보상 균형은 플레이테스트가 필요하다.
 - 13종별 Recall 입력이 달라졌지만 일부 종은 같은 물리 입력 계열을 공유한다. 모든 조작의 장시간 밸런스와 자연 캠페인 재수집은 추가 플레이테스트가 필요하다.
 - 엔딩 UI 테스트는 최종 선택 화면에 상태 fixture를 주입해 8개 결과를 확인한다. 전체 캠페인을 처음부터 진행하는 자연 경로 playthrough는 아직 하지 않았다.
@@ -35,7 +34,7 @@
 - Four new species-specific mutant sprites are connected through `src/lib/animal-art.ts`; 26 active variants and their transparent square PNG format are checked in `npm run test:v73`.
 - The field map now suppresses visible cell seams, uses persistent clearings and evidence, and places a moving flashlight pool on the last inspected location.
 - ARK RECALL presents 13 species-specific input instruments and is covered by a 390px interaction test.
-- Full logic regression, typecheck, lint, QA production build, and 32 browser tests passed before the final sprite route update. Rerun all checks after the latest art integration.
+- Full logic regression, typecheck, lint, QA production build, and browser suite passed after the sprite route update (see final verification below).
 - New art generation inputs and per-file notes: `docs/generated-assets-v75.json` and `docs/ART_REWORK_v75.md`.
 
 ## Final verification — 2026-11-23
@@ -50,9 +49,50 @@
 - `npm run test:v75`: passed (19 unique ending files and 13 event mappings). `npm run test:all`, `npm run typecheck`, `npm run lint`, and `npm run build:qa`: passed.
 - Production Chrome run: 34/34 passed after correcting two test fixtures whose onboarding briefings intercepted their intended controls. The 19-ending asset test and mobile incident-art test both passed.
 
+## v74.8 local type and portrait frame
+
+- Removed the remote Google Fonts import. All screens now use the bundled OFL-licensed Pretendard body font and NeoDunggeunmo terminal display font, so typography works offline and keeps the squared dystopian interface style.
+- Story portrait images use `object-fit: contain` to preserve the full head/face frame instead of cropping at the dialogue card edges.
+- Added a production browser regression asserting both local fonts load, no Google font request is made, the protagonist image loads, and dialogue portraits preserve their frame.
+- Final verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, and full production browser suite 36/36 pass. Existing Autoprefixer and React Hook dependency warnings remain.
+- Fresh natural multi-day campaign balance is still not verified end to end. Tutorial-to-first-rescue, field combat, 13 Recall interactions, and all eight ending UI records are covered by automated scenarios.
+
+## 2026-11-23 species canon and art continuation
+
+- Synced the final six species identities across the roster, three-stage ARK RECALL prompts, tracking hints, and field behavior. Lynx benefits from quiet sonar approaches; Axolotl leaves regeneration evidence and reacts to water settings; Moth reacts differently to dim and bright light; Mutant produces false contamination traces; Chimera cycles between memory-driven responses; Specter separates the CCTV afterimage from the live acoustic zone.
+- Added explicit field controls and evidence labels for water quality/temperature, moth light strength, regeneration traces, contamination decoys, and Specter camera echoes. Existing save fields are optional; old saved hunts keep their previous state.
+- Replaced the canonical mutant sprites for Lynx, Moth, Special Mutant and Specter, and kept the prior versioned/source images on disk. Updated canonical `animalSprite()` resolution never requests `_vNN` filenames.
+- Created a new Wolf staff-termination cinematic matching the Rabbit/Fox/Deer set: black-haired woman, exhausted security guard, transformed arm holding the failing door, and an injured rabbit protected in a carrier. The staff UI now resolves the common `scene.webp` path.
+- Verification: `npm run test:all` passed including 780 seeded hunts and new six-species evidence/identity tests; `npm run typecheck`, `npm run lint`, and `npm run check:assets` passed. QA production build succeeded after the sandbox initially rejected process spawning (`spawn EPERM`) and was rerun with elevated process permission. Browser suite remains to be rerun after the final Wolf art update. Natural full-campaign balance remains unverified.
+
 ## v76 false-lead reveal
 
 - Updated the M-00 trace: the player first sees a dangerous mutant silhouette suspected as the origin, then follows contradictory footprints and discovers the normal black cat.
 - The CCTV scene uses the attached creature reference; capture and marker text distinguish M-00's identity from the cause of the pathogen leak.
 - `npm run test:all`, `npm run typecheck`, `npm run lint`, and `npm run build:qa`: pass.
 - Production Chrome browser suite: 35/35 pass, including the complete three-camera false lead and reveal.
+
+## v76 ending cast correction
+
+- All 19 ending routes now resolve to human-only v76 scenes showing staff and/or EVE; the prior v75 ending files were preserved.
+- Six unique generated scenes are available, and the 19 route-specific filenames currently reuse those six scenes. The other 13 unique ending illustrations are unfinished.
+- Additional image generation failed with `401 token_revoked`; do not treat all 19 unique ending scenes as complete. See [ENDING_ART_v76.md](docs/ENDING_ART_v76.md).
+- Updated the automated checks to validate all 19 v76 routes and browser loads. Final checks are pending for this update.
+
+## v77 ending character audit
+
+- Replaced the active ending image map with 19 individual SVG compositions that reference only the canonical protagonist/EVE portraits. This prevents unrelated generated faces, animals, or mutants from appearing in ending frames.
+- These are distinct portrait compositions with route palettes and archive geometry, not bespoke high quality painted scenes. Their poses remain the portraits' existing neutral poses; the requested per-ending acting and cinematic story art remain incomplete.
+- Added `scripts/generate-ending-cards.cjs` and changed `test:v75` to check all 19 SVG routes and allowed portrait sources. The automated route tests also pass.
+- Follow-up production verification succeeded after subprocess execution was approved: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and `ARK_PRODUCTION_TEST=1 npm run test:browser` passed; browser suite 36/36. Build retains six existing React Hook dependency warnings.
+
+## v78 continuation verification — 2026-11-23
+
+- Read the newly supplied Ultimate Master prompt as a development specification. Its character, story, gameplay, save-compatibility and cast constraints are documented in `STORY_AUDIT.md`, `BALANCE_REPORT.md`, and `ART_AUDIT.md`.
+- Preserved the six historical v73/v74 animal/Wolf files in the project from the existing v74.7 full-source archive. The active animal resolver continues to use canonical species/state filenames.
+- Corrected two stale Playwright assumptions: the night circuit test now derives terminal order from the displayed current-day voltages and checks all four terminals; the staff conversation test matches its accessible name including the cost description.
+- `npm run test:all`: pass, including saved progression, combat, 780 seeded hunts, 13 recall protocols and eight ending outcomes.
+- `npm run typecheck`, `npm run lint`, `npm run check:assets`: pass.
+- `npm run build:qa`: production build passed after process-spawn approval earlier in this continuation; it still emits the existing Autoprefixer compatibility and six React Hook dependency warnings.
+- Production Chrome browser suite: **37/37 passed** after fixes. Covers tutorial rescue, capture budget, persistent field discovery, night low-power warning, staff portrait dialogue, mobile/desktop layout, ARK RECALL, eight ending UI outcomes, all 19 ending asset routes, M-00 reveal and local fonts.
+- The ending assets remain portrait-based SVG compositions, not the requested bespoke per-ending cinematic scenes. Natural fresh-save campaign balance, the 40-event target and complete narrative state/cast playthrough remain unverified. See `STORY_AUDIT.md`, `BALANCE_REPORT.md`, and `ART_AUDIT.md`.

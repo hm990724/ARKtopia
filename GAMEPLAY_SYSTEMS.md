@@ -22,3 +22,11 @@
 - 개별 동물 재수집/회상은 종 전체 완료와 분리된 ID 단위 상태다.
 - 세부 밸런스, 모든 8개 엔딩 실기 검수 및 터치 조작은 전체 브라우저 테스트 전까지 완료로 간주하지 않는다.
 - ARK RECALL은 종별 입력 위젯을 제공하지만 일부 종은 같은 물리 입력 계열을 공유한다. 13종 전부 모바일 브라우저에서 위젯 조작 후 단계 저장까지 확인했다. 세부 판정/난이도 균형과 자연 플레이를 통한 재수집 장기 검수는 남아 있다.
+
+## v78 추가 검증 사항
+
+- Portable flashlight sorties spend the flashlight charge and one AP, not facility power. EVE's scanner route requires facility power. Charging the flashlight consumes one cell, 12 facility power and one AP, then restores 38 flashlight charge.
+- The optional night fuse board persists sequence/faults for the current day. A wrong terminal costs 4 power, 3 facility stability and adds 3 threat; after three faults it locks. A correct four-terminal connection adds 4 power and 6 facility stability during settlement.
+- Trust conversation costs AP 1 and food 1 but does not restore morale. Counseling costs AP 2 and food 1, restores 9 morale once per day; medical support costs AP 2 and one medicine, restores 20 once per staff per day. Staff morale deteriorates with elapsed days.
+- The event system currently has 13 registered incident IDs plus daily peaceful decisions and state-based night/field events. The master prompt's 40 materially distinct incident scenarios are not implemented yet; do not describe that target as complete.
+- Natural multi-day survival balance and expert play remain unverified. Deterministic checks cover costs, blockers, state changes, legacy saves and the day transition, not a full player campaign.

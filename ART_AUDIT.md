@@ -37,3 +37,12 @@ Generated and integrated four role-driven pixel-art mutant states: axolotl (rege
 - The user's supplied grotesque mutant reference now appears as a distant CCTV silhouette in `public/assets/events/m00_suspected_origin_v75.png`; the reveal identifies it as the same cat's shadow stretched by emergency light and broken video, not a separate specimen.
 - Three evidence choices undermine the dangerous silhouette theory; a low camera reveals the normal black cat as M-00. The code explicitly says its biological marker is identity evidence and does not make the cat responsible for the leak.
 - `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, and the full 35/35 Chrome browser suite pass. See `docs/STORY_REVEAL_FALSE_ORIGIN_v76.md`.
+
+## v78 canonical art routes and preserved source versions (2026-11-23)
+
+- Animal rendering resolves canonical species/state files such as `rabbit_uncanny.png`, `lynx_mutant.png`, and `m00_normal.png`. No animal runtime route depends on a `_vNN` filename; historical versions remain available as source/reference files.
+- The current canonical M-00 sprite is pixel art with the right-ear nick and single white chest marking. The newly connected Axolotl, Lynx, Moth, Mutant, Chimera, and Specter sprites have their corresponding species-specific routes. Their paths and transparent PNG shape are covered by `npm run test:all`.
+- Restored six historical v73/v74 sprite/cinematic files from the existing full-project archive so the working tree no longer drops those art files. They are preserved, inactive references; canonical paths remain the runtime source.
+- The current Wolf termination scene is `public/assets/cinematics/staff-terminations/wolf/scene.webp`; the restored `scene_v74.png` remains a historical copy. A visual check confirms a black-haired female guard protecting an injured rabbit in the red emergency-lit scene.
+- Ending route map currently serves 19 distinct human-only SVG compositions based on the canonical protagonist/EVE portrait assets. They prevent unrelated creature art from appearing, but are portrait-based layouts rather than bespoke, high-detail per-ending cinematic illustrations. Route-specific acting and ending paintings remain missing.
+- The built-in image-generation integration was not available during this pass. No missing cinematic is represented as a newly generated high-detail raster asset.

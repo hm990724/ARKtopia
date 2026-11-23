@@ -3,6 +3,16 @@
 기준일: 2026-11-23
 프로젝트: `C:\Users\lookm\Documents\GitHub\ARKtopia`
 
+## 최신 이어받기 상태 (v77)
+
+- 전체 작업을 완료했다고 간주하면 안 된다. 최신 `test:all`, 타입, 린트, 에셋 검사, 프로덕션 빌드, 프로덕션 브라우저 36/36은 통과했다. 빌드에는 기존 React Hook 의존성 경고가 있다.
+- Endings now use 19 separate SVG compositions drawing only the canonical protagonist and EVE assets. This removes unrelated generated faces, animals, and mutants from ending screens. The cards are a cast-correct interim layout, not the requested bespoke painterly cinematic illustrations; expressions/poses remain portrait crops.
+- The prior v76 generated raster ending files remain on disk and are inactive. Do not delete them. The image service previously returned `401 token_revoked`; after authentication recovers, create and visually review custom art against the canonical characters and each route's unlocked story facts.
+- Active ending art source: `scripts/generate-ending-cards.cjs`; mapping: `src/lib/ending-art.ts`; audit and limitation: `docs/ENDING_ART_v76.md`.
+- 이미지 교체 후 `npm run test:v75`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, `ARK_PRODUCTION_TEST=1 npm run test:browser`를 재실행한다. 브라우저 테스트는 Chrome 프로세스 실행 가능 여부를 먼저 확인한다.
+- 엔딩 매핑과 남은 시네마틱 작업: `docs/ENDING_ART_v76.md`, `src/lib/ending-art.ts`.
+- 출동, 추적/포획, 자원/기지, 전투, 종별 흔적, 저장 호환성은 `npm run test:all`에서 통과했다. 자연스러운 장기 플레이 밸런스와 초보자 플레이 테스트는 미완료다.
+
 ## 이번 작업에서 확인된 구현
 
 - 전쟁 후 폐기 명령과 격리 붕괴가 유출 원인이고, M-00 탈출은 별개의 사건으로 처리한다.
@@ -64,3 +74,14 @@
 - Verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run build:qa`, production Chrome browser suite 35/35.
 - Full project package: `ARKtopia_ORIGIN_ZERO_Enhanced_Full_Project_v74.7.zip` with adjacent SHA-256 file. The source archive preserves tracked originals missing from the current worktree without restoring them there.
 - A complete natural multi-day campaign remains untested end to end; story and ending fixtures plus browser routes pass.
+
+## v78 current handoff — 2026-11-23
+
+- Latest browser run: **37/37 production Chrome tests passed**. Two stale assumptions in the night-circuit and staff-dialogue browser checks were corrected; the game UI now follows the displayed voltage order and the accessible button label.
+- Latest logic suite, TypeScript check, lint and local asset check all pass. Production `build:qa` passed; existing CSS compatibility and React Hook dependency warnings remain.
+- The Ultimate Master prompt has now been read and cross-checked. Current code/docs keep the M-00 false lead, 13 species identities, one expedition per day/AP 1, lasting explored cells, current footprints/radius-one grass, staff care costs, power crisis, field salvage, and species-specific recall.
+- Historical Axolotl/Lynx/Chimera/Moth/M-00/Wolf art variants were restored from the existing v74.7 archive and preserved alongside canonical files. Runtime animal paths continue to use original species names with state suffixes, not `_vNN` assets.
+- See `STORY_AUDIT.md` for canon/cast/ending review, `BALANCE_REPORT.md` for tested resource pressures and unverified natural balancing, and the latest section of `ART_AUDIT.md` for canonical art paths.
+- Still incomplete: 40 distinct dynamic incidents (current registry: 13 IDs plus other event types), state-aware cast selection and bespoke action art for endings, final high-detail ending/staff-event illustrations, and a natural full-campaign balance playthrough. The current 19 SVG ending cards are cast-safe portrait compositions, not final cinematic paintings.
+- Image generation was not available in the current tool integration; no CLI/API fallback was invoked. Existing art is connected and historical finals preserved, but the missing bespoke scenes remain explicit work.
+- No new full-project archive was generated in this continuation yet. Existing v74.7 archive is retained; package a new archive only after the final commit/source snapshot is selected.

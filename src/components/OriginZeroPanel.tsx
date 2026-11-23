@@ -5,6 +5,7 @@ import {useState} from 'react';
 import OriginPhotoGallery from './OriginPhotoGallery';
 import OriginStoryArtwork from './OriginStoryArtwork';
 import ArkRecallMinigame from './ArkRecallMinigame';
+import {SPECIES_MEMORY} from '@/lib/species-memory';
 
 type Mode='expedition'|'records'|'research';
 export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:Mode;onUpdate:(next:V10)=>void}){
@@ -24,7 +25,7 @@ export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:
     {suspect&&<figure className="oz-suspect-still"><img src="/assets/events/m00_suspected_origin_v75.png" alt="격리동 CCTV에 흐릿하게 잡힌 거대한 변이 실루엣"/><figcaption><b>RECOVERED CCTV / ORIGIN CANDIDATE</b><span>저화질 실루엣 · 위협 수준 미확인</span></figcaption></figure>}
     {d?.cat==='unknown'||!d?<button className="oz-action" disabled={s.ap<1} onClick={()=>update(initiateOriginTrack(s))}>외곽 영상 추적 시작 · 행동력 1</button>:null}
     {d?.cat==='traced'&&<><p className="oz-signal">SIGNAL {d.trackProgress+1} / 3 · {catTrackFrames[d.trackProgress].hint}</p><div className="oz-trace-grid">{catTrackFrames[d.trackProgress].frames.map((frame,i)=><button key={frame} onClick={()=>update(pickOriginTrace(s,i))}><span>CAM 0{i+1}</span><b>{frame}</b></button>)}</div><small>잘못된 화면을 선택하면 위협이 증가하지만 흔적은 잃지 않는다.</small></>}
-    {d?.cat==='captured'&&<><div className="oz-cat-image" role="img" aria-label="변이 없는 평범한 검은 고양이"><img src="/assets/animals/m00_normal_v74.png" alt="오른쪽 귀의 작은 흠집과 흰 가슴 털을 가진 검은 고양이"/><p>임시 격리 케이지 · 변이 없는 검은 고양이</p></div><button className="oz-action" disabled={s.ap<1||s.power<6} onClick={()=>update(analyzeOriginCat(s))}>표준 생체검사 · 행동력 1 · 전력 6%</button></>}
+    {d?.cat==='captured'&&<><div className="oz-cat-image" role="img" aria-label="변이 없는 평범한 검은 고양이"><img src="/assets/animals/m00_normal.png" alt="오른쪽 귀의 작은 흠집과 흰 가슴 털을 가진 검은 고양이"/><p>임시 격리 케이지 · 변이 없는 검은 고양이</p></div><button className="oz-action" disabled={s.ap<1||s.power<6} onClick={()=>update(analyzeOriginCat(s))}>표준 생체검사 · 행동력 1 · 전력 6%</button></>}
    </section>;
  }
  if(mode==='research'){
@@ -57,6 +58,7 @@ export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:
    {d.photos===12&&<button className="oz-action" onClick={()=>setShowReveal(true)}>마지막 사진과 이브의 기록 다시 보기</button>}
    {d.photos>=6&&<><div className="oz-heading"><h4>OPERATION ARK RECALL</h4><b>{completedRecalls(s).length}개체 분석</b></div>
    <p>모든 기존에 확보한 개체는 전원 다른 방식으로 재분석합니다. 살아 있다면 비침습 조사, 본부 이송 개체는 원격 자료, 사망 개체는 보존 기록으로 대체합니다.</p>
+   {completedRecalls(s).length>0&&<section className="oz-memory-fragments" aria-label="개체별 기억 조각"><div className="oz-heading"><h4>RECOVERED HUMAN MEMORY · 종별 조각</h4><b>{new Set(completedRecalls(s).map(c=>c.id)).size} / 13</b></div><div className="oz-memory-grid">{Array.from(new Set(completedRecalls(s).map(c=>c.id))).map(id=>{const memory=SPECIES_MEMORY[id];const name=candidates.find(c=>c.id===id)?.label??id;return <article key={id}><span>{name} · 기억 기록</span><b>{memory.role}</b><p>{memory.fragment}</p></article>})}</div></section>}
    <div className="oz-recall-grid">{candidates.map(c=>{const record=recallRecord(s,c),session=d.recallSessions?.[c.key];return <button key={c.key} disabled={c.source==='escaped'||!!record||s.ap<1||s.power<(c.source==='hq'?12:c.source==='live'?8:5)||s.phase!=='day'} onClick={()=>{const next=beginOriginRecall(s,c.key);if(next!==s)update(next);if(next!==s||session)setActiveRecallKey(c.key);}}><b>{c.label} · {c.key}</b><span>{record?`분석 완료 · 품질 ${record.quality}% · 개인 기록 보존`:session?`분석 재개 · ${session.step+1}/3`:c.source==='escaped'?'CCTV에서 먼저 재격리':c.source==='live'?'비침습 안정성 비교 3단계':c.source==='hq'?'본부 자료 원격 회수 3단계':'보존 기록 재생 3단계'}</span></button>})}</div>
    {activeRecallKey&&d.recallSessions?.[activeRecallKey]&&(()=>{const candidate=candidates.find(c=>c.key===activeRecallKey);if(!candidate)return null;return <ArkRecallMinigame id={candidate.id} name={candidate.label} session={d.recallSessions[activeRecallKey]} onClose={()=>setActiveRecallKey(null)} onAnswer={choice=>{const next=answerOriginRecall(s,activeRecallKey,choice);if(next!==s){update(next);if(!next.originZero?.recallSessions?.[activeRecallKey])setActiveRecallKey(null);}}}/>})()}
    {new Set(candidates.map(c=>c.id)).size<3&&<p className="oz-warning">기존 확보 개체가 부족합니다. 탐사에서 다른 종을 추가로 확보하면 재분석 대상이 늘어납니다.</p>}</>}

@@ -7,7 +7,7 @@ const {ENDING_ART}=require('../src/lib/ending-art.ts');
 const KEY='last-enclosure-ark-v10';
 async function seed(page,s){await page.addInitScript(({s,key})=>localStorage.setItem(key,JSON.stringify(s)),{s,key:KEY});await page.goto('/')}
 
-test('all 19 distinct ending artworks are served by the game',async({page})=>{
+test('all 19 human-only ending artwork routes are served by the game',async({page})=>{
  await page.goto('/');
  const results=await page.evaluate(async(files)=>Promise.all(files.map(file=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve({file,width:image.naturalWidth,height:image.naturalHeight});image.onerror=()=>resolve({file,error:true});image.src=`/assets/endings/${file}`}))),ENDING_ART.map(item=>item.file));
  for(const item of results){expect(item.error,item.file).toBeUndefined();expect(item.width,item.file).toBeGreaterThan(0);expect(item.height,item.file).toBeGreaterThan(0)}
@@ -29,7 +29,21 @@ test('CCTV false lead reveals the ordinary M-00 cat through three trace choices'
  const suspect=panel.locator('.oz-suspect-still img');await expect(suspect).toHaveAttribute('src','/assets/events/m00_suspected_origin_v75.png');await expect.poll(()=>suspect.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
  await panel.getByRole('button',{name:/외곽 영상 추적 시작/}).click();
  for(const cam of ['CAM 03','CAM 01','CAM 02'])await panel.getByRole('button',{name:new RegExp(cam)}).click();
- await expect(panel.getByRole('heading',{name:'시초가 아니었다 · 검은 고양이'})).toBeVisible();await expect(panel.locator('.oz-cat-image img')).toHaveAttribute('src','/assets/animals/m00_normal_v74.png');
+ await expect(panel.getByRole('heading',{name:'시초가 아니었다 · 검은 고양이'})).toBeVisible();await expect(panel.locator('.oz-cat-image img')).toHaveAttribute('src','/assets/animals/m00_normal.png');
  const reveal=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).lastOutcome,KEY);expect(reveal).toContain('별개의 개체가 아니었다');expect(reveal).toContain('고양이가 유출을 일으켰다는 증거는 없다');
  expect(catTrackFrames).toHaveLength(3);
+});
+
+test('commercially licensed local fonts load offline and story portraits keep their full frame',async({page})=>{
+ await page.goto('/');
+ const result=await page.evaluate(async()=>{
+  await Promise.all([document.fonts.load('400 16px ARKText'),document.fonts.load('400 16px ARKTerminal')]);
+  const portrait=document.createElement('div');portrait.className='talk-portrait';portrait.innerHTML='<img alt="portrait" src="/assets/characters/protagonist_neutral_v74_768.png">';document.body.append(portrait);
+  const img=portrait.querySelector('img');const fit=getComputedStyle(img).objectFit;const loaded=await new Promise(resolve=>{if(img.complete)return resolve(img.naturalWidth>0);img.onload=()=>resolve(true);img.onerror=()=>resolve(false)});
+  const fonts=[...document.fonts].map(font=>font.family);
+  const external=performance.getEntriesByType('resource').some(item=>/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(item.name));
+  portrait.remove();
+  return {text:document.fonts.check('400 16px ARKText'),terminal:document.fonts.check('400 16px ARKTerminal'),fonts,fit,loaded,external};
+ });
+ expect(result.text).toBe(true);expect(result.terminal).toBe(true);expect(result.fonts).toContain('ARKText');expect(result.fonts).toContain('ARKTerminal');expect(result.fit).toBe('contain');expect(result.loaded).toBe(true);expect(result.external).toBe(false);
 });

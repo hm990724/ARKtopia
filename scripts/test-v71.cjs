@@ -25,6 +25,14 @@ test('listening reduces fear and cannot grant extra actions',()=>{
  const h={...hunt.newHunt('wolf',43),fear:50},next=hunt.performHuntAction(h,{type:'wait'}).state;
  assert.ok(next.fear<h.fear);assert.equal(next.actions,h.actions-1);assert.equal(h.fear,50);
 });
+test('opened clearings show the newest footprint and shaking uses a one-cell radius',()=>{
+ let h=hunt.newHunt('rabbit',918),visited=h.position;
+ h={...h,searchedAt:{[String(visited)]:0},observations:{[String(visited)]:{kind:'empty',turn:0}}};
+ h=hunt.performHuntAction(h,{type:'wait'}).state;
+ assert.equal(hunt.observedEvidence(h,visited).kind,'footprint','new movement evidence must replace an old empty snapshot');
+ const center=14,adjacent=hunt.huntGrassMotion([center],6);
+ assert.equal(adjacent.length,8);assert.ok(!adjacent.includes(center));assert.ok(adjacent.every(cell=>Math.max(Math.abs(cell%6-center%6),Math.abs(Math.floor(cell/6)-Math.floor(center/6)))===1));
+});
 test('daily incident after day four, no immediate repeats and absent entities excluded',()=>{
  const s=game.beginGame('medic','generator');s.day=5;s.lastEvent=game.incidentDefs.garden.title;
  for(let i=0;i<100;i++)assert.ok(![null,'garden','quiet','keepsake','echo','rations','visitor'].includes(game.determineIncident(s,1,i/100)));
@@ -80,6 +88,15 @@ test('all four staff remember through trust and matching evidence, never another
 test('empty rabbit cage recording requires arrived medic, persists once, discloses no identity',()=>{
  const s=game.beginGame('medic','generator');assert.equal(memory.emptyCageAvailable(s),false);s.headquarters.transferred=['rabbit'];assert.equal(memory.emptyCageAvailable(s),false);crew.recruitCrew(s,'rabbit','RB-001');
  const n=memory.watchEmptyCage(s);assert.ok(n.state.onboardingSeen.includes('rabbit-empty-cage'));assert.equal(memory.watchEmptyCage(n.state).state,n.state);assert.ok(!n.lines.some(x=>x.text.includes('뇌 보존')));
+});
+test('staff talk buys trust only while costly care is limited and morale erodes by day',()=>{
+ const s=game.beginGame('medic','generator');s.day=2;s.ap=4;s.food=3;
+ crew.recruitCrew(s,'rabbit','RB-COST');const m=s.crew.members[0],mind=m.mind,bond=m.bond;
+ const first=memory.shareCrewMemory(s,'rabbit');assert.equal(first.state.ap,3);assert.equal(first.state.food,2);assert.equal(first.state.crew.members[0].mind,mind);assert.equal(first.state.crew.members[0].bond,bond+4);
+ assert.equal(memory.shareCrewMemory(first.state,'rabbit').state,first.state,'same-day replay must not spend twice');
+ const counsel=crew.treatCrew(first.state,'rabbit','counsel');assert.equal(counsel.ap,1);assert.equal(counsel.food,1);assert.equal(counsel.crew.members[0].mind,mind+9);
+ assert.equal(crew.treatCrew(counsel,'rabbit','counsel'),counsel,'counsel is once per facility day');
+ let nightly=structuredClone(counsel);nightly.day=5;const oldMind=nightly.crew.members[0].mind;crew.crewNight(nightly);assert.equal(nightly.crew.members[0].mind,oldMind-1);
 });
 test('seed farewell is exclusive and every origin ending keeps the manager death',()=>{
  let s=recallFixture();s.animals.push(makeAnimal('fox',3),makeAnimal('deer',4));archive.ensureArchive(s);s.originZero.crisisDone=true;s.originZero.immunity=100;

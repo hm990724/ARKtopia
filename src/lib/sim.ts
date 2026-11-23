@@ -14,12 +14,12 @@ export const specs:{id:AnimalId;name:string;former:string;trait:string;site:stri
 {id:'wolf',name:'회색 늑대',former:'외부 경비 기록',trait:'함정 앞에서 움직이지 않는다',site:'station',unlock:3},
 {id:'crow',name:'까마귀',former:'악보 조각',trait:'아직 없는 멜로디를 흥얼거린다',site:'greenhouse',unlock:4},
 {id:'otter',name:'수달',former:'수로 설계 기록',trait:'금속 밸브를 열어본다',site:'greenhouse',unlock:5},
-{id:'lynx',name:'스라소니',former:'판결문 사본',trait:'빈 의자를 응시한다',site:'station',unlock:7},
-{id:'axolotl',name:'유리 아홀로틀',former:'신체 수복 기록',trait:'센서 손상 부위를 진단한다',site:'medical',unlock:9},
-{id:'moth',name:'밤나방',former:'빛 감지 기록',trait:'낡은 신호를 따라간다',site:'observatory',unlock:11},
-{id:'mutant',name:'복합체 07',former:'분산된 인간의 언어 기록',trait:'하나의 입에서 서로 다른 목소리가 섞인다',site:'medical',unlock:17},
-{id:'specter',name:'백색 잔향',former:'신원 미상 · 복구되지 않은 기록',trait:'빛이 사라진 자리에 잔향을 남긴다',site:'medical',unlock:14},
-{id:'chimera',name:'접합체 미라',former:'폐기된 접합 연구의 잔여 기록',trait:'서로 다른 동물의 반응이 충돌한다',site:'medical',unlock:20}];
+{id:'lynx',name:'스라소니',former:'시설 감시 분석관 · 32세',trait:'소리가 나기 전에 돌아보고 CCTV 사각을 감지한다',site:'station',unlock:7},
+{id:'axolotl',name:'아홀로틀',former:'재생의학 연구원 · 36세',trait:'멈추지 않는 재생 조직을 낯설게 관찰한다',site:'medical',unlock:9},
+{id:'moth',name:'나방',former:'야간 전력·조명 설비 기사 · 29세',trait:'꺼지기 직전의 전등과 정전 구역을 찾아간다',site:'observatory',unlock:11},
+{id:'mutant',name:'특수 변이체',former:'신경 동기화 연구 책임자 · 48세',trait:'동물 기억 이식 절차를 반복하는 동기화 실패체',site:'medical',unlock:17},
+{id:'specter',name:'스펙터',former:'보안 기록·기억 삭제 담당 연구원 · 41세',trait:'CCTV 잔상과 감각 기록이 서로 어긋난다',site:'medical',unlock:14},
+{id:'chimera',name:'키메라',former:'다중 기억 보존 실험체 · 복수의 정체성',trait:'구조·의료·격리 기억이 한 몸에서 교차한다',site:'medical',unlock:20}];
 // Four selectable memory fragments. These are memories, not proof of humanity.
 export const origins:{id:Origin;title:string;desc:string;perk:string}[]=[
  {id:'medic',title:'문 너머의 환자',desc:'누군가 유리문을 두드렸다. 나는 마지막 남은 붕대를 쥐고 있었다.',perk:'구조 +11%p · 치료 회복량 증가'},

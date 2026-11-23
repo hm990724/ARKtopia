@@ -1,6 +1,7 @@
 ﻿/* v74: shared readable type, continuous world presentation and stable portraits. */
 @font-face{font-family:ARKText;src:url('/fonts/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-display:swap}
-:root{--font-body:ARKText,'Noto Sans KR','Malgun Gothic',sans-serif;--font-display:Bahnschrift,'Arial Narrow',ARKText,'Noto Sans KR','Malgun Gothic',sans-serif}
+@font-face{font-family:ARKTerminal;src:url('/fonts/neodgm.woff2') format('woff2');font-weight:400;font-display:swap}
+:root{--font-body:ARKText,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;--font-title:ARKTerminal,ARKText,'Malgun Gothic',monospace;--font-display:ARKTerminal,ARKText,'Arial Narrow',sans-serif}
 body,button,input,select,textarea,p,small,span,label{font-family:var(--font-body)}
 h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(--font-display)!important;font-weight:700;line-height:1.35}
 button:focus-visible{outline:3px solid #d9f3be;outline-offset:3px}
@@ -9,6 +10,14 @@ button:focus-visible{outline:3px solid #d9f3be;outline-offset:3px}
 .v74-capture-budget{align-items:center!important;flex-wrap:wrap;position:sticky;top:0;z-index:5;background:#181c28!important;border:2px solid #9dbfa8!important}
 .v74-actions-left{display:flex;align-items:center;gap:13px;flex:1 1 270px;color:#dcebd7;padding:6px 10px}
 .v74-actions-left>span{font-size:14px;font-weight:800}.v74-actions-left strong{font-size:42px;line-height:1;white-space:nowrap}.v74-actions-left small{font-size:14px;color:#b8c7c2}.v74-actions-left p{font-size:11px;max-width:130px;line-height:1.6;margin:0}.v74-actions-left.is-low{color:#ffb6a1;background:#542b2a}
+.v74-capture-budget{display:grid!important;grid-template-columns:minmax(220px,1.2fr) repeat(2,minmax(132px,.8fr)) minmax(160px,1fr);gap:8px!important;padding:9px!important;min-width:0}
+.v74-actions-left{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-content:center;column-gap:10px;row-gap:2px;min-width:0;flex:initial!important;padding:4px 8px}
+.v74-actions-left>span{grid-column:1;grid-row:1;font-size:clamp(12px,1.1vw,14px);line-height:1.3;white-space:normal}
+.v74-actions-left>strong{grid-column:2;grid-row:1/3;align-self:center;font-size:clamp(32px,3vw,42px);font-variant-numeric:tabular-nums}
+.v74-actions-left>strong small{font-size:clamp(11px,1vw,14px)}
+.v74-actions-left>p{grid-column:1;grid-row:2;max-width:none;font-size:10px;line-height:1.35}
+.v74-capture-budget>button{width:100%;min-width:0;min-height:44px;justify-content:center;white-space:normal;line-height:1.3;padding:7px!important}
+.v74-capture-budget>span{grid-column:1/-1;min-width:0;font-size:11px;line-height:1.4;white-space:normal}
 .v74-live-animal{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain;z-index:4;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 4px 2px #06080a)}
 .v33-route-map.v57-field-map{gap:0!important;padding:0!important;background-size:100% 100%!important;isolation:isolate;border:0;box-shadow:inset 0 0 60px #080b0f}
 .v33-route-map.v57-field-map .v33-route-cell{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;opacity:1;overflow:visible}
@@ -28,7 +37,8 @@ button:focus-visible{outline:3px solid #d9f3be;outline-offset:3px}
 .v74-reaction-stage{position:relative;height:170px;background:radial-gradient(ellipse at bottom,#3a4949,#111723 80%);overflow:hidden;border:1px solid #627176;display:grid;place-items:center}.v74-reaction-stage img{height:145px;width:150px;object-fit:contain;image-rendering:pixelated;animation:v74-breathe 3s steps(3) infinite}.v74-reaction-stage.is-responding img{animation:v74-response .7s steps(5) 2}.v74-reaction-stage span{position:absolute;left:12px;bottom:9px;font-size:12px;background:#102020dd;padding:5px 9px;color:#cee8d6}.v74-reaction-stage i{position:absolute;inset:30% 25%;border:2px solid #a1cec8;opacity:0}.v74-reaction-stage.is-responding i{animation:v74-wave 1.2s ease-out infinite}
 @keyframes v74-response{50%{transform:translateX(12px) rotate(3deg)}}@keyframes v74-wave{0%{transform:scale(.5);opacity:.7}100%{transform:scale(1.8);opacity:0}}
 .v74-upgrades{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}.v74-upgrades article{background:#1c2730;border:1px solid #667b7a;padding:15px}.v74-upgrades p{line-height:1.7;font-size:13px}.v74-upgrades button{width:100%;min-height:42px}
-@media(max-width:600px){.v74-actions-left{gap:8px;flex-basis:100%}.v74-actions-left strong{font-size:36px}.v74-actions-left p{max-width:none}.v74-combat{padding:12px}}
+@media(max-width:940px){.v74-capture-budget{grid-template-columns:repeat(2,minmax(0,1fr))}.v74-actions-left{grid-column:1/-1}.v74-capture-budget>span{grid-column:1/-1}}
+@media(max-width:520px){.v74-capture-budget{grid-template-columns:1fr}.v74-actions-left{grid-column:1}.v74-capture-budget>button,.v74-capture-budget>span{grid-column:1}.v74-actions-left strong{font-size:35px}.v74-combat{padding:12px}}
 @media(prefers-reduced-motion:reduce){.v74-reaction-stage img,.v74-reaction-stage i,.v74-enemy{animation:none!important}}
 
 .v44-story-eve-image{background:#151422!important;overflow:hidden;isolation:isolate}.v44-story-eve-image>img,.v44-story-eve-image .v53-staff-portrait img{object-fit:contain!important;object-position:center!important;width:100%!important;height:100%!important;transform:none!important;animation:none!important;filter:none!important}.v44-story-eve-image>i,.v44-story-eve-image::before,.v44-story-eve-image::after{display:none!important}.v45-portrait img{filter:none!important}.v74-combat-stage .v72-ranger{position:relative!important;width:72px!important;height:96px!important}
@@ -36,9 +46,33 @@ button:focus-visible{outline:3px solid #d9f3be;outline-offset:3px}
 .v33-route-map.v57-field-map .v33-route-fog{background:#070b12f7!important}.v33-route-map.v57-field-map::before{display:none!important}.v33-route-map .v33-leaf{opacity:.25;transform:scale(.7)}.v33-route-map .v33-route-current .v33-leaf{opacity:0}.v74-actions-left>span{margin:0!important}
 /* Angular industrial headers; readable Pretendard body */
 /* Sharp condensed Latin headings; Korean falls back to the bundled square Pretendard glyphs. */
-:root{--font-body:ARKText,'Noto Sans KR','Malgun Gothic',sans-serif;--font-display:Bahnschrift,'Arial Narrow',ARKText,'Noto Sans KR','Malgun Gothic',sans-serif}
-h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(--font-display)!important;font-weight:800!important;letter-spacing:.035em!important;line-height:1.28}
+:root{--font-body:ARKText,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;--font-title:ARKTerminal,ARKText,'Malgun Gothic',monospace;--font-display:ARKTerminal,ARKText,'Arial Narrow',sans-serif}
+h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(--font-display)!important;font-weight:400!important;letter-spacing:.045em!important;line-height:1.32}
 /* Restrained terminal hierarchy without the rounded pixel font. */
 .v74-kicker,.v74-sortie-budget>strong,.v74-combat h3{letter-spacing:.12em!important;text-transform:uppercase}
 .v43-sidebar .v43-brand span,.v43-sidebar .v43-brand small{font-family:var(--font-display)!important;letter-spacing:.09em!important}
 .v73-opening footer{letter-spacing:.035em;font-family:var(--font-display)!important}
+
+/* Species-specific tracking readouts: austere, high-contrast terminal controls. */
+.v74-species-setting{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:.45rem 0;padding:.7rem .85rem;border:1px solid #526461;background:linear-gradient(100deg,#111b1b,#101416);color:#cbd8d2;font:600 .78rem/1.4 var(--font-body);}
+.v74-species-setting b{color:#a8d8c8;letter-spacing:.08em;text-transform:uppercase;margin-right:.4rem}
+.v74-species-setting button{border:1px solid #52615e;background:#182322;color:#d2ded8;padding:.42rem .62rem;cursor:pointer;font:inherit}
+.v74-species-setting button[aria-pressed="true"]{border-color:#b9e2cd;background:#28443a;box-shadow:inset 0 0 0 1px #b9e2cd;color:#fff}
+.v74-species-setting span{flex-basis:100%;color:#95aaa2;font-size:.72rem}
+.v74-regrowth-mark,.v74-decoy-mark{position:absolute;z-index:5;inset:auto 8% 8% auto;font:bold 1.1rem/1 monospace;text-shadow:0 1px 5px #000}
+.v74-regrowth-mark{color:#91e1c4}.v74-decoy-mark{color:#e0a47e}
+.v74-decoy-trace{box-shadow:inset 0 0 0 2px #d18c70!important}
+.v74-regrowth-trace{box-shadow:inset 0 0 0 2px #87d8bf!important}
+.v74-camera-echo{outline:1px dashed rgba(232,226,205,.75);outline-offset:-5px;filter:sepia(.22)}
+
+/* Night maintenance: keep the four terminals distinct and make failed defense unmistakable. */
+.v76-fuse-buttons{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px!important;margin:.8rem 0!important}
+.v76-fuse-buttons button{min-height:64px;display:flex!important;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;border:1px solid #788a84!important;background:#151d22!important;color:#d8e4df!important;font-weight:700}
+.v76-fuse-buttons button b{color:#f0c981;font:700 1.05rem/1 var(--font-body)}
+.v76-fuse-buttons button.is-connected{border-color:#91d6b2!important;background:#203b32!important;color:#eafff1!important;box-shadow:inset 0 0 0 1px #91d6b2}
+.v60-night-result.is-critical{border:2px solid #ff685f!important;background:#421e26!important;color:#fff1ef!important;box-shadow:0 0 20px #f44a3833}
+.v60-night-result.is-critical span,.v60-night-result.is-critical strong{color:#ffb0a8!important}
+.v76-power-crisis{border:1px solid #e55d56!important;background:#351a20!important;color:#ffe8e3!important}
+.v76-power-crisis strong{color:#ff9c91!important}
+.v76-power-crisis p{color:#ebc7c2!important}
+@media(max-width:580px){.v76-fuse-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}}

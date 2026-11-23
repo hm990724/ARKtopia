@@ -9,11 +9,24 @@ console.log('PASS canon: forced disposal causes facility collapse and leak; M-00
 let s=g.beginGame('medic','generator');s.day=6;s.tutorialStep=9;
 for(const [gear,key] of [['filter','filters'],['flashlight','flashlight'],['medkit','medicine'],['cage','parts']]){const z={...s,[key]:0};assert.ok(g.gearUnavailable(z,gear,'garden'));assert.equal(g.startRun(z,'garden',[gear]),z);}
 console.log('PASS empty equipment rejected without resource changes');
-const n=g.startRun(s,'garden',['flashlight']);assert.equal(n.ap,s.ap-1);assert.equal(n.flashlight,s.flashlight-10);assert.equal(n.lastExpeditionDay,6);
+const n=g.startRun(s,'garden',['flashlight']);assert.equal(n.ap,s.ap-1);assert.equal(n.flashlight,s.flashlight-10);assert.equal(n.power,s.power,'portable light must not consume facility power');assert.equal(n.lastExpeditionDay,6);
 const back={...n,run:null,field:null,capture:null};assert.equal(g.startRun(back,'rail',[]),back);assert.ok(g.expeditionBlockReason(back,'rail',[]).includes('오늘 탐사'));
 const restored=g.loadGame(JSON.parse(JSON.stringify(back)));assert.equal(g.startRun(restored,'garden',[]),restored);
-const next={...back,day:7};assert.notEqual(g.startRun(next,'garden',[]),next);
+const next={...back,day:7,ap:1};const nextRun=g.startRun(next,'garden',['flashlight']);assert.notEqual(nextRun,next,'one remaining AP is enough for the displayed AP1 sortie');assert.equal(nextRun.ap,0);
 console.log('PASS one daily sortie, AP1, saved limit and next-day reset');
 assert.equal(g.startRun({...s,power:0},'garden',[]).lastExpeditionDay,undefined);
 console.log('PASS refused launch never consumes daily sortie');
+const manualAtBlackout=g.startRun({...s,power:0},'garden',['flashlight']);assert.notEqual(manualAtBlackout,s);assert.equal(manualAtBlackout.power,0);
+const scannerStart=g.startRun({...s,power:100},'garden',['scanner']);assert.equal(scannerStart.power,83,'EVE scanner draws sector power plus 8');
+console.log('PASS manual flashlight sortie remains possible during facility blackout; EVE scanner draws facility power');
+const chargeBase={...s,ap:2,electricCells:1,power:50,flashlight:50};const charged=g.doBase(chargeBase,'batteryCharge');assert.equal(charged.ap,1);assert.equal(charged.electricCells,0);assert.equal(charged.power,38);assert.equal(charged.flashlight,88);assert.equal(g.doBase(charged,'batteryCharge'),charged);
+console.log('PASS flashlight charging spends a cell, facility power, and AP exactly once');
+const circuitBase={...s,day:8,power:50,facility:80,threat:20};let circuit=circuitBase;
+const sequence=g.nightCircuitSequence(circuit.day);assert.equal(new Set(sequence).size,4);
+circuit=g.attemptNightCircuit(circuit,(sequence[0]+1)%4);assert.deepEqual(g.getNightCircuitState(circuit).order,[]);assert.equal(g.getNightCircuitState(circuit).faults,1);assert.equal(circuit.power,46);assert.equal(circuit.facility,77);assert.equal(circuit.threat,23);
+for(const terminal of sequence)circuit=g.attemptNightCircuit(circuit,terminal);
+assert.equal(g.getNightCircuitState(circuit).completed,true);
+const savedCircuit=g.loadGame(JSON.parse(JSON.stringify(circuit)));assert.equal(g.getNightCircuitState(savedCircuit).completed,true,'circuit progress persists through save/load');
+assert.equal(g.previewNight(circuit,'shield',{maintained:true}).powerBefore,50);
+console.log('PASS night fuse mistakes cost real resources and circuit progress persists');
 

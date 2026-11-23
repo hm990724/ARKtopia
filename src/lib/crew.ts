@@ -10,7 +10,7 @@ export const CREW_PROFILES:Record<CrewId,{title:string;post:string;benefit:strin
  wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 교대조가 없으면 제가 두 번 돌면 되죠. 근데 저 철문, 누가 안쪽에서 긁었죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
  deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
 };
-export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;stability?:number;sourceSpecimenId?:string;memoryEcho?:number;memoryStage?:number};
+export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;lastCareDay?:number;stability?:number;sourceSpecimenId?:string;memoryEcho?:number;memoryStage?:number};
 export type CrewIncident={day:number;id:CrewId;damage:number;before:number;after:number;text:string};
 export type CrewConflictKind='treatment'|'disposal';
 export type CrewConflictChoice='treat'|'withhold'|'protect'|'dispose';
@@ -19,11 +19,11 @@ export type CrewNightVote={day:number;members:CrewId[]};
 export type CrewNightResult={day:number;selected:CrewId;losses:{id:CrewId;before:number;after:number}[];effect:string};
 export type CrewTermination={id:CrewId;day:number};
 export type CrewArrivalOrder={id:CrewId;transferDay:number;sourceSpecimenId?:string};
-export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
-export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
+export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;counselDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
+export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,counselDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
 export function ensureCrew(s:V10):CrewState{
  const existing=s.crew;
- const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,arrivalQueue:existing?.arrivalQueue??[],lastArrivalDay:existing?.lastArrivalDay??0,members:(existing?.members??[]).map(m=>({...m,stability:Math.max(0,Math.min(100,m.stability??88)),memoryEcho:m.memoryEcho??0})),retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
+ const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,arrivalQueue:existing?.arrivalQueue??[],lastArrivalDay:existing?.lastArrivalDay??0,counselDay:existing?.counselDay??0,members:(existing?.members??[]).map(m=>({...m,lastCareDay:m.lastCareDay??0,stability:Math.max(0,Math.min(100,m.stability??88)),memoryEcho:m.memoryEcho??0})),retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
  if(existing){Object.assign(existing,crew);return existing;}
  s.crew=crew;
  return crew;
@@ -44,7 +44,7 @@ export function recruitCrew(s:V10,id:AnimalId,sourceSpecimenId?:string):boolean{
  if(!isCrewId(id))return false;
  const crew=ensureCrew(s);
  if(crew.members.some(m=>m.id===id)||crew.retired.includes(id)||crew.members.length>=4)return false;
- crew.members.push({id,arrivedDay:s.day,hp:85,mind:88,bond:45,lastSpokenDay:0,stability:90,sourceSpecimenId,memoryEcho:0});
+ crew.members.push({id,arrivedDay:s.day,hp:85,mind:88,bond:45,lastSpokenDay:0,lastCareDay:0,stability:90,sourceSpecimenId,memoryEcho:0});
  log(s,'본부 인력 등록',`${CREW_PROFILES[id].post}이(가) 도착했습니다. 기존 근무 이력은 본부 보안 정책에 따라 비공개입니다.`,'mystery');
  return true;
 }
@@ -94,7 +94,7 @@ export function crewNight(s:V10):void{
   const days=s.day-m.arrivedDay;
   // Slower deterioration: duties and moral dilemmas are the main threats, not ordinary passing days.
   // Days 1-5 are safe. After that, stress is charged only once every few days.
-  const drain=days<=5?0:days<=12?(days%3===0?1:0):(days%2===0?1:0);
+  const drain=days<=2?0:days<=12?1:2;
   const infectionDrain=days<=2?0:s.infection>=90?2:s.infection>=70?1:0;
   m.mind=cap(m.mind-drain-infectionDrain);
   // Fictional neuro-somatic instability: impaired power and psychological shock matter.
@@ -180,12 +180,15 @@ export function crewDissectionShock(s:V10):void{
 
 export function treatCrew(s:V10,id:CrewId,kind:'medical'|'counsel'):V10{
  const member=s.crew?.members.find(m=>m.id===id);
- if(!member||member.mind<=0||s.crew?.pendingTermination||s.phase!=='day'||s.ap<1||(kind==='medical'&&s.medicine<1))return s;
- const n=copy(s) as V10;const m=ensureCrew(n).members.find(a=>a.id===id)!;n.ap--;
- if(kind==='medical'){n.medicine--;m.mind=cap(m.mind+28)}
- else{m.mind=cap(m.mind+12)}
- log(n,`직원 관리 · ${CREW_PROFILES[id].post}`,`${kind==='medical'?'의약품 1개로 정신력 +28':'대화 안정화로 정신력 +12'} 회복`,'good');
- n.lastOutcome=`${CREW_PROFILES[id].title}의 ${kind==='medical'?'신경 회복':'대화 안정화'} 완료`;
+ const crew=s.crew;
+ if(!member||member.mind<=0||crew?.pendingTermination||s.phase!=='day'||s.run||s.pendingIncident)return s;
+ if(kind==='medical'&&(s.ap<2||s.medicine<1||member.lastCareDay===s.day))return s;
+ if(kind==='counsel'&&(s.ap<2||s.food<1||crew?.counselDay===s.day))return s;
+ const n=copy(s) as V10;const team=ensureCrew(n);const m=team.members.find(a=>a.id===id)!;
+ if(kind==='medical'){n.ap-=2;n.medicine--;m.lastCareDay=n.day;m.mind=cap(m.mind+20);m.stability=cap((m.stability??88)+4)}
+ else{n.ap-=2;n.food--;team.counselDay=n.day;m.mind=cap(m.mind+9);m.bond=cap(m.bond+2)}
+ log(n,`직원 관리 · ${CREW_PROFILES[id].post}`,`${kind==='medical'?'의약품 -1 · AP -2 · 정신력 +20 · 신체 안정 +4 (대상 하루 1회)':'식량 -1 · AP -2 · 정신력 +9 · 신뢰 +2 (시설 하루 1회)'} 적용`,'good');
+ n.lastOutcome=`${CREW_PROFILES[id].title} ${kind==='medical'?'의료 안정화':'상담'} 완료 · AP -2 · ${kind==='medical'?'의약품 -1':'식량 -1'}`;
  return n;
 }
 

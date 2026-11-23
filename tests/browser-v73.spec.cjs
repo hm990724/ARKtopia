@@ -12,7 +12,7 @@ test('opening scene has readable start on desktop and mobile, all hero portraits
  dims.forEach(size=>expect(size).toEqual([768,1024]));
 });
 test('walking feet retain the same tile baseline and scale before, during and after motion',async({page})=>{
- let s=base(5);s=startRun(s,'garden',[]);await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
+ let s=base(5);s=startRun(s,'garden',['flashlight']);await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
  const idle=page.locator('.v33-route-current .v72-ranger');await expect(idle).toBeVisible();
  async function measure(){return idle.evaluate(el=>{const r=el.getBoundingClientRect(),t=el.closest('button').getBoundingClientRect();return {width:r.width,tile:t.width,foot:r.top+r.height*.98,anchor:t.top+t.height*.85}})}
  const before=await measure();expect(Math.abs(before.foot-before.anchor)).toBeLessThan(3);
@@ -39,8 +39,8 @@ test('new mutant sprites and matching hero portrait are consumed by the actual r
  await seed(page,s);
  await expect(page.locator('.awakening-shade')).toBeVisible();
  for(let i=0;i<6;i++)await page.locator('.awakening-next').click();
- await page.getByRole('button',{name:'격리실',exact:true}).click();await expect(page.locator('img[src="/assets/animals/axolotl_mutant_v75.png"]').first()).toBeVisible();
- await expect(page.locator('.v43-operator-head img')).toHaveAttribute('src','/assets/characters/protagonist_neutral_v74_768.png');expect(await page.locator('img[src="/assets/animals/axolotl_mutant_v75.png"]').first().evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
+ await page.getByRole('button',{name:'격리실',exact:true}).click();await expect(page.locator('img[src="/assets/animals/axolotl_mutant.png"]').first()).toBeVisible();
+ await expect(page.locator('.v43-operator-head img')).toHaveAttribute('src','/assets/characters/protagonist_neutral_v74_768.png');expect(await page.locator('img[src="/assets/animals/axolotl_mutant.png"]').first().evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
 });
 
 

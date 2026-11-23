@@ -34,12 +34,14 @@ test('recovered photos load, enlarge and close with Escape while early records s
 });
 test('night fuse wrong order resets and correct order changes the actual saved settlement',async({page})=>{
  const fixture=JSON.parse(fs.readFileSync(require('path').join(__dirname,'fixtures/day003-ap0.json'),'utf8'));
- const {previewNight}=require('../src/lib/game-v10.ts');
+ const {previewNight,nightCircuitSequence}=require('../src/lib/game-v10.ts');
  await seed(page,fixture);await page.getByRole('button',{name:/야간 대응/}).last().click();
  await page.locator('.v73-legacy-repair summary').click();
- const f=page.locator('.v69-fuse-buttons button');await f.nth(2).click();await f.nth(1).click();await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(0);
- for(const i of [2,0,1])await f.nth(i).click();
- await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(3);
+ const f=page.locator('.v69-fuse-buttons button'),sequence=nightCircuitSequence(fixture.day);
+ // One out-of-order input must reset immediately; then use the voltage order shown by the live game.
+ await f.nth(sequence[1]).click();await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(0);
+ for(const i of sequence)await f.nth(i).click();
+ await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(4);
  const before=await state(page),expected=previewNight(before,'shield',{maintained:true});
  await page.getByRole('button',{name:/야간 운영 확정|무방비로 다음 날/}).last().click();
  await expect.poll(async()=> (await state(page)).day).toBe(4);
@@ -54,7 +56,7 @@ test('tutorial facility mission routes to supplies even with zero AP',async({pag
 });
 test('hunt earned evidence, pointer net capture and pending save survive reload',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- let s=beginGame('medic','generator');s.tutorialStep=9;s.day=5;s=startRun(s,'garden',[]);s.capture=createCapture('rabbit',false,123);
+ let s=beginGame('medic','generator');s.tutorialStep=9;s.day=5;s=startRun(s,'garden',['flashlight']);s.capture=createCapture('rabbit',false,123);
  await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
  const listen=page.locator('.v71-primary-tools button').first();
  for(let i=1;i<=5;i++){await listen.click();await expect.poll(async()=> (await state(page)).capture?.hunt.turn).toBe(i)}
@@ -72,12 +74,22 @@ test('hunt earned evidence, pointer net capture and pending save survive reload'
  expect(errors).toEqual([]);
 });
 for(const [width,height] of [[1366,768],[390,844]])test(`pixel hunt fits and renders all assets ${width}`,async({page})=>{
- await page.setViewportSize({width,height});let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',[]);s.capture=createCapture('rabbit',false,123);
+ await page.setViewportSize({width,height});let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',['flashlight']);s.capture=createCapture('rabbit',false,123);
  await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
  await expect(page.locator('.v33-hidden-map')).toBeVisible();
+ const budget=page.locator('.v74-capture-budget');await expect(budget.getByRole('status')).toContainText('포획 남은 행동');
+ const layout=await budget.evaluate(el=>{const boxes=[...el.children].map(node=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}});return {boxes,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}});
+ expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth+1);
+ for(let i=0;i<layout.boxes.length;i++)for(let j=i+1;j<layout.boxes.length;j++){const a=layout.boxes[i],b=layout.boxes[j];expect(Math.min(a.right,b.right)-Math.max(a.x,b.x)>0&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>0,`capture toolbar children ${i}/${j} overlap`).toBe(false)}
  await expect.poll(()=>page.locator('.v71-grass').evaluateAll(imgs=>imgs.every(i=>i.complete&&i.naturalWidth>0))).toBe(true);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+3);
  await page.screenshot({path:`docs/qa-v71/hunt-${width}.png`,fullPage:true});
+});
+test('low facility power displays an explicit red unguarded-night warning',async({page})=>{
+ const s=beginGame('medic','generator');s.day=7;s.tutorialStep=9;s.power=0;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work'];
+ await seed(page,s);const warning=page.getByRole('alert',{name:'야간 전력 부족 경고'});await expect(warning).toBeVisible();
+ await expect(warning).toContainText('무방비로 지나갑니다');
+ expect(await warning.evaluate(el=>getComputedStyle(el).borderColor)).toMatch(/rgb\(229, 93, 86\)|rgb\(255, 104, 95\)/);
 });
 test('first expedition tutorial reaches a durable rescued rabbit without hidden coordinates',async({page})=>{
  test.setTimeout(90000);

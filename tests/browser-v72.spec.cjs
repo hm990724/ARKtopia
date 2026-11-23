@@ -5,7 +5,7 @@ const KEY='last-enclosure-ark-v10';
 async function seed(page,s){await page.addInitScript(({s,KEY})=>{if(!sessionStorage.getItem('v72-seed')){localStorage.setItem(KEY,JSON.stringify(s));sessionStorage.setItem('v72-seed','1')}},{s,KEY});await page.goto('/');}
 async function skipStory(page){await page.addLocatorHandler(page.locator('.v44-story-overlay'),()=>page.locator('.v44-story-overlay .is-skip').click(),{noWaitAfter:true});}
 test('ranger uses changing walk frames during real movement, then returns to idle',async({page})=>{
- let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',[]);
+ let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',['flashlight']);
  await skipStory(page);await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
  await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
  await page.evaluate(()=>{window.walkFrames=[];window.walkTimer=setInterval(()=>{const el=document.querySelector('.v72-ranger.is-walking>span');if(el)window.walkFrames.push(getComputedStyle(el).backgroundPositionX)},20)});
@@ -24,7 +24,7 @@ test('critical medic uses her own critical portrait in roster and dialogue',asyn
  await seed(page,s);
  await page.getByRole('button',{name:'의무관 직원 상세',exact:true}).click();
  await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
- await page.getByRole('button',{name:'대화',exact:true}).click();
+ await page.getByRole('button',{name:/^대화\s/}).click();
  await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical_v72.png');
  await expect(page.locator('.v44-story-eve-image img')).toHaveCount(1);
  await expect(page.locator('.v44-story-scene')).toHaveCSS('background-color','rgb(23, 20, 33)');
