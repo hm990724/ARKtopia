@@ -3,6 +3,16 @@
 기준일: 2026-11-23
 프로젝트: `C:\Users\lookm\Documents\GitHub\ARKtopia`
 
+## 최신 세션 업데이트 — 2026-11-23
+
+- 사용자가 제공한 `ARKtopia_ORIGIN_ZERO_모든프롬프트_최종통합_2026-11-23.txt`를 읽고, 이 문서의 지시대로 안전한 이미지 감사와 엔딩 경로 검증을 진행했다.
+- 엔딩 조건/활성 파일/허용 인물의 코드 대조표는 [`docs/ENDING_MATRIX.md`](docs/ENDING_MATRIX.md)에 작성했다. 이 표는 자연 새 저장으로 각 분기를 직접 플레이한 검증을 대체하지 않는다.
+- 전체 에셋 비교 자료는 [`docs/ART_AUDIT.md`](docs/ART_AUDIT.md) 및 `docs/art-review/`에 있다. 206개 래스터 파일에서 정확 중복 11그룹, 유사 후보 117쌍을 기록했다. 엔딩 SVG 19개에 들어 있는 그림 26개는 SHA-256상 관리자 초상/EVE 초상 두 종류만 반복한다.
+- 초안의 “19개 독립 장면”은 파일 경로가 서로 다르다는 뜻일 뿐, 고유 엔딩 그림이라는 뜻은 아니다. 실제로 엔딩별 고퀄 장면·상태별 캐스트 그림은 미완료다.
+- 현재 세션에서 `image_gen` 호출 도구는 없었고 승인된 Codex CLI 시험도 “Image generation is unavailable in this session”으로 종료됐다. 테스트 PNG는 만들어지지 않았으며, 임시 그림을 최종물로 대체하지 않았다.
+- 실행 검증: `npm run test:v75`, `npm run test:v81`, `npm run check:assets`, `npm run build`, `npm run test:browser` 통과. 브라우저 41/41. 프로덕션 빌드는 기존 Hook dependency 경고를 출력했고 Autoprefixer 경고는 없었다.
+- Git 커밋: `d2ab8f1` (`Audit ending routes and artwork duplicates`). 이 파일의 이번 업데이트는 다음 검증 커밋에서 기록한다.
+
 ## v82 ending continuity and art audit — 2026-11-23
 
 - The game keeps eight main ORIGIN ZERO endings plus older state-specific endings. Nineteen ending titles now point to nineteen distinct existing route compositions; prior saved-title aliases remain mapped. The eight original handoff WebPs and every earlier ending asset were restored and preserved after the user clarified not to remove the older set.
