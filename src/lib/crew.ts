@@ -215,12 +215,17 @@ export function terminateCrew(s:V10,id:CrewId):V10{
  if(!crew.retired.includes(id))crew.retired.push(id);
  crew.pendingTermination=null;
  crew.lastTermination={id,day:n.day};
+ const grief=crew.members.filter(member=>member.mind>0).map(member=>{
+  const before=member.mind;member.mind=cap(member.mind-30);
+  return `${CREW_PROFILES[member.id].post} ${before}→${member.mind}`;
+ });
  if(crew.pendingNightVote){
   crew.pendingNightVote.members=crew.pendingNightVote.members.filter(memberId=>memberId!==id&&crew.members.some(m=>m.id===memberId&&m.mind>0));
   if(!crew.pendingNightVote.members.length)crew.pendingNightVote=null;
  }
- log(n,`인력 처리 완료 · ${CREW_PROFILES[id].post}`,`직원 신호 제거. ${CREW_LOSS_EFFECTS[id].name}: ${CREW_LOSS_EFFECTS[id].summary}. 처리 기록은 되돌릴 수 없습니다.`,'bad');
- n.lastOutcome=`인력 처리: ${CREW_PROFILES[id].title}. ${CREW_LOSS_EFFECTS[id].summary}`;
+ const griefText=grief.length?` 남은 직원 정신력 -30: ${grief.join(', ')}.`:' 남은 직원이 없어 정신력 후폭풍은 없습니다.';
+ log(n,`인력 처리 완료 · ${CREW_PROFILES[id].post}`,`직원 신호 제거. ${CREW_LOSS_EFFECTS[id].name}: ${CREW_LOSS_EFFECTS[id].summary}.${griefText} 처리 기록은 되돌릴 수 없습니다.`,'bad');
+ n.lastOutcome=`인력 처리: ${CREW_PROFILES[id].title}. ${CREW_LOSS_EFFECTS[id].summary}.${griefText}`;
  queueCrewTerminations(n);
  return n;
 }

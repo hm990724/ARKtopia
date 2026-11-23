@@ -73,6 +73,12 @@ test('archival transfer never marks a new living or deceased animal of same spec
  assert.equal(legacy.archive.entries[legacy.animals[0].specimenId].status,'transferred');
 });
 const memory=require('../src/lib/crew-memory.ts'),crew=require('../src/lib/crew.ts');
+test('staff termination applies the required one-time -30 morale shock to surviving crew',()=>{
+ const s=game.beginGame('medic','generator');crew.recruitCrew(s,'rabbit','RB-LOSS');crew.recruitCrew(s,'fox','FX-SURVIVOR');
+ s.crew.members.find(m=>m.id==='rabbit').mind=0;crew.queueCrewTerminations(s);
+ const terminated=crew.terminateCrew(s,'rabbit');assert.equal(terminated.crew.members.some(m=>m.id==='rabbit'),false);assert.equal(terminated.crew.members.find(m=>m.id==='fox').mind,58);
+ assert.match(terminated.lastOutcome,/정신력 -30/);assert.equal(crew.terminateCrew(terminated,'rabbit'),terminated,'termination cannot apply grief twice');
+});
 test('all four staff remember through trust and matching evidence, never another specimen',()=>{
  for(const id of crew.CREW_IDS){
   const s=game.beginGame('medic','generator');s.day=2;s.animals=[makeAnimal(id,1)];archive.ensureArchive(s);const a=s.animals[0];a.alive=false;a.transferred=true;s.headquarters.transferred=[id];archive.ensureArchive(s);crew.recruitCrew(s,id,a.specimenId);
