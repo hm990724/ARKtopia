@@ -13,6 +13,12 @@ assert.match(crewSource,/\/assets\/cinematics\/staff-terminations\/\$\{id\}\/sce
 const origin=require('../src/lib/origin-zero.ts');
 const {emptyOriginZero}=origin;
 const base=path.join(__dirname,'../public');
+const m00Sprite=fs.readFileSync(path.join(base,'assets/animals/m00_normal.png'));
+assert.equal(m00Sprite.subarray(0,8).toString('hex'),'89504e470d0a1a0a','canonical M-00 asset is a real PNG');
+assert.equal(m00Sprite.readUInt32BE(16),1254);assert.equal(m00Sprite.readUInt32BE(20),1254);
+assert.equal(m00Sprite[25],6,'M-00 sprite has transparent RGBA');
+assert.match(fs.readFileSync(path.join(__dirname,'../src/lib/animal-art.ts'),'utf8'),/m00_normal\.png/);
+assert.ok(fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.png')),'replaced M-00 art is archived instead of deleted');
 assert.equal(ENDING_ART.length,19,'all known ending prefixes must have an ending scene');
 assert.equal(new Set(ENDING_ART.map(x=>x.file)).size,ENDING_ART.length,'each ending route must resolve to its own asset URL');
 for(const ending of ENDING_ART){
