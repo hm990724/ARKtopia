@@ -6,8 +6,9 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  // EVE learns emotional expression only after authenticated story evidence.
  if(id==='eve'&&(!state||(!state.flags.humanTruth&&(state.originZero?.photos??0)<4)))return 'neutral';
  const value=id==='protagonist'?state?.mind:id==='eve'?state?.eve:state?.crew?.members.find(m=>m.id===id)?.mind;
- if(value!==undefined&&value<35)return 'critical';
+ if(value!==undefined&&value<=0)return 'critical';
  if(explicit)return explicit;
+ if(value!==undefined&&value<35)return 'critical';
  if(/제 손이|네 발로|무너질|끝나가|살려|죽고|이상해요/.test(text))return 'critical';
  if(value!==undefined&&value<62)return 'anxious';
  if(/이해한 마음|내일은 제가|네가 이어|스스로|지키겠|함께 보자|제가 결정/.test(text))return 'resolve';

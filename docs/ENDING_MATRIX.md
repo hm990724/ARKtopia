@@ -9,13 +9,13 @@ ORIGIN ZERO 엔딩 분기는 finale 진입 시 `finishWithArchive()`가 실행�
 
 | ID | 표시 제목 | 코드상 조건 | 활성 장면 파일 | 장면에 허용되는 인물 |
 |---|---|---|---|---|
-| E1 | 영원한 실험 | finale 준비 완료 + 목표 `rebuild` + 면역도 < 100 | `ending_eternal_experiment_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
-| E2 | 에덴 | finale 준비 완료 + 목표 `rebuild` + 면역도 ≥ 100 | `ending_eden_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
+| E1 | 영원한 실험 | finale 준비 완료 + 목표 `rebuild` + 면역도 < 100 | `ending_eternal_experiment_finale.png` | 임종 직전의 젊은 관리자와 감정을 억제한 EVE만 등장하며 동물 희생을 생존 모습으로 보여주지 않습니다. |
+| E2 | 에덴 | finale 준비 완료 + 목표 `rebuild` + 면역도 ≥ 100 | `ending_eden_finale.png` | 인공 낙원의 첫 새벽을 바라보는 젊은 관리자와 EVE. 새로운 인물은 그리지 않습니다. |
 | E3 | 방주의 씨앗 | 목표 `freedom` + 면역도 ≥ 85 + 사진 12장 + 강제 회수 < 2 | `ending_seed_ark_finale.png` | 젊은 관리자와 EVE의 마지막 보고 컷. 저장된 생존 직원·동물은 별도 UI에 실제 상태대로 표시합니다. |
-| E4 | 마지막 동물원 | 목표 `freedom`이며 E3·E7 조건에 해당하지 않음 | `ending_last_zoo_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
+| E4 | 마지막 동물원 | 목표 `freedom`이며 E3·E7 조건에 해당하지 않음 | `ending_last_zoo_finale.png` | 보호구역을 바라보는 관리자와 EVE의 작별. 서식지 영역에는 그 세이브에서 생존·보호 중인 실제 개체와 보호 경로의 M-00만 오버레이합니다. |
 | E5 | 제000번 우리 | 목표 `preserve`의 기본 분기 (사망 직원 < 2, 마지막 신호 조건 미충족) | `ending_subject_000_choice.png` | 젊은 관리자와 EVE의 정체성 선택 장면. 직원·동물 생존자는 저장 상태대로 별도 표시합니다. |
-| E6 | 침묵의 자동화 | 목표 `preserve` + 사망 직원 ≥ 2 | `ending_silent_automation_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
-| E7 | 흩어진 이름들 | 목표 `freedom` + (강제 회수 ≥ 2 또는 생존 동물 ≤ 1), 단 E3가 우선 | `ending_scattered_names_cinematic.png` | 배경 원화는 무인 장소이며, 엔딩 UI가 실제 저장 상태의 생존 직원·동물을 별도 표시합니다. |
+| E6 | 침묵의 자동화 | 목표 `preserve` + 사망 직원 ≥ 2 | `ending_silent_automation_finale.png` | 관리자와 직원은 사망 후이므로 등장하지 않으며, 감정이 억제된 EVE와 무인 자동화 시설만 보입니다. |
+| E7 | 흩어진 이름들 | 목표 `freedom` + (강제 회수 ≥ 2 또는 생존 동물 ≤ 1), 단 E3가 우선 | `ending_scattered_names_finale.png` | 유일한 인물은 기존 디자인의 EVE이며, 기록 벽에는 얼굴 없는 문서와 발자국 표식만 있습니다. |
 | E8 | 마지막 신호 | 목표 `preserve` + 사망 직원 < 2 + HQ 정보 ≥ 65 + 본부 송신 ≥ 1 | `ending_last_signal_finale.png` | 젊은 관리자와 홀로그램 EVE가 폭풍 속 송신을 마친다. 수신자나 구조 인물은 그리지 않으며 엔딩 UI는 저장 상태의 생존 직원·동물을 별도 표시합니다. |
 
 `originEndEpilogue()`는 `rebuild`와 `freedom`을 먼저 처리한 뒤 `preserve`에 대해 E6/E8/E5를 평가합니다. 따라서 E6·E8·E5는 `preserve` 선택에서만 도달합니다. E3 조건은 E7보다 먼저 적용됩니다.

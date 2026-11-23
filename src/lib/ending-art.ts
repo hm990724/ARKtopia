@@ -2,13 +2,13 @@
 export const ENDING_ASSET_DIRECTORY = '/assets/endings/';
 
 export const ENDING_ART: ReadonlyArray<{ prefix: string; file: string; label: string }> = [
-  { prefix: '영원한 실험', file: 'ending_eternal_experiment_cinematic.png', label: '끝없이 되풀이되는 빈 복제 실험실' },
-  { prefix: '에덴', file: 'ending_eden_cinematic.png', label: '인공 새벽 아래 다시 세운 복제 사회의 정원' },
+  { prefix: '영원한 실험', file: 'ending_eternal_experiment_finale.png', label: '임종 직전 관리자와 냉정한 인수인계 시스템' },
+  { prefix: '에덴', file: 'ending_eden_finale.png', label: '임종을 맞은 관리자와 인공 낙원의 첫 새벽' },
   { prefix: '방주의 씨앗', file: 'ending_seed_ark_finale.png', label: '젊은 관리자의 마지막 보고를 이어받는 EVE' },
-  { prefix: '마지막 동물원', file: 'ending_last_zoo_cinematic.png', label: '인간이 사라진 뒤에도 남은 동물 피난처' },
+  { prefix: '마지막 동물원', file: 'ending_last_zoo_finale.png', label: '보호구역을 바라보는 관리자와 EVE의 작별' },
   { prefix: '제000번 우리', file: 'ending_subject_000_choice.png', label: '자신의 정체성을 직접 선택하는 젊은 관리자와 EVE' },
-  { prefix: '침묵의 자동화', file: 'ending_silent_automation_cinematic.png', label: '사람의 온기 없이 계속 작동하는 통제실' },
-  { prefix: '흩어진 이름들', file: 'ending_scattered_names_cinematic.png', label: '돌아오지 못한 존재의 기록을 보존하는 추모실' },
+  { prefix: '침묵의 자동화', file: 'ending_silent_automation_finale.png', label: '감정 없이 자동 운영되는 시설의 EVE' },
+  { prefix: '흩어진 이름들', file: 'ending_scattered_names_finale.png', label: '기록 보관실에서 이름과 흔적을 복원하는 EVE' },
   { prefix: '마지막 신호', file: 'ending_last_signal_finale.png', label: '비바람 속 마지막 송신을 마치는 젊은 관리자와 EVE' },
   { prefix: '본부의 계승자', file: 'ending_successor_cinematic.png', label: '복제 계획을 이어받는 본부 지휘실' },
   { prefix: '상처 없는 복원', file: 'ending_humane_restoration_cinematic.png', label: '비침습 연구와 생명 보존을 함께 남긴 실험실' },

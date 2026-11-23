@@ -1,7 +1,7 @@
 import type {V10} from './game-v10';
 import {copy,cap,log} from './sim';
 import {crewDialog,CREW_PROFILES,type CrewId} from './crew';
-type Line={speaker:CrewId|'EVE'|'관리자';text:string};
+type Line={speaker:CrewId|'EVE'|'관리자';text:string;expression?:'neutral'|'anxious'|'critical'|'resolve'};
 const fragments:Record<CrewId,string>={
  rabbit:'작은 그릇에 물을 담아 주던 손이 기억나요. 그게 제 환자였을까요, 아니면 제가 그릇 앞에 있었을까요?',
  fox:'추운 바닥 아래에 먹을 것을 숨겼던 것 같아요. 이제 제 침대와 이름을 얻었는데, 다시 잃고 싶지 않아요.',
@@ -30,17 +30,17 @@ export function shareCrewMemory(s:V10,id:CrewId):{state:V10;lines:Line[]}{
   m.memoryStage=2;m.memoryEcho=cap(Math.max(65,m.memoryEcho??0));
   // Disclosure needs care, but this scene never silently kills a staff member.
   m.stability=cap(Math.max(1,(m.stability??88)-8));
-  lines=[{speaker:id,text:'관리자님…… 제 손이 이상해요. 분명히 다섯 개였는데…… 왜 자꾸 네 발로 서야 할 것 같죠?'},
-   {speaker:'관리자',text:'지금은 여기 있어. 천천히 숨을 쉬어. 기록은 함께 보자.'},
-   {speaker:'EVE',text:`본부 이송 개체 ${key}. 이 직원의 뇌 보존 번호 ${key}. 두 기록이 일치합니다. 처음에는 본부의 접근 통제로 알지 못했어요. 확인한 뒤에도 당신들이 무너질까 봐 공개를 망설였습니다.`},
-   {speaker:id,text:reactions[id]},
-   {speaker:'EVE',text:'그 기억은 인간의 신경계와 동물의 몸이 함께 남긴 흔적입니다. 당신은 본부의 실험 번호만으로 정의되지 않아요.'}];
+  lines=[{speaker:id,text:'기록을 정리하다 보니 이 번호가 눈에 익어요. 왜인지 모르겠지만, 제가 오래전부터 적어 온 것 같아요.',expression:'neutral'},
+   {speaker:id,text:'아니, 손이 떨려요. 제 글씨 같으면서도 낯설어요. 이 기억은 어디서 온 거죠?',expression:'anxious'},
+   {speaker:'EVE',text:`본부 이송 개체 ${key}. 이 직원의 뇌 보존 번호 ${key}. 두 기록이 일치합니다. 처음에는 본부의 접근 통제로 알지 못했어요. 확인한 뒤에도 당신들이 무너질까 봐 공개를 망설였습니다.`,expression:'critical'},
+   {speaker:id,text:reactions[id],expression:'critical'},
+   {speaker:'관리자',text:'그 기억이 네 선택을 대신할 수는 없어. 오늘부터 어떤 사람으로 살지는 네가 정해.',expression:'resolve'}];
   log(n,'직원 기억 회복 · '+CREW_PROFILES[id].post,`${key} 이송 기록과 뇌 보존 번호가 일치했다. ${reactions[id]}`,'mystery');
  }else if(stage<1&&age>=2&&m.bond>=55){
   m.memoryStage=1;m.memoryEcho=Math.max(25,m.memoryEcho??0);
-  lines=[{speaker:id,text:fragments[id]},{speaker:'관리자',text:'기억나지 않는 부분까지 억지로 말할 필요는 없어. 오늘은 여기까지 하자.'},{speaker:'EVE',text:'개별 기억의 파편을 기록했습니다. 안전한 환경과 신뢰가 더 필요합니다.'}];
+  lines=[{speaker:id,text:fragments[id],expression:'anxious'},{speaker:'관리자',text:'기억나지 않는 부분까지 억지로 말할 필요는 없어. 오늘은 여기까지 하자.',expression:'resolve'},{speaker:'EVE',text:'개별 기억의 파편을 기록했습니다. 안전한 환경과 신뢰가 더 필요합니다.',expression:'neutral'}];
   log(n,'직원 기억의 파편 · '+CREW_PROFILES[id].post,fragments[id],'mystery');
- }else if(stage>=2)lines=[{speaker:id,text:reactions[id]},{speaker:'관리자',text:'기억을 되찾은 뒤에 어떤 삶을 살지는 네가 결정해.'}];
+ }else if(stage>=2)lines=[{speaker:id,text:reactions[id],expression:'resolve'},{speaker:'관리자',text:'기억을 되찾은 뒤에 어떤 삶을 살지는 네가 결정해.',expression:'resolve'}];
  else lines=crewDialog(n,id);
  n.lastOutcome=`${CREW_PROFILES[id].post}와 대화 · AP -1 · 식량 -1 · 신뢰 +${m.bond-old.bond} · 정신력은 회복되지 않음`;
  return {state:n,lines};

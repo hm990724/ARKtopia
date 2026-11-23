@@ -1,9 +1,9 @@
-const {test,expect}=require('@playwright/test');
+﻿const {test,expect}=require('@playwright/test');
 const fs=require('fs'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 const {beginGame}=require('../src/lib/game-v10.ts');
 const {makeAnimal}=require('../src/lib/sim.ts');
-const {emptyOriginZero}=require('../src/lib/origin-zero.ts');
+const {emptyOriginZero,recallCandidates}=require('../src/lib/origin-zero.ts');
 const archive=require('../src/lib/specimen-archive.ts');
 const {recruitCrew}=require('../src/lib/crew.ts');
 const KEY='last-enclosure-ark-v10';
@@ -57,10 +57,13 @@ for(const [index,ending] of endings.entries())test(`ORIGIN ZERO ending UI resolv
  await seed(page,s,`v74-ending-${index}`);const goalIndex=ending.goal==='rebuild'?0:ending.goal==='freedom'?1:2;
  const choice=page.locator('.finale-modal .v54-finale-choices button').nth(goalIndex);await expect(choice).toBeVisible();await choice.click();
  const result=page.locator('.ending-modal');await expect(result).toBeVisible();if(!ending.members){const endingText=result.locator('p').filter({hasText:ending.title}).first();await expect(endingText).toBeVisible();await expect(endingText).toContainText('사망했다')}
- await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
- if(ending.title==='방주의 씨앗'){await expect(result.locator('.ending-art-display img')).toHaveAttribute('src','/assets/endings/ending_seed_ark_finale.png');await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);await expect(result.locator('.v71-farewell>img')).toHaveCount(0);await expect(result.locator('.v71-farewell')).toContainText('그럼 내일은 네가 이어줘.')}
- if(ending.title==='마지막 신호'){await expect(result.locator('.ending-art-display img')).toHaveAttribute('src','/assets/endings/ending_last_signal_finale.png');await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true)}
+ await expect.poll(()=>result.locator('.ending-art-display>img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+ const finaleArt={영원한실험:'ending_eternal_experiment_finale.png',에덴:'ending_eden_finale.png',마지막동물원:'ending_last_zoo_finale.png',침묵의자동화:'ending_silent_automation_finale.png',흩어진이름들:'ending_scattered_names_finale.png','마지막신호':'ending_last_signal_finale.png'}[ending.title.replaceAll(' ','')];
+ if(finaleArt){await expect(result.locator('.ending-art-display>img')).toHaveAttribute('src',`/assets/endings/${finaleArt}`);await expect.poll(()=>result.locator('.ending-art-display>img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true)}
+ if(ending.title==='방주의 씨앗'){await expect(result.locator('.ending-art-display>img')).toHaveAttribute('src','/assets/endings/ending_seed_ark_finale.png');await expect.poll(()=>result.locator('.ending-art-display>img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);await expect(result.locator('.v71-farewell>img')).toHaveCount(0);await expect(result.locator('.v71-farewell')).toContainText('그럼 내일은 네가 이어줘.')}
+ if(ending.title==='마지막 신호'){await expect(result.locator('.ending-art-display>img')).toHaveAttribute('src','/assets/endings/ending_last_signal_finale.png');await expect.poll(()=>result.locator('.ending-art-display>img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true)}
  await expect(result.locator('.v82-ending-specimen-card')).toHaveCount(ending.alive??3);
+ if(ending.title==='마지막 동물원'){await expect(result.locator('.ending-habitat-survivor[data-animal-id]')).toHaveCount(ending.alive??3);await expect(result.locator('.ending-habitat-survivor[data-animal-id="m00"]')).toHaveCount(0)}
  if(ending.members){await expect(result.locator('.v80-ending-cast-card')).toHaveCount(ending.members.length);for(const id of ending.members)await expect(result.locator(`.v80-ending-cast-card[data-crew-id="${id}"] img`)).toHaveAttribute('alt',/.+/);await expect(result.locator('.v80-ending-cast-card[data-crew-id="wolf"]')).toHaveCount(0);await expect(result.locator('.v49-ending-scars')).toBeVisible()}
 });
 
@@ -73,3 +76,8 @@ test('ending cast keeps protected M-00 as its own pixel-art specimen',async({pag
  await expect(result.locator('.v82-ending-specimen-card')).toHaveCount(4);await expect(cat).toHaveAttribute('src','/assets/animals/m00_normal.png');
  await expect.poll(()=>cat.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
 });
+test('Last Zoo cinematic renders only surviving saved animals and sheltered M-00',async({page})=>{
+ const s=beginGame('medic','generator');s.phase='finale';s.day=40;s.tutorialStep=9;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture'];s.animals=['rabbit','fox','deer'].map((id,i)=>makeAnimal(id,i+1));s.originZero={...emptyOriginZero(),cat:'shelter',route:'shelter',photos:12,immunity:84,crisisDone:true,individualRecalls:{}};s.archive=archive.emptyArchive();for(const item of recallCandidates(s))s.originZero.individualRecalls[item.key]={specimenId:item.key,day:40,quality:90,source:'archive',note:'protected in this save'};
+ await seed(page,s,'v74-last-zoo-m00-overlay');await page.locator('.finale-modal .v54-finale-choices button').nth(1).click();const result=page.locator('.ending-modal');await expect(result.locator('.ending-art-display>img')).toHaveAttribute('src','/assets/endings/ending_last_zoo_finale.png');await expect(result.locator('.ending-habitat-survivor')).toHaveCount(4);await expect(result.locator('.ending-habitat-survivor[data-animal-id="m00"]')).toHaveAttribute('src','/assets/animals/m00_normal.png');
+});
+

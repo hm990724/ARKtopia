@@ -15,3 +15,6 @@ tmp/v68/npm-cache/
 tmp/v74*
 /ARKtopia_ORIGIN_ZERO_*.zip
 /ARKtopia_ORIGIN_ZERO_*.zip.sha256
+
+# Local project bundle; keep large archives out of Git commits
+/public.zip

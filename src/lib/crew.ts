@@ -48,7 +48,7 @@ export function recruitCrew(s:V10,id:AnimalId,sourceSpecimenId?:string):boolean{
  log(s,'본부 인력 등록',`${CREW_PROFILES[id].post}이(가) 도착했습니다. 기존 근무 이력은 본부 보안 정책에 따라 비공개입니다.`,'mystery');
  return true;
 }
-export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';text:string}[]{
+export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';text:string;expression?:'neutral'|'anxious'|'critical'|'resolve'}[]{
  const member=ensureCrew(s).members.find(m=>m.id===id);if(!member)return [];
  const profile=CREW_PROFILES[id];const days=Math.max(0,s.day-member.arrivedDay);
  const personal:Record<CrewId,[string,string,string]>={
@@ -58,24 +58,24 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
   deer:['아침에 일지 한 장을 잘못 분류했어요. 기록은 이미 고쳤습니다!','실험실 이름을 읽는데 제 이름처럼 들렸어요. 손이 떨려서 종이를 떨어뜨렸어요.','기록이 맞지 않아요. 제가 적은 이름이 제 이름을 지워요. 저 아직 사람 맞죠?']
  };
  if(member.mind<=22)return [
-  {speaker:id,text:personal[id][2]},
-  {speaker:'EVE',text:`${profile.post} 생체 신호 위험. 정신력 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`},
-  {speaker:id,text:'제가 그러지 않았어요... 아니, 제가 그랬나요? 제 손이 기억을 못 해요.'}];
+  {speaker:id,text:personal[id][2],expression:'critical'},
+  {speaker:'EVE',text:`${profile.post} 생체 신호 위험. 정신력 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`,expression:'anxious'},
+  {speaker:id,text:'제가 그러지 않았어요... 아니, 제가 그랬나요? 제 손이 기억을 못 해요.',expression:'critical'}];
  if(s.headquarters.revealStage>=2&&s.flags.humanTruth)return [
-  {speaker:id,text:profile.secret},
-  {speaker:'관리자',text:'그 기억은 어디서 온 거야?'},
-  {speaker:id,text:personal[id][1]},
-  {speaker:'EVE',text:'복원된 인격의 기억 출처는 생체 기밀입니다. 추가 열람에는 윤리적 선택이 수반됩니다.'}];
+  {speaker:id,text:profile.secret,expression:'anxious'},
+  {speaker:'관리자',text:'그 기억은 어디서 온 거야?',expression:'anxious'},
+  {speaker:id,text:personal[id][1],expression:'critical'},
+  {speaker:'EVE',text:'복원된 인격의 기억 출처는 생체 기밀입니다. 추가 열람에는 윤리적 선택이 수반됩니다.',expression:'neutral'}];
  if(days>=5||member.mind<60)return [
-  {speaker:id,text:personal[id][0]},
-  {speaker:'EVE',text:'신경 동기화 이상 징후를 기록합니다. 업무 지원 횟수가 증가할수록 피로가 누적됩니다.'},
-  {speaker:id,text:'그냥 피곤한 거겠죠. 제 직무는 계속하겠습니다.'}];
- return [{speaker:id,text:profile.first},
-  {speaker:'EVE',text:`${profile.post}의 근무 자격을 확인했습니다. 전 인력의 지원 명령은 하루에 단 한 번만 사용할 수 있습니다.`}];
+  {speaker:id,text:personal[id][0],expression:'anxious'},
+  {speaker:'EVE',text:'신경 동기화 이상 징후를 기록합니다. 업무 지원 횟수가 증가할수록 피로가 누적됩니다.',expression:'anxious'},
+  {speaker:id,text:'그냥 피곤한 거겠죠. 제 직무는 계속하겠습니다.',expression:'resolve'}];
+ return [{speaker:id,text:profile.first,expression:'neutral'},
+  {speaker:'EVE',text:`${profile.post}의 근무 자격을 확인했습니다. 전 인력의 지원 명령은 하루에 단 한 번만 사용할 수 있습니다.`,expression:'neutral'}];
 }
 export function crewSupport(s:V10,id:CrewId):V10{
  const member=s.crew?.members.find(m=>m.id===id);
- if(!member||s.phase!=='day'||s.crew?.supportDay===s.day||member.mind<=0||s.crew?.pendingTermination)return s;
+ if(!member||s.phase!=='day'||s.run||s.crew?.supportDay===s.day||member.mind<=0||s.crew?.pendingTermination)return s;
  const n=copy(s) as V10;const crew=ensureCrew(n);const m=crew.members.find(x=>x.id===id)!;
  crew.supportDay=n.day;m.mind=cap(m.mind-5);queueCrewTerminations(n);
  if(id==='rabbit'){n.mind=cap(n.mind+18);crew.healingDay=n.day;}

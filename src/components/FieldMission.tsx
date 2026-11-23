@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { V10 } from "@/lib/game-v10";
 import { regions } from "@/lib/game-v10";
@@ -10,6 +10,7 @@ import type { AnimalId } from "@/lib/sim";
 import {
   adjacentField,
   fieldVisible,
+  fieldLineOfSight,
   fieldWidth,
   fieldHeight,
   fieldRelayBearing,
@@ -445,7 +446,7 @@ export default function FieldMission({
           <i style={{ width: `${state.mind}%` }} />
         </div>
         <div>
-          <span>추적망 포위</span>
+          <span>적의 노출 위험</span>
           <b>{pressure}/100</b>
           <i style={{ width: `${pressure}%` }} />
         </div>
@@ -686,7 +687,7 @@ export default function FieldMission({
                   현장 ST <b>{state.stamina}</b>
                 </span>
               </div>
-              {run.companion && (
+              {(run.companions?.length??(run.companion?1:0)) > 0 && (
                 <p className="v57-companion-readout">
                   동행:{" "}
                   {
@@ -697,7 +698,7 @@ export default function FieldMission({
                         wolf: "보안관",
                         deer: "서기관",
                       } as Record<string, string>
-                    )[run.companion]
+                     )[(run.companions??[run.companion]).filter(Boolean)[0]!] + ((run.companions?.length??1)>1 ? ` + ${(run.companions?.length??1)-1}명` : '')
                   }
                 </p>
               )}
@@ -1142,7 +1143,7 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
-                        {field.threat?.position === i && visible && !here && !field.combat && (
+                        {field.threat?.position === i && visible && fieldLineOfSight(field,i,2) && !here && !field.combat && (
                           <span className="v74-roaming-threat" role="img" aria-label="접근 중인 오염체">
                             <img src={`/assets/field/enemy_${field.steps % 2 ? "echo" : "slime"}.png`} alt="" />
                             <small>{field.threat.mode === "closing" ? "접근" : "잔향"}</small>
@@ -1549,3 +1550,4 @@ export default function FieldMission({
     </section>
   );
 }
+

@@ -23,7 +23,7 @@ export type Incident={id:IncidentId;title:string;desc:string;cause:string;option
 export type FieldResource='scrap'|'knowledge'|'clues';
 export type FieldCaptureRecord={id:AnimalId;result:'secured'|'treated'|'released'|'failed'};
 export type FieldSettlement={region:RegionId;reason:string;steps:number;clues:number;loot:number;rewards:Record<FieldResource|'parts'|'food'|'credits',number>;captures:FieldCaptureRecord[]};
-export type Run={evePulseUsed?:boolean;supportUsed?:boolean;region:RegionId;gear:Gear[];stage:number;integrity:number;exposure:number;loot:number;discovery:AnimalId|null;event:string;log:string[];medkitUsed?:boolean;cageUsed?:boolean;earned?:Record<FieldResource,number>;captures?:FieldCaptureRecord[];firstTutorial?:boolean;companion?:string|null};
+export type Run={evePulseUsed?:boolean;supportUsed?:boolean;region:RegionId;gear:Gear[];stage:number;integrity:number;exposure:number;loot:number;discovery:AnimalId|null;event:string;log:string[];medkitUsed?:boolean;cageUsed?:boolean;earned?:Record<FieldResource,number>;captures?:FieldCaptureRecord[];firstTutorial?:boolean;companion?:string|null;companions?:string[]};
 const freshFieldEarnings=():Record<FieldResource,number>=>({scrap:0,knowledge:0,clues:0});
 function earnDuringRun(run:Run|null|undefined,key:FieldResource,amount:number){if(!run||amount<=0)return;run.earned??=freshFieldEarnings();run.earned[key]+=amount;}
 function recordCapture(run:Run|undefined|null,id:AnimalId,result:FieldCaptureRecord['result']){if(!run)return;run.captures??=[];run.captures.push({id,result});}
@@ -112,7 +112,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  const wasComplete=(s.tutorialStep??7)>=7 && s.scrap===undefined;
  const facilities={...emptyFacilities(),...(wasComplete?{cctv:true,synthesis:true}:{}),...s.facilities};
  s.animals.forEach(a=>{a.hunger??=22;a.sickness??=0;});
- const restored=Object.assign(s,{facilityPowerPriority:normalizeFacilityPowerOrder(s.facilityPowerPriority),facilityPowerState:s.facilityPowerState,lastExpeditionDay:s.lastExpeditionDay??(s.run?s.day:undefined),pathologyRecords:s.pathologyRecords??[],pathologyPending:s.pathologyPending??null,onboardingSeen:s.onboardingSeen??[],synthesisTutorialSeen:s.synthesisTutorialSeen??false,tutorialArchiveReviewPending:s.tutorialArchiveReviewPending??false,nextFieldFatigued:s.nextFieldFatigued??false,narrative:{...emptyNarrative(),...s.narrative},tutorialStep:wasComplete?9:(s.tutorialStep??9),scrap:s.scrap??((s.tutorialStep??9)>=4&&(s.tutorialStep??9)<=6?16:0),facilities,mutantSerum:s.mutantSerum??0,headquarters:{...emptyHeadquarters(),...s.headquarters},crew:{...emptyCrew(),...s.crew},infection:s.infection??Math.round((s.radiation||0)/2),electricCells:s.electricCells??2,flashlight:s.flashlight??85,filters:s.filters??2,threat:s.threat??17,facility:s.facility??85,clues:s.clues??0,daysRested:s.daysRested??0,encounters:s.encounters??0,dayEvents:s.dayEvents??0,pendingIncident:s.pendingIncident??null,lastOutcome:s.lastOutcome??'',run:s.run?{...s.run,earned:s.run.earned??freshFieldEarnings(),captures:s.run.captures??[],firstTutorial:s.run.firstTutorial??((s.tutorialStep??9)<=3)}:null,lastFieldSummary:s.lastFieldSummary??null,field:s.run?(s.field??createField(s.day,s.run.region)):null,capture:s.capture?normalizeCapture(s.capture):null,tacticalCaptured:s.tacticalCaptured??false,pendingCage:s.pendingCage??false,suppliesCollected:s.suppliesCollected??0,eventHistory:s.eventHistory??[],security:s.security??initialSecurity()});// Old saves retain living staff already recruited, but calendar staff never spawn again.
+ const restored=Object.assign(s,{facilityPowerPriority:normalizeFacilityPowerOrder(s.facilityPowerPriority),facilityPowerState:s.facilityPowerState,lastExpeditionDay:s.lastExpeditionDay??(s.run?s.day:undefined),pathologyRecords:s.pathologyRecords??[],pathologyPending:s.pathologyPending??null,onboardingSeen:s.onboardingSeen??[],synthesisTutorialSeen:s.synthesisTutorialSeen??false,tutorialArchiveReviewPending:s.tutorialArchiveReviewPending??false,nextFieldFatigued:s.nextFieldFatigued??false,narrative:{...emptyNarrative(),...s.narrative},tutorialStep:wasComplete?9:(s.tutorialStep??9),scrap:s.scrap??((s.tutorialStep??9)>=4&&(s.tutorialStep??9)<=6?16:0),facilities,mutantSerum:s.mutantSerum??0,headquarters:{...emptyHeadquarters(),...s.headquarters},crew:{...emptyCrew(),...s.crew},infection:s.infection??Math.round((s.radiation||0)/2),electricCells:s.electricCells??2,flashlight:s.flashlight??85,filters:s.filters??2,threat:s.threat??17,facility:s.facility??85,clues:s.clues??0,daysRested:s.daysRested??0,encounters:s.encounters??0,dayEvents:s.dayEvents??0,pendingIncident:s.pendingIncident??null,lastOutcome:s.lastOutcome??'',run:s.run?{...s.run,companions:s.run.companions??(s.run.companion?[s.run.companion]:[]),earned:s.run.earned??freshFieldEarnings(),captures:s.run.captures??[],firstTutorial:s.run.firstTutorial??((s.tutorialStep??9)<=3)}:null,lastFieldSummary:s.lastFieldSummary??null,field:s.run?(s.field??createField(s.day,s.run.region)):null,capture:s.capture?normalizeCapture(s.capture):null,tacticalCaptured:s.tacticalCaptured??false,pendingCage:s.pendingCage??false,suppliesCollected:s.suppliesCollected??0,eventHistory:s.eventHistory??[],security:s.security??initialSecurity()});// Old saves retain living staff already recruited, but calendar staff never spawn again.
  // V67: after the first rabbit leaves, no observation/research tutorial may keep pointing at an empty cage.
  if(restored.headquarters.transferred.includes('rabbit')){
   restored.tutorialArchiveReviewPending=false;
@@ -210,9 +210,9 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[]):string|
  if(gear.includes('scanner')&&s.power<r.power+8)return 'EVE 스캐너는 시설 전력이 부족합니다. 손전등으로 바꾸거나 발전기를 복구하세요.';
  return null;
 }
-export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null=null):V10{if(expeditionBlockReason(s,region,gear))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=r.power+8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(!gear.includes('flashlight')&&!scanner)||(scanner&&n.power<scannerPower))return s;if(gear.includes('flashlight')&&n.flashlight<25)return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
+export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null|CrewId[]=null):V10{if(expeditionBlockReason(s,region,gear))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=r.power+8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(!gear.includes('flashlight')&&!scanner)||(scanner&&n.power<scannerPower))return s;if(gear.includes('flashlight')&&n.flashlight<25)return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
 n.lastExpeditionDay=n.day;n.ap-=1;if(scanner)n.power-=scannerPower;if(gear.includes('flashlight'))n.flashlight=cap(n.flashlight-10);if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
-const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);n.run={region,gear,stage:0,integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:s.crew?.members.some(m=>m.id===companion&&m.mind>0)?companion:null,log:[scanner?'시설 전력망 EVE 스캐너 연결':'휴대 손전등 출동 · 시설 전력 보존']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;n.field=createField(n.day,region,n.encounters);n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
+const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);const requested=Array.isArray(companion)?companion:[companion].filter(Boolean) as CrewId[];const companions=requested.filter((id,index)=>requested.indexOf(id)===index&&s.crew?.members.some(m=>m.id===id&&m.mind>0)).slice(0,2);n.run={region,gear,stage:0,integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:companions[0]??null,companions,log:[scanner?'시설 전력망 EVE 스캐너 연결':'휴대 손전등 출동 · 시설 전력 보존']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;n.field=createField(n.day,region,n.encounters);n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
 // Reserved expedition supplies are refunded if not consumed. A cage is consumed only on capture attempt.
 function returnUnusedRunSupplies(s:V10,run:Run,hasEncounter:boolean){
  if(run.gear.includes('medkit')&&!run.medkitUsed)s.medicine++;
@@ -557,7 +557,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';
- field.noise=Math.max(0,field.noise+(noisy?18:pace==='normal'?7:-4));
+ field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(run.gear.includes('flashlight')?(noisy?7:3):0)));
  n.stamina=cap(n.stamina-(noisy?6:pace==='normal'?4:2));
  const exposed=pace==='fast'?9:pace==='normal'?5:2;
  run.exposure+=exposed;
@@ -568,14 +568,14 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    observation='발자국 간격을 기록했습니다. 동물의 이동 경로가 조금 더 분명해집니다. 지식 +2.';
   }else if(tile==='cache'){
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
-   field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+(run.companion==='fox'?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
+   field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+((run.companions??[run.companion]).includes('fox')?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
   }else if(tile==='hazard'&&!run.firstTutorial){
    field.combat=newFieldCombat(n.day+destination);observation='움직이는 오염 덩어리가 통로를 막았습니다. 다음 공격을 보고 대응하거나 우회하세요.';
   }else if(tile==='hazard'){
-   const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-(run.companion==='wolf'?3:0));
+   const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-((run.companions??[run.companion]).includes('wolf')?3:0));
    run.integrity=cap(run.integrity-damage);
-   n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?5:0)-(n.crew?.decontamDay===n.day?6:0)-(run.companion==='deer'?4:0)));
+   n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?5:0)-(n.crew?.decontamDay===n.day?6:0)-((run.companions??[run.companion]).includes('deer')?4:0)));
    n.mind=cap(n.mind-Math.max(0,Math.floor(damage/3)));
    observation=`감염성 포자에 노출됐습니다. 방호 -${damage}, 감염 위험 증가.`;
   }else if(tile==='signal'){
@@ -643,7 +643,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  if(tile==='exit')return leaveField(n,'정상 귀환');
  if(n.stamina<=0 && !n.capture&&!field.combat){n.mind=cap(n.mind-5);return leaveField(n,'탈진 · 긴급 귀환');}
  if(destination===(field.origin??14)&&field.steps>1&&!n.capture)return leaveField(n,'진입 지점 회군');
- if((field.pressure??0)>=100&&!n.capture&&!field.combat){n.mind=cap(n.mind-9);n.threat=cap(n.threat+9);return leaveField(n,'추적망 포위 · 정신력 -9');}
+ if((field.pressure??0)>=75&&!n.capture&&!field.combat){const danger=Math.max(1,Math.floor(regions.find(r=>r.id===run.region)!.danger/35));n.mind=cap(n.mind-danger);n.threat=cap(n.threat+Math.ceil(danger/2));observation+=` 추적망 ${field.pressure}% · 적이 퇴로를 좁힙니다. 정신력 -${danger}; 직접 은폐하거나 교전·철수를 선택하세요.`;field.lastEvent=n.lastOutcome=observation;}
  if(run.integrity<=0){n.mind=cap(n.mind-8);return leaveField(n,'방호 파괴 · 긴급 철수');}
  if(n.mind<=0||n.eve<=0){return leaveField(n,'신경 신호 위험 · 긴급 귀환');}
  return n;
@@ -694,8 +694,8 @@ export function abandonTacticalCapture(s:V10):V10{
 export function leaveField(s:V10,kind='조기 철수'):V10{
  if(!s.run||!s.field||s.capture)return s;
  const n=copy(s) as V10,run=n.run!,field=n.field!;
- if(run.companion && field.steps>0){const member=n.crew?.members.find(m=>m.id===run.companion);if(member){member.mind=cap(member.mind-1);queueCrewTerminations(n);}}
- if(run.companion==='rabbit'&&field.steps>0)n.mind=cap(n.mind+Math.min(8,Math.floor(field.steps/3)+2));
+ const away=run.companions??(run.companion?[run.companion]:[]);if(away.length&&field.steps>0){for(const id of away){const member=n.crew?.members.find(m=>m.id===id);if(member)member.mind=cap(member.mind-1);}queueCrewTerminations(n);}
+ if(away.includes('rabbit')&&field.steps>0)n.mind=cap(n.mind+Math.min(8,Math.floor(field.steps/3)+2));
  const exhausted=kind.includes('탈진')||n.stamina<=0; n.nextFieldFatigued=exhausted;
  const isFull=kind==='정상 귀환'||!!run.firstTutorial;
  const fraction=isFull?1:.30;
@@ -804,3 +804,4 @@ export function buildFacility(s:V10,id:FacilityId):V10{
  n.lastOutcome=`${r.name} 복구 완료. 고철 -${r.scrap}, 부품 -${r.parts}, 전력 -${r.power}. ${r.benefit}`;
  log(n,'시설 복구 · '+r.name,n.lastOutcome,'good');return n;
 }
+

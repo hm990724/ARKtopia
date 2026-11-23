@@ -32,6 +32,15 @@ test('staff stays neutral in roster and switches to its critical portrait during
  const reveal=page.getByRole('button',{name:'글 즉시 펼치기'});if(await reveal.isEnabled())await reveal.click();
  await page.screenshot({path:'docs/qa-v71/v72-critical-dialogue.png',fullPage:true});expect(errors).toEqual([]);
 });
+test('archivist conversation transitions neutral, unstable, critical, then resolve on authored lines',async({page})=>{
+ const {emptyArchive}=require('../src/lib/specimen-archive.ts');const s=beginGame('medic','generator');s.day=3;s.tutorialStep=9;s.onboardingSeen=['base-work'];s.ap=5;s.food=5;s.flags.humanTruth=true;s.originZero={...emptyOriginZero(),photos:10};s.archive=emptyArchive();recruitCrew(s,'deer','DR-001');Object.assign(s.crew.members[0],{bond:65,memoryStage:1});s.archive.entries['DR-001']={key:'DR-001',species:'deer',name:'deer',firstDay:1,lastDay:3,status:'transferred',captureMethod:'fixture',observedTraits:[],records:[],maxStress:0,maxMemory:0};
+ await seed(page,s);await page.getByRole('button',{name:'서기관 직원 상세',exact:true}).click();await page.getByRole('button',{name:/^대화\s/}).click();
+ const portrait=page.locator('.v44-story-eve-image');await expect(portrait).toHaveAttribute('data-mood','neutral');await expect(portrait.locator('img')).toHaveAttribute('src','/assets/staff/deer/portrait.webp');
+ await page.getByRole('button',{name:'다음 대사'}).click();await expect(portrait).toHaveAttribute('data-mood','anxious');await expect(portrait.locator('img')).toHaveAttribute('src','/assets/staff/deer/portrait_unstable.png');
+ await page.getByRole('button',{name:'다음 대사'}).click();await expect(portrait).toHaveAttribute('data-mood','critical');await expect(portrait.locator('img')).toHaveAttribute('src','/assets/characters/eve_critical.png');
+ await page.getByRole('button',{name:'다음 대사'}).click();await expect(portrait).toHaveAttribute('data-mood','critical');await expect(portrait.locator('img')).toHaveAttribute('src','/assets/staff/deer/portrait_critical.png');
+ await page.getByRole('button',{name:'다음 대사'}).click();await expect(portrait).toHaveAttribute('data-mood','resolve');await expect(portrait.locator('img')).toHaveAttribute('src','/assets/characters/protagonist_resolve.png');
+});
 test('wolf guard neural collapse displays the dedicated transformation cinematic',async({page})=>{
  const {queueCrewTerminations}=require('../src/lib/crew.ts');
  const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'wolf','WF-001');s.crew.members[0].mind=0;queueCrewTerminations(s);

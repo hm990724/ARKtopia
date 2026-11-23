@@ -95,7 +95,7 @@ test('all four staff remember through trust and matching evidence, never another
   const fragment=memory.shareCrewMemory(later,id);assert.equal(fragment.state.crew.members[0].memoryStage,1);assert.ok(!fragment.lines.some(x=>x.text.includes('두 기록이 일치')));
   later=fragment.state;later.day=6;later.crew.members[0].bond=70;later.originZero.photos=10;later.flags.humanTruth=true;
   const bad=structuredClone(later);bad.crew.members[0].sourceSpecimenId='NONEXISTENT';assert.equal(memory.shareCrewMemory(bad,id).state.crew.members[0].memoryStage,1);
-  const full=memory.shareCrewMemory(later,id);assert.equal(full.state.crew.members[0].memoryStage,2);assert.ok(full.lines.some(x=>x.text.includes(a.specimenId)));assert.ok(full.lines.some(x=>x.text.includes('네 발로')));
+  const full=memory.shareCrewMemory(later,id);assert.equal(full.state.crew.members[0].memoryStage,2);assert.ok(full.lines.some(x=>x.text.includes(a.specimenId)));assert.ok(full.lines.some(x=>x.expression==='anxious'&&x.text.includes('기억')),'full memory disclosure preserves the current hesitant dialogue and portrait expression');
   assert.equal(game.loadGame(JSON.parse(JSON.stringify(full.state))).crew.members[0].memoryStage,2);
  }
 });
@@ -119,3 +119,4 @@ test('seed farewell is exclusive and every origin ending keeps the manager death
  for(const goal of ['rebuild','freedom','preserve']){const n=archive.finishWithArchive(s,goal);assert.ok(n.ending.includes('사망했다'));assert.equal(n.ending.startsWith('방주의 씨앗'),goal==='freedom');}
 });
 console.log(`${passed} v71 regressions passed`);
+

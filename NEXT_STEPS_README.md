@@ -8,9 +8,12 @@
 - 방주의 씨앗 엔딩의 주인공/EVE 작별 시네마틱을 기존 초상·배경을 참조해 제작했다. `ending_seed_ark_finale.png`로 별도 보존하고 해당 엔딩 경로에 연결했다. 엔딩 대사 영역의 중복 주인공 초상을 제거했다. 주인공은 젊은 외형, EVE는 은백색 머리와 청색 홀로그램 외형을 유지한다.
 - 제000번 우리 결말에도 같은 젊은 관리자와 EVE가 나오는 정체성 선택 컷 `ending_subject_000_choice.png`를 별도로 추가·연결했다. 기존 무인 배경 원화는 보존했다.
 - 마지막 신호 엔딩은 폭풍 속 송신 장면 `ending_last_signal_finale.png`를 별도 생성해 연결했다. 주인공과 EVE는 기준 초상과 대조했고, 응답자·구조 인물처럼 설정에 없는 캐릭터는 넣지 않았다. 이전 장소 배경 `ending_last_signal_cinematic.png`는 다른 참조용으로 보존했다.
+- 이미지 우선 배치로 `ending_eternal_experiment_finale.png`, `ending_eden_finale.png`, `ending_last_zoo_finale.png`, `ending_silent_automation_finale.png`, `ending_scattered_names_finale.png`를 만들거나 연결했다. 모두 기준 캐릭터 외형을 맞췄고, 미확인 인물이나 저장 상태가 불명확한 생존 동물을 고정 장면에 넣지 않았다. 기존 배경 원화는 보존했다.
 - 직원 로스터와 상세 정보는 기존 기본 초상으로 고정하고, 대화 중에만 각 직원에게 이미 존재하는 `unstable`·`critical` 초상을 사용한다. 의무관·보급관·보안관·서기관 모두 기존 표정 자산을 재사용하며 새 중복 초상은 만들지 않았다.
 - 늑대 장면은 실제 게임 모달에 새 경로가 표시되는지 브라우저로 검증했다. `npm run test:all`, `typecheck`, `lint`, `check:assets`, `npm run build`, `npm run build:qa`가 통과했다. `.next-qa` 최신 빌드 기준 프로덕션 브라우저 회귀는 43/43 통과했다.
-- **미완료:** 16개 엔딩/후일담 경로와 스토리 CG에 인물 연기를 반영하는 작업, 전체 13종 동물의 그림체·설정 대조 및 41개 사건별 작화 점검은 계속 필요하다. 고퀄 시네마틱 전체 제작·조건별 캐스트 연출 완료로 간주하지 않는다.
+- 메인 ORIGIN ZERO 엔딩 8종은 각각 고유한 인물 시네마틱 CG 파일로 연결했다. E4는 세이브에 실제로 살아 있고 보호 경로인 동물/M-00만 장면의 서식지 영역에 개별 오버레이하도록 연결했다. E7의 직원 생존·사망 상태별 기록 연출은 추가 구현이 필요하다.
+- **미완료:** 11개 파생 엔딩/후일담 경로와 스토리 CG에 인물 연기를 반영하는 작업, 전체 13종 동물의 그림체·설정 대조 및 41개 사건별 작화 점검은 계속 필요하다. 조건별 캐스트 연출 완료로 간주하지 않는다.
+- 이후 이미지 정리 기준: `staff-terminations`는 그대로 보존한다. 그 밖의 엔딩·이벤트·스토리 시네마틱은 새 CG로 연결해 화면에서 확인한 뒤 미사용 구버전을 정리한다. 승인 원본과 고유한 증거 이미지는 참조 관계를 확인하기 전 삭제하지 않는다.
 
 ## 2026-11-23 메인·파생 엔딩 작화 제작
 
@@ -176,3 +179,24 @@
 - Image generation was not available in the current tool integration; no CLI/API fallback was invoked. Existing art is connected and historical finals preserved, but the missing bespoke scenes remain explicit work.
 - Full-project ZIP generated from the verified commit snapshot: `ARKtopia_ORIGIN_ZERO_ULTIMATE_FULL_PROJECT.zip`; SHA-256 is in the adjacent `.sha256` file. The existing v74.x archives were preserved.
 - Latest gameplay/source commit: `cfbb1f7` (`Add deterministic ten-day neglect result`). The continuation integration commit is `f647c89`; package documentation was recorded in `d00c216`.
+
+## 2026-11-23 Codex follow-up · active gameplay pass
+
+- Scope follows the latest user request: finish real-time field threat and two-person crew first, then continue the remaining gameplay systems in the integrated requirements. Do not modify image files, image generation, ending artwork, or cinematic artwork.
+- Implemented in source (not yet final-regression-verified): field threat advances on a 1.4s persisted state tick while the expedition map is open; loud field state raises alert faster; close/high-alert threat starts the existing combat flow. A full pressure meter no longer ejects the player: from 75% it causes danger-scaled morale loss and raises base threat while leaving concealment, combat, or retreat available.
+- Outing loadout now supports up to two recruited staff; `Run.companions` is persisted, old saves migrate their single `companion` into the list, combat shows both portraits, and support applies each present role's effect. The legacy primary companion field remains for older mechanics/save compatibility.
+- Intermediate TypeScript check passed before the most recent changes. One old v76 source assertion failed because it expects the former single-companion portrait expression; that script is stale relative to the new list rendering. A named v80-core script was not present. Do not claim field AI/stealth or the full campaign has passed until the final consolidated verification is completed.
+- Still required: finish direct stealth/last-seen search and threat interaction during sound tracking; correct companion role effects and base-duty opportunity cost across all paths; inspect capture species differentiation, survival economy, incidents, research/ARK RECALL and UX against active code; then run one consolidated typecheck/build/logic/browser regression and repair failures. Preserve all pre-existing user edits and image assets.
+- Follow-up: field alert reaching 100 no longer triggers automatic extraction. At exposure pressure 75+, the player takes a region-scaled morale hit and the base threat rises, while the sortie remains active so the player can hide, fight, or retreat. The HUD label now describes exposure risk instead of forced encirclement.
+- Staff support orders are blocked while a sortie is active, so an away crew member cannot also perform their once-per-day base support duty.
+- Latest continuation: the threat simulation now keeps running through the animal hunt, so a noisy sound/search/net action can draw a separate roaming enemy into the capture scene. If it reaches the player, the capture attempt is interrupted and the central combat starts; its state stays in the existing save object.
+- Threat visibility now requires line of sight in addition to a revealed tile. The AI follows a visible player or audible noise, then searches its remembered position and returns toward its patrol origin after losing contact. Fast movement and an active expedition flashlight add more field noise; quiet movement reduces it.
+- Combat adds functional cover and one-use medkit actions alongside attack, guard, EVE pulse, team support and retreat. Cover reduces the next hit; medkit consumes the already reserved sortie kit and restores suit integrity.
+- The repository ignores root `public.zip` so a local project bundle cannot be staged into Git and trigger the GitHub 100 MB push block. The existing archive is preserved locally.
+- Still in progress: broader implementation passes for crew interaction/death continuity, incident follow-ups, economy/build progression, research/ARK Recall and gameplay guidance. Consolidated verification remains intentionally deferred until implementation is complete.
+
+## 2026-11-23 consolidated check after gameplay continuation
+
+- `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run test:all`, `npm run build:qa`, and `npm run build` passed after the field/crew changes. `test:all` covers logic, v69-v76, v81 and the ending matrix; v76 now exercises saved two-person roster and combined medic/quartermaster combat support. v71's memory dialogue assertion was updated to match the current user's hesitant disclosure and mood expression.
+- Production browser suite could not be observed: both full `ARK_PRODUCTION_TEST=1 npm run test:browser` and targeted `browser-v80.spec.cjs` emitted only the Playwright webserver `NO_COLOR` warning, produced no test output for over a minute, and were interrupted. This is unresolved environment/test-runner behavior; do not count browser integration as passed.
+- The AI/crew core changes are in source, but not every requested gameplay gap has been completed. Remaining work includes a direct browser scenario for idle threat motion and hiding, broader daytime economy/building/equipment progression review, staff relationship and incident follow-up checks, and UI/tutorial/mobile pass. Preserve the current user's edits and all art files while continuing.
