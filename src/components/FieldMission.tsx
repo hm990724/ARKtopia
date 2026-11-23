@@ -1141,6 +1141,12 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
+                        {field.threat?.position === i && visible && !here && !field.combat && (
+                          <span className="v74-roaming-threat" role="img" aria-label="접근 중인 오염체">
+                            <img src={`/assets/field/enemy_${field.steps % 2 ? "echo" : "slime"}_v74.png`} alt="" />
+                            <small>{field.threat.mode === "closing" ? "접근" : "잔향"}</small>
+                          </span>
+                        )}
                         {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}
                         {walk && visible && !walking && (
                           <span

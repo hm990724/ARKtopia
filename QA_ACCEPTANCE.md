@@ -49,3 +49,14 @@
 | M-00 origin false lead and ordinary-cat reveal | Pass | Three camera traces, reference CCTV art and marker wording |
 
 The images are integrated in `Game.tsx`; provenance is recorded in `docs/generated-assets-v75-endings-events.json`.
+
+## v80 gameplay rebuild follow-up — 2026-11-23
+
+| 영역 | 판정 | 근거/남은 작업 |
+|---|---|---|
+| 출동 전 준비/장비/동행자 | 통과 | 준비 모달에서 자원 변경과 출동 차단 확인. 기존 하루 1회·AP 1 제약 유지. 브라우저 `browser-v80` |
+| 이동형 오염 추적체 | 통과 | 위험 타일과 독립해 이동·경계도·시야 노출·조용한 이동을 처리. 위치/상태가 저장·로드됨. `test:v76` 및 `browser-v80` |
+| 중앙 현장 전투 | 통과 | 이동 잠금, 의도 예고, 방어/반격, EVE 지원, 동료 지원, 비용 있는 후퇴와 승리 전리품을 확인. 후퇴 중 추적체가 잔류하고 승리 보상은 중복되지 않음. |
+| 첫 탐사 튜토리얼 | 통과 | 준비 모달을 거쳐 기존 토끼 포획·구조·저장 복귀 E2E를 수행 |
+| 자연 캠페인 전투 빈도/난이도 | 부분 통과 | 기본 동작과 seeded 단위 시나리오는 검증. 자연 진행에서 위험도와 보상이 적절한지는 플레이테스트 미완료 |
+| 전체 요구사항 | 부분 통과 | 18개 엔딩 임시 그림 교체, 동물 전 종 기존 화풍 비교, 전체 신규 저장 장기 플레이, 실제 호스팅 배포는 미완료 |

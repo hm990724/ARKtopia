@@ -2,6 +2,16 @@
 
 검증 기준: v74 통합 기능 및 최신 M-00 폐기 사고 인과 수정
 
+## v80 gameplay loop — 2026-11-23
+
+- 탐사 구역 선택 뒤 출동 준비 모달에서 동행자, 장비, 비용을 확인·변경하고 나서만 출동할 수 있다. 기존 장비 가용성, 하루 한 번, AP 1 제약과 튜토리얼 셀렉터는 보존했다.
+- 이동형 오염 추적체는 포자 위험 타일과 별개로 필드 위치/경계도를 보유한다. 빠른 이동은 추적을 앞당기고 조용한 이동은 늦춘다. 빛 범위에서만 추적체 위치가 보이며, 붙잡히면 별도 전투 모달이 지도 이동을 막는다.
+- 기존 전투 규칙을 중앙 전투 모달로 옮기고 전투 중 저장/불러오기, 의도 telegraph, 방어 반격, EVE 펄스, 직원 지원, 전리품 및 비용이 있는 후퇴를 확인한다. 추적체 후퇴는 추적체를 현장에 남기며 승리 전리품은 중복 지급하지 않는다.
+- Unit: `npm run test:v76` 확인. Browser: 기존 첫 구조 튜토리얼과 `tests/browser-v80.spec.cjs`의 편성/추적체/후퇴 테스트 확인. 전체 suite 최신 결과는 이 작업 최종 QA 줄에서 기록한다.
+- 프로덕션 QA 빌드는 통과. 빌드는 기존 CSS Autoprefixer 경고와 React Hook dependency 경고를 계속 출력한다.
+- 자연 캠페인을 며칠 이어가는 난이도/자원 밸런스와 실제 플레이테스트는 미완료다. 고유 엔딩 삽화와 동물 13종 전수 미술 검수도 아직 완료로 처리하지 않는다.
+- Final v80 verification: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and production Chrome `npm run test:browser` all passed; browser suite 39/39. `test:all` includes the new v76 encounter/save test. Build emits the existing Hook/Autoprefixer warnings.
+
 ## 실행 결과
 
 - `npm run typecheck`: 통과

@@ -618,6 +618,24 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   }
  }
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
+ // Independent roaming contaminant: its position and alert state persist in the field save.
+ // Quiet movement delays it; normal/fast movement draws it toward the player.
+ if(field.threat&&!field.combat&&!n.capture&&!run.firstTutorial){
+  const stalker=field.threat,width=field.width??7,from=stalker.position,target=field.position;
+  const dist=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
+  stalker.alert=Math.max(0,Math.min(100,stalker.alert+(pace==='quiet'?-8:pace==='fast'?22:13)+(field.noise>=40?6:0)));
+  if(stalker.alert>=18){
+   const options=[from-width,from+width,from-1,from+1].filter(i=>i>=0&&i<field.tiles.length&&field.tiles[i]!=='wall'&&dist(from,i)===1);
+   options.sort((a,b)=>dist(a,target)-dist(b,target));
+   if(options.length&&dist(options[0],target)<dist(from,target))stalker.position=options[0];
+   stalker.mode='closing';
+  }
+  const near=dist(stalker.position,target);
+  if(near<=1&&stalker.alert>=26){
+   field.combat=newFieldCombat(n.day+destination+field.steps);field.combat.source='mobile';
+   stalker.mode='closing';observation+=' 어둠 속 오염체가 접근해 퇴로를 막았습니다. 중앙 전투 대응으로 전환합니다.';
+  }else if(near<=2&&stalker.mode==='closing')observation+=' 손전등 가장자리에 움직이는 오염체가 스쳤습니다. 조용히 이동하면 추적을 늦출 수 있습니다.';
+ }
  revealField(field,run.gear.includes('scanner')?3:run.gear.includes('flashlight')&&n.flashlight>0?2:1);
  field.lastEvent=observation;
  n.lastOutcome=observation;

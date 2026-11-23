@@ -3,6 +3,16 @@
 기준일: 2026-11-23
 프로젝트: `C:\Users\lookm\Documents\GitHub\ARKtopia`
 
+## v80 gameplay rebuild continuation — 2026-11-23
+
+- 선택 구역을 누르면 출동 전에 장비·동행 직원·AP와 소모 자원을 한 화면에서 확인하는 편성 모달이 열린다. 기존 일일 출동 1회, AP 1, 광원/재고 차단, 튜토리얼 `data-tour=launch` 연결은 유지했다.
+- DAY 3부터 현장 위험도에 맞춰 오염 추적체가 별도 위치와 경계도를 가진 채 필드 세이브에 생성된다. 빠른/보통 이동은 추적체를 끌어오고 조용한 이동은 늦춘다. 발견 범위 안에 들어온 추적체는 지도에서 이동하고 인접하면 이동이 잠긴 중앙 대응 화면으로 이어진다.
+- 기존 타일 포자 사고와 동물 포획은 별도 시스템으로 남겼다. 전투는 방어/반격, EVE 전력 펄스, 동행자별 지원, 전리품, 후퇴를 제공한다. 후퇴는 추적체를 밀어내며, 승리할 때만 한 번 전리품을 지급한다. 게임 저장/불러오기를 통해 전투 의도와 추적체 좌표를 유지한다.
+- 회귀 근거: `scripts/test-v76.cjs`, `tests/browser-v80.spec.cjs`, 기존 첫 토끼 구조 브라우저 테스트. 새 브라우저 수용 케이스는 준비 모달/비용 변경 및 실제 추적체 전투/후퇴를 확인한다.
+- Final v80 verification passed: `npm run test:all`, typecheck, lint, asset check, `npm run build:qa`, production Chrome browser suite 39/39. The browser regression also rechecked the first rabbit rescue and ranger walk animation. Build emits six existing React Hook dependency warnings and existing Autoprefixer compatibility warnings.
+- **미완료:** 정상적인 신규 저장을 시작해 여러 날 동안 탐사·포획·기지 강화·직원 관리까지 이어가는 자연 캠페인 밸런스 검증, 직접 플레이 접근성 검토, 18개 임시 엔딩 카드를 고유 고품질 시네마틱으로 교체, 13종의 최종 그림을 기존 픽셀 아트와 전부 나란히 미술 검수, 실제 호스팅 배포.
+- 이 기능은 배포를 완료한 것이 아니다. 실제 배포처/배포 절차가 프로젝트에 지정되어 있지 않으므로 GitHub push와 호스팅 배포를 구분한다.
+
 ## v79 continuation — 2026-11-23
 
 - 기존 사건 13종에 상태 기반 사건 27종을 추가해 총 40종을 실제 일일 사건 선택과 비용/효과 처리에 연결했다. 근거: CCTV, 전력·배관, 동물 돌봄, 직원 개인 기억, 본부 명령, 탐사 전리품, 감염, M-00 단서. 개별 사건은 3개의 선택지를 갖고, 비용 부족 시 저장 상태를 바꾸지 않는다.
