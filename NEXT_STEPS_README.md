@@ -11,6 +11,7 @@
 - 신규 사건 삽화는 6개 기존 장면을 범주에 맞춰 재사용한다. 사건 40종 각각의 전용 시네마틱은 미완료다.
 - `npm run build:qa` 통과, 프로덕션 Chrome 브라우저 37/37 통과. 현재 빌드의 기존 Hook 의존성 경고 6건은 남아 있다.
 - 남은 일: 자연 새 저장으로 40종 사건의 발생 빈도/자원 경제를 플레이 검증, bespoke 엔딩·사건 그림 및 상태 연동 캐스팅 검토. 현 활성 19 엔딩 SVG는 정본 인물만 보여주는 임시 구성이다.
+- 이번 실행 검증 커밋: `dff514b` (`Add 27 stateful daily incidents`). 전체 프로젝트 ZIP은 `ARKtopia_ORIGIN_ZERO_ULTIMATE_FULL_PROJECT_v79.zip`이며 인접 SHA-256 파일을 확인한다.
 
 ## 최신 이어받기 상태 (v77)
 
