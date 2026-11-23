@@ -7,7 +7,7 @@ const {ENDING_ART}=require('../src/lib/ending-art.ts');
 const KEY='last-enclosure-ark-v10';
 async function seed(page,s){await page.addInitScript(({s,key})=>localStorage.setItem(key,JSON.stringify(s)),{s,key:KEY});await page.goto('/')}
 
-test('all 19 human-only ending artwork routes are served by the game',async({page})=>{
+test('all nineteen ending route compositions load while original handoff art remains archived',async({page})=>{
  await page.goto('/');
  const results=await page.evaluate(async(files)=>Promise.all(files.map(file=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve({file,width:image.naturalWidth,height:image.naturalHeight});image.onerror=()=>resolve({file,error:true});image.src=`/assets/endings/${file}`}))),ENDING_ART.map(item=>item.file));
  for(const item of results){expect(item.error,item.file).toBeUndefined();expect(item.width,item.file).toBeGreaterThan(0);expect(item.height,item.file).toBeGreaterThan(0)}

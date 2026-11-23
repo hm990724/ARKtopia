@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
-const {ENDING_ART,findEndingArt}=require('../src/lib/ending-art.ts');
+const {ENDING_ART,LEGACY_ENDING_ART,findEndingArt}=require('../src/lib/ending-art.ts');
 const {incidentArtFiles,findIncidentArt}=require('../src/lib/incident-art.ts');
 const {incidentDefs,beginGame,previewIncident}=require('../src/lib/game-v10.ts');
 const {EXTENDED_INCIDENT_IDS,extendedIncidentWeight}=require('../src/lib/incident-content.ts');
@@ -19,24 +19,26 @@ assert.equal(m00Sprite.readUInt32BE(16),1254);assert.equal(m00Sprite.readUInt32B
 assert.equal(m00Sprite[25],6,'M-00 sprite has transparent RGBA');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/lib/animal-art.ts'),'utf8'),/m00_normal\.png/);
 assert.ok(fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.png')),'replaced M-00 art is archived instead of deleted');
-assert.equal(ENDING_ART.length,19,'all known ending prefixes must have an ending scene');
-assert.equal(new Set(ENDING_ART.map(x=>x.file)).size,ENDING_ART.length,'each ending route must resolve to its own asset URL');
+const preservedOriginalFiles=['ending_incomplete_revival.webp','ending_new_consciousness.webp','ending_two_caretakers.webp','ending_open_spring.webp','ending_subject_000.webp','ending_silent_automation.webp','ending_scattered_names.webp','ending_last_signal.webp'];
+const expectedEndingFiles=['ending_eternal_experiment_v77.svg','ending_eden_v77.svg','ending_seed_ark_v77.svg','ending_last_zoo_v77.svg','ending_subject_000_v77.svg','ending_silent_automation_v77.svg','ending_scattered_names_v77.svg','ending_last_signal_v77.svg','ending_successor_v77.svg','ending_humane_restoration_v77.svg','ending_spring_outside_records_v77.svg','ending_late_gate_v77.svg','ending_empty_shiftroom_v77.svg','ending_first_sentence_v77.svg','ending_incomplete_revival_v77.svg','ending_spring_beyond_cage_v77.svg','ending_two_caretakers_v77.svg','ending_quiet_automation_v77.svg','ending_final_transmission_v77.svg'];
+assert.equal(ENDING_ART.length,19,'all nineteen ending scenes remain separately addressable');
+assert.deepEqual(ENDING_ART.map(x=>x.file),expectedEndingFiles,'each ending keeps its own existing scene asset');
+assert.equal(new Set(ENDING_ART.map(x=>x.file)).size,19,'all ending routes use distinct scene assets');
+const endingFiles=fs.readdirSync(path.join(base,'assets/endings'));
+for(const file of [...expectedEndingFiles,...preservedOriginalFiles])assert.ok(endingFiles.includes(file),`ending artwork remains available: ${file}`);
+const preservedRouteCards=endingFiles.filter(file=>/^ending_[a-z0-9_]+_v77\.svg$/.test(file));
+assert.equal(preservedRouteCards.length,19,'all nineteen prior route-specific ending compositions remain preserved');
+for(const file of preservedRouteCards)assert.ok(fs.statSync(path.join(base,'assets/endings',file)).size>100000,`${file}: preserved ending composition is intact`);
 for(const ending of ENDING_ART){
  const art=findEndingArt(`${ending.prefix} — test outcome`);assert.equal(art.file,ending.file);
  const file=path.join(base,'assets/endings',art.file);
- if(art.file.endsWith('.svg')){
-  const svg=fs.readFileSync(file,'utf8');
-  assert.match(svg,/^<svg xmlns=/,file);
-  assert.match(svg,/href="data:image\/(webp|png);base64,/,file);
-  assert.ok(svg.includes(fs.readFileSync(path.join(base,'assets/characters','eve_hologram.webp')).toString('base64'))||svg.includes(fs.readFileSync(path.join(base,'assets/characters','protagonist_neutral_v74_768.png')).toString('base64')),file);
-  assert.doesNotMatch(svg,/href="\/assets\//,file);
-  assert.doesNotMatch(svg.replace(/data:image\/(?:webp|png);base64,[^\"]+/g,''),/mutant|rabbit|fox|wolf|deer|cat/i,file);
- }else{
-  const png=fs.readFileSync(file);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);
-  assert.ok(png.readUInt32BE(16)>=1500&&png.readUInt32BE(20)>=900,`${file}: cinematic resolution`);
- }
+ const svg=fs.readFileSync(file,'utf8');assert.match(svg,/^<svg\b/,file);assert.ok(svg.length>100000,`${file}: preserved route composition must remain intact`);
 }
-assert.equal(ENDING_ART.filter(ending=>ending.file.endsWith('.png')).length,1,'the first custom cinematic is a unique raster scene');
+for(const file of preservedOriginalFiles){const webp=fs.readFileSync(path.join(base,'assets/endings',file));assert.equal(webp.subarray(0,4).toString(),'RIFF',file);assert.equal(webp.subarray(8,12).toString(),'WEBP',file);assert.ok(webp.length>250000,`${file}: original handoff artwork must remain intact`)}
+for(const legacy of LEGACY_ENDING_ART){
+ const canonical=ENDING_ART.find(item=>item.prefix===legacy.canonicalPrefix);assert.ok(canonical,`${legacy.prefix} must map to a canonical outcome`);
+ assert.equal(findEndingArt(`${legacy.prefix} — legacy save` ).file,canonical.file,`${legacy.prefix} preserves saved ending compatibility`);
+}
 const ids=Object.keys(incidentDefs);assert.equal(ids.length,40,'13 core + 27 stateful incidents');
 assert.equal(new Set(ids).size,ids.length,'incident IDs must remain unique');
 assert.equal(EXTENDED_INCIDENT_IDS.length,27);

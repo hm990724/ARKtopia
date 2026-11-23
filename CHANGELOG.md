@@ -55,3 +55,10 @@
 - Facility repair now animates assembly, wiring, and power-on completion with an ONLINE state and reduced-motion support.
 - Ending records now show active recruited staff portraits from the save and keep retired staff in the loss record without presenting them as alive.
 - Verification: logic regression suite passed; production browser suite passed 40/40; typecheck, lint, asset check, and production QA build passed. Known build warnings and remaining art/campaign-balance work are recorded in `NEXT_STEPS_README.md` and `QA_REPORT.md`.
+
+## 2026-11-23 v82 ending continuity
+
+- Preserved all previous ending images after the user clarified that old routes must remain; restored 58 files that had been removed during a mistaken cleanup pass.
+- Mapped 19 distinct ending titles to 19 distinct existing scene compositions and retained saved-title aliases. Preserved the original eight handoff WebPs.
+- Added an ending/story-cinematic audit that marks the requested bespoke reference-style paintings as missing rather than presenting the portrait SVGs as finished art.
+- Validation passed: full logic suite, 19-scene asset check, production build, and production browser suite 41/41. Build reports six existing React Hook dependency warnings and no Autoprefixer warnings.

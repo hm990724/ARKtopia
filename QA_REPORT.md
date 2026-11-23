@@ -133,3 +133,11 @@
 - Only powered systems provide their night bonus. Shed CCTV no longer prevents routine incident escalation; a shed infirmary does not heal animals overnight.
 - Night preview reports the facilities expected to remain online after defense, battery generation, and circuit maintenance.
 - Validation: `npm run test:all`, `npm run test:v81`, production Chrome `npm run test:browser` (41/41), `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa` passed. Build retains existing React Hook and Autoprefixer warnings.
+
+## v82 ending route preservation
+
+- Restored every ending image removed during the first cleanup attempt after the user clarified that older ending content must remain. The eight original WebP files and all 19 route compositions are present.
+- `src/lib/ending-art.ts` now exposes 19 different ending scene paths plus saved-title aliases. The ending UI keeps its save-aware living staff strip and retired-personnel loss record.
+- Verification after the mapping change: `npm run test:all`, `npm run test:v75`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and production Chrome `npm run test:browser` passed; browser suite **41/41**.
+- Production build has six existing React Hook dependency warnings. It emitted no Autoprefixer warning.
+- High-detail red/pink painterly ending art is still missing: active art consists of existing portrait-based SVG compositions. The native image generation tool was unavailable, so no new PNG was fabricated. See `docs/ENDING_SCENE_AUDIT.md`.

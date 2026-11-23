@@ -256,7 +256,7 @@ function EndingArtwork({ending}:{ending:string}){
  const entry=findEndingArt(ending);
  useEffect(()=>setFailed(false),[ending]);
  return <div className={'ending-art-display'+(failed?' is-fallback':'')}>
-  {!failed?<img src={ENDING_ASSET_DIRECTORY+entry.file} alt={entry.label} onError={()=>setFailed(true)}/>:<div className="ending-art-fallback"><span>ARK // END RECORD</span><strong>{ending.split(' — ')[0]}</strong><small>해당 엔딩의 일러스트를 추가하면 이 화면에 자동으로 표시됩니다.</small></div>}
+  {!failed?<img src={ENDING_ASSET_DIRECTORY+entry.file} alt={entry.label} onError={()=>setFailed(true)}/>:<div className="ending-art-fallback"><span>ARK // END RECORD</span><strong>{ending.split(' — ')[0]}</strong><small>엔딩 장면을 불러오지 못했습니다. 기록과 결말은 보존되어 있습니다.</small></div>}
  </div>;
 }
 function Bar({v,color='#f39cba'}:{v:number;color?:string}){return <div className="vbar"><span style={{width:`${cap(v)}%`,background:color}}/></div>}
@@ -350,7 +350,7 @@ useEffect(()=>{
  setV42Telemetry({tick:++telemetryCounter.current,entries:delta.slice(0,7)});
 },[s]);
 useEffect(()=>{if(!v42Telemetry)return;const timer=setTimeout(()=>setV42Telemetry(p=>p?.tick===v42Telemetry.tick?null:p),3600);return()=>clearTimeout(timer);},[v42Telemetry]);
- useEffect(()=>{if(!s||s.phase==='ending'||(s.mind>0&&s.eve>0))return;const fatal={...s,phase:'ending' as const,ending:s.mind<=0?'제000번 우리 — 담당자의 생체 신호가 정지했다. EVE는 그를 보존 개체로 분류했다.':'마지막 통신 — EVE 코어 0. 시설의 마지막 음성이 사라지고 모든 지시가 끊겼다.'};setTalk([]);setResult(null);setCaptureReveal(null);setNightView(false);setMemoryTarget(null);setS(fatal)},[s?.mind,s?.eve,s?.phase]);
+ useEffect(()=>{if(!s||s.phase==='ending'||(s.mind>0&&s.eve>0))return;const fatal={...s,phase:'ending' as const,ending:s.mind<=0?'제000번 우리 — 담당자의 생체 신호가 정지했다. EVE는 그를 보존 개체로 분류했다.':'마지막 신호 — EVE 코어 0. 시설의 마지막 음성이 사라지고 모든 지시가 끊겼다.'};setTalk([]);setResult(null);setCaptureReveal(null);setNightView(false);setMemoryTarget(null);setS(fatal)},[s?.mind,s?.eve,s?.phase]);
 
 useEffect(()=>{const line=talk[talkIdx];if(!line||talkDone||letters>=line.text.length)return;const t=setTimeout(()=>setLetters(v=>v+1),37);return()=>clearTimeout(t)},[talk,talkIdx,letters,talkDone]);
 // Reveal only after a real in-game state transition. Saves are marked once, so the scene never repeats.

@@ -13,15 +13,17 @@ Audit date: 2026-11-23
 
 ## Cast and ending art review
 
-- The active ending art map currently contains 19 route prefixes. Active images are SVG portrait compositions and reference only the project's canonical protagonist and EVE portraits, so they contain no unrelated mutant or invented faces.
-- The SVG art is an interim cast-safe composition, not bespoke scene art. It does not dynamically select staff based on recruitment/death state, and does not yet provide each route's requested character-specific pose, dialogue, and cinematic tableau. Do not mark full ending-scene art as complete.
-- Each route's narrative record is resolved from game state, but a natural full campaign through all eight outcomes has not been played from a fresh save. Existing tests inject deterministic state fixtures.
+- The game keeps the eight ORIGIN ZERO story outcomes and all earlier state-specific ending variants. The 19 route titles now resolve to 19 distinct route compositions; six additional legacy wording aliases, plus the no-route archive fallback, remain readable in old saves.
+- The eight original handoff WebPs (`ending_incomplete_revival.webp`, `ending_new_consciousness.webp`, `ending_two_caretakers.webp`, `ending_open_spring.webp`, `ending_subject_000.webp`, `ending_silent_automation.webp`, `ending_scattered_names.webp`, `ending_last_signal.webp`) remain preserved alongside all prior route images.
+- The ending screen lists only staff who actually joined and remain alive; retired staff appear in the loss record. This roster-aware panel is implemented, but the static illustrations themselves cannot vary with each save's recruited staff or surviving animal set.
+- The active 19 files are existing SVG portrait compositions using canonical manager/EVE portrait art. They avoid unrelated cast members and do not repeat the same scene file, but they are not the newly requested red/pink painterly cinematic illustrations. The image-generation tool is unavailable in this session, so new high-quality art remains incomplete.
+- Each route's narrative record is resolved from game state, but a natural full campaign through all eight canonical outcomes has not been played from a fresh save. Existing tests inject deterministic state fixtures.
 - Staff arrival/termination scenes use existing canonical staff IDs. Wolf's current termination file shows the female black-haired guard. Current UI gates the termination scene on actual termination; verify all future narrative additions against `crew.members` and `crew.retired` state.
 
 ## Remaining narrative QA
 
 1. Run fresh-save, natural multi-day playthroughs and verify the EVE reveal timing, all staff arrival gates, 12 hidden photos, M-00 decision, ARK RECALL, and eight ending conditions.
-2. Add state-aware character selection to ending scenes; show only alive/recruited people and EVE when the route includes them.
-3. Commission or generate bespoke ending and staff-event cinematic artwork that matches the current canonical character designs. Current portrait SVGs are not the final requested art.
+2. Generate bespoke ending paintings from the user's supplied cinematic references, keeping canonical protagonist/EVE/staff designs and ensuring scene cast matches route requirements. The original eight images remain active until approved replacements exist.
+3. Add scene variants or compositing for endings whose living/recruited staff and protected animals vary by save.
 4. Check late-game dialogue for dead/unrecruited staff and unsaved-specimen memory claims with scenario-based browser tests.
 

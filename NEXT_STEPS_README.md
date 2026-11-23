@@ -3,6 +3,13 @@
 기준일: 2026-11-23
 프로젝트: `C:\Users\lookm\Documents\GitHub\ARKtopia`
 
+## v82 ending continuity and art audit — 2026-11-23
+
+- The game keeps eight main ORIGIN ZERO endings plus older state-specific endings. Nineteen ending titles now point to nineteen distinct existing route compositions; prior saved-title aliases remain mapped. The eight original handoff WebPs and every earlier ending asset were restored and preserved after the user clarified not to remove the older set.
+- `npm run test:v75` checks all 19 unique active route compositions and the eight preserved original WebPs. The old `_v75.png` and `_v76.png` sets remain archive-only because their content does not satisfy the ending cast/scene rules.
+- **Still incomplete:** all 19 endings need bespoke red/pink painterly scenes in the user's reference style, and those scenes need cast checks against each save's living/recruited roster. Current active art is canonical manager/EVE portrait composition, not finished cinematic illustration. No native image generation tool is connected; Codex CLI confirmed it cannot generate in this session.
+- Ending conditions, scene cast, and natural fresh-save verification for each ending remain to be completed. Do not report the game or final art as complete.
+
 ## v81 야간 시설 전력 우선순위 — 2026-11-23
 
 - 시설 작업대에서 CCTV 감시망, 격리 보강, 진료·검시실, 공명 연구실의 야간 배전 우선순위를 바꿀 수 있다. 시설별 전력 사용량은 각각 3/2/3/2%다.
@@ -23,7 +30,7 @@
 - CCTV facility repair now plays a short assembly → wiring → power-on sequence with a visible ONLINE confirmation; the animation respects reduced-motion settings. The integrated sortie test verifies it appears after paying the restoration cost from recovered salvage.
 - Ending records now add portraits only for staff who actually joined and remain alive in that save; retired personnel stay in the loss record and are not shown as living cast. A browser fixture with two living and two retired staff verifies the split.
 - Latest verification after this change: `npm run test:all` passed (including v76 role support checks), `npm run check:assets` passed, and production Chrome `npm run test:browser` passed 40/40. Typecheck, lint, and `npm run build:qa` also pass; the build retains existing React Hook and Autoprefixer warnings.
-- **미완료:** 정상적인 신규 저장을 시작해 여러 날 동안 탐사·포획·기지 강화·직원 관리까지 이어가는 자연 캠페인 밸런스 검증, 직접 플레이 접근성 검토, 18개 임시 엔딩 카드를 고유 고품질 시네마틱으로 교체, 13종의 최종 그림을 기존 픽셀 아트와 전부 나란히 미술 검수, 실제 호스팅 배포.
+- **미완료:** 정상적인 신규 저장을 시작해 여러 날 동안 탐사·포획·기지 강화·직원 관리까지 이어가는 자연 캠페인 밸런스 검증, 직접 플레이 접근성 검토, 19개 임시 엔딩 구도를 고유 고품질 시네마틱으로 교체, 13종의 최종 그림을 기존 픽셀 아트와 전부 나란히 미술 검수, 실제 호스팅 배포.
 - 이 기능은 배포를 완료한 것이 아니다. 실제 배포처/배포 절차가 프로젝트에 지정되어 있지 않으므로 GitHub push와 호스팅 배포를 구분한다.
 
 ## v79 continuation — 2026-11-23
