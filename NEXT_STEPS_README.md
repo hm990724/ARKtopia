@@ -18,7 +18,10 @@
 - The game keeps eight main ORIGIN ZERO endings plus older state-specific endings. Nineteen ending titles now point to nineteen distinct existing route compositions; prior saved-title aliases remain mapped. The eight original handoff WebPs and every earlier ending asset were restored and preserved after the user clarified not to remove the older set.
 - `npm run test:v75` checks all 19 unique active route compositions and the eight preserved original WebPs. The old `_v75.png` and `_v76.png` sets remain archive-only because their content does not satisfy the ending cast/scene rules.
 - **Still incomplete:** all 19 endings need bespoke red/pink painterly scenes in the user's reference style, and those scenes need cast checks against each save's living/recruited roster. Current active art is canonical manager/EVE portrait composition, not finished cinematic illustration. No native image generation tool is connected; Codex CLI confirmed it cannot generate in this session.
-- Ending conditions, scene cast, and natural fresh-save verification for each ending remain to be completed. Do not report the game or final art as complete.
+- The ending record UI now lists portraits for living recruited staff and living in-facility animals only. Protected M-00 uses the existing pixel-art cat file; sent-away M-00 is not listed as sheltered. Browser fixture coverage checks the living-animal count and protected-cat art path.
+- `scripts/test-ending-matrix.cjs` exercises 8 ORIGIN ZERO outcomes plus 11 legacy/state-specific outcomes against actual route logic and distinct existing scene files. It is wired into `npm run test:all`; `npm run test:all`, typecheck, lint, asset check, targeted ending browser tests, and production build passed. The latest build still emits six existing React Hook dependency warnings; no Autoprefixer warning.
+- **Still incomplete:** bespoke ending/story cinematic images, natural fresh-save campaign and novice playtesting, and deployment. The image generator is unavailable in this session; no substitute art was promoted.
+- Commits: `e7d5498` (ending route matrix), `405398a` (survivor cast UI and browser coverage).
 
 ## v81 야간 시설 전력 우선순위 — 2026-11-23
 
