@@ -58,5 +58,16 @@ for(const [index,ending] of endings.entries())test(`ORIGIN ZERO ending UI resolv
  const choice=page.locator('.finale-modal .v54-finale-choices button').nth(goalIndex);await expect(choice).toBeVisible();await choice.click();
  const result=page.locator('.ending-modal');await expect(result).toBeVisible();if(!ending.members){const endingText=result.locator('p').filter({hasText:ending.title}).first();await expect(endingText).toBeVisible();await expect(endingText).toContainText('사망했다')}
  await expect.poll(()=>result.locator('.ending-art-display img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+ await expect(result.locator('.v82-ending-specimen-card')).toHaveCount(ending.alive??3);
  if(ending.members){await expect(result.locator('.v80-ending-cast-card')).toHaveCount(ending.members.length);for(const id of ending.members)await expect(result.locator(`.v80-ending-cast-card[data-crew-id="${id}"] img`)).toHaveAttribute('alt',/.+/);await expect(result.locator('.v80-ending-cast-card[data-crew-id="wolf"]')).toHaveCount(0);await expect(result.locator('.v49-ending-scars')).toBeVisible()}
+});
+
+test('ending cast keeps protected M-00 as its own pixel-art specimen',async({page})=>{
+ const s=beginGame('medic','generator');s.phase='finale';s.day=40;s.tutorialStep=9;s.animals=['rabbit','fox','deer'].map((id,i)=>makeAnimal(id,i+1));
+ s.originZero={...emptyOriginZero(),cat:'shelter',route:'shelter',photos:12,immunity:85,crisisDone:true};s.archive=archive.emptyArchive();
+ for(const animal of s.animals)s.originZero.recalls[animal.id]={day:40,quality:90,source:'archive',note:'M-00 ending fixture'};
+ await seed(page,s,'v82-ending-m00');await page.locator('.finale-modal .v54-finale-choices button').nth(1).click();
+ const result=page.locator('.ending-modal'),cat=result.locator('.v82-ending-specimen-card[data-animal-id="m00"] img');
+ await expect(result.locator('.v82-ending-specimen-card')).toHaveCount(4);await expect(cat).toHaveAttribute('src','/assets/animals/m00_normal.png');
+ await expect.poll(()=>cat.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
 });
