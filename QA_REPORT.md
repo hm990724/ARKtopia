@@ -37,6 +37,13 @@
 - Added automated checks for 27 eligibility gates, all 81 response paths, event-history recording, and missing-pending-event immutability. Existing six event illustrations are reused by category; bespoke art for each event is still outstanding.
 - `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa` pass after the expansion. Production Chrome browser suite: 37/37 passed.
 - Natural new-save playtesting of event frequencies and resource balance remains outstanding.
+- `npm run balance:strategy`: four fixed-seed origin starts completed 12 day transitions without resource underflow or a transition lock. The policy is management-only; the new-game expedition-to-ending path is not simulated by this probe.
+- M-00: generated a transparent RGBA 1254×1254 pixel-art sprite using the in-session image generator; compared it visually to existing animal art. It uses canonical `m00_normal.png`; the replaced image was preserved at `assets/archive/m00_normal_pre_pixel.png`. `test:v75` checks PNG header, dimensions, alpha and runtime resolution.
+- `test:v71` now checks a one-time −30 mental-state shock to surviving staff on termination. The zero-mind follow-on termination is queued by the existing crew-risk flow.
+- The earlier code-drawn M-00 experiment was visually rejected and removed; it is not used or counted as a deliverable.
+- The first full browser run had one transient 404 while the production server was starting. The opening test passed alone, then the complete production suite passed **37/37** after a clean build.
+- A bespoke 1672×941 Seed of the Ark ending image is active; `test:v75` checks its PNG signature and cinematic dimensions while the remaining ending assets retain their SVG-specific checks.
+- `docs/asset-audit-v80.json`: 206 raster files, 47 animal files, 11 exact duplicate groups, 117 dHash review pairs. No assets were deleted based on this heuristic report.
 
 - Four new species-specific mutant sprites are connected through `src/lib/animal-art.ts`; 26 active variants and their transparent square PNG format are checked in `npm run test:v73`.
 - The field map now suppresses visible cell seams, uses persistent clearings and evidence, and places a moving flashlight pool on the last inspected location.

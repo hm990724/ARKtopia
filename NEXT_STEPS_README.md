@@ -13,6 +13,22 @@
 - 남은 일: 자연 새 저장으로 40종 사건의 발생 빈도/자원 경제를 플레이 검증, bespoke 엔딩·사건 그림 및 상태 연동 캐스팅 검토. 현 활성 19 엔딩 SVG는 정본 인물만 보여주는 임시 구성이다.
 - 이번 실행 검증 커밋: `dff514b` (`Add 27 stateful daily incidents`). 전체 프로젝트 ZIP은 `ARKtopia_ORIGIN_ZERO_ULTIMATE_FULL_PROJECT_v79.zip`이며 인접 SHA-256 파일을 확인한다.
 
+## v80 deterministic management probe — 2026-11-23
+
+- Added `npm run balance:strategy`: four fresh Generator starts (Medic/Engineer/Artist/Warden), twelve deterministic day transitions each, event response selection from visible effects, low-power repair and threat-based night defense. All four reach DAY 13 with nonnegative resources and no collapse.
+- Outcomes and the exact policy are recorded in `BALANCE_REPORT.md`. This intentionally excludes expeditions, captures, animal care, staff and upgrades; natural full-campaign balance is still not certified.
+- At the time of the initial v80 probe, no `image_gen` tool was connected. The connection became available later in this session; see the v80 art correction below. No API/CLI fallback was used.
+
+## v80 art and crew-loss correction — 2026-11-23
+
+- Rechecked `public/assets/animals`, `cinematics/staff-arrivals`, `cinematics/staff-terminations`, and staff portrait states against the actual files. Canonical animal lookups use the original species/state names; historical `_v##` files remain archival and are not runtime lookups.
+- Image generation became available in this session. Generated and visually reviewed the canonical `public/assets/animals/m00_normal.png` against the M-00 identity and existing rabbit pixel-art quality references. It is transparent RGBA 1254×1254. The replaced M-00 art was copied to `public/assets/archive/m00_normal_pre_pixel.png` before replacement.
+- A low-detail hand-drawn test sprite was discarded and is not referenced by the game. It was never committed and the source art was not modified.
+- `scripts/test-v75.cjs` now validates the generated canonical M-00 PNG header, dimensions, alpha channel, runtime path, and preservation archive.
+- One custom Seed of the Ark ending scene (`ending_seed_ark.png`) now replaces its interim card. Remaining: replace 18 interim ending cards, review/generate species art that fails the canonical design audit, and verify all ending casts against live/retired staff state. Do not call the full art work complete based on these two assets alone. Full audit: `docs/ART_AUDIT_v80.md`.
+- `ending_seed_ark.png` shows EVE alone beside the empty chair after the manager's final report. `test:v75` checks the PNG signature and dimensions; the ending-route browser test validates loading.
+- Staff termination now lowers each surviving employee's mind by 30 once when a staff member is lost. Regression test `npm run test:v71` covers the one-time penalty and the follow-on zero-mind queue.
+
 ## 최신 이어받기 상태 (v77)
 
 - 전체 작업을 완료했다고 간주하면 안 된다. 최신 `test:all`, 타입, 린트, 에셋 검사, 프로덕션 빌드, 프로덕션 브라우저 36/36은 통과했다. 빌드에는 기존 React Hook 의존성 경고가 있다.
