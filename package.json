@@ -11,7 +11,7 @@
     "test:logic": "node scripts/test-logic.cjs",
     "test:v69": "node scripts/test-v69.cjs",
     "test:v70": "node scripts/test-v70.cjs",
-    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73 && npm run test:v74 && npm run test:v75 && npm run test:v76 && npm run test:v81",
+    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73 && npm run test:v74 && npm run test:v75 && npm run test:v76 && npm run test:v81 && npm run test:ending-matrix",
     "lint": "eslint src --ext .ts,.tsx --quiet",
     "check:assets:v70": "node scripts/check-v70-assets.cjs",
     "test:browser": "playwright test --config=playwright.config.cjs",
@@ -26,7 +26,8 @@
     "test:v74": "node scripts/test-v74.cjs",
     "test:v75": "node scripts/test-v75.cjs",
     "test:v76": "node scripts/test-v76.cjs",
-    "test:v81": "node scripts/test-v81.cjs"
+    "test:v81": "node scripts/test-v81.cjs",
+    "test:ending-matrix": "node scripts/test-ending-matrix.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
