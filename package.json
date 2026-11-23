@@ -18,6 +18,7 @@
     "test:v71": "node scripts/test-v71.cjs",
     "build:qa": "node scripts/build-qa.cjs",
     "balance:soak": "node scripts/balance-soak.cjs",
+    "balance:strategy": "node scripts/balance-strategy.cjs",
     "start:qa": "node scripts/start-qa.cjs",
     "check:assets:v71": "node scripts/check-v71-assets.cjs",
     "test:v72": "node scripts/test-v72.cjs",

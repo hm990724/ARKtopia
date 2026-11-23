@@ -24,3 +24,13 @@ The master prompt's no-action DAY 10 pressure target has a deterministic idle pr
 
 The registry now contains 40 incident IDs (13 original + 27 state-gated). Each new event has three responses, persisted resource/stat consequences and a distinct occurrence gate; event responses also expose scrap, cells and medicine changes in the UI preview. The full campaign still needs natural playtesting to judge whether event frequency and resource consequences feel fair.
 
+### Deterministic management-policy probe
+
+`npm run balance:strategy` runs 12 day transitions from fresh Generator saves for all four manager origins using fixed seeds. The policy resolves each event by the displayed effect deltas, buys repair parts only when needed, repairs power below 68, and selects defense/rest from threat, morale and available power. All four runs reached DAY 13 in the day phase without resource underflow. Their ending `(power, facility, threat, infection, morale, credits)` values were Medic `(55, 80, 4, 18, 100, 550)`, Engineer `(75, 64, 4, 18, 100, 675)`, Artist `(72, 86, 4, 10, 100, 425)`, and Warden `(48, 55, 0, 8, 100, 675)`.
+
+This probes only day management, incident choice and night defense. It does not simulate expeditions, capture, animal care, staff arrival, upgrades or the full story, so it is not a fresh-campaign playtest or proof of overall balance.
+
+### Staff-loss morale consequence
+
+When a staff mind signal is lost, each remaining employee above zero loses 30 mind once. The loss is logged per employee and may trigger the existing subsequent staff-risk queue if anyone reaches zero. `npm run test:v71` covers the penalty and idempotence. A full campaign that exercises multiple staff-loss chains still needs a fresh-save playthrough.
+
