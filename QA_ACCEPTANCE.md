@@ -60,3 +60,10 @@ The images are integrated in `Game.tsx`; provenance is recorded in `docs/generat
 | 첫 탐사 튜토리얼 | 통과 | 준비 모달을 거쳐 기존 토끼 포획·구조·저장 복귀 E2E를 수행 |
 | 자연 캠페인 전투 빈도/난이도 | 부분 통과 | 기본 동작과 seeded 단위 시나리오는 검증. 자연 진행에서 위험도와 보상이 적절한지는 플레이테스트 미완료 |
 | 전체 요구사항 | 부분 통과 | 18개 엔딩 임시 그림 교체, 동물 전 종 기존 화풍 비교, 전체 신규 저장 장기 플레이, 실제 호스팅 배포는 미완료 |
+
+## v80 combat visual follow-up
+
+- Selected companion portrait and role: verified with recruited Wolf in the combat panel.
+- Action-specific animation cues (support and guard): verified in focused browser test.
+- Final production browser suite after the visual follow-up: 39/39 passed.
+- `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, and `npm run build:qa`: passed. Build reports existing React Hook and Autoprefixer warnings.

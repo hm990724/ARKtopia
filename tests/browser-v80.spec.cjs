@@ -1,6 +1,6 @@
 ﻿const {test,expect}=require('@playwright/test'),fs=require('node:fs'),ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
-const game=require('../src/lib/game-v10.ts'),KEY='last-enclosure-ark-v10';
+const game=require('../src/lib/game-v10.ts'),{recruitCrew}=require('../src/lib/crew.ts'),KEY='last-enclosure-ark-v10';
 async function seed(page,s){await page.addInitScript(({state,key})=>localStorage.setItem(key,JSON.stringify(state)),{state:s,key:KEY});await page.goto('/')}
 test('region selection opens a clear preflight loadout modal before spending resources',async({page})=>{
  const s=game.beginGame('medic','generator');s.tutorialStep=9;s.onboardingSeen=['base-work','first-sortie','field-map','cctv','night-shift','first-capture'];await seed(page,s);
@@ -10,10 +10,11 @@ test('region selection opens a clear preflight loadout modal before spending res
  await flashlight.click();await modal.getByRole('button',{name:/출동 확정/}).click();await expect(modal).toBeHidden();await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field?.position,KEY)).not.toBeUndefined();
 });
 test('mobile contaminant enters central combat and retreat preserves the pursuer',async({page})=>{
- let s=game.beginGame('medic','generator');s.day=4;s.tutorialStep=9;s.onboardingSeen=['base-work','first-sortie','field-map','cctv','night-shift','first-capture'];s=game.startRun(s,'garden',['flashlight']);
+ let s=game.beginGame('medic','generator');s.day=4;s.tutorialStep=9;s.onboardingSeen=['base-work','first-sortie','field-map','cctv','night-shift','first-capture'];recruitCrew(s,'wolf','WOLF-TEST');s=game.startRun(s,'garden',['flashlight'],'wolf');
  const f=s.field,start=f.position;f.tiles.fill('empty');f.tiles[f.exitIndex]='exit';f.discovered=[start,start+1,start+2,start+3];f.threat={position:start+3,alert:13,mode:'search'};await seed(page,s);
  await page.getByRole('button',{name:'탐사',exact:true}).click();await page.locator('.v33-route-cell').nth(start+1).click();
- const combat=page.locator('.v74-combat[role="dialog"]');await expect(combat).toBeVisible();await expect(combat).toContainText('다음 행동');
+ const combat=page.locator('.v74-combat[role="dialog"]');await expect(combat).toBeVisible();await expect(combat).toContainText('다음 행동');await expect(combat.locator('.v74-combat-companion img')).toHaveAttribute('src','/assets/staff/wolf/portrait.webp');
+ await combat.getByRole('button',{name:/동행 지원/}).click();await expect(combat.locator('.v74-combat-stage')).toHaveAttribute('data-action','support');await combat.getByRole('button',{name:/방어/}).click();await expect(combat.locator('.v74-combat-stage')).toHaveAttribute('data-action','guard');
  await combat.getByRole('button',{name:/안전 우회/}).click();await expect(combat).toBeHidden();await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.combat,KEY)).toBeNull();
  const after=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field,KEY);expect(after.threat).not.toBeNull();expect(after.threat.mode).toBe('search');
 });

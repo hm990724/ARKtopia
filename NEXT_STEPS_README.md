@@ -10,6 +10,7 @@
 - 기존 타일 포자 사고와 동물 포획은 별도 시스템으로 남겼다. 전투는 방어/반격, EVE 전력 펄스, 동행자별 지원, 전리품, 후퇴를 제공한다. 후퇴는 추적체를 밀어내며, 승리할 때만 한 번 전리품을 지급한다. 게임 저장/불러오기를 통해 전투 의도와 추적체 좌표를 유지한다.
 - 회귀 근거: `scripts/test-v76.cjs`, `tests/browser-v80.spec.cjs`, 기존 첫 토끼 구조 브라우저 테스트. 새 브라우저 수용 케이스는 준비 모달/비용 변경 및 실제 추적체 전투/후퇴를 확인한다.
 - Final v80 verification passed: `npm run test:all`, typecheck, lint, asset check, `npm run build:qa`, production Chrome browser suite 39/39. The browser regression also rechecked the first rabbit rescue and ranger walk animation. Build emits six existing React Hook dependency warnings and existing Autoprefixer compatibility warnings.
+- Follow-up combat presentation: the selected companion now appears with that staff member's real portrait and role label. Combat actions persist the latest action and animate the ranger, enemy impact, guard arc, EVE pulse, or companion support. Focused browser test covers a recruited Wolf's support and guard actions; the final production Chrome suite passed 39/39 afterward.
 - **미완료:** 정상적인 신규 저장을 시작해 여러 날 동안 탐사·포획·기지 강화·직원 관리까지 이어가는 자연 캠페인 밸런스 검증, 직접 플레이 접근성 검토, 18개 임시 엔딩 카드를 고유 고품질 시네마틱으로 교체, 13종의 최종 그림을 기존 픽셀 아트와 전부 나란히 미술 검수, 실제 호스팅 배포.
 - 이 기능은 배포를 완료한 것이 아니다. 실제 배포처/배포 절차가 프로젝트에 지정되어 있지 않으므로 GitHub push와 호스팅 배포를 구분한다.
 
