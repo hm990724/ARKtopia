@@ -36,6 +36,7 @@ export const photoRecords=[
  {title:"PHOTO 12 · 놓친 치료의 가능성",detail:"M-00은 인간 뇌 없이도 안정된 지능을 유지한다. 그 생체 신호는 다른 숙주의 잠든 기억을 깨워 공명 붕괴를 촉진할 수 있지만 동시에 안정화·예방 연구의 유일한 원본이다. 과학자는 이 가능성을 외면했다."}
 ] as const;
 export function originSpeciesProgress(s:V10){const seen=new Set<AnimalId>([...s.animals.map(a=>a.id),...(s.headquarters?.transferred??[]),...Object.values(s.archive?.entries??{}).map(a=>a.species)]);return specs.filter(a=>seen.has(a.id)).length;}
+export function originAlertPending(s:V10):boolean{return s.tutorialStep>=9&&s.day>=14&&s.facilities.cctv&&((s.originZero?.cat??'unknown')==='unknown'||s.originZero?.cat==='traced'||s.originZero?.cat==='captured');}
 export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&s.facilities.cctv&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&

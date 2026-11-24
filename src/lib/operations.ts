@@ -2,7 +2,7 @@
 import type {V10,FacilityId} from './game-v10';
 import {doBase,buildFacility,facilityRecipes} from './game-v10';
 import {treatCrew,type CrewId} from './crew';
-import {restoreOriginPhoto} from './origin-zero';
+import {originFragments,restoreOriginPhoto} from './origin-zero';
 import {copy,cap,log} from './sim';
 export type OperationMode='photo'|'repair'|'medical'|'assembly'|'commission';
 export type OperationId=CrewId|FacilityId;
@@ -22,7 +22,7 @@ export function operationBoard(s:V10,mode:OperationMode,id?:OperationId):Operati
 }
 export function operationAllowed(s:V10,mode:OperationMode,id?:OperationId){
  if(s.phase!=='day'||s.run||s.pending||s.pendingIncident||s.voice?.pending||s.crew?.pendingTermination||s.originZero?.contactField?.active)return false;
- if(mode==='photo')return !!s.originZero?.route&&s.originZero.photos<12&&s.ap>=1&&s.power>=4;
+ if(mode==='photo')return !!s.originZero?.route&&s.originZero.photos<12&&originFragments(s).includes(s.originZero.photos+1)&&s.ap>=1&&s.power>=4;
  if(mode==='repair')return s.ap>=1&&s.parts>=1;
  if(mode==='assembly'||mode==='commission'){const r=id&&facilityRecipes[id as FacilityId];return !!r&&!s.facilities[id as FacilityId]&&s.scrap>=r.scrap&&s.parts>=r.parts&&s.power>=r.power&&(mode==='assembly'||operationBoard(s,'assembly',id).verified);}
  const m=s.crew?.members.find(c=>c.id===id);return !!m&&m.mind>0&&m.lastCareDay!==s.day&&s.ap>=1&&s.medicine>=1;
