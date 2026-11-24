@@ -1144,7 +1144,7 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
-                        {visible&&sporeCells.includes(i)&&tile!=='hazard'&&<span className="ark-spread-cell" aria-label="증식한 포자"><i/><i/><i/></span>}
+                        {visible&&sporeCells.includes(i)&&(tile!=='hazard'||here)&&<span className="ark-spread-cell" aria-label="증식한 포자"><i/><i/><i/></span>}
                         {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}
                         {walk && visible && !walking && (
                           <span

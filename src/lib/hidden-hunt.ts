@@ -65,7 +65,7 @@ export type HuntResult={state:HuntState;changed:boolean;won:boolean;lost:boolean
 export type HuntTraits={title:string;short:string;hints:[string,string,string];speed:1|2|3;likes:HuntTool[];hates:HuntTool[];risk:string;};
 export const HUNT_TRAITS:Record<AnimalId,HuntTraits>={
  rabbit:{title:'연속 도약',short:'위협을 느끼면 두 칸을 뛰어 달아납니다.',hints:['귀가 서 있으면 큰 소리 쪽을 피합니다.','일반 이동은 두 칸 도약하며, 먹이를 맡으면 한 칸만 다가갑니다.','풀숲에서 기다릴 때는 먹이 냄새를 확인하느라 움직임이 느려집니다.'],speed:2,likes:['bait'],hates:['sound','light'],risk:'도주 외 추가 불이익 없음'},
- fox:{title:'우회 흔적',short:'열린 길로 되돌아오며 같은 미끼를 학습합니다.',hints:['여우는 오래전에 조사한 빈 곳을 우회 경로로 이용합니다.','반복해서 같은 종류의 먹이를 놓으면 함정으로 간주합니다.','빛을 싫어하지만 낮고 일정한 소리에는 관심을 보입니다.'],speed:1,likes:['bait','sound'],hates:['light'],risk:'실패 시 부품 하나를 훔쳐 갑니다'},
+ fox:{title:'우회 흔적',short:'미수색 길로 우회하며 같은 미끼를 학습합니다.',hints:['여우는 밝혀진 수풀을 피하고 길이 막히면 숨은 채 멈춥니다.','반복해서 같은 종류의 먹이를 놓으면 함정으로 간주합니다.','빛을 싫어하지만 낮고 일정한 소리에는 관심을 보입니다.'],speed:1,likes:['bait','sound'],hates:['light'],risk:'실패 시 부품 하나를 훔쳐 갑니다'},
  deer:{title:'군집 도주',short:'소리에 놀라면 세 칸까지 이동합니다.',hints:['사슴은 소리에 민감해 위험 시 먼 거리로 달아납니다.','진입할 수 없는 칸 앞에서는 방향을 크게 바꿉니다.','냄새 자극을 오래 유지하면 접근 속도를 줄입니다.'],speed:3,likes:['bait'],hates:['sound','light'],risk:'위협도 상승 및 시설 인근 소란'},
  owl:{title:'그림자 사냥',short:'빛을 피해 어두운 이동 경로를 고릅니다.',hints:['올빼미는 밝은 조명을 피합니다.','짧은 규칙음이 반복되면 잠시 경계합니다.','습지와 숲 경계에서 흔적이 짧게 남습니다.'],speed:1,likes:[],hates:['light','sound'],risk:'단서 일부 유실'},
  wolf:{title:'추적자',short:'소리를 단서로 담당자 쪽으로 접근할 수 있습니다.',hints:['늑대는 소리 자극에 반응해 경계하며 접근합니다.','막힌 길을 여러 번 확인하면 우회로를 학습합니다.','압박 신호가 최대치에 가까워지면 다음 탐색 실패에 공격합니다.'],speed:2,likes:['sound'],hates:['light'],risk:'추적 실패 시 HP 손상'},
@@ -177,7 +177,7 @@ function chooseStep(state:HuntState):number{
   for(let j=1;j<=step;j++){const x=sx+dx*j,y=sy+dy*j;if(x>=0&&y>=0&&x<size&&y<size&&barred.has(y*size+x))return false;}return true;});
  if(!choices.length)choices=rangeChoices(state.position,1,size).filter(i=>!barred.has(i));
  if(!choices.length)return state.position;
- const hidden=choices.filter(i=>huntSearchAge(state,i)<0);if(hidden.length&&!state.trap)choices=hidden;
+ const hidden=choices.filter(i=>huntSearchAge(state,i)<0);if(!state.trap&&!state.objects.some(o=>o.kind!=='barrier'&&o.life>0)){if(!hidden.length)return state.position;choices=hidden;}
  const prev=state.previous;
  const scored=choices.map(cell=>{
   let points=randomAt(state.seed,state.turn,cell+5)*4;

@@ -80,7 +80,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
   const attack=b.intent==='charge'?0:b.enemy==='mutant'?(b.intent==='lunge'?15:11):(b.intent==='lunge'?7:5);
   const damage=Math.max(0,attack-shield-Math.max(0,Math.min(3,run.suitLevel??0))-((run.companions??[run.companion]).includes('wolf')?2:0));run.integrity=cap(run.integrity-damage);
   if(b.intent==='spray')n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?3:0)));
-  b.round++;b.intent=b.round%3===0?'spray':b.round%3===1?'lunge':'charge';b.log=[message+` · 방호 -${damage}`, ...b.log].slice(0,4);
+  b.round++;b.intent=b.round%3===0?'spray':b.round%3===1?'lunge':'charge';const deltas=[['방호',run.integrity-(s.run?.integrity??run.integrity)],['정신',n.mind-s.mind],['ST',n.stamina-s.stamina],['전력',n.power-s.power],['감염',n.infection-s.infection],['적 내구',b.hp-s.field!.combat!.hp]] as const;const actual=deltas.filter(([,v])=>v!==0).map(([k,v])=>k+' '+(v>0?'+':'')+v).join(' · ');b.log=[message+' · 실제 변화: '+(actual||'없음'),...b.log].slice(0,4);
   if(b.round>6||run.integrity<=0){f.combat=null;f.interruptedCapture=null;if(f.threat){f.threat.cooldown=3;f.threat.warningTicks=0;f.threat.mode='search';f.threat.stage='retreat';}run.integrity=Math.max(1,run.integrity);n.mind=cap(n.mind-5);message+=' · 안전 거리로 긴급 이탈. 정신 -5, 전리품 없음.';}
  }
  queueCrewTerminations(n);f.lastEvent=n.lastOutcome=message;log(n,'현장 오염 대응',message,'info');return n;

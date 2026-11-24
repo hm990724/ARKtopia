@@ -634,7 +634,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   if(tile==='track'){
    field.clues++;n.knowledge+=2;earnDuringRun(run,'knowledge',2);field.noise=Math.max(0,field.noise-4);
    observation='발자국 간격을 기록했습니다. 동물의 이동 경로가 조금 더 분명해집니다. 지식 +2.';
-  }else if(tile==='cache'){
+  }else if(tile==='cache'&&run.firstTutorial){
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
    field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+((run.companions??[run.companion]).includes('fox')?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
@@ -676,6 +676,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    observation=`불안정한 잔해에 발을 헛디뎠습니다. 정신력 -${damage}.`;
   }
  }
+ if(tickFieldSpores(n))observation+=' '+n.lastOutcome;
  // Optional high-stakes side discoveries. Pending choices are saveable and block further movement.
  if(firstVisit&&!run.firstTutorial && !field.combat && !field.choice && ['cache','signal'].includes(tile)){
   const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;
@@ -686,8 +687,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   }
  }
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
- // Walking and stationary threat updates use the same line-of-sight and warning rules.
- if(tickFieldSpores(n))observation+=' '+n.lastOutcome;
+ // MUTANT advances on the independent real-time clock.
  if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
  revealField(field,run.gear.includes('scanner')?3+Math.floor((run.scannerLevel??0)/2):run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?2:1);
  field.lastEvent=observation;
@@ -718,8 +718,8 @@ export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Mat
  }else if(action==='survey'){
   n.stamina=cap(n.stamina-3);
   n.knowledge+=2;earnDuringRun(run,'knowledge',2);
-  if(choice.kind==='cache'){n.scrap+=1;earnDuringRun(run,'scrap',1);}
-  n.lastOutcome=`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?' · 고철 +1':''}.`;
+  if(choice.kind==='cache'){n.scrap+=2;earnDuringRun(run,'scrap',2);run.loot+=2;field.loot+=2;}else{n.clues++;earnDuringRun(run,'clues',1);}
+  n.lastOutcome=`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?' · 고철 +2 · 회수 점수 +2':' · 단서 +1'}.`;
  }else{
   const win=rand*100>=choice.danger;
   n.stamina=cap(n.stamina-6);
@@ -727,7 +727,7 @@ export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Mat
    const salvage=choice.reward*2;
    n.scrap+=salvage;earnDuringRun(run,'scrap',salvage);
    n.knowledge+=3;earnDuringRun(run,'knowledge',3);
-   run.loot+=choice.reward;field.loot+=choice.reward;
+   run.loot+=choice.reward;field.loot+=choice.reward;if(choice.kind==='signal'){n.clues+=2;earnDuringRun(run,'clues',2);}
    n.lastOutcome=`위험 감수 성공. 고철 +${salvage}, 지식 +3, 회수 점수 +${choice.reward}, ST -6.`;
   }else{
    const damage=Math.max(3,Math.ceil(choice.danger/7));
@@ -735,6 +735,7 @@ export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Mat
    n.lastOutcome=`위험 감수 실패. 정신력 -${damage}, 감염 +${Math.ceil(damage/2)}, ST -6. 다음 행동을 선택하세요.`;
   }
  }
+ const sideOutcome=n.lastOutcome;if(tickFieldSpores(n))n.lastOutcome=sideOutcome+' · '+n.lastOutcome;else n.lastOutcome=sideOutcome;
  field.lastEvent=n.lastOutcome;
  log(n,'현장 선택 · '+choice.title,n.lastOutcome,action==='risk'?'mystery':'info');
  if(n.stamina<=0){n.mind=cap(n.mind-5);return leaveField(n,'탈진 · 긴급 귀환');}

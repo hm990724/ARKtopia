@@ -68,7 +68,7 @@ export function advanceSporeSwarm(f:FieldState,lightOn=false):void{
 }
 /** Turn-based stationary contamination. One new adjacent cell at most per action, even in fog. */
 export function sporeVisibleCells(f:FieldState):number[]{
- if((f.sporeSpread?.turn??0)<3)return [];
+ if((f.sporeSpread?.turn??0)<=3)return [];
  return [...new Set([...f.tiles.flatMap((v,i)=>v==='hazard'?[i]:[]),...(f.sporeSpread?.cells??[])])];
 }
 export function advanceSporeSpread(f:FieldState,roll?:()=>number):number|null{
@@ -81,7 +81,7 @@ export function advanceSporeSpread(f:FieldState,roll?:()=>number):number|null{
  const previous=s.turn>=9?all:[...s.active,...s.cells];
  s.active=[...new Set([...s.active,...near])];
  if(s.turn<=3||!previous.length)return null;
- const random=roll??(()=>hash(s.turn*7919+(f.sortie??0)*313+f.position*101+s.cells.length*43)/4294967296);
+ let salt=0;const random=roll??(()=>hash(s.turn*7919+(f.sortie??0)*313+f.position*101+s.cells.length*43+(++salt)*11239)/4294967296);
  if(random()>=.30)return null;
  const candidates=[...new Set(previous.flatMap(i=>[i-w,i+w,i-1,i+1].filter(j=>adjacentField(i,j,w,f.tiles.length)&&f.tiles[j]!=='wall'&&f.tiles[j]!=='exit'&&!all.includes(j))))];
  if(!candidates.length)return null;
