@@ -7,6 +7,7 @@ import {performHuntAction,huntSize,type HuntMode} from './hidden-hunt';
 import {emptyArchive,ensureArchive,noteSpeciesTrait,noteFieldAction,noteCapturedHunt,noteRescue,noteResonance,recordSpecimen,evaluateArchiveReveal,type ArchiveState} from './specimen-archive';
 import {AnimalId,AnimalState,Origin,Start,State,createGame,copy,cap,log,recalc,makeAnimal,specs,dailyWork,repair,extract,finish,isMutant,recordMutation,nightlyAnimalCondition} from './sim';
 import {applyFamiliarRoutine} from './care-interactions';
+import {advanceHabitatNight} from './habitat-care';
 import {initialSecurity,nightlySecurity,roomCamera,type SecurityState} from './security';
 import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
@@ -479,7 +480,7 @@ export function finishDay(s:V10,nightChoice:NightChoice):V10{const n=copy(s) as 
 resolveNightWatch(n);
 n.power=cap(n.power+upgradeLevel(n,'battery')*5);allocateFacilityPower(n);
  n.crew?.members.filter(m=>m.mind>0).forEach(m=>{m.mind=cap(m.mind+upgradeLevel(n,'clinic'))});
- n.animals.filter(a=>a.alive).forEach(a=>{a.stress=cap(a.stress-upgradeLevel(n,'clinic')*2);const handFed=a.fedDay===n.day,fed=handFed||n.food>0;if(fed){if(!handFed)n.food--;a.stress=cap(a.stress+(handFed?0:3));applyFamiliarRoutine(a)}else{a.stress=cap(a.stress+10)}if(n.infection>45)a.contamination=cap(a.contamination+5);if(a.contamination>65)a.hp=cap(a.hp-7);nightlyAnimalCondition(a,fed,n.facility,n.infection,handFed);if(n.facilities?.infirmary&&n.facilityPowerState?.powered.includes("infirmary")){a.sickness=cap((a.sickness??0)-8);a.contamination=cap(a.contamination-3);}if(a.hp<=0){a.alive=false;log(n,'격리 개체 사망',`${a.name}의 신호가 끊겼다.`,'bad')}});
+ n.animals.filter(a=>a.alive).forEach(a=>{a.stress=cap(a.stress-upgradeLevel(n,'clinic')*2);const handFed=a.fedDay===n.day,fed=handFed||n.food>0;if(fed){if(!handFed)n.food--;a.stress=cap(a.stress+(handFed?0:3));applyFamiliarRoutine(a)}else{a.stress=cap(a.stress+10)}if(n.infection>45)a.contamination=cap(a.contamination+5);if(a.contamination>65)a.hp=cap(a.hp-7);nightlyAnimalCondition(a,fed,n.facility,n.infection,handFed);if(!n.security?.escapedIds.includes(a.id))advanceHabitatNight(a,n.day,n.power,n.facility);if(n.facilities?.infirmary&&n.facilityPowerState?.powered.includes("infirmary")){a.sickness=cap((a.sickness??0)-8);a.contamination=cap(a.contamination-3);}if(a.hp<=0){a.alive=false;log(n,'격리 개체 사망',`${a.name}의 신호가 끊겼다.`,'bad')}});
 nightlySecurity(n);if(n.facilityPowerState?.powered.includes("synthesis"))n.knowledge+=2;
  const welfare=welfareYield(n);const welfareMind=Math.min(100-n.mind,welfare.mind);if(welfare.count){n.knowledge+=welfare.knowledge;n.mind=cap(n.mind+welfare.mind);log(n,'안정된 보호구역',`보호 개체 ${welfare.count}종의 비침습 기록과 평온한 교감. 지식 +${welfare.knowledge} · 정신 +${welfareMind}.`,'good');}
  if(n.crew){n.crew.supportWorked=[];n.crew.sortieWorked=[];}crewNight(n);if(n.crew?.guardDay===n.day)n.threat=cap(n.threat-7);
