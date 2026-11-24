@@ -12,7 +12,7 @@ export function StaffPortrait({id,className='',condition='safe',dialogueMood,dia
  const sources=[...new Set([
   ...dialogueSources,
   `/assets/staff/${id}/portrait.webp`,
-  `/assets/cinematics/staff-arrivals/${id}/scene.webp`
+  id==='wolf'?'/assets/cinematics/staff-arrivals/wolf/CN_07_wolf_guard_arrival.png':`/assets/cinematics/staff-arrivals/${id}/scene.webp`
  ])];
  const [index,setIndex]=useState(0);
  useEffect(()=>setIndex(0),[id,condition,dialogueMood,dialogueText]);

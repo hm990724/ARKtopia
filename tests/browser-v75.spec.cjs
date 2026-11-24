@@ -30,7 +30,7 @@ test('CCTV false lead reveals the ordinary M-00 cat through three trace choices'
  await panel.getByRole('button',{name:/외곽 영상 추적 시작/}).click();
  for(const cam of ['CAM 03','CAM 01','CAM 02'])await panel.getByRole('button',{name:new RegExp(cam)}).click();
  await panel.getByRole('button',{name:'미확인 신호 현장 출동 · AP 1'}).click();for(const cell of [15,10,11,12,7,2,3,4])await panel.getByRole('button',{name:'현장 칸 '+cell,exact:true}).click();await expect(panel.getByRole('region',{name:'미확인 신호 현장 접근'})).toBeVisible();await expect(panel.locator('.oz-cat-image')).toHaveCount(0);for(const label of ['낮은 자세로 움직임을 관찰한다','광원을 낮춰 벽과 실루엣의 거리를 비교한다','몸을 낮추고 손을 내밀어 기다린다'])await panel.getByRole('button',{name:label,exact:true}).click();
- await expect(panel.getByRole('heading',{name:'시초가 아니었다 · 검은 고양이'})).toBeVisible();await expect(panel.locator('.oz-cat-image img')).toHaveAttribute('src','/assets/animals/m00_normal.png');
+ await expect(page.getByRole('dialog',{name:'보존구역 실시간 대화'})).toBeVisible();await page.getByRole('button',{name:'글 즉시 펼치기'}).click();await expect(page.getByRole('dialog',{name:'보존구역 실시간 대화'})).toContainText('그냥 고양이잖아');await page.locator('.v44-story-overlay .is-skip').click();await expect(panel.getByRole('heading',{name:'시초가 아니었다 · 검은 고양이'})).toBeVisible();await expect(panel.locator('.oz-cat-image img')).toHaveAttribute('src','/assets/animals/m00_normal.png');
  const reveal=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).lastOutcome,KEY);expect(reveal).toContain('별개의 개체입니다');expect(reveal).toContain('고양이가 유출을 일으켰다는 증거는 없다');
  expect(catTrackFrames).toHaveLength(3);
 });

@@ -11,7 +11,7 @@ const scenes:Record<number,readonly string[]>={
  4:[story+'SCN_04_rabbit_medic_arrival.png','/assets/cinematics/staff-arrivals/rabbit/scene.webp'],
  5:[story+'SCN_05_fox_supply_arrival.png','/assets/cinematics/staff-arrivals/fox/scene.webp'],
  6:[story+'SCN_06_deer_archive_arrival.png','/assets/cinematics/staff-arrivals/deer/scene.webp'],
- 7:[story+'SCN_07_wolf_guard_arrival.png','/assets/cinematics/staff-arrivals/wolf/scene.webp'],
+ 7:[story+'SCN_07_wolf_guard_arrival.png','/assets/cinematics/staff-arrivals/wolf/CN_07_wolf_guard_arrival.png'],
  8:[story+'SCN_08_first_roaming_threat.png'],
  9:[story+'SCN_09_wolf_last_stand.png'],
  10:[story+'SCN_10_m00_encounter.png'],

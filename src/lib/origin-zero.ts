@@ -301,7 +301,7 @@ export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{ti
   if(coerced>=2||protectedAnimals<=1)return {title:'흩어진 이름들',text:'복원은 실패했고 여러 생명이 돌아오지 못했다. EVE는 마지막 명부에서 그들의 이름을 지우지 않고, 누구의 소유도 아닌 기억으로 남겼다.'};
   return {title:'마지막 동물원',text:'추출 장치가 멈췄다. 보존된 개체는 누구의 연구 재료가 아닌 생명으로 남았다.'};
  }
- if(staffLost>=2||s.eve<25||s.trust<20)return {title:'침묵의 자동화',text:'관리자와 직원들의 신호가 끊긴 뒤에도 시설은 정해진 일과를 반복했다. EVE의 목소리는 사라졌고, 남겨진 이름만 자동 기록에 남았다.'};
+ if(staffLost>=2||s.eve<25||s.trust<20)return {title:'침묵의 자동화',text:'관리자의 신호가 끊기고 EVE의 인격 통신이 종료된 뒤에도 시설은 정해진 일과를 반복했다. EVE의 목소리는 사라졌고, 남겨진 이름만 자동 기록에 남았다.'};
  if((d.hqIntel>=65&&dispatched>0)||(s.narrative?.finalStance!==undefined&&s.narrative.finalStance!=='reject'))return {title:'마지막 신호',text:'관리자는 보존한 자료와 구조 요청을 마지막으로 송신했다. 응답이 돌아왔는지 확인하기 전에 그의 신체는 멈췄다.'};
  return {title:'제000번 우리',text:'관리자는 최초 과학자의 뇌를 물려받았지만 그의 신념을 따를 의무는 없다고 기록했다. EVE는 기억이 아니라 지금의 결정을 보존했다.'};
 }
