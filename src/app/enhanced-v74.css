@@ -263,3 +263,35 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .v71-field .v33-side-console .v44-side-label,.v71-field .v33-side-console .v33-section-kicker,.v71-field .v33-side-console .v60-hunt-record,.v71-field .v33-side-console .v58-side-hint{display:none!important}.v71-field .v33-side-console .v33-tool-rack{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3px!important}.v71-field .v33-side-console .v33-tool{min-height:32px!important;padding:4px!important;gap:3px!important}.v71-field .v33-side-console .v33-tool-label b{font-size:11px!important}.v71-field .v33-side-console .v33-tool-label small{font-size:9px!important;line-height:1.2}.v71-field .v33-side-console .v33-tool-sample{width:18px!important;height:18px!important;min-width:18px!important}.v71-field .ark-tool-details{padding:5px!important;font-size:11px!important}.v71-field .ark-tool-details summary{cursor:pointer}
 .v71-field .v33-side-console .ark-hunt-perimeter{display:grid!important;grid-template-columns:1fr!important;gap:4px!important;padding:5px!important}.v71-field .v33-side-console .ark-perimeter-grid{width:100%!important;max-width:170px!important;margin:auto}.v71-field .v33-side-console .field-live-warning{display:flex!important;flex-wrap:wrap!important;padding:6px!important;gap:4px!important;font-size:11px!important}.v71-field .v33-side-console .ark-biome-rule{padding:6px!important;gap:4px!important}.v71-field .v33-side-console .ark-field-controls{display:flex!important;flex-wrap:wrap!important;gap:3px!important;padding:5px!important}.v71-field .v33-side-console .ark-field-controls button{font-size:11px!important;padding:4px!important}.v71-field .v33-side-console .ark-field-controls small{font-size:10px!important}.v71-field .v33-side-console .ark-acoustic-actions button{min-width:70px;font-size:11px;padding:5px}
 @container(max-width:560px){.v71-field.v33-expedition .v33-mission-layout,.v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(0,1fr)!important}.v71-field.v33-expedition .v33-side-console{grid-column:1!important;grid-row:2!important}.v71-field.v33-expedition .v44-specimen-column{grid-row:3!important}.ark-capture-strip{grid-template-columns:minmax(80px,1fr) minmax(60px,.7fr) minmax(90px,1fr)}}
+
+
+/* Capture only: restore the specimen dossier to the left, keep map-first controls on the right. */
+.v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(145px,19%) minmax(0,1fr) minmax(180px,24%)!important;gap:8px!important}
+.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column{grid-column:1!important;grid-row:1!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;min-width:0!important;overflow:visible!important;position:static!important;max-height:none!important}
+.v71-field.v33-expedition.v33-is-hunt .v33-theater{grid-column:2!important;grid-row:1!important}
+.v71-field.v33-expedition.v33-is-hunt .v33-side-console{grid-column:3!important;grid-row:1!important;display:flex!important;flex-direction:column!important}
+.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column>.v44-specimen-image{display:flex!important;align-items:center;justify-content:center;height:clamp(100px,17dvh,165px)!important;min-height:0!important;overflow:hidden}
+.v71-field.v33-expedition.v33-is-hunt .v44-specimen-image img{width:100%!important;height:100%!important;max-height:165px!important;object-fit:contain!important}
+.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column>.v33-eyebrow,.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column>h3,.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column>.v44-specimen-desc,.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column>.v44-specimen-risk{display:block!important}
+.v71-field.v33-expedition.v33-is-hunt .v47-trait-card{min-width:0!important;white-space:normal!important;padding:5px!important;gap:4px!important}
+.v71-field.v33-expedition.v33-is-hunt .v47-trait-copy{min-width:0!important;overflow-wrap:anywhere}
+.v71-field.v33-expedition.v33-is-hunt .v47-trait-copy small{white-space:normal!important}
+.v71-field.v33-expedition.v33-is-hunt .v47-trait-vault{min-width:0!important}
+.ark-capture-primary{display:grid;gap:5px;min-width:0}
+.ark-capture-primary .ark-capture-side-tools{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr)!important;padding:0;border:0;background:none}
+.ark-capture-primary .ark-net-select[data-active=true]{background:#385d50;border-color:#a7d7c3}
+.ark-capture-primary .ark-net-select select{background:transparent}
+.ark-capture-primary .ark-search-button{width:100%;min-height:34px}
+.v71-field.v33-is-hunt .v33-map-frame>.ark-action-count{min-height:24px;padding:2px 6px;margin:3px 0;font-size:11px}
+.v71-field.v33-is-hunt .v33-map-frame>.ark-action-count b{font-size:15px}
+@container(max-width:740px){
+ .v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(130px,26%) minmax(0,1fr)!important}
+ .v71-field.v33-expedition.v33-is-hunt .v33-side-console{grid-column:2!important;grid-row:2!important}
+ .v71-field.v33-expedition.v33-is-hunt .v44-specimen-column{grid-row:1 / span 2!important}
+}
+@container(max-width:480px){
+ .v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(0,1fr)!important}
+ .v71-field.v33-expedition.v33-is-hunt .v33-theater{grid-column:1!important;grid-row:1!important}
+ .v71-field.v33-expedition.v33-is-hunt .v33-side-console{grid-column:1!important;grid-row:2!important}
+ .v71-field.v33-expedition.v33-is-hunt .v44-specimen-column{grid-column:1!important;grid-row:3!important}
+}
