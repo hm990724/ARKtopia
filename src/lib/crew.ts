@@ -10,7 +10,7 @@ export const CREW_PROFILES:Record<CrewId,{title:string;post:string;benefit:strin
  wolf:{title:'보안관',post:'보안관',benefit:'외부 위협 -13 · 오늘 밤 경계 후 추가 -7',first:'경비는 저한테 맡겨요! 교대조가 없으면 제가 두 번 돌면 되죠. 근데 저 철문, 누가 안쪽에서 긁었죠?',secret:'제가 쫓는 게 탈출한 개체인가요, 아니면... 따라 뛰고 있던 제가 개체인가요?',appearance:'높게 묶은 검은 포니테일, 근육이 잘 드러나는 실전 무도가 체형, 낡은 전투 조끼',personality:'쾌활한 열혈 여성 보안관. 먼저 움직이고 뒤늦게 공포를 알아차린다.'},
  deer:{title:'서기관',post:'서기관',benefit:'시설 감염 -14 · 현장 탐사 오염 저감',first:'기록 정리 완료했습니다! 아, 잠깐... 이 서류는 거꾸로 꽂았네요. 금방 고치겠습니다!',secret:'자꾸 글씨를 잘못 쓰네요. 이름 위에... 네 개의 발자국이 떠올라요. 제가 남긴 건가요?',appearance:'연갈색 긴 머리와 부드러운 웨이브, 작은 핀, 수수한 사무복과 기록용 단말',personality:'유능하고 다정하지만 가끔 덤벙대는 여성 서기관. 오류를 인정하고 바로 수습한다.'}
 };
-export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;lastCareDay?:number;stability?:number;sourceSpecimenId?:string;memoryEcho?:number;memoryStage?:number};
+export type CrewMember={id:CrewId;arrivedDay:number;hp:number;mind:number;bond:number;lastSpokenDay:number;lastCareDay?:number;lastCounselDay?:number;stability?:number;sourceSpecimenId?:string;memoryEcho?:number;memoryStage?:number};
 export type CrewIncident={day:number;id:CrewId;damage:number;before:number;after:number;text:string};
 export type CrewConflictKind='treatment'|'disposal';
 export type CrewConflictChoice='treat'|'withhold'|'protect'|'dispose';
@@ -178,17 +178,20 @@ export function crewDissectionShock(s:V10):void{
  if(crew.members.length)log(s,'의무 기록 · 신경 혼란','해부 기록 이후 직원들의 신경 안정도가 일제히 떨어졌습니다.','bad');
 }
 
-export function treatCrew(s:V10,id:CrewId,kind:'medical'|'counsel'):V10{
+export function treatCrew(s:V10,id:CrewId,kind:'medical'|'counsel',roll=Math.random):V10{
  const member=s.crew?.members.find(m=>m.id===id);
  const crew=s.crew;
  if(!member||member.mind<=0||crew?.pendingTermination||s.phase!=='day'||s.run||s.pendingIncident)return s;
- if(kind==='medical'&&(s.ap<2||s.medicine<1||member.lastCareDay===s.day))return s;
- if(kind==='counsel'&&(s.ap<2||s.food<1||crew?.counselDay===s.day))return s;
+ if(kind==='medical'&&(s.ap<1||s.medicine<1||member.lastCareDay===s.day))return s;
+ if(kind==='counsel'&&(s.ap<1||s.food<1||member.lastCounselDay===s.day))return s;
  const n=copy(s) as V10;const team=ensureCrew(n);const m=team.members.find(a=>a.id===id)!;
- if(kind==='medical'){n.ap-=2;n.medicine--;m.lastCareDay=n.day;m.mind=cap(m.mind+20);m.stability=cap((m.stability??88)+4)}
- else{n.ap-=2;n.food--;team.counselDay=n.day;m.mind=cap(m.mind+9);m.bond=cap(m.bond+2)}
- log(n,`직원 관리 · ${CREW_PROFILES[id].post}`,`${kind==='medical'?'의약품 -1 · AP -2 · 정신력 +20 · 신체 안정 +4 (대상 하루 1회)':'식량 -1 · AP -2 · 정신력 +9 · 신뢰 +2 (시설 하루 1회)'} 적용`,'good');
- n.lastOutcome=`${CREW_PROFILES[id].title} ${kind==='medical'?'의료 안정화':'상담'} 완료 · AP -2 · ${kind==='medical'?'의약품 -1':'식량 -1'}`;
+ const random=(lo:number,hi:number)=>lo+Math.min(hi-lo,Math.max(0,Math.floor(roll()*(hi-lo+1))));
+ n.ap--;
+ if(kind==='medical'){n.medicine--;m.lastCareDay=n.day;m.mind=cap(m.mind+random(12,22));m.stability=cap((m.stability??88)+random(3,7));}
+ else{n.food--;m.lastCounselDay=n.day;team.counselDay=n.day;m.mind=cap(m.mind+random(7,14));m.bond=cap(m.bond+random(2,5));}
+ const gains=[`정신 +${m.mind-member.mind}`,kind==='medical'?`신체 안정 +${(m.stability??88)-(member.stability??88)}`:`신뢰 +${m.bond-member.bond}`];
+ n.lastOutcome=`${CREW_PROFILES[id].post} ${kind==='medical'?'의료 지원':'상담'} 완료 · AP -1 · ${kind==='medical'?'의약품 -1':'식량 -1'} · ${gains.join(' · ')}`;
+ log(n,'직원 관리 · '+CREW_PROFILES[id].post,n.lastOutcome,'good');
  return n;
 }
 

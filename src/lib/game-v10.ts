@@ -169,13 +169,13 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
   restored.headquarters.pendingAnimal='rabbit';restored.headquarters.firstReport=true;restored.tutorialArchiveReviewPending=true;
  }if(restored.capture?.hunt)restored.capture.hunt.revealed.forEach((known,index)=>{if(known)noteSpeciesTrait(restored,restored.capture!.hunt!.species,index)});return restored}
 export function summary(s:V10,title:string,msg:string,kind:'info'|'good'|'bad'|'mystery'='info'){s.lastOutcome=msg;log(s,title,msg,kind);return s}
-export function doBase(s:V10,type:'rest'|'recharge'|'handsearch'|'eve'|'feed'|'repair'|'crank'|'decontam'|'batteryCharge'):V10{const n=copy(s) as V10;if(n.phase!=='day'||n.ap<1)return s;
+export function doBase(s:V10,type:'rest'|'recharge'|'handsearch'|'eve'|'feed'|'repair'|'crank'|'decontam'|'batteryCharge',quality?:number):V10{const n=copy(s) as V10;if(n.phase!=='day'||n.ap<1)return s;
 if(type==='rest'){n.ap--;n.mind=cap(n.mind+25+(n.crew?.healingDay===n.day?6:0));n.daysRested++;n.threat=cap(n.threat+3);return summary(n,'짧은 휴식','잠시 휴식하며 정신력을 회복했다. 그 사이 바깥의 움직임은 계속된다.','good')}
-if(type==='decontam'){if(n.filters<1)return s;n.ap--;n.filters--;n.infection=cap(n.infection-26);n.mind=cap(n.mind+4);n.threat=cap(n.threat-3);return summary(n,'제독실 가동','바이오필터를 사용해 감염성 포자와 오염 흔적을 제거했다.','good')}
-if(type==='crank'){if(n.mind<=14)return s;n.ap--;n.mind=cap(n.mind-14);n.power=cap(n.power+17);n.flashlight=cap(n.flashlight+9);return summary(n,'수동 발전기 가동','부품 없이 발전기를 직접 돌렸다. 정신력 14를 소모해 시설 전력 17을 회복했다.','good')}
+if(type==='decontam'){if(n.filters<1)return s;n.ap--;n.filters--;const amount=quality===undefined?26:Math.round(6+20*Math.max(0,Math.min(1,quality)));n.infection=cap(n.infection-amount);n.mind=cap(n.mind+(amount>=20?4:1));n.threat=cap(n.threat-(amount>=20?3:0));return summary(n,'제독실 가동',`정화 결과 · AP -1 · 필터 -1 · 감염 -${s.infection-n.infection}`,amount>=20?'good':'info')}
+if(type==='crank'){if(n.mind<=14)return s;n.ap--;n.mind=cap(n.mind-14);const amount=quality===undefined?17:Math.round(5+12*Math.max(0,Math.min(1,quality)));n.power=cap(n.power+amount);n.flashlight=cap(n.flashlight+Math.round(amount/2));return summary(n,'수동 발전기 가동',`발전 결과 · AP -1 · 정신 -14 · 전력 +${n.power-s.power} · 전지 +${n.flashlight-s.flashlight}`,amount>=12?'good':'info')}
 if(type==='batteryCharge'){if(n.electricCells<1||n.power<12||n.flashlight>=100)return s;n.ap--;n.electricCells--;n.power=cap(n.power-12);n.flashlight=cap(n.flashlight+38);return summary(n,'휴대 전지 충전','예비 전지 1개와 시설 전력 12%를 사용해 손전등을 38% 충전했다. 충전은 하루 행동력 1을 소모한다.','good')}
 if(type==='recharge'){if(n.parts<1)return s;n.ap--;n.parts--;n.power=cap(n.power+(n.origin==='engineer'?37:28));n.flashlight=cap(n.flashlight+12);return summary(n,'비상 발전기 가동','부품을 소모해 발전기를 재가동했다. 격리실과 EVE 전력 공급이 회복된다.','good')}
-if(type==='handsearch'){if(n.flashlight<16)return s;n.ap--;n.flashlight-=16;const foodFound=Math.random()<.55,partsFound=Math.random()<.55,cellFound=Math.random()<.22;if(foodFound)n.food++;if(partsFound)n.parts++;if(cellFound)n.electricCells++;n.credits+=25;n.infection=cap(n.infection+Math.round(Math.random()*7));n.threat=cap(n.threat+4);return summary(n,'수동 물자 수색',`손전등 -16 · ${foodFound?'식량 +1 · ':''}${partsFound?'부품 +1 · ':''}${cellFound?'예비 전지 +1 · ':''}보존 CR +25. 감염도와 외부 위협이 올랐다.`,'info')}
+if(type==='handsearch'){if(n.flashlight<16)return s;n.ap--;n.flashlight-=16;const foodFound=quality===undefined?Math.random()<.55:quality>=.5,partsFound=quality===undefined?Math.random()<.55:quality>=1,cellFound=quality===undefined?Math.random()<.22:quality>=1&&Math.random()<.5;if(foodFound)n.food++;if(partsFound)n.parts++;if(cellFound)n.electricCells++;n.credits+=quality===undefined?25:quality>=.5?25:5;n.infection=cap(n.infection+(quality===undefined?Math.round(Math.random()*7):quality>=.5?2:7));n.threat=cap(n.threat+4);return summary(n,'수동 물자 수색',`손전등 -16 · ${foodFound?'식량 +1 · ':''}${partsFound?'부품 +1 · ':''}${cellFound?'예비 전지 +1 · ':''}보존 CR +${n.credits-s.credits} · 감염 +${n.infection-s.infection} · 외부 위협 증가.`,'info')}
 if(type==='eve'){if(n.power<8||n.eve<10)return s;n.ap--;n.power-=8;n.eve=cap(n.eve-3);n.knowledge+=6;n.clues++;return summary(n,'EVE 분석','EVE가 기존 기록의 모순을 한 줄 해독했다. 새로운 질문을 열 수 있다.','mystery')}
 if(type==='feed'){if(n.food<1||!n.animals.some(a=>a.alive))return s;n.ap--;const alive=n.animals.filter(a=>a.alive);const count=Math.min(n.food,alive.length);n.food-=count;alive.slice(0,count).forEach(a=>{a.hp=cap(a.hp+9);a.stress=cap(a.stress-10);a.bond=cap(a.bond+5)});applyCrewOpinion(n,'treatment','treat');return summary(n,'전체 급식',`${count}마리에게 먹이를 주었다. 격리실 안의 소리가 조금 잦아들었다.`,'good')}
 if(n.parts<1)return s;n.ap--;n.parts--;n.facility=cap(n.facility+23);n.eve=cap(n.eve+6);return summary(n,'시설 점검','환기와 격리 장비를 정비했다. 다음 사고의 피해 위험이 감소한다.','good')}
@@ -447,7 +447,7 @@ export function attemptNightCircuit(s:V10,terminal:number):V10{
 export function previewNight(s:V10,nightChoice:NightChoice,options:{maintained?:boolean;guided?:boolean}={}){
  const startPower=options.guided?Math.max(28,s.power):s.power;
  const powered=cap(startPower+(options.maintained?4:0));
- const applied:NightChoice=powered<({shield:22,rest:5,standby:0}[nightChoice])?'standby':nightChoice;
+ const applied:NightChoice=(!options.guided&&!options.maintained)||powered<({shield:22,rest:5,standby:0}[nightChoice])?'standby':nightChoice;
  const cost={shield:22,rest:5,standby:0}[applied];
  const fuelAvailable=(s.fuel??3)>0,filterAvailable=(s.filters??0)>0;
  const powerAfter=cap(powered-cost-6+(fuelAvailable?4:-4)+upgradeLevel(s,'battery')*5);return {powerBefore:powered,applied,powerAfter,fuelBefore:s.fuel??3,fuelCost:fuelAvailable?1:0,fuelShortfall:fuelAvailable?0:1,filtersBefore:s.filters??0,filterCost:filterAvailable?1:0,filterShortfall:filterAvailable?0:1,repairFacilityBonus:options.maintained?6:0,facilityDispatch:previewFacilityPower(s,powerAfter)};
@@ -459,7 +459,7 @@ export function resolveNightTransition(s:V10,nightChoice:NightChoice,options:{ma
  if(blocker)return {state:s,success:false,blocker,applied:preview.applied};
  const supported=options.guided&&s.power<28?{...s,power:28}:s;
  const prepared=options.maintained?{...supported,power:cap(supported.power+4),facility:cap(supported.facility+6)}:supported;
- const next=finishDay(prepared,nightChoice);
+ const next=finishDay(prepared,preview.applied);
  if(next.day!==s.day+1){return {state:s,success:false,blocker:{code:'day-failed',message:'야간 결산이 완료되지 않았습니다. 진행 중인 사건을 확인하세요.',tab:'hub' as const,actionLabel:'중앙 확인'},applied:preview.applied};}
  if(options.guided)next.onboardingSeen=[...(next.onboardingSeen??[]),'first-night-defense'];
  return {state:next,success:true,blocker:null,applied:preview.applied};

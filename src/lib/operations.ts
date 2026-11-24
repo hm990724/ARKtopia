@@ -25,7 +25,7 @@ export function operationAllowed(s:V10,mode:OperationMode,id?:OperationId){
  if(mode==='photo')return !!s.originZero?.route&&s.originZero.photos<12&&s.ap>=1&&s.power>=4;
  if(mode==='repair')return s.ap>=1&&s.parts>=1;
  if(mode==='assembly'||mode==='commission'){const r=id&&facilityRecipes[id as FacilityId];return !!r&&!s.facilities[id as FacilityId]&&s.scrap>=r.scrap&&s.parts>=r.parts&&s.power>=r.power&&(mode==='assembly'||operationBoard(s,'assembly',id).verified);}
- const m=s.crew?.members.find(c=>c.id===id);return !!m&&m.mind>0&&m.lastCareDay!==s.day&&s.ap>=2&&s.medicine>=1;
+ const m=s.crew?.members.find(c=>c.id===id);return !!m&&m.mind>0&&m.lastCareDay!==s.day&&s.ap>=1&&s.medicine>=1;
 }
 function store(s:V10,mode:OperationMode,b:OperationBoard){const n=copy(s) as V10;n.operations={...n.operations,[mode]:b};return n;}
 export function swapOperation(s:V10,mode:OperationMode,a:number,b:number,id?:OperationId):V10{
