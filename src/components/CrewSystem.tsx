@@ -70,7 +70,7 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
   };
   window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler);
  });
- return <div className="v45-cinematic-overlay v54-cinematic-overlay v62-cinema-overlay" role="dialog" aria-modal="true" aria-label={first?'EVE 첫 만남 연출':`${data!.post} 도착 연출`}>
+ return createPortal(<div className="v45-cinematic-overlay v54-cinematic-overlay v62-cinema-overlay ark-theater-overlay" role="dialog" aria-modal="true" aria-label={first?'EVE 첫 만남 연출':`${data!.post} 도착 연출`}>
   <div className={'v45-cinematic v54-cinematic v62-cinema '+(first?'is-eve':'is-crew')}>
    <header className="v45-cinematic-top v62-cinema-header"><span><Radio size={14}/> ARK // {first?'FIRST CONTACT':'PERSONNEL ARRIVAL'}</span><span className="v62-cinema-live"><i/> {imageStatus==='loaded'?'ARCHIVE RESTORED':imageStatus==='missing'?'IMAGE UNAVAILABLE':'SIGNAL DECODING'}</span><small>CHAPTER {String(step+1).padStart(2,'0')} / {String(lines.length).padStart(2,'0')}</small></header>
    <div className={'v45-cinematic-image v54-cinematic-image v62-cinema-stage '+(imageStatus==='loaded'?'is-loaded':'is-unavailable')}>
@@ -89,7 +89,7 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
     <div className="v62-cinema-footer"><div className="v62-cinema-progress" aria-label={`장면 ${step+1} / ${lines.length}`}>{lines.map((_,idx)=><span key={idx} className={idx<=step?'active':''}/>)}</div><div className="v45-cinematic-controls v62-cinema-actions"><button type="button" onClick={previous} disabled={step===0}>이전</button><button type="button" className="v62-cinema-next" onClick={next}>{shown<line.length?'전체 대사 보기':step<lines.length-1?'다음 장면':'통신 연결'} <ChevronRight size={16}/></button><button type="button" className="v45-cinema-skip" onClick={onFinish}>건너뛰기</button></div></div>
    </section>
   </div>
- </div>;
+ </div>,document.body);
 }
 export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{state:V10;onSupport:(id:CrewId)=>void;onTalk:(id:CrewId)=>void;onTreat:(id:CrewId,kind:'medical'|'counsel')=>void;onReplayArrival?:(id:CrewId)=>void}){
  const [selected,setSelected]=useState<CrewId|null>(null);
@@ -146,7 +146,7 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  const line=lines[step]??'';
  useEffect(()=>{setShown(0);let i=0;const timer=window.setInterval(()=>{i=Math.min(line.length,i+1);setShown(i);if(i===line.length){window.clearInterval(timer);textTimer.current=null;}},31);textTimer.current=timer;return()=>{window.clearInterval(timer);textTimer.current=null;}},[line,step]);
  function advance(){if(shown<line.length){if(textTimer.current!==null)window.clearInterval(textTimer.current);textTimer.current=null;setShown(line.length);return;}if(step<lines.length-1)setStep(step+1);else onTerminate();}
- return <div className="v49-collapse-shade" role="dialog" aria-modal="true" aria-label={`${profile.post} 인격 신호 소실`}>
+ return createPortal(<div className="v49-collapse-shade ark-theater-overlay" role="dialog" aria-modal="true" aria-label={`${profile.post} 인격 신호 소실`}>
   <div className="v49-collapse-window">
    <div className="v49-collapse-image">
     {!missing&&<img src={terminationArt} alt={`${profile.post} 마지막 장면`} onError={()=>setMissing(true)}/>}
@@ -155,5 +155,5 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
    </div>
    <div className="v49-collapse-talk" ><span>FINAL VOICE LOG · {String(step+1).padStart(2,'0')} / 03</span><p aria-label={line}>“{line.slice(0,shown)}{shown<line.length&&<i className="v62-cinema-type-cursor" aria-hidden="true"/>}”</p><div className="v49-collapse-actions"><span>RECORDING // SIGNAL DECAY</span><button type="button" onClick={advance}>{shown<line.length?'전체 대사 보기':step<lines.length-1?'다음 대사':'처리한다'} <ChevronRight size={16}/></button></div></div>
   </div>
- </div>;
+ </div>,document.body);
 }
