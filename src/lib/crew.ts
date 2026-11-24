@@ -61,7 +61,7 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
   {speaker:id,text:personal[id][2],expression:'critical'},
   {speaker:'EVE',text:`${profile.post} 생체 신호 위험. 정신력 ${member.mind}. 야간의 인격 충돌과 우발 공격을 주의하십시오.`,expression:'anxious'},
   {speaker:id,text:'제가 그러지 않았어요... 아니, 제가 그랬나요? 제 손이 기억을 못 해요.',expression:'critical'}];
- if(s.headquarters.revealStage>=2&&s.flags.humanTruth)return [
+ if((s.originZero?.photos??0)>=10&&s.flags.humanTruth)return [
   {speaker:id,text:profile.secret,expression:'anxious'},
   {speaker:'관리자',text:'그 기억은 어디서 온 거야?',expression:'anxious'},
   {speaker:id,text:personal[id][1],expression:'critical'},

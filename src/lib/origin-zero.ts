@@ -12,7 +12,7 @@ export type OriginRoute='hq'|'shelter'|null;
 export type RecallTrial={stage:number;chosen:string;expected:string;matched:boolean};
 export type RecallSession={step:number;correct:number;startedDay:number;answers:RecallTrial[]};
 export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string;steps?:RecallTrial[]};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
@@ -82,8 +82,8 @@ export const originApproachScenes=[
 ] as const;
 export function approachOriginSignal(s:V10,choice:number):V10{
  const d=s.originZero;if(d?.cat!=='traced'||d.trackProgress!==3||s.phase!=='day'||s.run||s.pending||s.pendingIncident||s.headquarters?.pendingAnimal||s.mind<=0||!Number.isInteger(choice)||choice<0||choice>2)return s;
- const step=d.approachStep??0,scene=originApproachScenes[step];if(!scene||step===0&&s.ap<1)return s;
- const n=copy(s) as V10,state=o(n);if(step===0)n.ap--;
+ const step=d.approachStep??0,scene=originApproachScenes[step];if(!scene||step===0&&!d.contactField?.done)return s;
+ const n=copy(s) as V10,state=o(n);
  if(choice!==scene.answer){state.wrongTracks++;n.threat=cap(n.threat+5);n.mind=cap(n.mind-2);return report(n,'외곽 접근 중단','철판이 울렸다. 가까운 곳에서 무언가 움직였다. 숨을 고르고 다시 시도한다. 위협 +5, 정신 -2.','bad');}
  state.approachStep=step+1;
  if(state.approachStep===3){state.cat='captured';return report(n,'시초가 아니었다 · 검은 고양이','관리자: ……고양이? EVE: 외형에 변이가 없습니다. 거대한 실루엣은 뒤쪽 조명과 철창의 겹친 그림자였습니다. 실제 배회형 MUTANT와는 별개의 개체입니다. 고양이가 유출을 일으켰다는 증거는 없다. 아직 신원은 확인되지 않았습니다.','mystery');}
@@ -129,7 +129,7 @@ export function restoreOriginPhotos(s:V10,answer?:number):V10{
 function applyPhotoTruth(n:V10){
  const d=o(n);if(d.photos>=7)n.flags.humanTruth=true;
  if(d.photos>=10)n.headquarters.revealStage=Math.max(2,n.headquarters.revealStage);
- if(d.photos>=11){n.flags.mirror=true;n.headquarters.revealStage=Math.max(3,n.headquarters.revealStage);}
+ if(d.photos>=11){n.flags.mirror=true;n.headquarters.revealStage=Math.max(3,n.headquarters.revealStage);d.bodyStability??=72;d.bodyDay??=n.day;}
  if(d.photos>=12)d.endingEvidence=true;
 }
 export const individualPhotoPuzzles=[
@@ -273,6 +273,7 @@ export function resolveOriginCrisis(s:V10,choice:'protect'|'knowledge'):V10{
 /** Branch consequences persist between days; no random irreversible cat death. */
 export function tickOriginDay(s:V10):void{
  const d=ensureOriginZero(s);if(!d.route)return;
+ if(d.photos>=11&&d.bodyDay!==s.day){const before=d.bodyStability??72;d.bodyStability=Math.max(8,before-(s.infection>=55?9:5));d.bodyDay=s.day;if(before>45&&d.bodyStability<=45)log(s,'관리자 생체 안정도 저하','EVE: 손의 떨림이 증가했습니다. 지금은 무리하지 마십시오.','bad');if(before>20&&d.bodyStability<=20)log(s,'관리자 생체 신호 임계','EVE: 남은 신체 안정성이 낮습니다. 기록을 마칠 시간이 얼마 남지 않았습니다.','bad');}
  if(d.route==='shelter'){
   const decay=s.facility<40?12:s.infection>55?9:s.facilities.containment?2:5;
   d.stability=cap(d.stability-decay);

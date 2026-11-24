@@ -219,6 +219,7 @@ export function gearUnavailable(s:V10,gear:Gear,region:RegionId):string|null{
 }
 export function expeditionUsedToday(s:V10){return s.lastExpeditionDay===s.day;}
 export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companions:CrewId[]=[]):string|null{
+ if(s.originZero?.contactField?.active)return '미확인 신호 현장 탐사를 마치거나 철수하십시오.';
  const r=regions.find(r=>r.id===region);
  if(!r)return '알 수 없는 탐사 구역입니다.';
  if(s.phase!=='day')return '현재는 출동할 수 없는 시간입니다.';
@@ -409,7 +410,7 @@ export type DayEndBlocker={code:string;message:string;tab:'hub'|'expedition'|'hq
 export function getDayEndBlocker(s:V10):DayEndBlocker|null{
  if(s.phase!=='day')return {code:'phase',message:'현재는 낮 운영 단계가 아닙니다. 진행 중인 결말 또는 전환 화면을 먼저 마치세요.',tab:'hub',actionLabel:'중앙 화면 보기'};
  if(s.pending)return {code:'rescue',message:'포획한 개체의 구조·격리 결정을 먼저 완료해야 합니다.',tab:'expedition',actionLabel:'구조 결정으로 이동'};
- if(s.run)return {code:'expedition',message:'현재 탐사 중입니다. 탐사를 마치거나 철수하세요.',tab:'expedition',actionLabel:'탐사로 이동'};
+ if(s.run||s.originZero?.contactField?.active)return {code:'expedition',message:'현재 탐사 중입니다. 탐사를 마치거나 철수하세요.',tab:'expedition',actionLabel:'탐사로 이동'};
  if(s.pendingIncident)return {code:'incident',message:`미처리된 사건 「${incidentDefs[s.pendingIncident]?.title??s.pendingIncident}」이 있습니다. 사건 대응을 선택하세요.`,tab:'hub',actionLabel:'사건 대응 확인'};
  if(s.crew?.pendingTermination)return {code:'termination',message:'직원 신호 소실에 대한 결정을 먼저 처리해야 합니다.',tab:'hub',actionLabel:'직원 사건 확인'};
  if(s.crew?.pendingNightVote)return {code:'night-vote',message:'직원 야간 근무 결정이 대기 중입니다. 직원 의견을 먼저 선택하세요.',tab:'hub',actionLabel:'직원 투표 확인'};
