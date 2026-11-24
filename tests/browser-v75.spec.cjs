@@ -29,8 +29,9 @@ test('CCTV false lead reveals the ordinary M-00 cat through three trace choices'
  const suspect=panel.locator('.oz-suspect-still img');await expect(suspect).toHaveAttribute('src','/assets/events/m00_suspected_origin.png');await expect.poll(()=>suspect.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
  await panel.getByRole('button',{name:/외곽 영상 추적 시작/}).click();
  for(const cam of ['CAM 03','CAM 01','CAM 02'])await panel.getByRole('button',{name:new RegExp(cam)}).click();
+ await expect(panel.getByRole('region',{name:'미확인 신호 현장 접근'})).toBeVisible();await expect(panel.locator('.oz-cat-image')).toHaveCount(0);for(const label of ['낮은 자세로 움직임을 관찰한다','광원을 낮춰 벽과 실루엣의 거리를 비교한다','몸을 낮추고 손을 내밀어 기다린다'])await panel.getByRole('button',{name:label,exact:true}).click();
  await expect(panel.getByRole('heading',{name:'시초가 아니었다 · 검은 고양이'})).toBeVisible();await expect(panel.locator('.oz-cat-image img')).toHaveAttribute('src','/assets/animals/m00_normal.png');
- const reveal=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).lastOutcome,KEY);expect(reveal).toContain('별개의 개체가 아니었다');expect(reveal).toContain('고양이가 유출을 일으켰다는 증거는 없다');
+ const reveal=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).lastOutcome,KEY);expect(reveal).toContain('별개의 개체입니다');expect(reveal).toContain('고양이가 유출을 일으켰다는 증거는 없다');
  expect(catTrackFrames).toHaveLength(3);
 });
 

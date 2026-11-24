@@ -33,6 +33,7 @@ assert.equal(origin.canTrackCat(s),true,'late exploration opens the ordinary cat
 let c=origin.initiateOriginTrack(s);assert.equal(c.originZero.cat,'traced');assert.equal(c.ap,3);
 let wrong=origin.pickOriginTrace(c,0);assert.equal(wrong.originZero.trackProgress,0);assert.equal(wrong.threat,c.threat+3);
 for(const frame of origin.catTrackFrames)c=origin.pickOriginTrace(c,frame.answer);
+assert.equal(c.originZero.cat,'traced');assert.equal(c.originZero.trackProgress,3);assert.equal(origin.analyzeOriginCat(c),c);for(const scene of origin.originApproachScenes)c=origin.approachOriginSignal(c,scene.answer);
 assert.equal(c.originZero.cat,'captured');assert.equal(c.originZero.trackProgress,3);
 c=origin.analyzeOriginCat(c);assert.equal(c.originZero.cat,'positive');assert.equal(c.originZero.firstPositiveDay,26);assert.ok(c.lastOutcome.includes('M-00'));
 let hq=origin.chooseOriginRoute(c,'hq');let kept=origin.chooseOriginRoute(c,'shelter');
@@ -74,3 +75,9 @@ console.log('PASS calendar does not skip M-00 / Hidden Photo / recall before fin
 let staff=g.beginGame('artist','generator');staff.day=5;staff.rooms=5;add(staff,'rabbit');staff=g.requestHeadquartersTransfer(staff,'rabbit');staff=g.resolveHeadquarters(staff,'transfer');assert.equal(staff.crew.members.length,0);staff.day=6;assert.deepEqual(g.scheduleStaffByDay(staff),['rabbit']);
 console.log('PASS v64 HQ transfer retains next-day 1-person arrival');
 }
+
+// New UI restores each photo separately; the grouped legacy API is preserved for compatibility.
+{let v=origin.chooseOriginRoute(c,'shelter');for(let k=0;k<12;k++){v.ap=4;v.power=100;v=origin.restoreOriginPhoto(v,origin.individualPhotoPuzzles[k].answer);assert.equal(v.originZero.photos,k+1);if(k<6)assert.equal(!!v.flags.humanTruth,false);if(k<10)assert.equal(!!v.flags.mirror,false);}assert.equal(v.flags.mirror,true);}
+
+// CCTV observation is a deliberate risky action, not a wall-clock penalty.
+{const security=require('../src/lib/security.ts');let v=g.beginGame('artist','generator');v.day=8;v.power=100;v.animals=[sim.makeAnimal('rabbit',1)];v.security.incident={animalId:'rabbit',status:'alert',camera:'CAM-02',severity:72,steps:0,description:'signal',detected:false};const spot=security.cctvHotspotIndex(v);const wrongCam=security.securityAction(v,'watch','CAM-03');assert.equal(wrongCam,v);v=security.securityAction(v,'watch','CAM-02');assert.equal(v.power,98);assert.equal(v.security.incident.status,'breach');assert.notEqual(security.cctvHotspotIndex(v),spot);v.security.incident.severity=90;v=security.securityAction(v,'inspect','CAM-02',(security.cctvHotspotIndex(v)+1)%4);assert.equal(v.security.incident.status,'escaped');assert.ok(v.security.escapedIds.includes('rabbit'));assert.equal(v.security.incident.tracked,false);}

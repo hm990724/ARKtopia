@@ -65,10 +65,10 @@ const stale=beginGame('artist','generator');const staleBefore=JSON.stringify(sta
 const unaffordable=beginGame('artist','generator');unaffordable.pendingIncident='cctv_loop';unaffordable.facilities.cctv=true;unaffordable.parts=0;const unaffordableBefore=JSON.stringify(unaffordable);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(unaffordable,0),unaffordable,'an unaffordable response must be rejected');assert.equal(JSON.stringify(unaffordable),unaffordableBefore,'an unaffordable response must not partially mutate the save');
 const previewState=beginGame('artist','generator');previewState.pendingIncident='battery_swelling';const cellPreview=previewIncident(previewState,0);assert.ok(cellPreview.effects.some(x=>x.name==='전지'&&x.delta===-1),'new event cards must show battery costs');
 const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin.png'));assert.equal(suspect.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(suspect.readUInt32BE(16)>=1200&&suspect.readUInt32BE(20)>=800);
-assert.match(origin.catTrackFrames[0].hint,/시초 개체로 의심/);assert.doesNotMatch(origin.catTrackFrames[0].hint,/검은 고양이/);assert.match(origin.catTrackFrames[2].hint,/작은 검은 고양이/);
+assert.match(origin.catTrackFrames[0].hint,/시초 개체로 의심/);assert.doesNotMatch(origin.catTrackFrames[0].hint,/검은 고양이/);assert.doesNotMatch(origin.catTrackFrames[2].hint,/검은 고양이/);
 const route=beginGame('artist','generator');route.day=26;route.tutorialStep=9;route.encounters=5;route.ap=4;route.headquarters.revealStage=2;route.originZero=emptyOriginZero();
 assert.equal(origin.canTrackCat(route),true);let traced=origin.initiateOriginTrack(route);assert.match(traced.lastOutcome,/시초일 가능성을 제기/);
-for(const frame of origin.catTrackFrames)traced=origin.pickOriginTrace(traced,frame.answer);
-assert.equal(traced.originZero.cat,'captured');assert.match(traced.lastOutcome,/별개의 개체가 아니었다/);assert.match(traced.lastOutcome,/작은 검은 고양이/);
+for(const frame of origin.catTrackFrames)traced=origin.pickOriginTrace(traced,frame.answer);assert.equal(traced.originZero.cat,'traced');for(const scene of origin.originApproachScenes)traced=origin.approachOriginSignal(traced,scene.answer);
+assert.equal(traced.originZero.cat,'captured');assert.match(traced.lastOutcome,/별개의 개체입니다/);assert.match(traced.lastOutcome,/고양이/);
 traced=origin.analyzeOriginCat(traced);assert.match(traced.lastOutcome,/인류 붕괴의 원인이라는 판정도 아니다/);
  console.log('PASS all ending routes, incident art, and the dangerous-silhouette-to-ordinary-cat M-00 reveal');

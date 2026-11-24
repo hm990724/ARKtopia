@@ -469,16 +469,15 @@ nightlySecurity(n);if(n.facilityPowerState?.powered.includes("synthesis"))n.know
 if(n.infection>75){n.mind=cap(n.mind-10);n.eve=cap(n.eve-3)}applyCrewLossPenalties(n);n.day++;scheduleStaffByDay(n);n.ap=n.start==='station'&&(!n.startBenefits||n.day<=2)?5:4;n.dayEvents=0;n.run=null;
 tickHqOrders(n);
  ensureOriginZero(n);tickOriginDay(n);
-if(n.day>=13&&n.knowledge>=70&&n.clues>=3&&!n.flags.humanTruth){n.flags.humanTruth=true;log(n,'ARK 열람 권한','기록을 검증한 결과 생체 신경 조직에 인간의 기억이 보존됐음이 확인됐다.','mystery')}
-if(n.day>=20&&(n.originZero?.photos??0)>=11&&n.flags.humanTruth&&n.knowledge>=145&&n.clues>=7&&!n.flags.mirror){n.flags.mirror=true;log(n,'제000번 개체','거울실의 생체 기록은 관리자의 신체가 최초의 연구자와 다른 복제체임을 가리킨다.','mystery')}
+// Identity disclosures are owned by the actual restored evidence, not dates.
 // The facility reports to an unseen authority. Clues unfold only when the player has progressed.
  const h=n.headquarters??(n.headquarters=emptyHeadquarters());
- if(!h.pendingScene&&h.firstReport&&h.revealStage===0&&n.day>=12&&n.clues>=3){h.revealStage=1;h.pendingScene='trace';log(n,'수신처 없는 송신','기억 공명 보고서의 수신처가 중앙 시설 외부에 있다는 흔적을 발견했다.','mystery')}
- else if(!h.pendingScene&&h.firstReport&&h.revealStage===1&&n.day>=20&&n.flags.humanTruth&&n.clues>=6){h.revealStage=2;h.pendingScene='evidence';log(n,'생체 반출 명세','이송 개체의 기억 보존이 외부 생체 실험과 연결되어 있다는 기록을 확보했다.','mystery')}
- else if(!h.pendingScene&&h.firstReport&&h.revealStage===2&&n.day>=26&&n.flags.mirror&&(n.originZero?.photos??0)>=11){h.revealStage=3;h.pendingScene='origin';log(n,'제000번 제조 기록','관리자의 신경 기록이 최초 연구자의 장기 보존 뇌 이식 명세와 연결된다.','mystery')}
+ if(!h.pendingScene&&h.firstReport&&h.revealStage===0&&n.encounters>=2&&n.clues>=3){h.revealStage=1;h.pendingScene='trace';log(n,'수신처 없는 송신','기억 공명 보고서의 수신처가 중앙 시설 외부에 있다는 흔적을 발견했다.','mystery')}
+ else if(!h.pendingScene&&h.firstReport&&h.revealStage===1&&!!n.originZero?.firstPositiveDay&&n.originZero.photos>=10){h.revealStage=2;h.pendingScene='evidence';log(n,'생체 반출 명세','이송 개체의 기억 보존이 외부 생체 실험과 연결되어 있다는 기록을 확보했다.','mystery')}
+ else if(!h.pendingScene&&h.firstReport&&h.revealStage===2&&!!n.originZero?.firstPositiveDay&&(n.originZero?.photos??0)>=11){h.revealStage=3;h.pendingScene='origin';log(n,'제000번 제조 기록','관리자의 신경 기록이 최초 연구자의 장기 보존 뇌 이식 명세와 연결된다.','mystery')}
  if(n.archive?.bonuses.power)n.power=cap(n.power+30);
  evaluateArchiveReveal(n);
- if(n.day>=30&&originReadyForFinale(n)){n.phase='finale';if(h.revealStage<3){h.revealStage=3;h.pendingScene='origin';log(n,'최종 기밀 해독','본부의 인류 복원 명령과 최초 과학자의 신념이 같은 문장에서 시작했음을 확인했다.','mystery')}}else {n.pendingIncident=determineIncident(n);n.phase='day';if((n.hqOrders?.interference??0)>=55&&n.day%5===1&&!n.pendingIncident){n.pendingIncident='intrusion';log(n,'본부 간섭 · 침입자 음성', '본부 지원 차단 이후 외곽에서 관리자 인증 신호를 도용한 생체 교란이 포착됐습니다.', 'bad');}scheduleVoiceBreach(n);}
+ if(originReadyForFinale(n)){n.phase='finale';if(h.revealStage<3){h.revealStage=3;h.pendingScene='origin';log(n,'최종 기밀 해독','본부의 인류 복원 명령과 최초 과학자의 신념이 같은 문장에서 시작했음을 확인했다.','mystery')}}else {n.pendingIncident=determineIncident(n);n.phase='day';if((n.hqOrders?.interference??0)>=55&&n.day%5===1&&!n.pendingIncident){n.pendingIncident='intrusion';log(n,'본부 간섭 · 침입자 음성', '본부 지원 차단 이후 외곽에서 관리자 인증 신호를 도용한 생체 교란이 포착됐습니다.', 'bad');}scheduleVoiceBreach(n);}
 summary(n,'하루의 종료',`전력 ${n.power}%, 감염도 ${n.infection}%, 위협 ${n.threat}%. ${used==='shield'?'방어막을 점검했다.':used==='rest'?'충분한 휴식을 취했다.':'경비를 가동하지 못했다. 외부 위협과 격리 위험이 상승했다.'}`,'info');recalc(n);return n}
 export function registerFullResonance(before:V10,after:V10,id:AnimalId):V10 {
  const prev=before.animals.find(a=>a.id===id);const a=after.animals.find(a=>a.id===id);
