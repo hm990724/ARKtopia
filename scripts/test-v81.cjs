@@ -3,11 +3,11 @@ require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f
 const game=require('../src/lib/game-v10.ts');
 const dispatch=require('../src/lib/facility-power.ts');
 const all={cctv:true,containment:true,infirmary:true,synthesis:true};
-function prepared(){const s=game.beginGame('engineer','generator');s.day=2;s.tutorialStep=9;s.ap=0;s.power=32;s.facilities={...all};s.pendingIncident=null;s.pending=null;s.run=null;return s;}
+function prepared(){const s=game.beginGame('engineer','generator');s.day=2;s.tutorialStep=9;s.ap=0;s.power=27;s.facilities={...all};s.pendingIncident=null;s.pending=null;s.run=null;return s;}
 let s=prepared();
 assert.deepEqual(s.facilityPowerPriority,['cctv','containment','infirmary','synthesis']);
-const preview=game.previewNight(s,'shield');assert.equal(preview.powerAfter,4);assert.deepEqual(preview.facilityDispatch.powered,['cctv']);assert.deepEqual(preview.facilityDispatch.shed,['containment','infirmary','synthesis']);
-let next=game.finishDay(s,'shield');assert.equal(next.day,3);assert.equal(next.power,1);assert.deepEqual(next.facilityPowerState.powered,['cctv']);assert.deepEqual(next.facilityPowerState.shed,['containment','infirmary','synthesis']);
+const preview=game.previewNight(s,'shield');assert.equal(preview.powerAfter,3);assert.deepEqual(preview.facilityDispatch.powered,['cctv']);assert.deepEqual(preview.facilityDispatch.shed,['containment','infirmary','synthesis']);
+let next=game.finishDay(s,'shield');assert.equal(next.day,3);assert.equal(next.power,0);assert.deepEqual(next.facilityPowerState.powered,['cctv']);assert.deepEqual(next.facilityPowerState.shed,['containment','infirmary','synthesis']);
 assert.ok(next.eventHistory.some(e=>e.includes('야간 배전 차단')));
 let reordered=dispatch.setFacilityPowerPriority(s,'infirmary',-1);assert.deepEqual(reordered.facilityPowerPriority,['cctv','infirmary','containment','synthesis']);
 reordered=dispatch.setFacilityPowerPriority(reordered,'infirmary',-1);assert.deepEqual(reordered.facilityPowerPriority,['infirmary','cctv','containment','synthesis']);
