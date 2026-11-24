@@ -4,18 +4,17 @@ import {createPortal} from 'react-dom';
 import {Radio,HeartPulse,Brain,ChevronRight,ShieldAlert,Lock,BookOpen} from 'lucide-react';
 import {CREW_IDS,CREW_PROFILES,CREW_LOSS_EFFECTS,type CrewId} from '@/lib/crew';
 import type {V10} from '@/lib/game-v10';
-import {characterPortrait} from '@/lib/character-art';
+import {staffCondition,staffStatusPortrait,staffDialoguePortrait,type PortraitMood} from '@/lib/character-art';
 
-export function StaffPortrait({id,className='',condition='safe'}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical'}){
- const sources=[
-  characterPortrait(id,condition==='safe'?'neutral':condition==='unstable'?'anxious':'critical'),
-  ...(condition==='safe'?[]:[`/assets/staff/${id}/portrait_${condition}.webp`]),
+export function StaffPortrait({id,className='',condition='safe',dialogueMood}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical';dialogueMood?:PortraitMood}){
+ const primary=dialogueMood?staffDialoguePortrait(id,dialogueMood,condition):staffStatusPortrait(id,condition);
+ const sources=[primary, ...(dialogueMood?[staffStatusPortrait(id,condition)]:[]),
   `/assets/staff/${id}/portrait.webp`,
   `/assets/cinematics/staff-arrivals/${id}/scene.webp`
  ];
  const [index,setIndex]=useState(0);
- useEffect(()=>setIndex(0),[id,condition]);
- const key=`${id}-${condition}`;
+ useEffect(()=>setIndex(0),[id,condition,dialogueMood]);
+ const key=`${id}-${condition}-${dialogueMood??'status'}`;
  const current=index;
  const fallback=current>=sources.length;
  const arrivalFrame=current===sources.length-1;
@@ -100,7 +99,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
   <div className="v45-roster-head"><span><Radio size={12}/> HQ / STAFF</span><b>{crew?.members.length??0} / 4</b><button className="v69-roster-toggle" type="button" aria-expanded={rosterOpen} aria-controls="v69-roster-content" onClick={()=>setRosterOpen(v=>!v)}>{rosterOpen?"직원 접기":"직원 펼치기"} <ChevronRight size={14}/></button></div>
   <div id="v69-roster-content" className={"v69-roster-content "+(rosterOpen?"is-open":"")}>
   <div className="v45-roster-grid">{CREW_IDS.map(id=>{const member=crew?.members.find(m=>m.id===id);const lost=retired.includes(id);return <button key={id} className={'v45-roster-item '+(member?'arrived':lost?'v49-retired':'locked')+(selected===id?' selected':'')} disabled={!member} type="button" onClick={()=>setSelected(v=>v===id?null:id)} aria-label={`${CREW_PROFILES[id].post} ${member?`직원 상세`: lost?'영구 처리 · 복귀 불가':'아직 미배치'}`}>
-   {member?<StaffPortrait id={id}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
+   {member?<StaffPortrait id={id} condition={staffCondition(member.mind)}/>:<span className="v45-portrait v45-portrait-empty"><Lock size={15}/></span>}
    <span className="v60-staff-info"><b>{CREW_PROFILES[id].post}</b><small>{member?`정신력 ${member.mind} · ${member.mind<35?'위험':member.mind<62?'주의':'안정'}`:lost?'인격 신호 소실':'미배치'}</small>{member&&<span className="v60-staff-progress"><i style={{width:`${member.mind}%`}}/></span>}</span>
    {member&&<i className={member.mind<35?'v45-staff-danger':member.mind<62?'v45-staff-warning':'v45-staff-ok'}/>}
   </button>})}</div>
@@ -109,7 +108,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
   </div>
   {selectedMember&&selected&&createPortal(<div className="v67-staff-overlay" role="presentation" onMouseDown={(event)=>{if(event.target===event.currentTarget)setSelected(null)}}>
     <div className="v67-staff-modal" role="dialog" aria-modal="true" aria-labelledby="v67-staff-title" key={selected}>
-     <div className="v67-staff-hero"><StaffPortrait id={selected} className="v67-staff-hero-art"/><span className="v67-staff-hero-tint"/><div className="v67-staff-hero-label">ARK // PERSONNEL RECORD <b>{CREW_PROFILES[selected].post}</b></div></div>
+     <div className="v67-staff-hero"><StaffPortrait id={selected} condition={staffCondition(selectedMember.mind)} className="v67-staff-hero-art"/><span className="v67-staff-hero-tint"/><div className="v67-staff-hero-label">ARK // PERSONNEL RECORD <b>{CREW_PROFILES[selected].post}</b></div></div>
      <div className="v67-staff-content">
       <div className="v67-staff-heading"><div><span className="micro-label">HQ // PERSONNEL</span><h2 id="v67-staff-title">{CREW_PROFILES[selected].post}</h2><p>{CREW_PROFILES[selected].personality}</p></div><button className="v67-staff-close" type="button" aria-label="직원 정보 닫기" onClick={()=>setSelected(null)}>×</button></div>
       <div className="v67-staff-mind"><span>정신 안정도</span><strong>{selectedMember.mind}<small> / 100</small></strong><div className="v60-staff-progress"><i style={{width:`${selectedMember.mind}%`}}/></div></div>
