@@ -32,22 +32,37 @@ test('recovered photos load, enlarge and close with Escape while early records s
  await expect(page.locator('.v71-story-grid')).not.toContainText('실패라고 이름 붙인 생명');
  await page.screenshot({path:'docs/qa-v71/archive.png',fullPage:true});
 });
-test('night fuse wrong order resets and correct order changes the actual saved settlement',async({page})=>{
+test('night wiring wrong test costs resources and solved topology changes saved settlement',async({page})=>{
  const fixture=JSON.parse(fs.readFileSync(require('path').join(__dirname,'fixtures/day003-ap0.json'),'utf8'));
- const {previewNight,nightCircuitSequence}=require('../src/lib/game-v10.ts');
+ const {previewNight}=require('../src/lib/game-v10.ts'),{wiringBoard,wiringMasks}=require('../src/lib/wiring.ts');
  await seed(page,fixture);await page.getByRole('button',{name:/야간 대응/}).last().click();
  await page.locator('.v73-legacy-repair summary').click();
- const f=page.locator('.v69-fuse-buttons button'),sequence=nightCircuitSequence(fixture.day);
- // One out-of-order input must reset immediately; then use the voltage order shown by the live game.
- await f.nth(sequence[1]).click();await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(0);
- for(const i of sequence)await f.nth(i).click();
- await expect(page.locator('.v69-fuse-buttons .is-connected')).toHaveCount(4);
+ const panel=page.getByRole('region',{name:'배선 연결 미니게임'}),cells=panel.locator('.wiring-grid button');
+ await panel.getByRole('button',{name:/회로 시험/}).click();
+ await expect.poll(async()=> (await state(page)).wiring?.night?.faults).toBe(1);
+ const board=wiringBoard(await state(page),'night'),masks=wiringMasks(board.layout);
+ for(let k=0;k<16;k++){if(!masks[k])continue;for(let turn=0;turn<(4-board.rotations[k])%4;turn++)await cells.nth(k).click();}
+ await panel.getByRole('button',{name:/회로 시험/}).click();
+ await expect.poll(async()=> (await state(page)).nightCircuit?.completed).toBe(true);
  const before=await state(page),expected=previewNight(before,'shield',{maintained:true});
  await page.getByRole('button',{name:/야간 운영 확정|무방비로 다음 날/}).last().click();
  await expect.poll(async()=> (await state(page)).day).toBe(4);
- // Night power preview is before automatic facility dispatch; settlement also pays each powered facility draw.
  expect((await state(page)).power).toBe(expected.powerAfter-expected.facilityDispatch.spent);
  await page.reload();expect((await state(page)).ap).toBe(4);
+});
+test('voice identity requires actual waveform alignment and survives reload',async({page})=>{
+ const voice=require('../src/lib/voice-breach.ts'),s=beginGame('medic','generator');s.day=8;s.tutorialStep=9;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work'];voice.scheduleVoiceBreach(s,0,0,.1);
+ await seed(page,s);
+ const modal=page.getByRole('dialog',{name:'미확인 음성 · 야간 CCTV 출입 판정'});await expect(modal).toBeVisible();
+ const probe=voice.voiceSignal(s.voice.pending,'eve');
+ await modal.getByRole('button',{name:/EVE 신호 검증/}).click();
+ for(let k=0;k<probe.alignment;k++)await modal.getByRole('button',{name:'수신 파형 왼쪽 이동'}).click();
+ await modal.getByRole('button',{name:probe.reading==='match'?'일치':probe.reading==='mismatch'?'불일치':'결손 · 판독 불가',exact:true}).click();
+ await expect.poll(async()=> (await state(page)).voice.pending.remaining).toBe(2);
+ await page.reload();await expect(modal).toBeVisible();
+ await expect(modal.locator('.v56-probe.investigated')).toHaveCount(1);
+ await modal.getByRole('button',{name:/봉쇄한다/}).click();await modal.getByRole('button',{name:'봉쇄 확정'}).click();
+ await expect.poll(async()=> (await state(page)).voice.correct).toBe(1);
 });
 test('tutorial facility mission routes to supplies even with zero AP',async({page})=>{
  const s=beginGame('medic','generator');s.tutorialStep=7;s.ap=0;s.day=3;

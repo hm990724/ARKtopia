@@ -54,7 +54,7 @@ export function scheduleVoiceBreach(s:V10,triggerRoll=Math.random(),subjectRoll=
 export type VoiceReading='match'|'mismatch'|'uncertain';
 export function voiceSignal(e:VoiceEvent,probe:VoiceProbe){
  const index=(['eve','enclosure','personnel'] as const).indexOf(probe),seed=e.signalSeed??e.day*97+e.id.length*13;
- const base=Array.from({length:6},(_,k)=>1+((seed*(k+3)+k*k*13+index*17)%5));
+ const base=Array.from({length:6},(_,k)=>k===0?6:1+((seed*(k+3)+k*k*13+index*17)%5));
  // Two independent channels carry the real identity; a third may be stale,
  // corrupted, or deliberately copied. No probe is universally reliable.
  const ambiguous=(seed+e.day)%3===index;
@@ -63,22 +63,24 @@ export function voiceSignal(e:VoiceEvent,probe:VoiceProbe){
  const missing=ambiguous&&seed%3===0?2:-1;
  if(missing>=0)sample[missing]=0;
  const reading:VoiceReading=missing>=0?'uncertain':sample.some((x,k)=>x!==base[k])?'mismatch':'match';
- return {base,sample,reading};
+ const phase=1+((seed+index*7)%5);
+ const received=[...sample.slice(phase),...sample.slice(0,phase)];
+ return {base,sample,received,alignment:6-phase,reading};
 }
 export function voiceKnockPattern(e:VoiceEvent){const {sample}=voiceSignal(e,'eve');return sample.slice(0,4).map(v=>.12+v*.095);}
-function evidence(e:VoiceEvent,probe:VoiceProbe,reading?:VoiceReading):VoiceEvidence{
+function evidence(e:VoiceEvent,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):VoiceEvidence{
  const signal=voiceSignal(e,probe);
- if(reading!==undefined&&reading!==signal.reading)return {probe,text:'판독 실패 · 두 신호의 표본이 일치하는지 다시 확인할 수 없습니다. 이 채널은 결론에서 제외하십시오.',tone:'neutral'};
+ if((reading!==undefined&&reading!==signal.reading)||(alignment!==undefined&&alignment!==signal.alignment))return {probe,text:'판독 실패 · 두 신호의 표본이 일치하는지 다시 확인할 수 없습니다. 이 채널은 결론에서 제외하십시오.',tone:'neutral'};
  const label=probe==='eve'?'음성 간격':probe==='enclosure'?'생체 센서 지문':'출입 태그 패턴';
  const text=signal.reading==='match'?'기준과 현재 표본이 일치합니다. 복제된 신호도 일치할 수 있습니다.':signal.reading==='mismatch'?'두 표본에서 서로 다른 구간이 발견됐습니다. 오래된 기록의 오차 가능성이 있습니다.':'결손 프레임이 있어 대조할 수 없습니다.';
  return {probe,text:label+' · '+text,tone:signal.reading==='match'?'safe':signal.reading==='mismatch'?'doubt':'neutral'};
 }
-export function inspectVoiceBreach(s:V10,probe:VoiceProbe,reading?:VoiceReading):V10{
+export function inspectVoiceBreach(s:V10,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):V10{
  const e=s.voice?.pending;
  if(!e||e.remaining<=0||!['eve','enclosure','personnel'].includes(probe)||e.checks.some(x=>x.probe===probe))return s;
  if(reading!==undefined&&!['match','mismatch','uncertain'].includes(reading))return s;
  const n=copy(s) as V10,ev=ensureVoice(n).pending!;
- const clue=evidence(ev,probe,reading);ev.checks.push(clue);ev.remaining--;n.lastOutcome=clue.text;
+ const clue=evidence(ev,probe,reading,alignment);ev.checks.push(clue);ev.remaining--;n.lastOutcome=clue.text;
  return n;
 }
 /** Open or seal the physical door. No randomized verdict after the player's decision. */

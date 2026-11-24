@@ -420,9 +420,9 @@ function answerHeadquarters(choice:HqOrderChoice){
  const next=respondHqOrder(s,choice);if(next===s)return;
  setS(next);setTab('hq');setHqDebrief(next.lastOutcome);beep(choice==='refuse'?195:choice==='accept'?360:595);
 }
-function probeDoorVoice(probe:VoiceProbe,reading?:VoiceReading){
+function probeDoorVoice(probe:VoiceProbe,reading?:VoiceReading,alignment?:number){
  if(!s?.voice?.pending)return;
- const next=inspectVoiceBreach(s,probe,reading);if(next===s)return;
+ const next=inspectVoiceBreach(s,probe,reading,alignment);if(next===s)return;
  setS(next);beep(370);setRunFeedback(next.lastOutcome);
 }
 function decideDoorVoice(verdict:VoiceVerdict){
