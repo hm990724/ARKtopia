@@ -12,7 +12,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
-import {revealField,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {revealField,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,mobileSporeContact,advanceSporeSwarm,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -591,7 +591,9 @@ export function resolvePathologyEvent(s:V10,decision:'archive'|'headquarters'):V
 export function tickFieldSpores(s:V10):boolean{
  const f=s.field,run=s.run;
  if(!f||!run||run.firstTutorial||f.combat||f.choice||s.pending||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
- if(!fieldSporeNearby(f)){f.sporeTicks=0;return false;}
+ const light=run.gear.includes('flashlight')&&!f.lightOff&&s.flashlight>0;
+ advanceSporeSwarm(f,light);
+ if(!fieldSporeNearby(f)&&!mobileSporeContact(f)){f.sporeTicks=0;return false;}
  f.sporeTicks=(f.sporeTicks??0)+1;
  if(f.sporeTicks<4)return false;
  f.sporeTicks=0;
@@ -600,7 +602,7 @@ export function tickFieldSpores(s:V10):boolean{
  const exposure=filtered?1:3, infection=Math.max(0,2-(filtered?1:0)-(protectedByCrew?1:0));
  run.exposure+=exposure;
  s.infection=cap(s.infection+infection);
- f.lastEvent=s.lastOutcome=`주변 포자가 퍼졌습니다. 노출 +${exposure} · 감염 +${infection}. 오염 구역에서 벗어나세요.`;
+ f.lastEvent=s.lastOutcome=`감염성 포자에 노출되었습니다. 노출 +${exposure} · 감염 +${infection}. 소등·엄폐 후 거리를 확보하세요.`;
  return true;
 }
 export function toggleFieldLight(s:V10):V10{
@@ -616,7 +618,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  const tile=s.field.tiles[destination];if(tile==='wall')return s;
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
- field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
+ field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field)&&!mobileSporeContact(field))field.sporeTicks=0;
  if(run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
  field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);

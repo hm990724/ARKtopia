@@ -18,6 +18,8 @@ import {
   fieldRelayBearing,
   fieldHasCover,
   fieldSporeNearby,
+  mobileSporeSignal,
+  mobileSporeContact,
   fieldThreatSignal,
   type Pace,
 } from "@/lib/tactical-field";
@@ -195,18 +197,13 @@ export default function FieldMission({
     useState<Exclude<HuntMode, "wait" | "reveal">>("search");
   const [pace,setPace]=useState<Pace>('normal');
   const [captureMethod,setCaptureMethod]=useState<CaptureMethod>('net');
-  const [aimStarted,setAimStarted]=useState<number|null>(null);
-  const [aim,setAim]=useState(0);
-  useEffect(()=>{if(aimStarted===null)return;let id=0;const tick=()=>{const elapsed=performance.now()-aimStarted;setAim(Math.max(0,1-Math.abs((elapsed%1500)/750-1)));id=requestAnimationFrame(tick)};id=requestAnimationFrame(tick);return()=>cancelAnimationFrame(id)},[aimStarted]);
   const [huntSetting, setHuntSetting] = useState<HuntSetting>("cool-clean");
   const [notice, setNotice] = useState("");
   const [searchFlash, setSearchFlash] = useState<number | null>(null);
-  const [netDrag, setNetDrag] = useState<{ x: number; y: number } | null>(null);
-  const dragStart=useRef<number|null>(null);
-  const mapRef = useRef<HTMLDivElement | null>(null);
   const [walking, setWalking] = useState<{ from: number; to: number } | null>(
     null,
   );
+  const latestMove=useRef(onMove);latestMove.current=onMove;
   const walkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [facing,setFacing]=useState<WalkDirection>('down');
   const fieldChoiceFirstButton = useRef<HTMLButtonElement | null>(null);
@@ -240,7 +237,7 @@ export default function FieldMission({
     setWalking({ from: field.position, to: target });
     if (walkTimeout.current) clearTimeout(walkTimeout.current);
     walkTimeout.current = setTimeout(() => {
-      onMove(target, pace);
+      latestMove.current(target, pace);
       setWalking(null);
       walkTimeout.current = null;
     }, pace==='fast'?230:pace==='quiet'?600:450);
@@ -319,6 +316,9 @@ export default function FieldMission({
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
   const relayBearing = fieldRelayBearing(field, relayLevel);
   const threatSignal=fieldThreatSignal(field);
+  const sporeSignal=run.firstTutorial?null:mobileSporeSignal(field);
+  const swarm=run.firstTutorial?null:field.sporeSwarm;
+  const sporeInSight=!!swarm&&!!sporeSignal&&(fieldLineOfSight(field,swarm.position,3)||(swarm.mode==='chase'&&sporeSignal.distance<=4));
   const lightOn=run.gear.includes("flashlight")&&!field.lightOff&&state.flashlight>0;
   const visionRange = lightOn ? 2 : 1;
   const threatInSight = !!field.threat && (fieldLineOfSight(field,field.threat.position,visionRange) || !!threatSignal?.warning);
@@ -404,21 +404,6 @@ export default function FieldMission({
     onHunt({ type: mode, cell: i, setting: huntSetting, method:mode==='net'?captureMethod:undefined, aim:mode==='net'&&captureMethod==='net'?0.5:undefined });
     if (mode !== "search" && !(mode==='net'&&captureMethod==='calm')) setMode("search");
   }
-  function dropNet(x: number, y: number) {
-    const el = mapRef.current;
-    if (!el || !hunt || hunt.outcome !== "playing") return;
-    const r = el.getBoundingClientRect();
-    if (x < r.left || y < r.top || x >= r.right || y >= r.bottom) {
-      setNotice("그물을 지도 안쪽에 놓아주세요.");
-      return;
-    }
-    const tile=document.elementFromPoint(x,y)?.closest<HTMLButtonElement>('button[data-hunt-cell]');
-    const cell=tile&&el.contains(tile)?Number(tile.dataset.huntCell):Array.from(el.querySelectorAll<HTMLButtonElement>('button[data-hunt-cell]')).findIndex(node=>{const b=node.getBoundingClientRect();return x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom});
-    if(cell<0||cell>=size*size){setNotice('격자 칸 내부로 그물을 놓아주세요.');return;}
-    setSearchFlash(cell);
-    onHunt({ type: "net", cell,method:'net',aim:dragStart.current===null?0.5:Math.max(0,1-Math.abs(((performance.now()-dragStart.current)%1500)/750-1)) });
-    setMode("search");
-  }
   const trailCells = hunt ? freshTrailCells(hunt) : [];
   const cameraZoneActive = !!hunt && hunt.species === "specter" && hunt.cameraZone != null && hunt.cameraTurn != null && hunt.turn - hunt.cameraTurn <= 2;
   const zoneActive =
@@ -474,8 +459,8 @@ export default function FieldMission({
       </div>
       {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀 · ST 2"],["normal","걷기 · ST 4"],["fast","달리기 · ST 6"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={!run.gear.includes("flashlight")||state.flashlight<=0||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>손전등 {lightOn?"ON":"OFF"} · {state.flashlight}%</button><small>달리기: 소음 증가 / 소등: 발각 위험 감소</small></div>}
       {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
-      {fieldSporeNearby(field)&&!run.firstTutorial&&!field.combat&&<aside className="ark-spore-warning" role="status"><b>감염성 포자 확산권</b><span>인접 구역에도 포자가 유입됩니다. {Math.max(1,4-(field.sporeTicks??0))}틱 후 노출 · {run.gear.includes('filter')?'필터 작동 중':'필터 없음'} · 구역 이탈 권장</span></aside>}
-      {hunt && field.threat && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>포획 격자와 별개인 실제 외곽 좌표 · 적은 계속 이동합니다.</small><span>{threatSignal?.warning?'발각 직전 · 엄폐 또는 교전 준비':threatSignal?.direction+' · '+threatSignal?.distance}</span></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall':'')} />)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/><span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span></div></div>}
+      {!run.firstTutorial&&!field.combat&&(sporeSignal||fieldSporeNearby(field))&&<aside className={'ark-spore-warning '+(sporeSignal?.mode==='chase'?'is-chasing':'')} role="status"><b>{sporeSignal?.mode==='chase'?'포자 역추적 중':sporeSignal?.mode==='search'?'포자 · 마지막 위치 수색':'감염성 포자 감지'}</b><span>{sporeSignal?`${sporeSignal.direction} · ${sporeSignal.distance}칸 · 감지 ${sporeSignal.alert}%`:'고정 오염원 주변'}{(fieldSporeNearby(field)||mobileSporeContact(field))?` · ${Math.max(1,4-(field.sporeTicks??0))}틱 후 감염`:''} · {run.gear.includes('filter')?'필터 장착':'필터 없음'} · 소등/엄폐/거리 확보</span>{hunt&& !field.threat&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'엄폐'}</button>}</aside>}
+      {hunt && (field.threat||swarm) && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>포획 격자와 별개인 실제 외곽 좌표 · 적은 계속 이동합니다.</small><span>{threatSignal?.warning?'발각 직전 · 엄폐 또는 교전 준비':threatSignal?threatSignal.direction+' · '+threatSignal.distance:sporeSignal?.direction+' · 포자 '+sporeSignal?.distance+'칸'}</span></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall':'')} />)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/>{field.threat&&<span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span>}{swarm&&sporeInSight&&<span className="ark-perimeter-spore" style={{left:`${(swarm.position%width+.5)/width*100}%`,top:`${(Math.floor(swarm.position/width)+.5)/height*100}%`}} aria-label="이동하는 포자"/>}</div></div>}
       {!hunt && (run.captures?.length ?? 0) > 0 && (
         <div className="v41-field-continue" role="status">
           <CheckCircle2 size={17} />
@@ -741,57 +726,17 @@ export default function FieldMission({
             <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><div className="v74-actions-copy"><span>포획 남은 행동</span><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong></div>
             <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
             <button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode(mode==='net'&&captureMethod==='net'?'search':'net')}}><Target size={16}/> {mode==='net'&&captureMethod==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
-            <span>{mode==='net'?(captureMethod==='cage'?'유인 우리 설치 위치 선택':captureMethod==='calm'?'확인된 개체 가까이 접근':'정확한 칸 선택 · 드래그 타이밍 성공 시 십자 범위'):'발자국과 풀 흔들림을 따라 조사할 지점을 클릭하세요'}</span>
+            <button type="button" aria-pressed={mode==='search'} onClick={()=>setMode('search')}>수색 모드</button>
           </div>}
           {hunt ? (
             <>
-          <section className="capture-tactics" aria-label="포획 전술"><header><strong>CAPTURE / 전술 선택</strong><small>수색은 위치 확인 · 포획은 별도 행동</small></header><div className="capture-methods"><button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode('net')}}><Target size={17}/><b>직접 그물</b><small>위치 예측 · 타이밍</small></button><button type="button" disabled={!run.gear.includes('cage')||!!hunt.trap} aria-pressed={mode==='net'&&captureMethod==='cage'} onClick={()=>{setCaptureMethod('cage');setMode('net')}}><Package size={17}/><b>유인 우리</b><small>{hunt.trap?'작동 중 '+hunt.trap.life+'턴':run.gear.includes('cage')?'설치 후 유인 · 6턴':'출동 장비 필요'}</small></button><button type="button" aria-pressed={mode==='net'&&captureMethod==='calm'} onClick={()=>{setCaptureMethod('calm');setMode('net')}}><ShieldAlert size={17}/><b>진정 접근</b><small>경계 낮추기 · 연속 접근</small></button></div><div className="capture-readouts"><label>경계도 <b>{hunt.fear}%</b><meter min={0} max={100} value={hunt.fear}/></label><label>역추적 위험 <b>{hunt.predator}%</b><meter min={0} max={100} value={hunt.predator}/></label><label>교감 진행 <b>{hunt.calmProgress??0}/{['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2}</b><meter min={0} max={['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2} value={hunt.calmProgress??0}/></label></div>{aimStarted!==null&&<div className="capture-aim" role="status"><b>투척 조준 · 녹색 구간에서 놓으세요</b><div><span style={{width:aim*100+'%'}}/></div><small>{Math.round(aim*100)}% · 65% 이상이면 인접 1칸까지 포획</small></div>}</section>
+          <section className="capture-tactics" aria-label="포획 전술"><header><strong>CAPTURE / 전술 선택</strong><small>수색은 위치 확인 · 포획은 별도 행동</small></header><div className="capture-methods"><button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode('net')}}><Target size={17}/><b>직접 그물</b><small>위치 확인 · 칸 클릭</small></button><button type="button" disabled={!run.gear.includes('cage')||!!hunt.trap} aria-pressed={mode==='net'&&captureMethod==='cage'} onClick={()=>{setCaptureMethod('cage');setMode('net')}}><Package size={17}/><b>유인 우리</b><small>{hunt.trap?'작동 중 '+hunt.trap.life+'턴':run.gear.includes('cage')?'설치 후 유인 · 6턴':'출동 장비 필요'}</small></button><button type="button" aria-pressed={mode==='net'&&captureMethod==='calm'} onClick={()=>{setCaptureMethod('calm');setMode('net')}}><ShieldAlert size={17}/><b>진정 접근</b><small>경계 낮추기 · 연속 접근</small></button></div><div className="capture-readouts"><label>경계도 <b>{hunt.fear}%</b><meter min={0} max={100} value={hunt.fear}/></label><label>역추적 위험 <b>{hunt.predator}%</b><meter min={0} max={100} value={hunt.predator}/></label><label>교감 진행 <b>{hunt.calmProgress??0}/{['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2}</b><meter min={0} max={['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2} value={hunt.calmProgress??0}/></label></div></section>
           {hunt && (hunt.species==='moth'||hunt.species==='axolotl') && <div className="v74-species-setting" role="group" aria-label="종별 환경 조절">
             <b>{hunt.species==='moth'?'나방 광량 제어':'아홀로틀 수질·수온 제어'}</b>
             {(hunt.species==='moth'?[['dim','약광 유인'],['bright','강광 차단']]:[['cool-clean','저온·청정'],['warm-clean','온수·청정'],['cool-dirty','저온·오염'],['warm-dirty','온수·오염']]).map(([value,label])=><button type="button" key={value} aria-pressed={huntSetting===value} onClick={()=>setHuntSetting(value as HuntSetting)}>{label}</button>)}
             <span>설정을 고른 뒤 광원 또는 먹이 표식을 지도에 놓으세요. 설치 행동은 1회 소모됩니다.</span>
           </div>}
               <div className="v33-map-frame">
-                <div className="capture-net-dock">              <button
-                type="button"
-                className="v69-drag-net"
-                disabled={hunt.outcome !== "playing" || hunt.actions <= 0}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  dragStart.current=performance.now();setNetDrag({ x: event.clientX, y: event.clientY });setCaptureMethod('net');setMode('net');setAimStarted(dragStart.current);
-                }}
-                onPointerMove={(event) => {
-                  if (dragStart.current!==null)
-                    setNetDrag({ x: event.clientX, y: event.clientY });
-                }}
-                onPointerUp={(event) => {
-                  if (dragStart.current!==null) {
-                    dropNet(event.clientX, event.clientY);
-                    dragStart.current=null;setNetDrag(null);setAimStarted(null);
-                  }
-                }}
-                onPointerCancel={() => {dragStart.current=null;setNetDrag(null);setAimStarted(null)}}
-                onClick={() => {setCaptureMethod('net');setMode("net")}}
-              >
-                <Target size={19} /> 그물 잡고 지도에 드래그{" "}
-                <small>마우스·터치 · 65% 이상에 놓기 / 클릭은 정확한 칸</small>
-              </button>
-              {netDrag && (
-                <div
-                  className="v69-net-cursor"
-                  aria-hidden="true"
-                  style={{ left: netDrag.x, top: netDrag.y }}
-                >
-                  ◉
-                </div>
-              )}
-              {notice && (
-                <p className="v69-net-feedback" role="status">
-                  {notice}
-                </p>
-              )}
-</div>
                 <div className="v33-map-overline">
                   <span>
                     <i /> SECTOR {run.region.toUpperCase()} · THICKET SCAN
@@ -801,8 +746,12 @@ export default function FieldMission({
                     {huntSearchedCount(hunt)}/{size*size}
                   </b>
                 </div>
+                <div className="ark-hunt-instructions" role="status" aria-live="polite">
+                  <b>{mode==='search'?'수색 · 타일 클릭':mode==='net'?(captureMethod==='calm'?'진정 접근 · 발견한 개체 클릭':captureMethod==='cage'?'유인 우리 · 설치 칸 클릭':'그물 준비 · 개체 칸 클릭'):activeMode.name+' · 설치 칸 클릭'}</b>
+                  <span>{mode==='net'?(captureMethod==='calm'?'청음으로 경계를 낮춘 뒤 발견된 개체에 연속 접근하세요.':captureMethod==='cage'?'이동 경로에 우리를 설치하고 청음으로 기다리세요.':'그물은 선택한 정확한 칸에 던집니다. 조사로 현재 위치를 확인하세요.'):'발자국은 이전 위치입니다. 청음으로 범위를 좁히고 수풀을 클릭하세요.'}</span>
+                  <p><Radio size={15}/><strong>최근 결과</strong>{hunt.lastEvent||'수풀을 조사해 주세요.'}</p>
+                </div>
                 <div
-                  ref={mapRef}
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
                     gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
@@ -1022,7 +971,7 @@ export default function FieldMission({
                         : activeMode.name + " 배치 모드"}
                   </strong>
                   <small>
-                    남은 행동 {hunt.actions}회 · 직접 그물 드래그 또는 칸 선택
+                    남은 행동 {hunt.actions}회 · 전술 선택 후 칸 클릭
                   </small>
                 </div>
                 <button
@@ -1037,23 +986,6 @@ export default function FieldMission({
                 >
                   <Clock3 size={16} /> {hunt.species==='lynx'?'청음·은밀 접근':'청음'} · 1행동 <MoveRight size={15} />
                 </button>
-              </div>
-              <div
-                key={`${hunt.turn}-${hunt.lastEvent ?? ""}`}
-                className={
-                  "v58-map-result" +
-                  (String(hunt.lastEvent ?? "").includes("근접 신호")
-                    ? " is-near"
-                    : "") +
-                  (String(hunt.lastEvent ?? "").includes("청음 결과")
-                    ? " is-listen"
-                    : "")
-                }
-                role="status"
-                aria-live="polite"
-              >
-                <Radio size={15} />
-                <span>{hunt.lastEvent ?? ""}</span>
               </div>
               <div className="v33-stage-footnote">
                 <span className="v33-scanner-dot" />{" "}
@@ -1228,6 +1160,7 @@ export default function FieldMission({
                     );
                   })}
                   {field.threat && !field.combat && <span className="ark-moving-threat" data-chasing={field.threat.mode==='closing'} role="img" aria-label="접근 중인 배회형 MUTANT" aria-hidden={!threatInSight} style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:threatInSight?1:0}}><img src="/assets/animals/mutant_mutant.png" alt=""/><small>{field.threat.mode==='closing'?'추격 중':'MUTANT'}</small></span>}
+{swarm&&<span className="ark-moving-spore" data-chasing={swarm.mode==='chase'} aria-hidden={!sporeInSight} style={{left:`${(swarm.position%width+.5)/width*100}%`,top:`${(Math.floor(swarm.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:sporeInSight?1:0}}><span className="ark-swarm-dots"><i/><i/><i/><i/><i/><i/><i/></span><small>{swarm.mode==='chase'?'포자 추격':'포자'}</small></span>}
                    {walking && (
                     <span
                       className="v42-walker-path"

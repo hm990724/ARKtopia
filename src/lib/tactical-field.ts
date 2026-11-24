@@ -14,7 +14,8 @@ export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|
 export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
-export type FieldState={lightOff?:boolean;sporeTicks?:number;combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
+export type FieldState={lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -26,9 +27,44 @@ export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({g
 export const fieldWidth=(f:FieldState)=>f.width??FIELD_COLUMNS;
 export const fieldHeight=(f:FieldState)=>f.height??FIELD_ROWS;
 export const adjacentField=(a:number,b:number,width=FIELD_COLUMNS,size=FIELD_COLUMNS*FIELD_ROWS)=>a>=0&&a<size&&b>=0&&b<size&&distance(a,b,width)===1;
-/** A spore cloud drifts onto its adjacent tiles without moving or spawning enemies. */
+/** Static contamination sources remain hazardous, independent of the mobile swarm. */
 export function fieldSporeNearby(f:FieldState):boolean{
  return f.tiles.some((tile,i)=>tile==='hazard'&&(i===f.position||adjacentField(i,f.position,fieldWidth(f),f.tiles.length)));
+}
+/** A fictional mobile colony follows detectable light, movement and nearby bio-signals. */
+function sporePaths(f:FieldState,target:number){
+ const w=fieldWidth(f),neighbors=(at:number)=>[at-w,at+w,at-1,at+1].filter(i=>adjacentField(at,i,w,f.tiles.length)&&f.tiles[i]!=='wall');
+ const costs=new Map<number,number>([[target,0]]),queue=[target];
+ for(let i=0;i<queue.length;i++)for(const next of neighbors(queue[i]))if(!costs.has(next)){costs.set(next,costs.get(queue[i])!+1);queue.push(next);}
+ return {costs,neighbors};
+}
+export function initializeSporeSwarm(f:FieldState){
+ if(f.sporeSwarm!==undefined)return;
+ const {costs}=sporePaths(f,f.position);
+ const candidates=[...costs.entries()].filter(([i,d])=>d>=3&&f.tiles[i]!=='exit'&&f.tiles[i]!=='animal').sort((a,b)=>Math.abs(a[1]-4)-Math.abs(b[1]-4)||(f.tiles[b[0]]==='hazard'?1:0)-(f.tiles[a[0]]==='hazard'?1:0)||a[0]-b[0]);
+ const at=candidates[0]?.[0];f.sporeSwarm=at===undefined?null:{position:at,origin:at,alert:0,mode:'drift',ticks:0};
+}
+export function mobileSporeSignal(f:FieldState){
+ const s=f.sporeSwarm;if(!s)return null;
+ const w=fieldWidth(f),dx=s.position%w-f.position%w,dy=Math.floor(s.position/w)-Math.floor(f.position/w),distance=Math.abs(dx)+Math.abs(dy);
+ return {distance,direction:distance===0?'현재 위치':(dy<0?'북':dy>0?'남':'')+(dx>0?'동':dx<0?'서':'')+'쪽',alert:s.alert,mode:s.mode};
+}
+export function mobileSporeContact(f:FieldState):boolean{
+ const signal=mobileSporeSignal(f);return !!signal&&signal.distance<=1&&fieldLineOfSight(f,f.sporeSwarm!.position,1);
+}
+export function advanceSporeSwarm(f:FieldState,lightOn=false):void{
+ initializeSporeSwarm(f);
+ const s=f.sporeSwarm;if(!s)return;
+ const d=distance(s.position,f.position,fieldWidth(f));
+ s.ticks++;
+ const detected=!f.concealed&&((d<=3&&fieldLineOfSight(f,s.position,3))||(lightOn&&fieldLineOfSight(f,s.position,6))||(f.noise>=16&&d<=6));
+ if(detected){s.alert=Math.min(100,s.alert+(lightOn?24:18));s.target=f.position;s.mode='chase';}
+ else{s.alert=Math.max(0,s.alert-18);s.mode=s.alert>0&&s.target!==undefined?'search':'drift';if(!s.alert)s.target=undefined;}
+ const target=s.target??s.origin;
+ if(s.position===target||s.mode==='drift'&&s.ticks%2!==0)return;
+ const {costs,neighbors}=sporePaths(f,target);
+ const next=neighbors(s.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
+ if(next!==undefined&&(costs.get(next)??Infinity)<(costs.get(s.position)??Infinity))s.position=next;
 }
 export function fieldHasCover(f:FieldState,index=f.position):boolean{const width=fieldWidth(f);return [index-width,index+width,index-1,index+1].some(i=>adjacentField(index,i,width,f.tiles.length)&&f.tiles[i]==='wall');}
 export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{

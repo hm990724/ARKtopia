@@ -30,7 +30,7 @@ console.log('PASS independent search, precision net, two-stage calming, cage and
 
 // Environmental hazards are not enemies, and waiting near spores matters.
 let spore=g.beginGame('medic','generator');spore.day=6;spore.tutorialStep=9;spore=g.startRun(spore,'garden',['flashlight']);assert.ok(spore.run);
-spore.field.threat=null;spore.field.tiles.fill('empty');spore.field.position=14;spore.field.visited=[14];spore.field.tiles[15]='hazard';
+spore.field.threat=null;spore.field.sporeSwarm=null;spore.field.tiles.fill('empty');spore.field.position=14;spore.field.visited=[14];spore.field.tiles[15]='hazard';
 assert.equal(fieldAI.fieldSporeNearby(spore.field),true);
 const sporeExposure=spore.run.exposure,sporeInfection=spore.infection;
 for(let i=0;i<3;i++)assert.equal(g.tickFieldSpores(spore),false);
@@ -50,3 +50,9 @@ let task=g.beginGame('medic','generator');task.power=40;task.infection=60;task.m
 let night=g.beginGame('medic','generator');night.day=5;night.tutorialStep=9;night.power=70;assert.equal(g.previewNight(night,'shield').applied,'standby');assert.equal(g.resolveNightTransition(night,'shield').applied,'standby');night.nightCircuit={day:5,order:[0,1,2,3],faults:0,completed:true};assert.equal(g.previewNight(night,'shield').applied,'shield');assert.equal(g.resolveNightTransition(night,'shield').applied,'shield');night.nightCircuit.faults=3;assert.equal(g.previewNight(night,'shield').applied,'standby');console.log('PASS one-AP care, bounded outcomes, emergency quality and night circuit gate');
 
 assert.deepEqual(security.containmentWings(1),['A']);assert.deepEqual(security.containmentWings(5),['A','B','C','D','E']);assert.equal(security.roomWing(27),'AA');assert.equal(new Set(security.cameras(30).map(c=>c.id)).size,32);assert.equal(security.cameraRoom(security.roomCamera(30)),30);console.log('PASS dynamically allocated room labels and CCTV channels');
+
+// Mobile spores are separate from fixed hazard cells and the unique MUTANT.
+let swarm=g.beginGame('medic','generator');swarm.day=6;swarm.tutorialStep=9;swarm=g.startRun(swarm,'garden',['flashlight']);assert.ok(swarm.run);swarm.run.firstTutorial=false;swarm.field.threat=null;swarm.field.tiles.fill('empty');swarm.field.position=14;swarm.field.sporeSwarm={position:18,origin:18,alert:0,mode:'drift',ticks:0};swarm.field.noise=40;
+g.tickFieldSpores(swarm);assert.equal(swarm.field.sporeSwarm.mode,'chase');assert.equal(swarm.field.sporeSwarm.position,17);g.tickFieldSpores(swarm);assert.equal(swarm.field.sporeSwarm.position,16);g.tickFieldSpores(swarm);assert.equal(swarm.field.sporeSwarm.position,15);const ex=swarm.run.exposure;for(let i=0;i<3;i++)g.tickFieldSpores(swarm);assert.ok(swarm.run.exposure>ex);assert.equal(swarm.field.combat??null,null);
+swarm.field.concealed=true;swarm.field.lightOff=true;swarm.field.noise=0;for(let i=0;i<6;i++)g.tickFieldSpores(swarm);assert.equal(swarm.field.sporeSwarm.mode,'drift');assert.equal(swarm.field.sporeSwarm.position,18);assert.equal(fieldAI.mobileSporeContact(swarm.field),false);assert.equal(g.loadGame(JSON.parse(JSON.stringify(swarm))).field.sporeSwarm.position,18);
+console.log('PASS mobile spore pursuit, independent exposure, concealment and save persistence');

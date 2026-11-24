@@ -375,7 +375,7 @@ useEffect(()=>{
  const timer=window.setInterval(()=>setS(current=>{
   if(!current?.run||current.run.firstTutorial||!current.field||current.field.combat||current.field.choice||current.pending)return current;
   const activeThreat=!!current.field.threat&&!mutantSecured(current);
-  if(!activeThreat&&!fieldSporeNearby(current.field)&&!current.field.sporeTicks)return current;
+  if(!activeThreat&&current.field.sporeSwarm===null&&!fieldSporeNearby(current.field)&&!current.field.sporeTicks)return current;
   const next=structuredClone(current),field=next.field!;
   tickFieldSpores(next);
   if(activeThreat&&tickRoamingThreat(next)){field.lastEvent='MUTANT가 접근했습니다. 중단된 포획 기록은 보존됩니다.';next.lastOutcome=field.lastEvent;}
@@ -538,7 +538,7 @@ function applyFieldMedkit(){if(!s)return;const n=performFieldMedkit(s);if(n===s)
   if(completed)showFieldSettlement(n);
   // Items are banked immediately; only the final expedition settlement opens a modal.
   // The running ledger in FieldMission shows every item and number while moving.
-  if(found&&s.run?.firstTutorial&&s.tutorialStep===2)dialogue([{speaker:'관리자',text:'발자국만 있고 동물의 모습은 보이지 않아. 이 흔적이 지금 위치라는 보장도 없겠지.'},{speaker:'EVE',text:'중앙의 8×8 수풀을 조사해 개체의 이동 경로를 추리하십시오. 한 칸 조사할 때마다 1턴이 흐르고 동물도 움직입니다. 발자국은 방금 전 위치이며, 3턴마다 개체 주변 한 칸의 풀이 흔들립니다.'},{speaker:'EVE',text:'왼쪽 검은 행동 카드 세 장을 해독하면 습성이 드러납니다. 오른쪽에서는 먹이·소리·빛·차단막을 설치하고, 중앙의 조사 기록에서 방금 확인한 단서를 보십시오. 청음을 사용하면 대략적인 방향을 알 수 있지만 행동 1회가 소모됩니다.'},{speaker:'관리자',text:'좋아. 흔적이 나타난 칸만 무작정 뒤지는 게 아니라, 이동한 다음 칸을 예측해야 하는 거군.'}]);
+  if(found&&s.run?.firstTutorial&&s.tutorialStep===2)dialogue([{speaker:'관리자',text:'발자국만 있고 동물의 모습은 보이지 않아. 이 흔적이 지금 위치라는 보장도 없겠지.'},{speaker:'EVE',text:'중앙의 수풀 격자를 조사해 개체의 이동 경로를 추리하십시오. 한 칸 조사할 때마다 1턴이 흐르고 동물도 움직입니다. 발자국은 방금 전 위치이며, 3턴마다 개체 주변 한 칸의 풀이 흔들립니다.'},{speaker:'EVE',text:'왼쪽 검은 행동 카드 세 장을 해독하면 습성이 드러납니다. 오른쪽에서는 먹이·소리·빛·차단막을 설치하고, 중앙의 조사 기록에서 방금 확인한 단서를 보십시오. 청음을 사용하면 대략적인 방향을 알 수 있지만 행동 1회가 소모됩니다.'},{speaker:'관리자',text:'좋아. 흔적이 나타난 칸만 무작정 뒤지는 게 아니라, 이동한 다음 칸을 예측해야 하는 거군.'}]);
   else if(firstReturn)dialogue(tutorialScenes.return);
   beep(found?670:420);
  }
