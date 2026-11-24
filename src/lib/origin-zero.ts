@@ -40,7 +40,7 @@ export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&s.facilities.cctv&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  s.tutorialStep>=9&&s.day>=14&&originSpeciesProgress(s)>=specs.length&&((s.completedRegions??[]).includes('tunnels')||(s.lastFieldSummary?.region==='tunnels'&&s.lastFieldSummary.reason==='정상 귀환'));
+  s.tutorialStep>=9&&s.day>=20&&originSpeciesProgress(s)>=specs.length&&((s.completedRegions??[]).includes('tunnels')||(s.lastFieldSummary?.region==='tunnels'&&s.lastFieldSummary.reason==='정상 귀환'));
 }
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
