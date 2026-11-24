@@ -140,7 +140,7 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  const textTimer=useRef<number|null>(null);
  const profile=CREW_PROFILES[id],effect=CREW_LOSS_EFFECTS[id];
  const terminationArt=id==='wolf'
-  ? '/assets/cinematics/staff-terminations/wolf/wolf_identity_collapse.png'
+  ? '/assets/cinematics/staff-terminations/wolf/scene.webp'
   : `/assets/cinematics/staff-terminations/${id}/scene.webp`;
  const lines=effect.quote;
  const line=lines[step]??'';

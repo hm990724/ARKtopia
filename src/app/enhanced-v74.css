@@ -125,3 +125,5 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .origin-body-meter{display:grid;gap:6px;padding:10px;border:1px solid #a66d87;background:#29212f;color:#e6c6d3}.origin-body-meter small{color:#c7a2b2}
 
 .v44-story-eve-image.origin-dialogue-cg{aspect-ratio:16/9!important;height:auto!important;min-height:0!important}.v44-story-eve-image.origin-dialogue-cg>img{width:100%!important;height:auto!important;aspect-ratio:16/9;object-fit:contain!important}.origin-replay{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:9px;border:1px solid #596674;background:#1b2630}.origin-replay button{padding:6px 8px;font-size:11px;color:#cfdee2;background:#2a3741;border:1px solid #63747d}
+
+.origin-resonance{display:grid;gap:8px;padding:12px;border:1px solid #687d82;background:#192830;color:#d7e7e4}.origin-resonance label{display:grid;gap:5px}.origin-resonance input{width:100%;accent-color:#8fbbb2}.origin-resonance p{color:#e7b4c1}.origin-resonance small{color:#c0cbd1}

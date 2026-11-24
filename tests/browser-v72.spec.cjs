@@ -46,7 +46,7 @@ test('wolf guard neural collapse displays the dedicated transformation cinematic
  const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'wolf','WF-001');s.crew.members[0].mind=0;queueCrewTerminations(s);
  await seed(page,s);
  const scene=page.locator('.v49-collapse-image img');
- await expect(scene).toHaveAttribute('src','/assets/cinematics/staff-terminations/wolf/wolf_identity_collapse.png');
+ await expect(scene).toHaveAttribute('src','/assets/cinematics/staff-terminations/wolf/scene.webp');
  await expect.poll(()=>scene.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
 });
 test('current cinematic opens without cropping or duplicate characters from UI layers',async({page})=>{

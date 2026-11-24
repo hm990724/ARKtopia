@@ -80,11 +80,11 @@ test('staff termination applies the required one-time -30 morale shock to surviv
  assert.match(terminated.lastOutcome,/정신력 -30/);assert.equal(crew.terminateCrew(terminated,'rabbit'),terminated,'termination cannot apply grief twice');
 });
 test('wolf staff collapse uses the dedicated human-to-wolf transformation cinematic',()=>{
- const art=path.join(__dirname,'..','public','assets','cinematics','staff-terminations','wolf','wolf_identity_collapse.png');
+ const art=path.join(__dirname,'..','public','assets','cinematics','staff-terminations','wolf','scene.webp');
  const component=fs.readFileSync(path.join(__dirname,'..','src','components','CrewSystem.tsx'),'utf8');
  const profile=crew.CREW_LOSS_EFFECTS.wolf;
  assert.ok(fs.existsSync(art),'wolf transformation cinematic must be present');
- assert.match(component,/wolf_identity_collapse\.png/,'the zero-morale termination scene must load the new art');
+ assert.match(component,/staff-terminations\/wolf\/scene\.webp/,'the zero-morale termination scene must load the new art');
  assert.ok(profile.quote.some(line=>line.includes('제 안에서 늑대가')),'wolf dialogue should foreshadow the transformation');
 });
 test('all four staff remember through trust and matching evidence, never another specimen',()=>{

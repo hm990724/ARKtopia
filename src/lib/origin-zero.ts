@@ -12,28 +12,28 @@ export type OriginRoute='hq'|'shelter'|null;
 export type RecallTrial={stage:number;chosen:string;expected:string;matched:boolean};
 export type RecallSession={step:number;correct:number;startedDay:number;answers:RecallTrial[]};
 export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string;steps?:RecallTrial[]};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;resonance?:number;resonanceRisk?:number;resonanceDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
  o.scans??=[];o.privateMatches??={};o.recalls??={};o.photos=Math.max(0,Math.min(12,o.photos??0));o.immunity=cap(o.immunity??0);
- o.recallSessions??={};
+ o.recallSessions??={};o.resonance=cap(o.resonance??35);o.resonanceRisk=cap(o.resonanceRisk??0);
  o.trackProgress=Math.max(0,Math.min(3,o.trackProgress??0));o.approachStep=Math.max(0,Math.min(3,o.approachStep??0));o.wrongTracks??=0;o.studies??=0;o.hqPressure??=0;o.stability??=85;o.hqIntel??=0;o.crisisDone??=false;
  return o;
 }
 export const photoRecords=[
- {title:'PHOTO 01 · 전쟁의 그림자',detail:'전쟁 당시 비공개 군사 연구의 시작. 동물 숙주를 이용한 허구의 변이 인자 연구가 숨겨져 있다.'},
- {title:'PHOTO 02 · 예상 밖의 지능',detail:'연구 중 동물 숙주 한 마리가 인간 뇌 없이도 스스로 학습하고 탈출 경로를 기억했다.'},
- {title:'PHOTO 03 · M-00',detail:'겉으로는 정상인 검은 고양이. 오른쪽 귀 끝의 작은 흠집과 가슴의 흰 털 한 가닥이 원본과 일치한다.'},
- {title:'PHOTO 04 · 종전과 폐기',detail:'전쟁 종료 후 연구 책임자는 경고를 무시하고 M-00을 포함한 실험체 폐기를 강행했다. 폐기 절차가 격리·전력 체계와 겹치며 시설이 연쇄적으로 붕괴하고 감염 인자가 유출됐다.'},
- {title:'PHOTO 05 · 사라진 개체',detail:'M-00은 이미 무너진 시설의 혼란 속에서 별도로 빠져나와 살아남았다. 고양이의 탈출이 유출을 일으킨 것은 아니다. 폐기 작전과 격리 붕괴가 먼저였다.'},
- {title:'PHOTO 06 · 인간의 종말',detail:'유출된 허구의 감염 인자는 동물에게선 큰 외형 변화 없이 이동했지만 인간의 신체에는 치명적 기능 붕괴를 일으켰다. 동물 숙주를 통한 확산으로 전 세계의 사회 기반이 무너졌다.'},
- {title:'PHOTO 07 · ARKTOPIA 방주',detail:'인류 붕괴 후 뇌 장기 동결 기술이 부족하자, 기능이 남은 인간의 뇌와 기억을 살아 있는 동물 숙주에 보존하기 시작했다. 동물의 인간적 행동은 기억 동기화의 흔적이다.'},
- {title:'PHOTO 08 · 아버지와 딸',detail:'낡은 가족사진. 어린 소녀와 연구 책임자, 그리고 사진 아래쪽의 검은 고양이.'},
- {title:'PHOTO 09 · 최초 인격 AI',detail:'딸이 사망한 뒤 음성·영상·신경 자료에서 EVE가 재구성됐다. 원본 딸의 의식은 아니다.'},
- {title:'PHOTO 10 · 불안정한 귀환',detail:'본부는 동물 숙주에 보존한 인간의 뇌를 복제 신체로 옮겼다. 성공한 인간 직원들도 감정적 충격과 전력 불안정으로 신체 기억 충돌을 겪는다.'},
- {title:'PHOTO 11 · 제000번 숙주',detail:'최초 연구 책임자의 뇌는 한동안 동물 숙주를 거친 뒤 제1호 복제 관리자 신체로 돌아왔다. 동물 시절 기억의 파편이 현재 관리자의 꿈에 남아 있다.'},
- {title:'PHOTO 12 · 놓친 치료의 가능성',detail:'정상 동물인 M-00만은 지능과 신체 안정성을 장기간 유지했다. 이 특성이 허구의 예방·신체 안정화 연구의 핵심이었지만 과학자는 자신의 실패를 인정하지 않았다.'}
+ {title:"PHOTO 01 · 전쟁의 그림자",detail:"전쟁 중 발생한 바이러스는 인간의 신체를 붕괴시켰다. 동물은 저항성을 보였다. 군사 연구에 합류한 책임자의 최초 임무는 인간용 예방·치료 연구였다."},
+ {title:"PHOTO 02 · 최초 숙주 적응",detail:"동물의 몸에서 신경 반응을 안정적으로 보존하려던 연구. 최초 후보는 인간의 뇌를 이식하기 전에 독립적인 학습 능력을 보였다. 상세한 보존 대상은 봉인되어 있다."},
+ {title:"PHOTO 03 · M-00",detail:"최초로 개량된 생체 숙주 후보. 검은 고양이의 오른쪽 귀 흠집과 가슴의 흰 털이 현재 개체와 일치한다. 인간의 뇌는 이식되지 않았다."},
+ {title:"PHOTO 04 · 검증되지 않은 승인",detail:"다른 시험 숙주의 장기 안정성 검증이 끝나기 전, 책임자가 M-00 최종 실험을 강행했다. 신경 안정성은 높았지만 연구원들은 새로운 인지 반응의 검증을 요구했다."},
+ {title:"PHOTO 05 · 무너진 연구실",detail:"종전 이전 군사 공격으로 전력과 격리 시설이 붕괴했다. 보존 장치의 신호가 끊겼다. M-00과 다른 시험 숙주들은 이미 무너진 격리 시설에서 탈출했다. 고양이가 파괴한 것이 아니다."},
+ {title:"PHOTO 06 · 두 번째 재앙",detail:"탈출한 불안정한 실험체들이 최초 바이러스와 다른 가상의 변이 감염을 확산시켰다. 인간에게 더 치명적인 두 번째 재앙과 신경 공명 붕괴가 사회를 무너뜨렸다."},
+ {title:"PHOTO 07 · ARK 방주 계획",detail:"사망한 감염자의 뇌는 비교적 온전했다. 동물의 신체에 뇌를 활성 상태로 임시 보존하고 백신 개발 후 인간의 신체로 돌려놓으려 했다. 동물의 인간적 행동은 그 기억의 잔향이다."},
+ {title:"PHOTO 08 · 아버지와 딸",detail:"전쟁 바이러스에 감염된 어린 딸을 치료하기 위해 과학자가 참전했다. 끝내 딸을 잃고 뇌를 보존했다. 가장 친했던 검은 고양이를 유대감에 기반한 최초 숙주로 선택했다. 이름 부분은 손상되었다."},
+ {title:"PHOTO 09 · 최초 인격 AI",detail:"딸의 뇌 기록과 음성·감각 자료를 디지털화하여 EVE를 만들었다. 딸의 실제 뇌는 시설 붕괴 때 소실되었다. EVE는 원본 딸의 의식이 아닌 독립 인격이다."},
+ {title:"PHOTO 10 · 불안정한 귀환",detail:"본부 AI는 백신 완성 전에 인간 복원을 시작했다. 보존된 뇌를 복제 신체로 옮겼으나 숙주 시절의 감각은 남았다. 기억 충돌이 심해지면 직원에게도 동물화가 발현된다."},
+ {title:"PHOTO 11 · 제000번 관리자",detail:"군사 공격 때 치명상을 입은 과학자가 PROJECT ORIGIN 비상 지속을 명령했다. 그의 뇌는 M-00이 아닌 별도 동물 숙주에서 보존된 뒤 현재 복제 관리자 000에게 이전됐다."},
+ {title:"PHOTO 12 · 놓친 치료의 가능성",detail:"M-00은 인간 뇌 없이도 안정된 지능을 유지한다. 그 생체 신호는 다른 숙주의 잠든 기억을 깨워 공명 붕괴를 촉진할 수 있지만 동시에 안정화·예방 연구의 유일한 원본이다. 과학자는 이 가능성을 외면했다."}
 ] as const;
 export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
@@ -57,7 +57,7 @@ export function routineOriginScan(s:V10,id:AnimalId):void{
 export function initiateOriginTrack(s:V10):V10{
  if(!canTrackCat(s)||s.ap<1)return s;
  const n=copy(s) as V10;o(n).cat='traced';n.ap--;
- return report(n,'시초 개체 의심 · 미확인 실루엣','폐기 사고 구역 CCTV에 격리문을 부순 듯한 거대한 변이 실루엣이 잡혔다. 본부는 M-00, 즉 재앙의 시초일 가능성을 제기한다. 비상등과 깨진 화면 때문에 실제 크기와 정체는 확인되지 않았다.');
+ return report(n,'시초 개체 의심 · 미확인 실루엣','전쟁으로 붕괴한 연구동 CCTV에 격리문을 부순 듯한 거대한 변이 실루엣이 잡혔다. 본부는 M-00, 즉 재앙의 시초일 가능성을 제기한다. 비상등과 깨진 화면 때문에 실제 크기와 정체는 확인되지 않았다.');
 }
 function o(s:V10){return ensureOriginZero(s)}
 // Player reads the camera hint and manually picks a matching view. Wrong guesses
@@ -108,8 +108,8 @@ export function chooseOriginRoute(s:V10,route:'hq'|'shelter'):V10{
  * A missing answer is kept as the legacy batch recovery API for existing automated tests.
  */
 export const originArchiveCiphers=[
- {question:'종전 후 폐기 문서에 찍힌 식별 코드는 무엇을 의미하는가?',options:['기원 실험체','이송 차량','시설 전원'],answer:0},
- {question:'폐기 당일 가장 중요한 누락 자료는?',options:['배식 기록','비상 격리 기록','출근 명부'],answer:1},
+ {question:'전쟁 중 실험 승인 문서에 찍힌 식별 코드는 무엇을 의미하는가?',options:['기원 실험체','이송 차량','시설 전원'],answer:0},
+ {question:'격리 붕괴 당일 가장 중요한 누락 자료는?',options:['배식 기록','비상 격리 기록','출근 명부'],answer:1},
  {question:'인간이 살아남기 위해 시작한 방주 계획은?',options:['관람 시설 재개장','야생 개체 방생','살아 있는 숙주에 기억 보존'],answer:2},
  {question:'동물에서 되돌아온 인간이 지닌 위험은?',options:['기억-신체 동기화 오류','색소 결핍','단순 피로'],answer:0}
 ] as const;
@@ -136,7 +136,7 @@ export const individualPhotoPuzzles=[
  {question:'최초 기록의 시각과 일치하는 자료는?',hint:'기록 시작은 종전 이전이다.',options:['전쟁 중 연구 일지','폐허 구조 일지','오늘 급식표'],answer:0},
  {question:'신경 반응 기록의 대조 항목은?',hint:'외부 입력 없이 반응이 반복된다.',options:['운송 온도','스스로 반복한 학습 패턴','사료 배급 시간'],answer:1},
  {question:'훼손된 사진의 동일 개체를 판별하라.',hint:'오른쪽 귀와 가슴을 대조한다.',options:['왼쪽 발의 흉터','목걸이 번호','오른쪽 귀 흠집과 흰 털'],answer:2},
- {question:'폐기 승인서의 원본은?',hint:'종전 직후이며 발신자 서명이 남았다.',options:['종전 직후 서명 문서','오늘 본부 명령','서명 없는 창고 전표'],answer:0},
+ {question:'최종 실험 승인서의 원본은?',hint:'군사 공격 이전이며 책임자의 서명이 남았다.',options:['공격 이전 서명 문서','오늘 본부 명령','서명 없는 창고 전표'],answer:0},
  {question:'격리동 사고의 순서를 복원하라.',hint:'전력 차단이 출입구 경보보다 먼저였다.',options:['외부 이동 → 전력 차단','전력 차단 → 출입구 경보','경보 → 평상시 점검'],answer:1},
  {question:'오염 확산 지도를 연결하라.',hint:'최초 경보 위치에서 시간순으로 연결한다.',options:['최종 폐허부터 역순','지도 좌측부터','최초 격리 시설부터 시간순'],answer:2},
  {question:'분리된 문서의 일련번호를 대조하라.',hint:'같은 번호가 다른 날짜에도 반복된다.',options:['동일한 번호의 두 기록','오늘 날짜만 있는 기록','번호가 없는 기록'],answer:0},
@@ -227,13 +227,18 @@ export function performOriginRecall(s:V10,keyOrSpecies:string,accuracy?:number):
  if(candidate.source==='hq'){state.hqPressure+=5;if(state.route==='hq')state.hqIntel=cap(state.hqIntel+12);}
  return report(n,'ARK RECALL · 개체 재분석',candidate.label+' ['+candidate.key+']: '+RECALL_CONTEXT[candidate.id]+'. 자료 품질 '+quality+'%. 개체 번호에 비교 기록을 보존했습니다.');
 }
+export function resonanceRisk(s:V10,strength=s.originZero?.resonance??35){return Math.round(cap(strength)*(100-(s.originZero?.immunity??0)*.82)/100);}
+export function setOriginResonance(s:V10,value:number):V10{if(s.phase!=='day'||s.run||s.pendingIncident||!s.originZero?.route||s.originZero.photos<12||!Number.isFinite(value))return s;const n=copy(s) as V10;o(n).resonance=Math.round(cap(value));return n;}
+function applyOriginResonance(s:V10,risk:number){const d=o(s);d.resonanceRisk=risk;if(risk<30)return;const impact=risk>=60?9:4;if(d.route==='shelter'){for(const a of s.animals){if(!a.alive||a.tutorialProtected||s.security.escapedIds.includes(a.id))continue;a.stress=cap(a.stress+impact);a.memory=cap(a.memory+Math.ceil(impact/2));}for(const member of s.crew?.members??[]){if(member.mind<=0||s.crew?.retired.includes(member.id))continue;member.mind=Math.max(1,member.mind-Math.ceil(impact/2));member.memoryEcho=cap((member.memoryEcho??0)+impact);member.stability=Math.max(1,(member.stability??90)-Math.ceil(impact/2));}s.threat=cap(s.threat+impact);d.stability=Math.max(1,d.stability-Math.ceil(impact/2));}else{d.hqPressure+=impact;s.eve=cap(s.eve-Math.ceil(impact/2));}log(s,'M-00 공명 경고',d.route==='shelter'?'원본 신호가 기존 숙주의 잠든 기억을 자극했습니다. 스트레스 및 직원 기억 잔향 증가.':'원격 실험의 과도한 공명 요청으로 본부 압력과 EVE 부담이 증가했습니다.','bad');}
 export function studyOriginImmunity(s:V10):V10{
  const d=s.originZero;if(!d?.route||d.photos<9||new Set(completedRecalls(s).map(c=>c.id)).size<3||d.immunity>=100||s.phase!=='day'||s.ap<1||s.power<10||s.knowledge<12||s.run||s.pendingIncident||!d.crisisDone||(d.route==='hq'&&d.hqIntel<35)||(d.route==='shelter'&&d.stability<35))return s;
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-10);n.knowledge-=12;state.studies++;
  const qualities=completedRecalls(n).map(c=>recallRecord(n,c)!.quality);
  const avg=Math.round(qualities.reduce((a,b)=>a+b,0)/qualities.length);
  const routeBoost=state.route==='shelter'?6:0;
- state.immunity=cap(state.immunity+20+Math.floor(avg/10)+routeBoost+(state.photos===12?5:0));
+ const strength=state.resonance??35,risk=resonanceRisk(s,strength);
+ state.immunity=cap(state.immunity+14+Math.floor(avg/10)+routeBoost+(state.photos===12?5:0)+Math.floor(strength/10));
+ if(state.photos>=12)applyOriginResonance(n,risk);
  if(state.route==='shelter'){state.hqPressure+=8;n.threat=cap(n.threat+4);}else n.eve=cap(n.eve-2);
  return report(n,'ORIGIN IMMUNITY · 비교 연구',`허구의 면역 안정성 모델 연구 ${state.studies}차. 개체별 기록 평균 품질 ${avg}%. 연구 진행 ${state.immunity}%. 새로운 실험은 침습적인 절차 없이 추상화된 데이터 비교로 처리한다.`,'good');
 }
@@ -273,6 +278,7 @@ export function resolveOriginCrisis(s:V10,choice:'protect'|'knowledge'):V10{
 /** Branch consequences persist between days; no random irreversible cat death. */
 export function tickOriginDay(s:V10):void{
  const d=ensureOriginZero(s);if(!d.route)return;
+ if(d.photos>=12&&d.route==='shelter'&&d.resonanceDay!==s.day){d.resonanceDay=s.day;const risk=resonanceRisk(s,Math.min(45,d.resonance??35));applyOriginResonance(s,risk);}
  if(d.photos>=11&&d.bodyDay!==s.day){const before=d.bodyStability??72;d.bodyStability=Math.max(8,before-(s.infection>=55?9:5));d.bodyDay=s.day;if(before>45&&d.bodyStability<=45)log(s,'관리자 생체 안정도 저하','EVE: 손의 떨림이 증가했습니다. 지금은 무리하지 마십시오.','bad');if(before>20&&d.bodyStability<=20)log(s,'관리자 생체 신호 임계','EVE: 남은 신체 안정성이 낮습니다. 기록을 마칠 시간이 얼마 남지 않았습니다.','bad');}
  if(d.route==='shelter'){
   const decay=s.facility<40?12:s.infection>55?9:s.facilities.containment?2:5;

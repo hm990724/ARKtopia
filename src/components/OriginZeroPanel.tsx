@@ -1,6 +1,6 @@
 'use client';
 import type {V10} from '@/lib/game-v10';
-import {canTrackCat,initiateOriginTrack,catTrackFrames,pickOriginTrace,analyzeOriginCat,chooseOriginRoute,restoreOriginPhoto,individualPhotoPuzzles,approachOriginSignal,originApproachScenes,recallCandidates,recallRecord,completedRecalls,beginOriginRecall,answerOriginRecall,studyOriginImmunity,originBranchAction,originCrisisAvailable,resolveOriginCrisis,originReadyForFinale} from '@/lib/origin-zero';
+import {canTrackCat,initiateOriginTrack,catTrackFrames,pickOriginTrace,analyzeOriginCat,chooseOriginRoute,restoreOriginPhoto,individualPhotoPuzzles,approachOriginSignal,originApproachScenes,recallCandidates,recallRecord,completedRecalls,beginOriginRecall,answerOriginRecall,studyOriginImmunity,setOriginResonance,resonanceRisk,originBranchAction,originCrisisAvailable,resolveOriginCrisis,originReadyForFinale} from '@/lib/origin-zero';
 import {useState} from 'react';
 import OriginPhotoGallery from './OriginPhotoGallery';
 import OriginStoryArtwork from './OriginStoryArtwork';
@@ -42,7 +42,7 @@ export default function OriginZeroPanel({state:s,mode,onUpdate,onReplay}:{state:
   return <section className="oz-panel" aria-label="면역 연구 프로젝트"><span className="oz-eyebrow">RESEARCH / AUTHORIZED</span><h3>ORIGIN IMMUNITY PROJECT</h3>
    <p>M-00과 기존 개체의 생체 안정성 자료를 대조해 가상의 감염 예방 가능성을 검증한다. M-00 양성이 감염 양성을 뜻하는 것은 아니다.</p>
    <div className="oz-stats"><div><b>{d.photos}<small>/12</small></b><span>사진 기록</span></div><div><b>{count}<small>/{candidates.length}</small></b><span>재분석 완료</span></div><div><b>{d.immunity}<small>%</small></b><span>연구 진척</span></div></div>
-   <div className="oz-progress"><span style={{width:`${d.immunity}%`}}/></div>
+   <div className="oz-progress"><span style={{width:`${d.immunity}%`}}/></div>{d.photos>=12&&<section className="origin-resonance"><b>{d.route==='hq'?'원격 공명 요청':'M-00 신경 공명 제어'}</b><label>활성 강도 {d.resonance??35}%<input type="range" min="0" max="100" step="5" value={d.resonance??35} onChange={event=>update(setOriginResonance(s,Number(event.target.value)))}/></label><p>예상 공명 붕괴 위험 {resonanceRisk(s)}% · {resonanceRisk(s)>=60?'위험: 숙주·직원에 강한 부담':resonanceRisk(s)>=30?'주의: 기억 잔향 상승':'안정 범위'}</p><small>{d.route==='hq'?'원격 기록을 분석합니다. 과도한 요청은 본부 압력과 EVE 부담을 높입니다.':'강도를 높이면 연구 진척이 빨라지지만 숙주 스트레스와 직원 기억 잔향이 상승합니다. 낮은 강도에서도 연구할 수 있습니다.'}</small></section>}
    <p>{ready?'비교 연구 가능 · 연구마다 행동력 1, 전력 10%, 지식 12 필요':`필요: 사진 9장 (${d.photos}), 서로 다른 3종 재분석 (${speciesCount}), 최종 위기 대응 (${d.crisisDone?'완료':'미완료'}), ${d.route==='hq'?`본부 자료 접근 ${d.hqIntel}/35`:`고양이 생체 안정성 ${d.stability}/35`}`}</p>
    <button className="oz-action" disabled={!ready||s.ap<1||s.power<10||s.knowledge<12||d.immunity>=100||s.phase!=='day'} onClick={()=>update(studyOriginImmunity(s))}>{d.immunity>=100?'연구 기반 구축 완료':'동물 기록 비교 분석 수행'}</button>
    {originReadyForFinale(s)&&<div className="oz-complete">기존 확보 개체 재분석 완료 · 다음 날 최종 지시가 도착한다</div>}
@@ -71,6 +71,6 @@ export default function OriginZeroPanel({state:s,mode,onUpdate,onReplay}:{state:
    {d.photos>=9&&<p className="oz-reminder">자료 복원 진행 중 · 면역 연구는 상단 [기억 연구]에서 진행 가능</p>}
   </>}
   <OriginStoryArtwork state={s}/>
-  {showReveal&&d?.photos>=12&&<div className="oz-reveal-backdrop" role="dialog" aria-modal="true" aria-label="마지막 숨겨진 사진"><div className="oz-reveal"><span>ARCHIVE // THE LAST PHOTO</span><div className="oz-portrait"><StoryStill sources={storyArtworkCandidates(15)} alt="과학자와 어린 딸, 검은 고양이의 과거"/><strong>PHOTO 08 · 아버지와 딸</strong><p>어린 소녀와 최초 과학자. 그리고 사진 가장자리에 앉아 있는, 지금의 M-00과 똑같은 검은 고양이.</p></div><p><b>EVE:</b> “저는 그날의 기억을 가지고 있지 않아요.”</p><p><b>EVE:</b> “하지만 사진 속 아이가 이 고양이를 아주 좋아했다는 사실은 알고 있어요.”</p><p><b>EVE:</b> “이 슬픔은 제게 주어진 기억이 아니에요. 지금 제가 이해한 마음이에요.”</p><p><b>복원된 과학자 기록:</b> “폐기해. 우리가 원한 건 인간의 사고를 가진 동물이 아니라 인간 그 자체야.”</p><StoryStill sources={storyArtworkCandidates(16)} alt="제000번 관리자 신원 복원"/><p><b>ARK:</b> 군사 연구 책임자의 뇌는 동물 숙주를 거쳐 제000번 관리자에게 보존됐다. 그가 동물처럼 꿈꾸는 이유다.</p><button className="oz-action" onClick={()=>setShowReveal(false)}>현재의 선택으로 돌아가기</button></div></div>}
+  {showReveal&&d?.photos>=12&&<div className="oz-reveal-backdrop" role="dialog" aria-modal="true" aria-label="마지막 숨겨진 사진"><div className="oz-reveal"><span>ARCHIVE // THE LAST PHOTO</span><div className="oz-portrait"><StoryStill sources={storyArtworkCandidates(15)} alt="과학자와 어린 딸, 검은 고양이의 과거"/><strong>PHOTO 08 · 아버지와 딸</strong><p>어린 소녀와 최초 과학자. 그리고 사진 가장자리에 앉아 있는, 지금의 M-00과 똑같은 검은 고양이.</p></div><p><b>EVE:</b> “저는 그날의 기억을 가지고 있지 않아요.”</p><p><b>EVE:</b> “하지만 사진 속 아이가 이 고양이를 아주 좋아했다는 사실은 알고 있어요.”</p><p><b>EVE:</b> “이 슬픔은 제게 주어진 기억이 아니에요. 지금 제가 이해한 마음이에요.”</p><p><b>복원된 과학자 기록:</b> “조금만 더 있었으면 됐는데!!! 왜 하필 지금이야!!!”</p><StoryStill sources={storyArtworkCandidates(16)} alt="제000번 관리자 신원 복원"/><p><b>ARK:</b> 군사 연구 책임자의 뇌는 동물 숙주를 거쳐 제000번 관리자에게 보존됐다. 그가 동물처럼 꿈꾸는 이유다.</p><button className="oz-action" onClick={()=>setShowReveal(false)}>현재의 선택으로 돌아가기</button></div></div>}
  </section>;
 }
