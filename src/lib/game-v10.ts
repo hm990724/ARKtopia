@@ -604,9 +604,8 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
    field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+((run.companions??[run.companion]).includes('fox')?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
-  }else if(tile==='hazard'&&!run.firstTutorial){
-   field.combat=newFieldCombat(n.day+destination);observation='움직이는 오염 덩어리가 통로를 막았습니다. 다음 공격을 보고 대응하거나 우회하세요.';
   }else if(tile==='hazard'){
+   // Environmental contamination is independent of the mobile enemy.
    const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-((run.companions??[run.companion]).includes('wolf')?3:0));
    run.integrity=cap(run.integrity-damage);
    n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?5:0)-(n.crew?.decontamDay===n.day?6:0)-((run.companions??[run.companion]).includes('deer')?4:0)));
@@ -644,7 +643,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   }
  }
  // Optional high-stakes side discoveries. Pending choices are saveable and block further movement.
- if(firstVisit&&!run.firstTutorial && !field.combat && !field.encountered && !field.choice && ['cache','signal','hazard'].includes(tile)){
+ if(firstVisit&&!run.firstTutorial && !field.combat && !field.encountered && !field.choice && ['cache','signal'].includes(tile)){
   const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;
   if(chance<42){const danger=regions.find(r=>r.id===run.region)!.danger;
    const kind=tile as FieldChoice['kind'];

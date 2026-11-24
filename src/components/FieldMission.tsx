@@ -313,6 +313,8 @@ export default function FieldMission({
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
   const relayBearing = fieldRelayBearing(field, relayLevel);
   const threatSignal=fieldThreatSignal(field);
+  const visionRange = run.gear.includes("flashlight") && state.flashlight > 0 ? 2 : 1;
+  const threatInSight = !!field.threat && (fieldLineOfSight(field,field.threat.position,visionRange) || !!threatSignal?.warning);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
   );
@@ -464,6 +466,7 @@ export default function FieldMission({
         </div>
       </div>
       {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
+      {hunt && field.threat && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>포획 격자와 별개인 실제 외곽 좌표 · 적은 계속 이동합니다.</small><span>{threatSignal?.warning?'발각 직전 · 엄폐 또는 교전 준비':threatSignal?.direction+' · '+threatSignal?.distance}</span></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall':'')} />)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/><span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span></div></div>}
       {!hunt && (run.captures?.length ?? 0) > 0 && (
         <div className="v41-field-continue" role="status">
           <CheckCircle2 size={17} />
@@ -1116,6 +1119,7 @@ export default function FieldMission({
                             ? 2
                             : 1,
                       ),
+                      lit = fieldLineOfSight(field,i,visionRange),
                       here = field.position === i,
                       relayExit = relayLevel >= 1 && tile === "exit" && !visible,
                       walk =
@@ -1134,7 +1138,7 @@ export default function FieldMission({
                         disabled={!walk || !visible || !!walking}
                         className={
                           "v33-route-cell " +
-                          (!visible ? "v33-route-fog" : "") +
+                          (!visible ? "v33-route-fog" : !lit ? " ark-field-remembered" : " ark-field-lit") +
                           (walk ? " v33-route-next" : "") +
                           (walk && visible && !walking
                             ? " v62-route-walkable"
@@ -1200,12 +1204,6 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
-                        {field.threat?.position === i && visible && !here && !field.combat && (
-                          <span className="v74-roaming-threat" role="img" aria-label="접근 중인 배회형 MUTANT">
-                            <img src="/assets/animals/mutant_mutant.png" alt="" />
-                            <small>{field.threat.mode === "closing" ? "추적 중" : "MUTANT"}</small>
-                          </span>
-                        )}
                         {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}
                         {walk && visible && !walking && (
                           <span
@@ -1218,7 +1216,8 @@ export default function FieldMission({
                       </button>
                     );
                   })}
-                  {walking && (
+                  {field.threat && !field.combat && <span className="ark-moving-threat" data-chasing={field.threat.mode==='closing'} role="img" aria-label="접근 중인 배회형 MUTANT" aria-hidden={!threatInSight} style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:threatInSight?1:0}}><img src="/assets/animals/mutant_mutant.png" alt=""/><small>{field.threat.mode==='closing'?'추격 중':'MUTANT'}</small></span>}
+                   {walking && (
                     <span
                       className="v42-walker-path"
                       aria-hidden="true"

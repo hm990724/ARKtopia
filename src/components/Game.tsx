@@ -370,7 +370,7 @@ useEffect(()=>{
   if(tickRoamingThreat(next)){field.lastEvent='MUTANT가 접근했습니다. 중단된 포획 기록은 보존됩니다.';next.lastOutcome=field.lastEvent;}
   field.noise=Math.max(0,field.noise-4);
   return next;
- }),1400);
+ }),850);
  return ()=>window.clearInterval(timer);
 },[tab,!!s?.run,!!s?.field?.threat,!!s?.field?.combat,!!s?.field?.choice,!!s?.pending,s?.run?.firstTutorial,!!(s&&mutantSecured(s))]);
 useEffect(()=>{setStatusOpen(false)},[tab]);

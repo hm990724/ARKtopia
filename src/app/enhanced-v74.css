@@ -138,3 +138,25 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 
 /* Independent camera viewport; evidence controls never overlap moving subjects. */
 .cctv-live-stage{position:relative;isolation:isolate;height:clamp(135px,19vw,230px);margin:42px 12px 12px;background:linear-gradient(145deg,#1d2433aa,#10101899);border:1px solid #7de3e74a;overflow:hidden;border-radius:8px}.cctv-feed-grid{position:absolute;inset:0;opacity:.35;background:linear-gradient(90deg,transparent 49.5%,#71869b 50%,transparent 50.5%),linear-gradient(0deg,transparent 49.5%,#71869b 50%,transparent 50.5%);pointer-events:none}.cctv-feed-stamp{position:absolute;top:8px;left:8px;color:#a8d6d7;font:10px monospace;pointer-events:none}.cctv-moving-subject{position:absolute;transform:translate(-50%,-50%);background:transparent!important;border:0!important;display:grid;place-items:center;transition:left .85s ease,top .85s ease;z-index:1;min-width:52px;padding:0!important;color:#e5e9f0}.cctv-moving-subject img{width:clamp(38px,5vw,66px);height:clamp(38px,5vw,66px);object-fit:contain}.cctv-moving-subject small{font-size:10px;background:#141622bf;padding:1px 4px;border-radius:4px}.cctv-feed-empty{position:absolute;bottom:10px;left:12px;color:#b3bac9}.cctv-live-stage.signal-off{background:#0b0c12}.origin-crisis-steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.origin-crisis-steps span{font-size:12px;padding:5px 8px;border:1px solid #434156;border-radius:5px}.origin-crisis-steps .done{color:#9edac9}.origin-crisis-steps .active{border-color:#e1b375;color:#e1b375}@media(prefers-reduced-motion:reduce){.cctv-moving-subject{transition:none}}
+
+/* Compact hunt board and actual local visibility. */
+.v71-field.v33-expedition.v33-is-hunt .v33-hidden-map{width:min(100%,360px,max(260px,calc(100dvh - 400px)))!important;max-width:360px!important;min-width:0!important;height:auto!important;min-height:0!important;grid-auto-rows:minmax(0,1fr);aspect-ratio:1!important;overflow:hidden}
+.v71-field.v33-is-hunt .v33-hidden-map .v33-land{min-width:0!important;min-height:0!important;height:auto!important;aspect-ratio:1!important;padding:0!important}
+.v71-field.v33-is-hunt .v33-hidden-map .v35-unknown-land{background:#07100eae!important}
+.v71-field.v33-expedition .v33-route-map.v57-field-map{position:relative;background-color:#080e12!important}
+.v71-field.v33-expedition .v33-route-map.v57-field-map .ark-field-remembered{background:#080d13d9!important;filter:brightness(.47)!important}
+.v71-field.v33-expedition .v33-route-map.v57-field-map .v33-route-fog{background:#05080efc!important;filter:brightness(.18)!important}
+.v71-field.v33-expedition .v33-route-map.v57-field-map::after{content:"";display:block!important;position:absolute;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at var(--v57-light-x,50%) var(--v57-light-y,50%),transparent 6%,#05091028 18%,#03060bb3 44%,#02040be6 80%)!important}
+.v71-field .v33-route-map .v33-route-current{z-index:10}
+.ark-moving-threat{position:absolute;display:grid;place-items:center;transform:translate(-50%,-50%);transition:left .34s linear,top .34s linear,opacity .18s;z-index:12;pointer-events:none;filter:drop-shadow(0 0 5px #e64c64)}
+.ark-moving-threat img{width:100%;height:115%;object-fit:contain;image-rendering:pixelated;animation:mutant-pulse .7s steps(4) infinite}
+.ark-moving-threat[data-chasing=true] img{animation:ark-chase-run .24s steps(3,end) infinite}
+.ark-moving-threat small{position:absolute;bottom:0;color:#ffb5b9;background:#200b12e8;font-size:10px;padding:2px 4px;white-space:nowrap}
+@keyframes ark-chase-run{0%,100%{translate:0 0;rotate:-3deg}50%{translate:0 -4px;rotate:3deg}}
+.ark-hunt-perimeter{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;border:1px solid #6d4f5b;background:#14121b;color:#ecd9df}
+.ark-hunt-perimeter>div:first-child{display:grid;gap:4px;font-size:12px}.ark-hunt-perimeter small{color:#a4a2ad;font-size:10px}.ark-hunt-perimeter span{color:#f3a8ac}
+.ark-perimeter-grid{position:relative;display:grid;width:min(34%,150px);min-width:90px;gap:1px;background:#08090e;padding:2px}
+.ark-perimeter-grid>i{background:#151923;min-width:0}.ark-perimeter-grid>i.lit{background:#324942}.ark-perimeter-grid>i.wall{background:#646473}
+.ark-perimeter-player,.ark-perimeter-enemy{position:absolute;transform:translate(-50%,-50%);pointer-events:none}.ark-perimeter-player{width:7px;height:7px;border-radius:50%;background:#b6f8e1;box-shadow:0 0 5px #b6f8e1;z-index:2}
+.ark-perimeter-enemy{width:22px;height:22px;z-index:3;transition:left .34s linear,top .34s linear,opacity .18s}.ark-perimeter-enemy img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 3px #e64c64)}
+@media(prefers-reduced-motion:reduce){.ark-moving-threat,.ark-perimeter-enemy,.ark-moving-threat img{animation:none!important;transition:none!important}}

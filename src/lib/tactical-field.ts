@@ -75,7 +75,12 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,light
  const from=t.position,steps=neighbors(from),costs=new Map<number,number>([[target,0]]),queue=[target];
  for(let cursor=0;cursor<queue.length;cursor++){const at=queue[cursor];for(const next of neighbors(at))if(!costs.has(next)){costs.set(next,costs.get(at)!+1);queue.push(next);}}
  steps.sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity));
- if(steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
+ // Keep a visible adjacent pursuer outside the player's tile until the warning resolves.
+ if(!(t.mode==='closing'&&t.alert>=35&&!f.concealed&&dist(from,f.position)<=1)&&steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
+ if(t.stage==='chase'&&t.alert>=45&&dist(t.position,f.position)>1){
+  const next=neighbors(t.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
+  if(next!==undefined&&next!==f.position&&(costs.get(next)??Infinity)<(costs.get(t.position)??Infinity))t.position=next;
+ }
  const close=!f.concealed&&dist(t.position,f.position)<=1&&t.alert>=35&&fieldLineOfSight(f,t.position,1);
  t.warningTicks=close?(t.warningTicks??0)+1:0;
  return close&&t.warningTicks>=2;
@@ -113,7 +118,7 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
  const threatCandidates=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==start&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=3&&(Math.floor(i/width)===startingRow||i%width===width-1)?[i]:[]);
  const threatIndex=threatCandidates.length?threatCandidates[hash(seed+2017)%threatCandidates.length]:-1;
- return {tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=3&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ return {tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
