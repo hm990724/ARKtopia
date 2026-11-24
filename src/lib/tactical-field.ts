@@ -57,7 +57,7 @@ export function advanceSporeSwarm(f:FieldState,lightOn=false):void{
  const s=f.sporeSwarm;if(!s)return;
  const d=distance(s.position,f.position,fieldWidth(f));
  s.ticks++;
- const detected=!f.concealed&&((d<=3&&fieldLineOfSight(f,s.position,3))||(lightOn&&fieldLineOfSight(f,s.position,6))||(f.noise>=16&&d<=6));
+ const detected=!f.concealed&&((d<=4&&fieldLineOfSight(f,s.position,4))||(lightOn&&fieldLineOfSight(f,s.position,6))||(f.noise>=16&&d<=6));
  if(detected){s.alert=Math.min(100,s.alert+(lightOn?24:18));s.target=f.position;s.mode='chase';}
  else{s.alert=Math.max(0,s.alert-18);s.mode=s.alert>0&&s.target!==undefined?'search':'drift';if(!s.alert)s.target=undefined;}
  const target=s.target??s.origin;
