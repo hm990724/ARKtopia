@@ -124,7 +124,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  }
  // Transfer records missing their return capsule are queued for the following night.
  const crewState=ensureCrew(restored);
- if(restored.run){const participants=restored.run.companions??(restored.run.companion?[restored.run.companion]:[]);crewState.sortieWorked=[...new Set([...(crewState.sortieWorked??[]),...participants])];}
+ if(restored.run){const participants=(restored.run.companions??(restored.run.companion?[restored.run.companion]:[])).filter((id):id is CrewId=>id==='rabbit'||id==='fox'||id==='deer'||id==='wolf');crewState.sortieWorked=[...new Set([...(crewState.sortieWorked??[]),...participants])];}
  if(restored.tutorialArchiveReviewPending&&restored.headquarters.pendingAnimal==='rabbit'){
   const rabbit=restored.animals.find(a=>a.id==='rabbit'&&a.alive);
   if(rabbit){rabbit.hp=Math.max(90,rabbit.hp);rabbit.stress=Math.min(18,rabbit.stress);rabbit.contamination=Math.min(10,rabbit.contamination);rabbit.sickness=Math.min(10,rabbit.sickness??0);rabbit.tutorialProtected=true;rabbit.mutated=false;rabbit.awakened=false;restored.security.escapedIds=restored.security.escapedIds.filter(id=>id!=='rabbit');}
