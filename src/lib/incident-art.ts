@@ -86,3 +86,7 @@ export function incidentArtworkCandidates(id:IncidentId):readonly string[]{
   fallback
  ];
 }
+
+/** Source storyboard filenames are aliases only where the event semantics match. */
+export const SOURCE_EVENT_ART:Partial<Record<IncidentId,string>>={breach:'EVT_03_containment_door_breach.png',cctv_loop:'EVT_04_cctv_interference.png',filter_clog:'EVT_07_filter_contamination.png',escape_tracks:'EVT_08_perimeter_escape.png',staff_conflict:'EVT_16_staff_dispute.png',guard_refusal:'EVT_17_staff_refusal.png',hq_recall_order:'EVT_22_hq_recall.png',hq_delete_order:'EVT_23_hq_erase.png',enclosure_rattle:'EVT_29_night_cage_sound.png',intrusion:'EVT_41_night_infiltration.png'};
+export function sourceIncidentArtwork(id:IncidentId):string[]{const name=SOURCE_EVENT_ART[id];return name?['/assets/cinematics/origin-zero/events/'+name]:[];}

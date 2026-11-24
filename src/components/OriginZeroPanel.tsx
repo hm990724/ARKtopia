@@ -1,6 +1,6 @@
 'use client';
 import type {V10} from '@/lib/game-v10';
-import {canTrackCat,initiateOriginTrack,catTrackFrames,pickOriginTrace,analyzeOriginCat,chooseOriginRoute,individualPhotoPuzzles,approachOriginSignal,originApproachScenes,recallCandidates,recallRecord,completedRecalls,beginOriginRecall,answerOriginRecall,studyOriginImmunity,setOriginResonance,resonanceRisk,originBranchAction,originCrisisAvailable,resolveOriginCrisis,originReadyForFinale} from '@/lib/origin-zero';
+import {canTrackCat,initiateOriginTrack,catTrackFrames,pickOriginTrace,analyzeOriginCat,chooseOriginRoute,individualPhotoPuzzles,approachOriginSignal,originApproachScenes,recallCandidates,recallRecord,completedRecalls,beginOriginRecall,answerOriginRecall,studyOriginImmunity,setOriginResonance,resonanceRisk,originBranchAction,originCrisisAvailable,originReadyForFinale} from '@/lib/origin-zero';
 import {useState} from 'react';
 import OriginPhotoGallery from './OriginPhotoGallery';
 import OriginStoryArtwork from './OriginStoryArtwork';
@@ -9,6 +9,7 @@ import {storyArtworkCandidates} from '@/lib/story-art';
 import ArkRecallMinigame from './ArkRecallMinigame';
 import OriginContactField from './OriginContactField';
 import OperationPuzzle from './OperationPuzzle';
+import OriginEmergency from './OriginEmergency';
 import {operationBoard,finishOperation} from '@/lib/operations';
 import {SPECIES_MEMORY} from '@/lib/species-memory';
 
@@ -59,7 +60,7 @@ export default function OriginZeroPanel({state:s,mode,onUpdate,onReplay}:{state:
   {!d?.route&&<div className="oz-choice-grid"><button onClick={()=>update(chooseOriginRoute(s,'hq'))}><b>본부에 전송한다</b><small>지원과 원격 연구 기록 확보. M-00 직접 관찰권 상실.</small></button><button onClick={()=>update(chooseOriginRoute(s,'shelter'))}><b>본부에 전송하지 않는다</b><small>동물원 내 보호 · 본부 감시 및 보급 제한 증가.</small></button></div>}
   {d?.route&&<><div className="oz-branch">{d.route==='hq'?'ROUTE A · 본부 이송 / 원격 연구 자료 회수':'ROUTE B · 비밀 격리 / 독립 생체 연구'}<small>{d.route==='hq'?'개체는 동물원에 자동으로 돌아오지 않는다.':'본부 감사와 이송 요구가 증가한다.'}</small></div>
    {<div className="oz-management"><span>최종 경보 준비</span><b>{d.route==='hq'?`원격 연구 자료 접근 ${d.hqIntel}%`:`M-00 생체 안정 ${d.stability}%`}</b><button disabled={s.ap<1||(d.route==='hq'?s.power<10:s.medicine<1)} onClick={()=>update(originBranchAction(s,d.route==='hq'?'retrieve':'stabilize'))}>{d.route==='hq'?'본부 기밀 자료 회수 (AP 1 / 전력 10)':'격리 환경 안정화 (AP 1 / 약품 1)'}</button></div>}
-   {originCrisisAvailable(s)&&<div className="oz-crisis"><span>EMERGENCY / FINAL BREACH</span><h4>{d.route==='hq'?'본부가 M-00에 대한 강행 연구를 지시했다':'본부 회수팀이 비밀 격리실을 포위했다'}</h4><p>이번 선택은 다음 연구의 안정성과 본부와의 관계에 영향을 미친다.</p><div className="oz-choice-grid"><button onClick={()=>update(resolveOriginCrisis(s,'protect'))}><b>생존 개체의 보호를 우선한다</b><small>위협이 증가하지만 위험한 절차를 억제한다.</small></button><button onClick={()=>update(resolveOriginCrisis(s,'knowledge'))}><b>연구 기록 확보를 우선한다</b><small>자료를 얻지만 안정성과 신뢰를 잃을 수 있다.</small></button></div></div>}
+   {originCrisisAvailable(s)&&<OriginEmergency state={s} onUpdate={update}/>}
    <div className="oz-heading"><h4>HIDDEN PHOTO · 원본 12장</h4><b>{d.photos} / 12</b></div>
    <OriginPhotoGallery count={d.photos}/>{onReplay&&d.photos>=1&&<section className="origin-replay"><b>복원된 대화 기록</b>{Array.from({length:d.photos},(_,i)=>i+1).map(number=><button type="button" key={number} onClick={()=>onReplay(number)}>PHOTO {String(number).padStart(2,'0')} · {['전쟁의 기록','최초 숙주','M-00 원본','최종 실험','무너진 연구실','두 번째 재앙','EVE의 고백','동기화된 기억','EVE의 선택','직원 인수 기록','관리자의 정체','마지막 연구'][number-1]}</button>)}</section>}
    {d.photos<12&&<div className="v69-archive-puzzle"><OperationPuzzle key={d.photos} state={s} mode="photo" onUpdate={update}/><span className="oz-eyebrow">ARCHIVE AUTHENTICATION · {d.photos+1}/12</span><strong>{individualPhotoPuzzles[d.photos].question}</strong><p>{individualPhotoPuzzles[d.photos].hint} · AP 1 / 전력 4</p><div className="v69-archive-options">{individualPhotoPuzzles[d.photos].options.map((label,i)=><button key={label} type="button" disabled={s.ap<1||s.power<4||s.phase!=='day'||!operationBoard(s,'photo').verified} onClick={()=>update(finishOperation(s,'photo',undefined,i))}><b>{String(i+1).padStart(2,'0')}</b>{label}</button>)}</div></div>}

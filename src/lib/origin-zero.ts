@@ -12,7 +12,7 @@ export type OriginRoute='hq'|'shelter'|null;
 export type RecallTrial={stage:number;chosen:string;expected:string;matched:boolean};
 export type RecallSession={step:number;correct:number;startedDay:number;answers:RecallTrial[]};
 export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string;steps?:RecallTrial[]};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;resonance?:number;resonanceRisk?:number;resonanceDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;resonance?:number;resonanceRisk?:number;resonanceDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean;crisisSession?:{step:number;actions:string[];quality:number}};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
@@ -279,7 +279,7 @@ export function resolveOriginCrisis(s:V10,choice:'protect'|'knowledge'):V10{
 export function tickOriginDay(s:V10):void{
  const d=ensureOriginZero(s);if(!d.route)return;
  if(d.photos>=12&&d.route==='shelter'&&d.resonanceDay!==s.day){d.resonanceDay=s.day;const risk=resonanceRisk(s,Math.min(45,d.resonance??35));applyOriginResonance(s,risk);}
- if(d.photos>=11&&d.bodyDay!==s.day){const before=d.bodyStability??72;d.bodyStability=Math.max(8,before-(s.infection>=55?9:5));d.bodyDay=s.day;if(before>45&&d.bodyStability<=45)log(s,'관리자 생체 안정도 저하','EVE: 손의 떨림이 증가했습니다. 지금은 무리하지 마십시오.','bad');if(before>20&&d.bodyStability<=20)log(s,'관리자 생체 신호 임계','EVE: 남은 신체 안정성이 낮습니다. 기록을 마칠 시간이 얼마 남지 않았습니다.','bad');}
+ if(d.photos>=11&&d.bodyDay!==s.day){const before=d.bodyStability??72;d.bodyStability=Math.max(8,before-(s.infection>=55?9:5));d.bodyDay=s.day;if(d.bodyStability<=20)s.nextFieldFatigued=true;if(before>45&&d.bodyStability<=45)log(s,'관리자 생체 안정도 저하','EVE: 손의 떨림이 증가했습니다. 지금은 무리하지 마십시오.','bad');if(before>20&&d.bodyStability<=20)log(s,'관리자 생체 신호 임계','EVE: 남은 신체 안정성이 낮습니다. 기록을 마칠 시간이 얼마 남지 않았습니다.','bad');}
  if(d.route==='shelter'){
   const decay=s.facility<40?12:s.infection>55?9:s.facilities.containment?2:5;
   d.stability=cap(d.stability-decay);

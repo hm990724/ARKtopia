@@ -22,6 +22,9 @@ const staffResponse:Record<CrewId,string>={rabbit:'그 기억이 어디서 왔�
 export function originPhotoDialogue(after:V10,number:number):StoryLine[]{
  if(number<1||number>(after.originZero?.photos??0))return [];
  const lines=[...(photo[number]??[])];
+ if(number===7&&after.originZero?.route==='hq')lines.push(e('고양이를 본부에 보냈던 날의 결정을 기억합니다. 이제는 그곳의 기록을 지워지지 않게 지켜야 합니다.','anxious'));
+ if(number===7&&after.originZero?.route==='shelter')lines.push(e('관리자님이 고양이를 보호하셨던 이유를 이제 알겠습니다. 그 결정이 연구 방향까지 바꿨습니다.','resolve'));
+ if(number===10&&after.crew?.retired?.length)lines.push(e('이미 돌아오지 못한 직원들의 이름도 기록에 남기겠습니다. 그들을 다시 살아 있다고 부르지는 않겠습니다.','anxious'));
  if(number===10)for(const c of after.crew?.members??[])if(c.mind>0&&!after.crew?.retired.includes(c.id))lines.push({speaker:c.id,text:staffResponse[c.id],expression:c.mind<30?'critical':'anxious'});
  const scene=number===7||number===10?14:number===8?15:number===9?15:number===11?16:number===12?18:undefined;
  return lines.map((line,i)=>({...line,scene:number===11&&i>=10?17:scene,recordedArt:line.recordedSpeaker&&[4,5].includes(number)?'/assets/hidden-photos/photo_0'+number+'.png':undefined}));

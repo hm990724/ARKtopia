@@ -7,6 +7,7 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  if(id==='eve'&&(!state||(!state.flags.humanTruth&&!state.originZero?.firstPositiveDay&&(state.originZero?.photos??0)<4)))return 'neutral';
  const value=id==='protagonist'?state?.mind:id==='eve'?state?.eve:state?.crew?.members.find(m=>m.id===id)?.mind;
  if(value!==undefined&&value<=0)return 'critical';
+ if(id==='protagonist'&&(state?.originZero?.photos??0)>=11){const body=state?.originZero?.bodyStability??72;if(body<=20)return 'critical';if(body<=45&&explicit!=='critical')return 'anxious';}
  // Crew stability is the visual floor. A calm dialogue must not restore a critical face.
  if(id!=='protagonist'&&id!=='eve'&&value!==undefined){
   if(value<35)return 'critical';

@@ -77,7 +77,7 @@ export function securityAction(s:V10,action:SecurityAction,selectedCamera?:Camer
  const n=clone(s),sec=n.security;const inc=sec.incident;
  if(action==='watch'){
   if(!inc||inc.manualInspected||inc.status==='escaped'||n.power<2||selectedCamera!==inc.camera)return s;
-  n.power=cap(n.power-2);inc.observations=(inc.observations??0)+1;inc.detected=true;
+  n.power=cap(n.power-2);inc.observations=(inc.observations??0)+1;
   trace(n,'추가 프레임 관측','신호가 다른 구역으로 움직였습니다. 전력 -2. 기다리는 동안 격리 위험이 증가합니다.','mystery');escalateSurveillance(n,inc,6);return n;
  }
  if(action==='inspect'){
