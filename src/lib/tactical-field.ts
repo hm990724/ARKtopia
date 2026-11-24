@@ -192,7 +192,7 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,light
 /** Place unique record shards on reachable empty ground, independent of ordinary loot. */
 export function placeOriginFragments(f:FieldState,ids:number[],seed:number){const w=fieldWidth(f),q=[f.position],seen=new Set(q);for(let k=0;k<q.length;k++)for(const i of [q[k]-w,q[k]+w,q[k]-1,q[k]+1])if(adjacentField(q[k],i,w,f.tiles.length)&&f.tiles[i]!=='wall'&&!seen.has(i)){seen.add(i);q.push(i);}const candidates=q.filter(i=>i!==f.position&&i!==f.wildlifeIndex&&f.tiles[i]==='empty'&&distance(i,f.position,w)>=2).sort((a,b)=>hash(seed+a*313)-hash(seed+b*313));const fallback=q.filter(i=>i!==f.position&&i!==f.wildlifeIndex&&f.tiles[i]!=='exit'&&!candidates.includes(i));const pool=[...candidates,...fallback];f.originFragments={};ids.forEach((id,i)=>{if(pool[i]!==undefined)f.originFragments![pool[i]]=id;});}
 export function createField(day:number,region:RegionId,sortie=0):FieldState {
- const dims=fieldDimensions(region),width=dims.width,height=dims.height+(day===1&&region==='garden'?0:5),size=width*height;
+ const dims=fieldDimensions(region),width=dims.width,height=dims.height+(day===1&&region==='garden'?0:9),size=width*height;
  const seed=hash(seedFor(day,region)+sortie*7919);
  const tiles:FieldTile[]=Array(size).fill('empty');
  const startingRow=(day===1&&region==='garden')?2:1+(hash(seed+113)%(height-2));
