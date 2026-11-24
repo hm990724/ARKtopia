@@ -1,5 +1,5 @@
 export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera'|'specter';
-export type AnimalState={specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;tutorialProtected?:boolean;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
+export type AnimalState={fedDay?:number;observedDay?:number;comfortDay?:number;specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;tutorialProtected?:boolean;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
 export type Start='medical'|'greenhouse'|'station'|'observatory'|'generator'|'depot';
 export type EventRecord={day:number;title:string;text:string;kind:'info'|'good'|'bad'|'mystery'};
@@ -96,9 +96,9 @@ export const SPECIES_CARE:Record<AnimalId,{hunger:number;fragility:number;contag
  specter:{hunger:12,fragility:1.2,contagion:1.1,note:'백색 잔향 · 갑작스러운 자극에 취약'},
  chimera:{hunger:25,fragility:1.3,contagion:1.6,note:'복합 신경계 · 관리 난이도 높음'}
 };
-export function nightlyAnimalCondition(a:AnimalState,fed:boolean,facility:number,externalInfection:number){
+export function nightlyAnimalCondition(a:AnimalState,fed:boolean,facility:number,externalInfection:number,handFed=false){
  const p=SPECIES_CARE[a.id];
- const hunger=cap((a.hunger??22)+p.hunger-(fed?28:0));a.hunger=hunger;
+ const hunger=cap((a.hunger??22)+p.hunger-(fed&&!handFed?28:0));a.hunger=hunger;
  const previousDisease=a.sickness??0;
  a.sickness=cap(previousDisease+(hunger>=65?Math.round(8*p.fragility):0)+(a.contamination>=45?Math.round(7*p.contagion):0)+(facility<45?7:0)+(externalInfection>=70?5:0)-(fed?2:0));
  if(hunger>=60){a.stress=cap(a.stress+Math.round(4*p.fragility));a.hp=cap(a.hp-Math.round((hunger>=85?9:3)*p.fragility));}
@@ -120,8 +120,8 @@ export function extract(s:State,id:AnimalId,quality:number,choice:'gentle'|'forc
  if(a.records<1||a.bond<20||a.stress>78||a.hp<35){log(n,'접근 불가',`${a.name}의 행동 기록·유대·안정도가 부족합니다. 먼저 관찰하고 돌보세요.`,'bad');return n}
  if(!spend(n,2)||n.power<7)return s;
  n.power=cap(n.power-7);
- const safe=choice==='gentle';const successful=quality>=65;
- if(successful){const value=Math.round((safe?17:25)*(n.origin==='artist'?1.15:1));a.memory=cap(a.memory+value);n.knowledge+=value;n.extractions++;a.stress=cap(a.stress+(safe?7:21));a.bond=cap(a.bond+(safe?5:-13));a.hp=cap(a.hp-(safe?0:7));log(n,'행동 강령 일치',`${a.name}의 본능적 행동을 재현하자 낯선 기억이 스스로 떠올랐다. 지식 +${value}.`,'mystery');if(id==='fox')n.flags.foxStory=true;if(n.extractions>=3)n.flags.memoryDoor=true}
+ const safe=choice==='gentle';const prepared=safe?Math.min(15,Math.floor(a.bond/20)*2+Math.min(3,a.careMastery?.observe??0)*2):0;const successful=quality+prepared>=65;
+ if(successful){const value=Math.round((safe?17+Math.floor(prepared/2):25)*(n.origin==='artist'?1.15:1));a.memory=cap(a.memory+value);n.knowledge+=value;n.extractions++;a.stress=cap(a.stress+(safe?Math.max(0,7-Math.floor(prepared/2)):21));a.bond=cap(a.bond+(safe?5:-13));a.hp=cap(a.hp-(safe?0:7));log(n,'행동 강령 일치',`${a.name}의 본능적 행동을 재현하자 낯선 기억이 스스로 떠올랐다. 지식 +${value}.`,'mystery');if(id==='fox')n.flags.foxStory=true;if(n.extractions>=3)n.flags.memoryDoor=true}
  else {a.stress=cap(a.stress+(safe?12:26));a.bond=cap(a.bond-(safe?4:12));a.hp=cap(a.hp-(safe?0:9));log(n,'행동 강령 위반',`${a.name}가 신호를 거부했다. 지식은 얻지 못했고 신뢰가 흔들렸다.`,'bad')}
  n.eve=cap(n.eve-3);recordMutation(n,a);recalc(n);return n;
 }

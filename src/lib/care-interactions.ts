@@ -3,10 +3,10 @@ import {cap,copy,log,recordMutation,dailyWork,type AnimalId,type AnimalState,typ
 /** Behavioural care is an observation/patient-handling puzzle, not a free-stat click. */
 export type CareAction='feed'|'heal'|'comfort'|'observe';
 export const CARE_ACTIONS:Record<CareAction,{title:string;cost:string;purpose:string}>= {
- feed:{title:'급식',cost:'식량 1 · 행동력 1',purpose:'체력 회복 및 먹이 신뢰 형성'},
- heal:{title:'치료',cost:'의약품 1 · 행동력 1',purpose:'상처 치료 및 생체 오염 저감'},
- comfort:{title:'교감',cost:'행동력 1',purpose:'유대 상승과 신경 스트레스 완화'},
- observe:{title:'행동 관찰',cost:'행동력 1',purpose:'관찰 기록과 공명 연구 단서 확보'}
+ feed:{title:'급식',cost:'식량 1 · 행동력 1',purpose:'오늘 야간 배식 대체 · 허기와 이탈 위험 감소'},
+ heal:{title:'치료',cost:'의약품 1 · 행동력 1',purpose:'질병과 오염 악화 예방'},
+ comfort:{title:'교감',cost:'행동력 1',purpose:'격리 안정 · 안전 공명 효율 증가'},
+ observe:{title:'행동 관찰',cost:'행동력 1',purpose:'종별 습성 영구 해금 · 다음 포획 및 공명 보조'}
 };
 
 type Profile={cue:string;feed:string;heal:string;comfort:string;observe:string;mislead:[string,string];rationale:string};
@@ -39,32 +39,35 @@ export function getCareScenario(a:AnimalState,kind:CareAction,day:number):CareSc
  return {id:a.id,kind,title:`${a.name} · ${CARE_ACTIONS[kind].title}`,cue:profile.cue+' '+condition+intelligence,
   question:(a.stress>=60?'[신경 긴장 경보] ':'')+actionCues[kind],options,correct,reason:profile.rationale};
 }
+export function careDailyBlock(a:AnimalState,kind:CareAction,day:number):string|null{return kind==='feed'&&a.fedDay===day?'오늘 급식 완료':kind==='observe'&&a.observedDay===day?'오늘 관찰 완료':kind==='comfort'&&a.comfortDay===day?'오늘 교감 완료':null;}
+function markCare(a:AnimalState,kind:CareAction,day:number){if(kind==='feed')a.fedDay=day;if(kind==='observe')a.observedDay=day;if(kind==='comfort')a.comfortDay=day;}
 export function careMastery(a:AnimalState,kind:CareAction):number{return a.careMastery?.[kind]??0;}
 export function canQuickCare(a:AnimalState,kind:CareAction):boolean{return careMastery(a,kind)>=2;}
 export type CareResult={next:State;correct:boolean;message:string;delta:{bond:number;stress:number;hp:number;records:number};mastery:number};
 export function resolveCareChoice(s:State,id:AnimalId,kind:CareAction,chosen:number):CareResult|null{
- const animal=s.animals.find(x=>x.id===id&&x.alive);if(!animal||!Number.isInteger(chosen)||chosen<0||chosen>3)return null;
+ const animal=s.animals.find(x=>x.id===id&&x.alive);if(!animal||careDailyBlock(animal,kind,s.day)||!Number.isInteger(chosen)||chosen<0||chosen>3)return null;
  const scenario=getCareScenario(animal,kind,s.day);
  const next=dailyWork(s,kind,id);if(next===s)return null;
  const a=next.animals.find(x=>x.id===id&&x.alive)!;
  const correct=chosen===scenario.correct;
- if(correct){a.bond=cap(a.bond+3);a.stress=cap(a.stress-3);a.careMastery={...(a.careMastery||{}),[kind]:Math.min(3,careMastery(animal,kind)+1)};}
+ if(correct){markCare(a,kind,s.day);a.bond=cap(a.bond+3);a.stress=cap(a.stress-3);a.careMastery={...(a.careMastery||{}),[kind]:Math.min(3,careMastery(animal,kind)+1)};}
  else{
   // A real consequence: food/medicine/AP are still spent, with weaker gains and more stress.
   a.bond=cap(a.bond-(kind==='comfort'?18:kind==='feed'?13:6));a.stress=cap(a.stress+(kind==='comfort'?30:kind==='feed'?19:kind==='observe'?18:18));
   if(kind==='feed'){a.hp=cap(a.hp-5);a.hunger=cap((a.hunger??0)+24);}
   if(kind==='heal'){a.contamination=cap(a.contamination+7);a.sickness=cap((a.sickness??0)+18);}
-  if(kind==='observe')a.memory=cap(a.memory-2);
+  if(kind==='observe'){a.records=animal.records;a.memory=animal.memory;next.knowledge=s.knowledge;}
  }
- const message=correct?`${scenario.reason} 성공적인 대응으로 유대가 추가 상승했습니다.`:`개체가 예상과 다르게 반응했습니다. ${scenario.reason} 스트레스가 높아지고 신뢰가 감소했습니다.`;
+ const message=correct?`${scenario.reason} 성공적인 대응으로 유대가 상승했습니다. ${CARE_ACTIONS[kind].purpose}.`:`개체가 예상과 다르게 반응했습니다. ${scenario.reason} 스트레스가 높아지고 신뢰가 감소했습니다.`;
  log(next,correct?'돌봄 반응 일치':'돌봄 반응 불일치',`${animal.name}: ${message}`,correct?'good':'bad');
  recordMutation(next,a);
  return {next,correct,message,delta:{bond:a.bond-animal.bond,stress:a.stress-animal.stress,hp:a.hp-animal.hp,records:a.records-animal.records},mastery:careMastery(a,kind)};
 }
 export function quickCare(s:State,id:AnimalId,kind:CareAction):State{
  const animal=s.animals.find(x=>x.id===id&&x.alive);
- if(!animal||!canQuickCare(animal,kind))return s;
+ if(!animal||!canQuickCare(animal,kind)||careDailyBlock(animal,kind,s.day))return s;
  const next=dailyWork(s,kind,id);if(next===s)return s;
+ const a=next.animals.find(x=>x.id===id&&x.alive)!;markCare(a,kind,s.day);a.bond=cap(a.bond+3);a.stress=cap(a.stress-3);a.careMastery={...a.careMastery,[kind]:Math.min(3,careMastery(animal,kind)+1)};
  log(next,'숙련 돌봄',`${animal.name}의 검증된 돌봄 절차를 적용했습니다. 행동력과 소모 자원은 일반 돌봄과 동일합니다.`,'good');
  return next;
 }
