@@ -210,7 +210,7 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  for(let c=1;c<wildlifeCol;c++)tiles[startingRow*width+c]='track';
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
  // Ensure visible contamination near the entry, without blocking the guided corridor.
- const nearby=[start-width+1,start+width+1].filter(i=>i>=0&&i<size&&tiles[i]!=='wall'&&i!==wildlifeIndex&&i!==exit);for(const i of nearby)tiles[i]='hazard';
+ const nearby=[start-width+1,start+width+1].filter(i=>i>=0&&i<size&&i!==wildlifeIndex&&i!==exit);for(const i of nearby)tiles[i]='hazard';
  return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
