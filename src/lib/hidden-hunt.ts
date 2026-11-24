@@ -243,7 +243,7 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
   const inScanZone=current.scanZone!==null&&current.scanZone!==undefined&&current.scanTurn!==undefined&&current.turn-current.scanTurn<=2&&((current.position%size>=half?1:0)+(Math.floor(current.position/size)>=half?2:0))===current.scanZone;
   const lured=current.objects.some(o=>o.kind!=='barrier'&&o.life>0&&huntDistance(o.cell,current.position,size)<=2);
   const radius=action.aim===undefined||action.aim>=0.65?1:0;
-  if(distance<=radius&&(Object.hasOwn(current.searchedAt,String(current.position))||hasFreshObservation||inScanZone||lured||freshTrailCells(current).includes(current.position))){
+  if(distance===0||distance<=radius&&(Object.hasOwn(current.searchedAt,String(current.position))||hasFreshObservation||inScanZone||lured||freshTrailCells(current).includes(current.position))){
    current.actions--;current.turn++;current.outcome='caught';current.selectedCell=target;current.lastCommand='net';
    return capture('직접 던진 포획 그물이 이동 경로를 덮었습니다. 개체를 다치게 하지 않고 안전하게 확보했습니다.','net');
   }

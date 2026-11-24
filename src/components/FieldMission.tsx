@@ -91,7 +91,7 @@ const tools: {
     name: "직접 포획 그물",
     cost: "행동 1",
     effect:
-      "청음 또는 흔적으로 위치를 좁힌 뒤 그물을 선택하고 개체가 있는 정확한 칸을 클릭하세요.",
+      "청음 또는 흔적으로 위치를 좁힌 뒤 그물을 선택하고 개체가 있을 것으로 예상되는 칸을 클릭하세요.",
     tone: "net",
   },
   {
@@ -193,7 +193,7 @@ export default function FieldMission({
   feedback,
 }: Props) {
   const [mode, setMode] =
-    useState<Exclude<HuntMode, "wait" | "reveal">>("search");
+    useState<Exclude<HuntMode, "wait" | "reveal">>("net");
   const [pace,setPace]=useState<Pace>('normal');
   const [captureMethod,setCaptureMethod]=useState<CaptureMethod>('net');
   const [huntSetting, setHuntSetting] = useState<HuntSetting>("cool-clean");
@@ -399,7 +399,7 @@ export default function FieldMission({
       window.setTimeout(() => setSearchFlash((x) => (x === i ? null : x)), 440);
     }
     onHunt({ type: mode, cell: i, setting: huntSetting, method:mode==='net'?captureMethod:undefined, aim:mode==='net'&&captureMethod==='net'?0.5:undefined });
-    if (mode !== "search" && !(mode==='net'&&captureMethod==='calm')) setMode("search");
+    if (mode!=="net"){setMode("net");setCaptureMethod("net");}
   }
   const trailCells = hunt ? freshTrailCells(hunt) : [];
   const cameraZoneActive = !!hunt && hunt.species === "specter" && hunt.cameraZone != null && hunt.cameraTurn != null && hunt.turn - hunt.cameraTurn <= 2;
@@ -721,13 +721,13 @@ export default function FieldMission({
         <div className="v33-theater" data-tour="run-choice">
           {hunt && <div className="v71-primary-tools v74-capture-budget">
             <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><div className="v74-actions-copy"><span>포획 남은 행동</span><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong></div>
-            <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
+            <button type="button" onClick={()=>{setMode('net');setCaptureMethod('net');try{const a=new AudioContext();const osc=a.createOscillator(),gain=a.createGain();osc.type='sine';osc.frequency.setValueAtTime(240,a.currentTime);osc.frequency.exponentialRampToValueAtTime(90,a.currentTime+.32);gain.gain.setValueAtTime(.07,a.currentTime);gain.gain.exponentialRampToValueAtTime(.001,a.currentTime+.35);osc.connect(gain);gain.connect(a.destination);osc.start();osc.stop(a.currentTime+.36);osc.onended=()=>{void a.close()};}catch{}onHunt({type:'wait'})}} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
             <button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode(mode==='net'&&captureMethod==='net'?'search':'net')}}><Target size={16}/> {mode==='net'&&captureMethod==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
             <button type="button" aria-pressed={mode==='search'} onClick={()=>setMode('search')}>수색 모드</button>
           </div>}
           {hunt ? (
             <>
-          <section className="capture-tactics" aria-label="포획 전술"><header><strong>CAPTURE / 전술 선택</strong><small>수색은 위치 확인 · 포획은 별도 행동</small></header><div className="capture-methods"><button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode('net')}}><Target size={17}/><b>직접 그물</b><small>위치 확인 · 칸 클릭</small></button><button type="button" disabled={!run.gear.includes('cage')||!!hunt.trap} aria-pressed={mode==='net'&&captureMethod==='cage'} onClick={()=>{setCaptureMethod('cage');setMode('net')}}><Package size={17}/><b>유인 우리</b><small>{hunt.trap?'작동 중 '+hunt.trap.life+'턴':run.gear.includes('cage')?'설치 후 유인 · 6턴':'출동 장비 필요'}</small></button><button type="button" aria-pressed={mode==='net'&&captureMethod==='calm'} onClick={()=>{setCaptureMethod('calm');setMode('net')}}><ShieldAlert size={17}/><b>진정 접근</b><small>경계 낮추기 · 연속 접근</small></button></div><div className="capture-readouts"><label>경계도 <b>{hunt.fear}%</b><meter min={0} max={100} value={hunt.fear}/></label><label>역추적 위험 <b>{hunt.predator}%</b><meter min={0} max={100} value={hunt.predator}/></label><label>교감 진행 <b>{hunt.calmProgress??0}/{['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2}</b><meter min={0} max={['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2} value={hunt.calmProgress??0}/></label></div></section>
+          <section className="capture-tactics" aria-label="포획 전술"><header><strong>CAPTURE / 전술 선택</strong><small>기본 클릭: 그물 · 청음으로 방향 확인</small></header><div className="capture-methods"><button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode('net')}}><Target size={17}/><b>직접 그물</b><small>위치 확인 · 칸 클릭</small></button><button type="button" disabled={!run.gear.includes('cage')||!!hunt.trap} aria-pressed={mode==='net'&&captureMethod==='cage'} onClick={()=>{setCaptureMethod('cage');setMode('net')}}><Package size={17}/><b>유인 우리</b><small>{hunt.trap?'작동 중 '+hunt.trap.life+'턴':run.gear.includes('cage')?'설치 후 유인 · 6턴':'출동 장비 필요'}</small></button><button type="button" aria-pressed={mode==='net'&&captureMethod==='calm'} onClick={()=>{setCaptureMethod('calm');setMode('net')}}><ShieldAlert size={17}/><b>진정 접근</b><small>경계 낮추기 · 연속 접근</small></button></div><div className="capture-readouts"><label>경계도 <b>{hunt.fear}%</b><meter min={0} max={100} value={hunt.fear}/></label><label>역추적 위험 <b>{hunt.predator}%</b><meter min={0} max={100} value={hunt.predator}/></label><label>교감 진행 <b>{hunt.calmProgress??0}/{['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2}</b><meter min={0} max={['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2} value={hunt.calmProgress??0}/></label></div></section>
           {hunt && (hunt.species==='moth'||hunt.species==='axolotl') && <div className="v74-species-setting" role="group" aria-label="종별 환경 조절">
             <b>{hunt.species==='moth'?'나방 광량 제어':'아홀로틀 수질·수온 제어'}</b>
             {(hunt.species==='moth'?[['dim','약광 유인'],['bright','강광 차단']]:[['cool-clean','저온·청정'],['warm-clean','온수·청정'],['cool-dirty','저온·오염'],['warm-dirty','온수·오염']]).map(([value,label])=><button type="button" key={value} aria-pressed={huntSetting===value} onClick={()=>setHuntSetting(value as HuntSetting)}>{label}</button>)}

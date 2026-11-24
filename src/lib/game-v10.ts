@@ -438,23 +438,24 @@ export function getNightCircuitState(s:V10):NightCircuit{return s.nightCircuit?.
 /** A wrong connection has a facility cost; progress is saved in the game state. */
 export function attemptNightCircuit(s:V10,terminal:number):V10{
  const circuit=getNightCircuitState(s);
- if(s.phase!=='day'||!Number.isInteger(terminal)||terminal<0||terminal>3||circuit.completed||circuit.faults>=3)return s;
+ if(s.phase!=='day'||!Number.isInteger(terminal)||terminal<0||terminal>3||circuit.completed||circuit.faults>=3||s.mind<4||s.run||s.pending||s.pendingIncident)return s;
  const order=[...circuit.order,terminal],sequence=nightCircuitSequence(s.day);
  const n=copy(s) as V10;
  if(sequence.slice(0,order.length).every((value,index)=>value===order[index])){
-  n.nightCircuit={...circuit,order,completed:order.length===4};
+  n.nightCircuit={...circuit,order,completed:order.length===4};if(order.length===4){n.mind=cap(n.mind-3);n.lastOutcome='격리문 보조회로 정비 완료 · 정신력 -3';}
   return n;
  }
  n.nightCircuit={...circuit,order:[],faults:circuit.faults+1,completed:false};
  n.power=Math.max(0,n.power-4);n.facility=Math.max(0,n.facility-3);n.threat=cap(n.threat+3);
  return summary(n,'야간 보조회로 오접속','전압 순서가 맞지 않습니다. 보호 회로가 재설정되며 전력 -4%, 시설 안정 -3%, 외부 위협 +3이 발생했습니다. 세 번 틀리면 오늘의 회로 정비가 잠깁니다.','bad');
 }
+export function installNightSpare(s:V10):V10{if(s.phase!=='day'||s.run||s.pending||s.pendingIncident||s.parts<1||getNightCircuitState(s).completed)return s;const n=copy(s) as V10;n.parts--;n.nightCircuit={day:n.day,order:nightCircuitSequence(n.day),faults:0,completed:true};return summary(n,'격리문 예비 회로 장착','부품 1개로 야간 회로를 복구했습니다.','good');}
 export function previewNight(s:V10,nightChoice:NightChoice,options:{maintained?:boolean;guided?:boolean}={}){
  const circuit=getNightCircuitState(s);
  const maintained=options.maintained??(circuit.completed&&circuit.faults<3);
  const startPower=options.guided?Math.max(28,s.power):s.power;
  const powered=cap(startPower+(maintained?4:0));
- const applied:NightChoice=(!options.guided&&!maintained)||powered<({shield:22,rest:5,standby:0}[nightChoice])?'standby':nightChoice;
+ const applied:NightChoice=(!options.guided&&!maintained&&nightChoice==='shield')||powered<({shield:22,rest:5,standby:0}[nightChoice])?'standby':nightChoice;
  const cost={shield:22,rest:5,standby:0}[applied];
  const fuelAvailable=(s.fuel??3)>0,filterAvailable=(s.filters??0)>0;
  const powerAfter=cap(powered-cost-6+(fuelAvailable?4:-4)+upgradeLevel(s,'battery')*5);return {powerBefore:powered,applied,powerAfter,fuelBefore:s.fuel??3,fuelCost:fuelAvailable?1:0,fuelShortfall:fuelAvailable?0:1,filtersBefore:s.filters??0,filterCost:filterAvailable?1:0,filterShortfall:filterAvailable?0:1,repairFacilityBonus:maintained?6:0,facilityDispatch:previewFacilityPower(s,powerAfter)};
@@ -464,6 +465,8 @@ export function resolveNightTransition(s:V10,nightChoice:NightChoice,options:{ma
  const blocker=getDayEndBlocker(s);
  const preview=previewNight(s,nightChoice,options);
  if(blocker)return {state:s,success:false,blocker,applied:preview.applied};
+ if(nightChoice==='shield'&&!options.guided&&!(options.maintained??getNightCircuitState(s).completed))return {state:s,success:false,blocker:{code:'night-circuit',message:'격리문 방어 강화에는 보조회로 정비가 필수입니다.',tab:'hub' as const,actionLabel:'회로 정비'},applied:preview.applied};
+ if(preview.applied!==nightChoice)return {state:s,success:false,blocker:{code:'night-power',message:'전력이 부족합니다. 다른 야간 작전을 선택하십시오.',tab:'hub' as const,actionLabel:'작전 재선택'},applied:preview.applied};
  const supported=options.guided&&s.power<28?{...s,power:28}:s;
  const prepared=preview.repairFacilityBonus?{...supported,power:cap(supported.power+4),facility:cap(supported.facility+6)}:supported;
  const next=finishDay(prepared,preview.applied);

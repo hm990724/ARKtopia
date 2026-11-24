@@ -27,14 +27,14 @@ export default function OriginZeroPanel({state:s,mode,onUpdate,onReplay}:{state:
  if(mode==='expedition'){
   if(!canTrackCat(s)&&!found)return null;
   return <section className="oz-panel oz-expedition" aria-label="외곽 특수 생체 신호">
-    <span className="oz-eyebrow">FIELD / UNIDENTIFIED SIGNAL</span><h3>{suspect?'시초 개체 의심 · 미확인 실루엣':d?.cat==='captured'?'시초가 아니었다 · 검은 고양이':'외곽 현장 · 미확인 생체 신호'}</h3>
-    <p>{suspect?'저화질 CCTV에는 격리문을 부순 거대한 생물처럼 보이는 실루엣이 찍혔다. 본부는 재앙의 시초일 수 있다고 판단했지만, 비상등과 깨진 화면 때문에 실제 정체는 확인되지 않았다.':d?.cat==='captured'?'관리자: ……그냥 고양이잖아? EVE: 변이 반응이 없습니다. 실제 배회형 MUTANT와는 다른 생명체입니다. 신원을 확인하려면 검사가 필요합니다.':'마지막 영상은 이미 끊겼다. 철창 뒤에서 작은 움직임이 반복된다. 정체는 아직 알 수 없다.'}</p>
+    <span className="oz-eyebrow">FIELD / UNIDENTIFIED SIGNAL</span><h3>{suspect?'외곽 CCTV · 미확인 실루엣':d?.cat==='captured'?'생체검사 대기':'외곽 CCTV · 신호 추적'}</h3>
+    <p>{suspect?'저화질 CCTV에는 격리문을 부순 거대한 생물처럼 보이는 실루엣이 찍혔다. 본부는 재앙의 시초일 수 있다고 판단했지만, 비상등과 깨진 화면 때문에 실제 정체는 확인되지 않았다.':d?.cat==='captured'?'확보한 생체 신호의 정체는 검사 기록에서 확인할 수 있습니다.':'마지막 영상 이후 드론으로 주변 반경을 재조사한다. 정체는 아직 알 수 없다.'}</p>
     {suspect&&<figure className="oz-suspect-still"><img src="/assets/events/m00_suspected_origin.png" alt="격리동 CCTV에 흐릿하게 잡힌 거대한 변이 실루엣"/><figcaption><b>RECOVERED CCTV / ORIGIN CANDIDATE</b><span>저화질 실루엣 · 위협 수준 미확인</span></figcaption></figure>}
     {d?.cat==='unknown'||!d?<button className="oz-action" disabled={s.ap<1} onClick={()=>update(initiateOriginTrack(s))}>외곽 영상 추적 시작 · 행동력 1</button>:null}
     {d?.cat==='traced'&&d.trackProgress<3&&<><p className="oz-signal">SIGNAL {d.trackProgress+1} / 3 · {catTrackFrames[d.trackProgress].hint}</p><div className="oz-trace-grid">{catTrackFrames[d.trackProgress].frames.map((frame,i)=><button key={frame} onClick={()=>update(pickOriginTrace(s,i))}><span>CAM 0{i+1}</span><b>{frame}</b></button>)}</div><small>잘못된 화면을 선택하면 위협이 증가하지만 흔적은 잃지 않는다.</small></>}
     {d?.cat==='traced'&&d.trackProgress===3&&!approach&&<OriginContactField state={s} onUpdate={update}/>}
     {approach&&<section className="origin-approach" aria-label="미확인 신호 현장 접근"><StoryStill sources={['/assets/events/m00_suspected_origin.png']} alt="어둠 속에 가려진 생체 신호"/><header><span>FIELD CONTACT · {(d?.approachStep??0)+1}/3</span><b>{approach.title}</b></header><p className="origin-approach-dialogue"><strong>{approach.speaker}</strong> {approach.text}</p><div className="oz-choice-grid">{approach.choices.map((label,i)=><button key={label} disabled={!!s.pendingIncident} onClick={()=>update(approachOriginSignal(s,i))}>{label}</button>)}</div><small>현장 출동 비용은 이미 정산됐습니다. 잘못된 접근은 정신력과 위협에 영향을 줍니다. 흔적은 저장됩니다.</small></section>}
-    {d?.cat==='captured'&&<><div className="oz-cat-image" role="img" aria-label="변이 없는 평범한 검은 고양이"><img src="/assets/animals/m00_normal.png" alt="오른쪽 귀의 작은 흠집과 흰 가슴 털을 가진 검은 고양이"/><p>임시 격리 케이지 · 변이 없는 검은 고양이</p></div><button className="oz-action" disabled={s.ap<1||s.power<6} onClick={()=>update(analyzeOriginCat(s))}>표준 생체검사 · 행동력 1 · 전력 6%</button></>}
+    {d?.cat==='captured'&&<><button className="oz-action" disabled={s.ap<1||s.power<6} onClick={()=>update(analyzeOriginCat(s))}>표준 생체검사 · 행동력 1 · 전력 6%</button></>}
    </section>;
  }
  if(mode==='research'){
