@@ -18,3 +18,10 @@ tmp/v74*
 
 # Local project bundle; keep large archives out of Git commits
 /public.zip
+
+# Build/test scratch data; never commit cache or generated project bundles.
+tmp/**/npm-cache/
+**/.npm/
+/ARKtopia*.zip
+*.zip.sha256
+/playwright-report/
