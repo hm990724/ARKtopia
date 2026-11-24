@@ -68,7 +68,7 @@ const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_orig
 assert.match(origin.catTrackFrames[0].hint,/시초 개체로 의심/);assert.doesNotMatch(origin.catTrackFrames[0].hint,/검은 고양이/);assert.doesNotMatch(origin.catTrackFrames[2].hint,/검은 고양이/);
 const route=beginGame('artist','generator');route.day=26;route.tutorialStep=9;route.encounters=5;route.ap=4;route.headquarters.revealStage=2;route.originZero=emptyOriginZero();
 assert.equal(origin.canTrackCat(route),true);let traced=origin.initiateOriginTrack(route);assert.match(traced.lastOutcome,/시초일 가능성을 제기/);
-for(const frame of origin.catTrackFrames)traced=origin.pickOriginTrace(traced,frame.answer);assert.equal(traced.originZero.cat,'traced');for(const scene of origin.originApproachScenes)traced=origin.approachOriginSignal(traced,scene.answer);
+for(const frame of origin.catTrackFrames)traced=origin.pickOriginTrace(traced,frame.answer);assert.equal(traced.originZero.cat,'traced');{const contact=require('../src/lib/origin-contact.ts');traced=contact.startOriginContact(traced);for(const cell of contact.contactPath)traced=contact.moveOriginContact(traced,cell);}for(const scene of origin.originApproachScenes)traced=origin.approachOriginSignal(traced,scene.answer);
 assert.equal(traced.originZero.cat,'captured');assert.match(traced.lastOutcome,/별개의 개체입니다/);assert.match(traced.lastOutcome,/고양이/);
 traced=origin.analyzeOriginCat(traced);assert.match(traced.lastOutcome,/인류 붕괴의 원인이라는 판정도 아니다/);
  console.log('PASS all ending routes, incident art, and the dangerous-silhouette-to-ordinary-cat M-00 reveal');

@@ -33,7 +33,7 @@ assert.equal(origin.canTrackCat(s),true,'late exploration opens the ordinary cat
 let c=origin.initiateOriginTrack(s);assert.equal(c.originZero.cat,'traced');assert.equal(c.ap,3);
 let wrong=origin.pickOriginTrace(c,0);assert.equal(wrong.originZero.trackProgress,0);assert.equal(wrong.threat,c.threat+3);
 for(const frame of origin.catTrackFrames)c=origin.pickOriginTrace(c,frame.answer);
-assert.equal(c.originZero.cat,'traced');assert.equal(c.originZero.trackProgress,3);assert.equal(origin.analyzeOriginCat(c),c);for(const scene of origin.originApproachScenes)c=origin.approachOriginSignal(c,scene.answer);
+assert.equal(c.originZero.cat,'traced');assert.equal(c.originZero.trackProgress,3);assert.equal(origin.analyzeOriginCat(c),c);{const contact=require('../src/lib/origin-contact.ts');assert.equal(origin.approachOriginSignal(c,0),c);c=contact.startOriginContact(c);for(const cell of contact.contactPath)c=contact.moveOriginContact(c,cell);assert.equal(c.originZero.contactField.done,true);}for(const scene of origin.originApproachScenes)c=origin.approachOriginSignal(c,scene.answer);
 assert.equal(c.originZero.cat,'captured');assert.equal(c.originZero.trackProgress,3);
 c=origin.analyzeOriginCat(c);assert.equal(c.originZero.cat,'positive');assert.equal(c.originZero.firstPositiveDay,26);assert.ok(c.lastOutcome.includes('M-00'));
 let hq=origin.chooseOriginRoute(c,'hq');let kept=origin.chooseOriginRoute(c,'shelter');
