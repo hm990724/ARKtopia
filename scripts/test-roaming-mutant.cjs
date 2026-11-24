@@ -27,3 +27,15 @@ let calm=hunt.newHunt('rabbit',42);calm.position=14;calm.searchedAt['14']=0;calm
 let cage=hunt.newHunt('rabbit',42);cage.position=14;cage.fear=10;cage.terrain[14]='path';let trapped=hunt.performHuntAction(cage,{type:'net',cell:14,method:'cage'});assert.equal(trapped.won,false);assert.ok(trapped.state.trap);for(let i=0;i<5&&!trapped.won;i++)trapped=hunt.performHuntAction(trapped.state,{type:'wait'});assert.equal(trapped.won,true);assert.equal(trapped.state.captureMethod,'cage');
 let gearCheck=scenario(false);gearCheck.field.combat=null;gearCheck.capture=fieldAI.createCapture('fox',false,88);assert.equal(g.performVeiledHunt(gearCheck,{type:'net',cell:0,method:'cage'}),gearCheck);
 console.log('PASS independent search, precision net, two-stage calming, cage and gear restriction');
+
+// Environmental hazards are not enemies, and waiting near spores matters.
+let spore=g.beginGame('medic','generator');spore.day=6;spore.tutorialStep=9;spore=g.startRun(spore,'garden',['flashlight']);assert.ok(spore.run);
+spore.field.threat=null;spore.field.tiles.fill('empty');spore.field.position=14;spore.field.visited=[14];spore.field.tiles[15]='hazard';
+assert.equal(fieldAI.fieldSporeNearby(spore.field),true);
+const sporeExposure=spore.run.exposure,sporeInfection=spore.infection;
+for(let i=0;i<3;i++)assert.equal(g.tickFieldSpores(spore),false);
+assert.equal(g.tickFieldSpores(spore),true);assert.equal(spore.run.exposure,sporeExposure+3);assert.equal(spore.infection,Math.min(100,sporeInfection+2));assert.equal(spore.field.combat??null,null);
+const stepped=g.moveField(spore,15);assert.equal(stepped.field.combat??null,null);assert.equal(stepped.field.tiles[15],'hazard');assert.equal(stepped.field.choice??null,null);
+stepped.field.position=21;assert.equal(fieldAI.fieldSporeNearby(stepped.field),false);assert.equal(g.tickFieldSpores(stepped),false);
+let sprint=fieldAI.createField(2,'garden');assert.ok(sprint.threat);sprint.tiles.fill('empty');sprint.position=14;sprint.threat={position:18,origin:18,lastSeen:14,alert:70,mode:'closing'};fieldAI.advanceFieldThreat(sprint,70,0,true);assert.equal(sprint.threat.position,16);fieldAI.advanceFieldThreat(sprint,70,0,true);assert.equal(sprint.threat.position,15);assert.equal(fieldAI.advanceFieldThreat(sprint,70,0,true),true);assert.equal(sprint.threat.position,15);
+console.log('PASS independent spore drift, persistent hazard and adjacent pursuit warning');

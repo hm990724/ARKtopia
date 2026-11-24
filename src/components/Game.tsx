@@ -25,8 +25,8 @@ import {storyArtworkCandidates} from '@/lib/story-art';
 import StoryStill from './StoryStill';
 import {findEndingArt,endingArtworkCandidates} from '@/lib/ending-art';
 import {mainEndingSlot} from '@/lib/ending-sequence';
-import {V10,beginGame,loadGame,regions,gearData,RegionId,Gear,incidentDefs,doBase,purchase,handleMutant,type MutantDecision,buildFacility,facilityRecipes,type FacilityId,startRun,moveField,concealInField,leaveField,resolveFieldChoice,abandonTacticalCapture,placeTacticalDevice,removeTacticalDevice,executeTacticalTurn,predictTacticalMove,authorizeTacticalSeal,performVeiledHunt,rescueChoice,captureChance,useFieldMedkit as performFieldMedkit,resolveIncident,previewIncident,getDayEndBlocker,previewNight,resolveNightTransition,incidentWeight,getNightCircuitState,extract,finish,runPathology,resolvePathologyEvent,type PathologyMethod,registerFullResonance,resolveHeadquarters,requestHeadquartersTransfer,staffTransferIssues,type HeadquartersChoice,type NightChoice,type FieldSettlement} from '@/lib/game-v10';
-import type {DeviceKind,Pace} from '@/lib/tactical-field';
+import {V10,beginGame,loadGame,regions,gearData,RegionId,Gear,incidentDefs,doBase,purchase,handleMutant,type MutantDecision,buildFacility,facilityRecipes,type FacilityId,startRun,moveField,concealInField,leaveField,resolveFieldChoice,abandonTacticalCapture,placeTacticalDevice,removeTacticalDevice,executeTacticalTurn,predictTacticalMove,authorizeTacticalSeal,performVeiledHunt,rescueChoice,captureChance,useFieldMedkit as performFieldMedkit,tickFieldSpores,resolveIncident,previewIncident,getDayEndBlocker,previewNight,resolveNightTransition,incidentWeight,getNightCircuitState,extract,finish,runPathology,resolvePathologyEvent,type PathologyMethod,registerFullResonance,resolveHeadquarters,requestHeadquartersTransfer,staffTransferIssues,type HeadquartersChoice,type NightChoice,type FieldSettlement} from '@/lib/game-v10';
+import {fieldSporeNearby,type DeviceKind,type Pace} from '@/lib/tactical-field';
 import type {HuntMode} from '@/lib/hidden-hunt';
 import {CARE_ACTIONS,careMastery,getCareScenario,resolveCareChoice,quickCare,type CareAction} from '@/lib/care-interactions';
 import {BaseUpgrades,ReactionStage} from './EnhancedField';
@@ -363,16 +363,19 @@ useEffect(()=>{if(ready&&s)localStorage.setItem(KEY,JSON.stringify(s))},[ready,s
 // A field threat keeps searching while the player studies tracks; every tick updates
 // the same serializable field state, so refresh/load preserves its position and alert.
 useEffect(()=>{
- if(tab!=='expedition'||!s?.run||s.run.firstTutorial||!s.field?.threat||s.field.combat||s.field.choice||s.pending||mutantSecured(s))return;
+ if(tab!=='expedition'||!s?.run||s.run.firstTutorial||!s.field||s.field.combat||s.field.choice||s.pending)return;
  const timer=window.setInterval(()=>setS(current=>{
-  if(!current?.run||current.run.firstTutorial||!current.field?.threat||current.field.combat||current.field.choice||current.pending||mutantSecured(current))return current;
+  if(!current?.run||current.run.firstTutorial||!current.field||current.field.combat||current.field.choice||current.pending)return current;
+  const activeThreat=!!current.field.threat&&!mutantSecured(current);
+  if(!activeThreat&&!fieldSporeNearby(current.field)&&!current.field.sporeTicks)return current;
   const next=structuredClone(current),field=next.field!;
-  if(tickRoamingThreat(next)){field.lastEvent='MUTANT가 접근했습니다. 중단된 포획 기록은 보존됩니다.';next.lastOutcome=field.lastEvent;}
+  tickFieldSpores(next);
+  if(activeThreat&&tickRoamingThreat(next)){field.lastEvent='MUTANT가 접근했습니다. 중단된 포획 기록은 보존됩니다.';next.lastOutcome=field.lastEvent;}
   field.noise=Math.max(0,field.noise-4);
   return next;
  }),850);
  return ()=>window.clearInterval(timer);
-},[tab,!!s?.run,!!s?.field?.threat,!!s?.field?.combat,!!s?.field?.choice,!!s?.pending,s?.run?.firstTutorial,!!(s&&mutantSecured(s))]);
+},[tab,!!s?.run,!!s?.field,!!s?.field?.combat,!!s?.field?.choice,!!s?.pending,s?.run?.firstTutorial]);
 useEffect(()=>{setStatusOpen(false)},[tab]);
 useEffect(()=>{if(!statusOpen)return;const onEscape=(event:KeyboardEvent)=>{if(event.key==='Escape')setStatusOpen(false)};window.addEventListener('keydown',onEscape);return()=>window.removeEventListener('keydown',onEscape)},[statusOpen]);
 // Nonblocking numerical readout of actual state changes: both player and animal damage.

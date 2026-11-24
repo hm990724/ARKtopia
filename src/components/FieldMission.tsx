@@ -15,6 +15,7 @@ import {
   fieldHeight,
   fieldRelayBearing,
   fieldHasCover,
+  fieldSporeNearby,
   fieldThreatSignal,
   type Pace,
 } from "@/lib/tactical-field";
@@ -466,6 +467,7 @@ export default function FieldMission({
         </div>
       </div>
       {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
+      {fieldSporeNearby(field)&&!run.firstTutorial&&!field.combat&&<aside className="ark-spore-warning" role="status"><b>감염성 포자 확산권</b><span>인접 구역에도 포자가 유입됩니다. {Math.max(1,4-(field.sporeTicks??0))}틱 후 노출 · {run.gear.includes('filter')?'필터 작동 중':'필터 없음'} · 구역 이탈 권장</span></aside>}
       {hunt && field.threat && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>포획 격자와 별개인 실제 외곽 좌표 · 적은 계속 이동합니다.</small><span>{threatSignal?.warning?'발각 직전 · 엄폐 또는 교전 준비':threatSignal?.direction+' · '+threatSignal?.distance}</span></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall':'')} />)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/><span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span></div></div>}
       {!hunt && (run.captures?.length ?? 0) > 0 && (
         <div className="v41-field-continue" role="status">
@@ -1189,7 +1191,7 @@ export default function FieldMission({
                           <PawPixel />
                         ) : tile === "hazard" ? (
                           <span className="v33-route-object v33-hazard">
-                            ◆<small>오염</small>
+                            <i className="ark-spore-cloud" aria-hidden="true">✣</i><small>포자 확산</small>
                           </span>
                         ) : tile === "exit" ? (
                           <span className="v33-route-object">

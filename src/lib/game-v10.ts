@@ -1,4 +1,4 @@
-import {newFieldCombat,tickRoamingThreat,mutantSecured,upgradeLevel,type UpgradeId} from './field-combat';
+import {tickRoamingThreat,mutantSecured,upgradeLevel,type UpgradeId} from './field-combat';
 import {emptyOriginZero,ensureOriginZero,importOldOriginScans,originReadyForFinale,tickOriginDay,type OriginZeroState} from './origin-zero';
 import {emptyNarrative,ensureNarrative,type NarrativeState} from './narrative';
 import {neuralProfile} from './neural-state';
@@ -12,7 +12,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
-import {revealField,createField,createCapture,adjacentField,fieldHasCover,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {revealField,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -580,13 +580,29 @@ export function resolvePathologyEvent(s:V10,decision:'archive'|'headquarters'):V
 }
 
 /** V31 grid exploration: no artificial 3-click completion. Every tile is an actual decision. */
+/** Called by the expedition clock; works even after the roaming Mutant is secured. */
+export function tickFieldSpores(s:V10):boolean{
+ const f=s.field,run=s.run;
+ if(!f||!run||run.firstTutorial||f.combat||f.choice||s.pending||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
+ if(!fieldSporeNearby(f)){f.sporeTicks=0;return false;}
+ f.sporeTicks=(f.sporeTicks??0)+1;
+ if(f.sporeTicks<4)return false;
+ f.sporeTicks=0;
+ const filtered=run.gear.includes('filter');
+ const protectedByCrew=(run.companions??[run.companion]).includes('deer')||s.crew?.decontamDay===s.day;
+ const exposure=filtered?1:3, infection=Math.max(0,2-(filtered?1:0)-(protectedByCrew?1:0));
+ run.exposure+=exposure;
+ s.infection=cap(s.infection+infection);
+ f.lastEvent=s.lastOutcome=`주변 포자가 퍼졌습니다. 노출 +${exposure} · 감염 +${infection}. 오염 구역에서 벗어나세요.`;
+ return true;
+}
 export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  if(s.run&&s.field&&!s.capture&&!s.field.combat&&s.stamina<2)return leaveField(s,'탈진 · 긴급 귀환');
  if(!s.run||!s.field||s.capture||s.phase!=='day'||s.pending||!adjacentField(s.field.position,destination,s.field.width??7,s.field.tiles.length)||s.field.choice||s.field.combat)return s;
  const tile=s.field.tiles[destination];if(tile==='wall')return s;
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
- field.position=destination;field.concealed=false;field.steps++;
+ field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
  if(run.gear.includes('flashlight'))n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
  field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
@@ -629,7 +645,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
     observation=`${specs.find(a=>a.id===species)?.name}의 생체 신호를 발견했습니다. 현재 포획 계획 단계로 전환합니다.`;
    }else observation='흔적만 남아 있습니다. 이 구역의 개체는 이미 구조되었거나 이송되었습니다. 추가 연구는 기록실에서 확인하십시오.';
   }
-  if(tile!=='exit')field.tiles[destination]='empty';
+  if(tile!=='exit'&&tile!=='hazard')field.tiles[destination]='empty';
  }
  // Walking is an active exploration economy: minor salvage and exposure occur without extra clicks.
  // The first guided rabbit mission is safe from random chip damage; later biomes scale by risk.
