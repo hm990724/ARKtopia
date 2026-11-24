@@ -31,12 +31,18 @@ function play(origin,seed){
   const shouldSortie=[4,8,12].includes(state.day);
   if(shouldSortie){
    if(state.parts<1&&state.credits>=115)state=purchase(state,'parts');
+   // Cash-poor teams can scavenge actual parts. Never fabricate resources in a test.
+   for(let search=0;search<3&&state.parts<1&&state.ap>=2&&state.flashlight>=16;search++){
+    const scavenged=doBase(state,'handsearch');
+    if(scavenged===state)break;
+    state=scavenged;
+   }
    if(state.flashlight<45){
     if(state.electricCells>0&&state.power>=12)state=doBase(state,'batteryCharge');
     else if(state.credits>=120)state=purchase(state,'battery');
     if(state.flashlight<25)throw new Error(`${origin}: no legal flashlight on sortie day ${state.day}`);
    }
-   const gear=['flashlight','cage'];
+   const gear=state.parts>0?['flashlight','cage']:['flashlight'];
    if(state.medicine>0)gear.push('medkit');
    const launched=startRun(state,'garden',gear);
    if(launched===state)throw new Error(`${origin}: sortie launch refused on DAY ${state.day}: ${game.expeditionBlockReason(state,'garden',gear)} (AP ${state.ap}, light ${state.flashlight}, parts ${state.parts}, power ${state.power})`);
@@ -47,7 +53,7 @@ function play(origin,seed){
   }
   // A survivable campaign must deliberately fund the new recurring purifier/fuel upkeep.
   // Purchasing these supplies is a real credit trade-off, not a test-only resource grant.
-  if(state.filters<2&&state.credits>=170)state=purchase(state,'filter');
+  if(state.filters<2&&state.credits>=170+((state.day===3||state.day===7||state.day===11)&&state.parts<1?115:0))state=purchase(state,'filter');
   if(state.fuel<2&&state.credits>=110)state=purchase(state,'fuel');
   if(state.animals.some(a=>a.alive)&&state.food<2&&state.credits>=90)state=purchase(state,'food');
   // Care for the current enclosure, then keep either the failing generator or damaged facility online.
