@@ -1,4 +1,4 @@
-import {mutantSecured,upgradeLevel,type UpgradeId} from './field-combat';
+import {mutantSecured,tickRoamingThreat,upgradeLevel,type UpgradeId} from './field-combat';
 import {regionFragments,collectOriginFragment,emptyOriginZero,ensureOriginZero,importOldOriginScans,originReadyForFinale,tickOriginDay,type OriginZeroState} from './origin-zero';
 import {emptyNarrative,ensureNarrative,type NarrativeState} from './narrative';
 import {neuralProfile} from './neural-state';
@@ -602,7 +602,7 @@ export function tickFieldSpores(s:V10):boolean{
  const f=s.field,run=s.run;
  if(!f||!run||run.firstTutorial||f.combat||f.choice||s.pending||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
  advanceSporeSpread(f);
- if((f.sporeSpread?.turn??0)<=3||!fieldSporeNearby(f)){f.sporeTicks=0;return false;}
+ if(!fieldSporeNearby(f)){f.sporeTicks=0;return false;}
  f.sporeTicks=(f.sporeTicks??0)+1;
  if(f.sporeTicks<4)return false;
  f.sporeTicks=0;
@@ -630,7 +630,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  const firstVisit=!field.visited.includes(destination);
  field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
  if(run.region!=='rail'&&run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
- field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'&&(field.sporeSpread?.turn??0)>=3?12:0)+(pace==='fast'?8:0));
+ field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/14)+Math.floor(n.day/5)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';const metal=metalFloor(field,destination);const masked=run.region==='rail';
  field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(metal?(noisy?18:pace==='normal'?10:1):0)+(run.region==='tunnels'&&pace!=='quiet'?6:0)+(run.region!=='rail'&&run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
@@ -647,7 +647,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
    field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+((run.companions??[run.companion]).includes('fox')?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
-  }else if(tile==='hazard'&&(field.sporeSpread?.turn??0)>=3&&!run.firstTutorial){
+  }else if(tile==='hazard'&&!run.firstTutorial){
    // Environmental contamination is independent of the mobile enemy.
    const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-((run.companions??[run.companion]).includes('wolf')?3:0));
    run.integrity=cap(run.integrity-damage);
@@ -697,7 +697,12 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  }
  if(metal)observation+=' · 금속 바닥 '+(pace==='quiet'?'조용히 통과.':'울림 발생. 주변 추적 위험 증가.');
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
- // MUTANT advances on the independent real-time clock.
+ // MUTANT advances only after a successful field movement; capture and decisions pause pursuit.
+ const beforeThreat=!!field.threat;
+ if(tile!=='exit'&&destination!==(field.origin??14)&&!n.capture&&!field.choice){
+  if(tickRoamingThreat(n,pace))observation+=' · MUTANT 접근 · 전투 전환.';
+  else if(!beforeThreat&&field.threat)observation+=' · EVE: 노출 위협 임계 도달, 외곽 MUTANT 출현.';
+ }
  if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
  revealField(field,fieldVision(run.region,run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0,run.gear.includes('scanner'),run.scannerLevel??0));
  field.lastEvent=observation;
