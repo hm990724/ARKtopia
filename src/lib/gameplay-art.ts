@@ -4,17 +4,17 @@ import type {RegionId} from './game-v10';
 import type {CameraId,ContainmentWing} from './security';
 const base='/assets/gameplay/';
 export const gameplayArt={
- start:(id:string)=>base+'start/'+id+'.webp',
- region:(id:RegionId)=>base+'regions/'+id+'.webp',
- camera:(id:CameraId)=>base+'cctv/'+(id==='CAM-01'?'cam-01':id==='CAM-04'?'cam-04':'containment')+'.webp',
- containment:(_wing:ContainmentWing)=>base+'containment/chamber.webp',
- captureStage:(id:RegionId)=>base+'regions/'+id+'.webp',
- capture:(id:AnimalId)=>base+'capture/'+id+'.webp',
- recoveryStage:base+'recovery/staging.webp',
- recovery:(id:AnimalId)=>base+'recovery/'+id+'.webp',
- result:(key:string)=>base+'results/'+key+'.webp',
- combat:(id:RegionId)=>base+'combat/'+id+'.webp',
- emergency:(key:string)=>base+'operations/'+key+'.webp',
+ start:(id:string)=>base+'start/'+id+'.png',
+ region:(id:RegionId)=>base+'regions/'+id+'.png',
+ camera:(id:CameraId)=>base+'cctv/'+(id==='CAM-01'?'cam-01':id==='CAM-04'?'cam-04':'containment')+'.png',
+ containment:(_wing:ContainmentWing)=>base+'containment/chamber.png',
+ captureStage:(id:RegionId)=>base+'regions/'+id+'.png',
+ capture:(id:AnimalId)=>base+'capture/'+id+'.png',
+ recoveryStage:base+'recovery/staging.png',
+ recovery:(id:AnimalId)=>base+'recovery/'+id+'.png',
+ result:(key:string)=>base+'results/'+key+'.png',
+ combat:(id:RegionId)=>base+'combat/'+id+'.png',
+ emergency:(key:string)=>base+'operations/'+key+'.png',
  ground:(id:RegionId,mode:'explore'|'hunt')=>base+'terrain/'+id+'-'+mode+'.png',
  spore:base+'effects/spore.png',
 };
