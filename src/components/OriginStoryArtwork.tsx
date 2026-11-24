@@ -20,7 +20,7 @@ export default function OriginStoryArtwork({state:s}:{state:V10}){
   cg(13,d.route==='shelter','비밀 격리실의 작은 생명','고양이는 아무 말도 하지 않는다. 연구를 서두를지, 이 생명을 지킬지는 관리자의 선택이다.'),
   {id:'escape',show:d.photos>=6,sources:['/assets/cinematics/origin-zero/scene_origin_escape.png'],title:'폐기 명령과 격리 붕괴',text:'인간이 강행한 폐기 작전이 격리 체계를 무너뜨렸다. M-00은 그 혼란에서 살아 나왔다.'},
   {id:'collapse',show:d.photos>=6,sources:['/assets/cinematics/origin-zero/scene_collapse.png'],title:'무너진 도시',text:'탈출한 고양이의 악의가 아니라, 책임을 지우려던 인간의 결정이 재앙을 만들었다.'},
-  cg(14,d.photos>=7,'인간과 동물의 관계',d.photos>=10?'일부 동물은 인간의 뇌를 보존한 숙주였다. 본부의 인력 복원 기록과 연결된다. M-00은 이 이식의 결과가 아니다.':'일부 동물에게 인간의 뇌와 기억을 보존한 기록이 확인되었다. 이후의 인수 명세는 아직 해독되지 않았다.'),
+  cg(14,d.photos>=7,'인간과 동물의 관계',d.photos>=10?'일부 동물은 인간의 뇌를 보존한 숙주였다. 본부의 인력 복원 기록과 연결된다. M-00은 이 이식의 결과가 아니다.':'일부 동물에게 인간의 뇌와 기억을 보존한 기록이 확인되었다. EVE는 인력 복원 계획을 알면서도 본부 명령으로 침묵했음을 인정했다. 개별 인수 명세는 아직 해독되지 않았다.'),
   cg(15,d.photos>=8,'사진 속 아이','과학자와 딸, 그리고 검은 고양이. 오래된 사진 속 아이가 EVE와 닮아 있다.'),
   cg(16,d.photos>=11,'제000번 관리자','최초 과학자의 뇌는 동물 숙주를 거쳐 관리자 신체로 돌아왔다. 기억이 같아도 선택은 같을 필요가 없다.'),
   cg(17,d.photos>=8&&s.narrative?.choices?.daughter_archive===1,'EVE의 독립적 선택','EVE는 과거의 기록이 아니라 자신이 내릴 선택으로 살아가겠다고 말했다.'),

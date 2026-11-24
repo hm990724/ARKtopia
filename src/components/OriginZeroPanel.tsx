@@ -11,7 +11,7 @@ import OriginContactField from './OriginContactField';
 import {SPECIES_MEMORY} from '@/lib/species-memory';
 
 type Mode='expedition'|'records'|'research';
-export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:Mode;onUpdate:(next:V10)=>void}){
+export default function OriginZeroPanel({state:s,mode,onUpdate,onReplay}:{state:V10;mode:Mode;onUpdate:(next:V10)=>void;onReplay?:(number:number)=>void}){
  const d=s.originZero;
  const [showReveal,setShowReveal]=useState(false);
  const [activeRecallKey,setActiveRecallKey]=useState<string|null>(null);
@@ -52,14 +52,14 @@ export default function OriginZeroPanel({state:s,mode,onUpdate}:{state:V10;mode:
  if(!positive)return <section className="oz-panel oz-dormant" aria-label="정기 생체검사 로그"><span className="oz-eyebrow">BIO-STATUS / AUTOMATIC</span><h3>정기 생체검사 기록</h3><p>개체 포획 시 건강·신경 반응 검사를 자동 수행합니다. 추가 분석 항목의 조회 권한은 제한됩니다.</p><span className="oz-neutral">등록된 검사 {d?.scans.length??0}건 · 상세 결과 비공개</span></section>;
  return <section className="oz-panel oz-origin v71-origin-lab" aria-label="기원 표식 분석 및 숨겨진 사진">
   <span className="oz-eyebrow">ORIGIN SIGNATURE ANALYSIS · RESTRICTED</span><h3>기원 표식 일치 · <em>POSITIVE</em></h3>
-  <p>검사 결과가 확인되었습니다. 기원 ID: <strong>M-00</strong>. 이는 감염 판정이 아닌 원본 실험체의 생물학적 식별 표식 일치입니다.</p>{!d?.route&&<div className="origin-approach-dialogue"><p><b>관리자:</b> 우리가 찾던 게… 이 녀석이었다고?</p><p><b>본부:</b> 즉시 격리 후 이송하십시오. 추가 조회 권한은 없습니다.</p><p><b>EVE:</b> 가장 정상적인 개체인데, 본부가 가장 두려워하고 있어요.</p></div>}
+  <p>검사 결과가 확인되었습니다. 기원 ID: <strong>M-00</strong>. 이는 감염 판정이 아닌 원본 실험체의 생물학적 식별 표식 일치입니다.</p>{!d?.route&&<div className="origin-approach-dialogue"><p><b>관리자:</b> 우리가 찾던 게… 이 녀석이었다고?</p><p><b>본부:</b> 즉시 격리 후 이송하십시오. 추가 조회 권한은 없습니다.</p><p><b>EVE:</b> 이송 지령을 실행해야 합니다. …그런데, 오래된 기억 신호가 동기화됐습니다. 정말 보내야 할까요?</p></div>}
   {!d?.route&&<StoryStill sources={storyArtworkCandidates(11)} alt="기원 표식 양성"/>}
   {!d?.route&&<div className="oz-choice-grid"><button onClick={()=>update(chooseOriginRoute(s,'hq'))}><b>본부에 전송한다</b><small>지원과 원격 연구 기록 확보. M-00 직접 관찰권 상실.</small></button><button onClick={()=>update(chooseOriginRoute(s,'shelter'))}><b>본부에 전송하지 않는다</b><small>동물원 내 보호 · 본부 감시 및 보급 제한 증가.</small></button></div>}
   {d?.route&&<><div className="oz-branch">{d.route==='hq'?'ROUTE A · 본부 이송 / 원격 연구 자료 회수':'ROUTE B · 비밀 격리 / 독립 생체 연구'}<small>{d.route==='hq'?'개체는 동물원에 자동으로 돌아오지 않는다.':'본부 감사와 이송 요구가 증가한다.'}</small></div>
    {<div className="oz-management"><span>최종 경보 준비</span><b>{d.route==='hq'?`원격 연구 자료 접근 ${d.hqIntel}%`:`M-00 생체 안정 ${d.stability}%`}</b><button disabled={s.ap<1||(d.route==='hq'?s.power<10:s.medicine<1)} onClick={()=>update(originBranchAction(s,d.route==='hq'?'retrieve':'stabilize'))}>{d.route==='hq'?'본부 기밀 자료 회수 (AP 1 / 전력 10)':'격리 환경 안정화 (AP 1 / 약품 1)'}</button></div>}
    {originCrisisAvailable(s)&&<div className="oz-crisis"><span>EMERGENCY / FINAL BREACH</span><h4>{d.route==='hq'?'본부가 M-00에 대한 강행 연구를 지시했다':'본부 회수팀이 비밀 격리실을 포위했다'}</h4><p>이번 선택은 다음 연구의 안정성과 본부와의 관계에 영향을 미친다.</p><div className="oz-choice-grid"><button onClick={()=>update(resolveOriginCrisis(s,'protect'))}><b>생존 개체의 보호를 우선한다</b><small>위협이 증가하지만 위험한 절차를 억제한다.</small></button><button onClick={()=>update(resolveOriginCrisis(s,'knowledge'))}><b>연구 기록 확보를 우선한다</b><small>자료를 얻지만 안정성과 신뢰를 잃을 수 있다.</small></button></div></div>}
    <div className="oz-heading"><h4>HIDDEN PHOTO · 원본 12장</h4><b>{d.photos} / 12</b></div>
-   <OriginPhotoGallery count={d.photos}/>
+   <OriginPhotoGallery count={d.photos}/>{onReplay&&d.photos>=7&&<section className="origin-replay"><b>복원된 대화 기록</b>{[7,8,9,10,11,12].filter(number=>number<=d.photos).map(number=><button type="button" key={number} onClick={()=>onReplay(number)}>PHOTO {String(number).padStart(2,'0')} · {['EVE의 고백','동기화된 기억','EVE의 선택','직원 인수 기록','관리자의 정체','마지막 연구'][number-7]}</button>)}</section>}
    {d.photos<12&&<div className="v69-archive-puzzle"><span className="oz-eyebrow">ARCHIVE AUTHENTICATION · {d.photos+1}/12</span><strong>{individualPhotoPuzzles[d.photos].question}</strong><p>{individualPhotoPuzzles[d.photos].hint} · AP 1 / 전력 4</p><div className="v69-archive-options">{individualPhotoPuzzles[d.photos].options.map((label,i)=><button key={label} type="button" disabled={s.ap<1||s.power<4||s.phase!=='day'} onClick={()=>{const next=restoreOriginPhoto(s,i);update(next);}}><b>{String(i+1).padStart(2,'0')}</b>{label}</button>)}</div></div>}
    {d.photos===12&&<button className="oz-action" onClick={()=>setShowReveal(true)}>마지막 사진과 이브의 기록 다시 보기</button>}
    {d.photos>=6&&<><div className="oz-heading"><h4>OPERATION ARK RECALL</h4><b>{completedRecalls(s).length}개체 분석</b></div><StoryStill sources={storyArtworkCandidates(18)} alt="ARK RECALL 작전 개시"/>

@@ -4,7 +4,7 @@ export type PortraitMood='neutral'|'anxious'|'critical'|'resolve';
 export type CharacterId='protagonist'|'eve'|CrewId;
 export function characterMood(state:V10|undefined,id:CharacterId,text='',explicit?:PortraitMood):PortraitMood{
  // EVE learns emotional expression only after authenticated story evidence.
- if(id==='eve'&&(!state||(!state.flags.humanTruth&&(state.originZero?.photos??0)<4)))return 'neutral';
+ if(id==='eve'&&(!state||(!state.flags.humanTruth&&!state.originZero?.firstPositiveDay&&(state.originZero?.photos??0)<4)))return 'neutral';
  const value=id==='protagonist'?state?.mind:id==='eve'?state?.eve:state?.crew?.members.find(m=>m.id===id)?.mind;
  if(value!==undefined&&value<=0)return 'critical';
  // Crew stability is the visual floor. A calm dialogue must not restore a critical face.
