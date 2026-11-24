@@ -3,7 +3,7 @@ require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f
 const art=require('../src/lib/character-art.ts'),{beginGame}=require('../src/lib/game-v10.ts');
 const s=beginGame('medic','generator');s.crew.members=[{id:'rabbit',mind:20}];s.mind=0;s.eve=30;
 for(const id of ['protagonist'])assert.equal(art.characterMood(s,id,'고마워요','resolve'),'critical','a zero mental value overrides even a reassuring line');
-assert.equal(art.characterMood(s,'rabbit','고마워요','resolve'),'resolve','explicit dialogue emotion may lead the portrait through a low but nonzero morale state');
+assert.equal(art.characterMood(s,'rabbit','고마워요','resolve'),'critical','critical crew sanity remains visible even when a line sounds reassuring');
 assert.equal(art.characterMood(s,'eve','위험','critical'),'neutral');
 s.flags.humanTruth=true;assert.equal(art.characterMood(s,'eve'),'critical');
 assert.equal(art.characterMood(undefined,'eve','위험'),'neutral');
