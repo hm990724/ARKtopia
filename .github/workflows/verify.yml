@@ -32,6 +32,11 @@ jobs:
         run: npm run check:assets
       - name: Game logic and save regressions
         run: npm run test:all
+      - name: Long-run survival and strategy balance
+        run: |
+          npm run balance:soak
+          npm run balance:campaign
+          npm run balance:strategy
       - name: Production-quality QA build
         run: npm run build:qa
   browser-regressions:
