@@ -5,13 +5,13 @@ import {advanceFieldThreat,farthestThreatCell,type Pace} from './tactical-field'
 export type FieldEnemy='slime'|'echo'|'mutant';
 export type CombatAction='strike'|'guard'|'cover'|'heal'|'pulse'|'support'|'retreat'|'intro-continue'|'wolf-last-stand'|'cancel-last-stand';
 export type FieldCombat={enemy:FieldEnemy;hp:number;maxHp:number;round:number;intent:'lunge'|'charge'|'spray';stagger:boolean;log:string[];source?:'hazard'|'mobile';lastAction?:CombatAction;introPending?:boolean;lastStand?:boolean;seed?:number;strikeChain?:number;}
-export function mutantClue(b:FieldCombat){return b.intent==='lunge'?'앞다리가 땅을 긁는다. 몸의 무게가 앞으로 쏠린다.':b.intent==='charge'?'흉부의 조직이 갈라지고 안쪽 빛이 드러난다.':'등의 막이 부풀며 주변 공기가 일렁인다.';}
+export function mutantClue(b:FieldCombat){return b.intent==='lunge'?'앞다리가 땅을 긁는다. 돌진 직전이다. 방어하면 다음 제압봉이 강화된다.':b.intent==='charge'?'흉부의 핵이 노출됐다. 지금 제압봉을 사용하면 큰 피해를 주고 반격을 받지 않는다.':'등의 막이 부푼다. 포자 분사 직전이다. 엄폐하면 피해가 크게 줄고 다음 타격이 강화된다.';}
 export function combatRoundLimit(b:FieldCombat){return b.enemy==='mutant'?9:6;}
 export const combatIntent={lunge:'돌진 준비 · 방어하면 반격 기회가 생깁니다.',charge:'핵 노출 · 지금 제압하면 큰 피해를 줍니다.',spray:'포자 분사 · EVE 펄스로 차단하거나 방어하십시오.'};
 export function newFieldCombat(seed:number):FieldCombat{return {enemy:seed%2?'echo':'slime',hp:24,maxHp:24,round:1,intent:seed%2?'spray':'lunge',stagger:false,log:['EVE: 동물의 생체 신호가 아닙니다. 오염 덩어리의 다음 움직임을 확인하세요.']};}
 /** The special Mutant is one persistent individual, distinct from M-00. */
 export function mutantSecured(s:V10):boolean{return s.animals.some(a=>a.id==='mutant')||!!s.headquarters?.transferred.includes('mutant')||s.pending==='mutant'||Object.values(s.archive?.entries??{}).some(entry=>entry.species==='mutant');}
-/** Movement and realtime pursuit enter exactly the same encounter. */
+/** Only field movement can enter the roaming encounter. */
 export function beginRoamingCombat(s:V10):boolean{
  const f=s.field;if(!s.run||!f?.threat||f.combat||f.choice||s.pending||s.run.firstTutorial||mutantSecured(s))return false;
  if(s.capture)return false;
@@ -22,7 +22,6 @@ export function beginRoamingCombat(s:V10):boolean{
  if(first)log(s,'최초 배회 위협 조우','외곽에서 특수 변이체 MUTANT를 확인했습니다. 동일 개체의 추적 경로가 기록되었습니다.','bad');
  return true;
 }
-/** One simulation entry point for walking and realtime ticks. */
 /** Only a successful player step may spawn or advance the single roaming enemy. */
 export function tickRoamingThreat(s:V10,pace?:Pace):boolean{
  const f=s.field,run=s.run;if(!run||!f||s.capture||f.combat||f.choice||s.pending||run.firstTutorial||mutantSecured(s)||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
@@ -67,7 +66,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(action==='wolf-last-stand'){b.lastStand=true;b.log=['경비관: 관리자님, 먼저 가세요. 이번에는 제가 문을 지킬게요.','EVE: 엄호를 수락하면 경비관은 돌아오지 않습니다.'];return n;}
  if(action==='retreat'){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(94,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile)relocateThreat(f);resumeCapture(n);f.lastEvent=n.lastOutcome='후퇴로를 확보했습니다. ST -2 · 추적망 +7 · 전리품 없음.';return n;}
  b.strikeChain=action==='strike'?(b.strikeChain??0)+1:0;b.lastAction=action;let hit=0,shield=0,message='';
- if(action==='strike'){hit=b.enemy==='mutant'?(b.stagger?24:b.intent==='charge'?20:10):b.intent==='charge'||b.stagger?14:8;message=`제압봉으로 핵 타격 · 내구 -${hit}`;}
+ if(action==='strike'){hit=b.enemy==='mutant'?(b.stagger?24:b.intent==='charge'?20:10):b.intent==='charge'||b.stagger?14:8;message=`제압봉 적중 · 내구 -${hit}${b.enemy==='mutant'&&b.intent!=='charge'&&!b.stagger?' · 반격 위험':''}`;}
  if(action==='guard'){shield=b.enemy==='mutant'?19:8;b.stagger=b.enemy!=='mutant'||b.intent==='lunge'||b.stagger;message='방호 자세 · 피해 감소, 다음 타격 강화';}
  if(action==='cover'){shield=b.enemy==='mutant'?23:14;if(b.enemy==='mutant'&&b.intent==='spray')b.stagger=true;message='장애물 뒤 엄폐 · 피해를 크게 줄입니다. 새 반격 기회는 생성되지 않습니다.';}
  if(action==='heal'){run.integrity=cap(run.integrity+24);run.medkitUsed=true;shield=8;message='응급 키트로 방호 장비를 봉합했습니다. 방호 +24';}
