@@ -104,7 +104,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
    {member&&<i className={member.mind<35?'v45-staff-danger':member.mind<62?'v45-staff-warning':'v45-staff-ok'}/>}
   </button>})}</div>
   {retired.length>0&&<div className="v49-roster-losses"><ShieldAlert size={14}/><span>시설 인력 공백 · {retired.map(id=>CREW_LOSS_EFFECTS[id].summary).join(' / ')}</span></div>}
-  <div className="v45-roster-foot"><span>{used?'오늘의 지원 완료':'공동 지원: 하루 1회'}</span><span>{crew?.arrivalQueue?.length?`본부 복원 대기 ${crew.arrivalQueue.length}명 · 다음 날부터 하루 1명`:crew?.members.length?'직원 선택해 대화·지원':'공명 100% · 건강한 개체를 본부 이송'}</span></div>
+  <div className="v45-roster-foot"><span>{used?'오늘의 지원 완료':'공동 지원: 하루 1회'} · 탐사 동행 직원은 당일 재배치 불가</span><span>{crew?.arrivalQueue?.length?`본부 복원 대기 ${crew.arrivalQueue.length}명 · 다음 날부터 하루 1명`:crew?.members.length?'직원 선택해 대화·지원':'공명 100% · 건강한 개체를 본부 이송'}</span></div>
   </div>
   {selectedMember&&selected&&createPortal(<div className="v67-staff-overlay" role="presentation" onMouseDown={(event)=>{if(event.target===event.currentTarget)setSelected(null)}}>
     <div className="v67-staff-modal" role="dialog" aria-modal="true" aria-labelledby="v67-staff-title" key={selected}>
@@ -118,7 +118,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
       {selectedMember.mind<=28&&<div className="v45-roster-warning"><ShieldAlert size={13}/> 위험 상태 · 조속한 안정 조치가 필요합니다.</div>}
       <div className="v67-staff-action-grid">
        <button type="button" disabled={selectedMember.lastSpokenDay!==state.day&&(state.ap<1||state.food<1)} onClick={()=>{setSelected(null);onTalk(selected)}}><BookOpen size={16}/> 대화 <small>{selectedMember.lastSpokenDay===state.day?'오늘 대화 다시 보기':'AP -1 · 식량 -1 · 신뢰만 회복'}</small></button>
-       <button type="button" className="primary" disabled={!!used||selectedMember.mind<=0||!!state.crew?.pendingTermination} onClick={()=>{setSelected(null);onSupport(selected)}}>오늘 지원</button>
+       <button type="button" className="primary" disabled={!!used||selectedMember.mind<=0||!!state.crew?.pendingTermination||!!state.run||!!state.crew?.sortieWorked?.includes(selected)} title={state.crew?.sortieWorked?.includes(selected)?'오늘 탐사 동행 완료 · 내일부터 기지 지원 가능':state.run?'탐사 진행 중에는 기지 지원 불가':undefined} onClick={()=>{setSelected(null);onSupport(selected)}}>오늘 지원</button>
        <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.medicine<1||selectedMember.lastCareDay===state.day} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={16}/> 의료 지원 <small>AP -2 · 치료제 -1 · 정신 +20</small></button>
        <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.food<1||state.crew?.counselDay===state.day} onClick={()=>onTreat(selected,'counsel')}><Brain size={16}/> 상담 <small>AP -2 · 식량 -1 · 정신 +9 · 하루 1회</small></button>
       </div>
