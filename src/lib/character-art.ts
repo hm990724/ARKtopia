@@ -7,6 +7,11 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  if(id==='eve'&&(!state||(!state.flags.humanTruth&&(state.originZero?.photos??0)<4)))return 'neutral';
  const value=id==='protagonist'?state?.mind:id==='eve'?state?.eve:state?.crew?.members.find(m=>m.id===id)?.mind;
  if(value!==undefined&&value<=0)return 'critical';
+ // Crew stability is the visual floor. A calm dialogue must not restore a critical face.
+ if(id!=='protagonist'&&id!=='eve'&&value!==undefined){
+  if(value<35)return 'critical';
+  if(value<62&&explicit!=='critical')return 'anxious';
+ }
  if(explicit)return explicit;
  if(value!==undefined&&value<35)return 'critical';
  if(/제 손이|네 발로|무너질|끝나가|살려|죽고|이상해요/.test(text))return 'critical';
@@ -20,9 +25,27 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
 export function characterPortrait(id:CharacterId,mood:PortraitMood):string{
  if(id==='protagonist')return `/assets/characters/protagonist_${mood}.png`;
  if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}.png`;
- if(mood==='neutral'||mood==='resolve')return `/assets/staff/${id}/portrait${id==='fox'?'.png':'.webp'}`;
- return `/assets/staff/${id}/portrait_${mood==='anxious'?'unstable':'critical'}.png`;
+ return staffStatusPortrait(id,mood==='critical'?'critical':mood==='anxious'?'unstable':'safe');
 }
+
+/** The three WebP portraits remain the stable sanity-driven roster/status art. */
+export type StaffCondition='safe'|'unstable'|'critical';
+export function staffCondition(mind:number|undefined):StaffCondition{
+ return mind===undefined||mind>=62?'safe':mind>=35?'unstable':'critical';
+}
+export function staffStatusPortrait(id:CrewId,condition:StaffCondition):string{
+ const suffix=condition==='safe'?'':`_${condition}`;
+ return `/assets/staff/${id}/portrait${suffix}.webp`;
+}
+/** Dialogue uses the existing distinct PNG expression takes, never substitutes for sanity art. */
+export function staffDialoguePortrait(id:CrewId,mood:PortraitMood,condition:StaffCondition):string{
+ if(condition==='critical')return staffStatusPortrait(id,'critical');
+ if(condition==='unstable'&&mood!=='critical')return staffStatusPortrait(id,'unstable');
+ if(mood==='critical')return `/assets/staff/${id}/portrait_critical.png`;
+ if(mood==='anxious')return `/assets/staff/${id}/portrait_unstable.png`;
+ return staffStatusPortrait(id,condition);
+}
+
 export type WalkDirection='down'|'left'|'right'|'up';
 export function directionForMove(from:number,to:number,width:number):WalkDirection{
  if(to===from-width)return 'up';if(to===from+width)return 'down';return to<from?'left':'right';
