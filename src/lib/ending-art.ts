@@ -40,3 +40,24 @@ export function findEndingArt(ending: string): { file: string; label: string } {
   const legacy = LEGACY_ENDING_ART.find(item => ending.startsWith(item.prefix));
   return ENDING_ART.find(item => item.prefix === legacy?.canonicalPrefix) ?? ENDING_ART[4];
 }
+
+/** Eight ORIGIN ZERO outcomes use new story-specific raster CGs when physically
+ * present. The eleven existing legacy endings keep their original mappings.
+ * Do not equate those eleven historical titles with the eleven epilogue storyboard
+ * candidates: their narrative and save conditions are not interchangeable.
+ */
+export const ORIGIN_ZERO_CANONICAL_ENDING_ART = [
+ {prefix:'영원한 실험',filename:'END_01_eternal_experiment.png'},
+ {prefix:'에덴',filename:'END_02_eden.png'},
+ {prefix:'방주의 씨앗',filename:'END_03_ark_seeds.png'},
+ {prefix:'마지막 동물원',filename:'END_04_last_zoo.png'},
+ {prefix:'제000번 우리',filename:'END_05_subject_000.png'},
+ {prefix:'침묵의 자동화',filename:'END_06_silent_automation.png'},
+ {prefix:'흩어진 이름들',filename:'END_07_scattered_names.png'},
+ {prefix:'마지막 신호',filename:'END_08_last_signal.png'}
+] as const;
+export function endingArtworkCandidates(ending:string):readonly string[]{
+ const fallback=ENDING_ASSET_DIRECTORY+findEndingArt(ending).file;
+ const main=ORIGIN_ZERO_CANONICAL_ENDING_ART.find(x=>ending.startsWith(x.prefix));
+ return main?[`/assets/cinematics/origin-zero/endings/${main.filename}`,fallback]:[fallback];
+}
