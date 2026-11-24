@@ -27,8 +27,7 @@ import {CARE_ACTIONS,careMastery,getCareScenario,resolveCareChoice,quickCare,typ
 import {BaseUpgrades,ReactionStage} from './EnhancedField';
 import {FacilityPowerDispatch,NightDispatchForecast} from './FacilityPowerDispatch';
 import {setFacilityPowerPriority} from '@/lib/facility-power';
-import {resolveCombat,upgradeBase,newFieldCombat,upgradeLevel} from '@/lib/field-combat';
-import {advanceFieldThreat} from '@/lib/tactical-field';
+import {resolveCombat,upgradeBase,tickRoamingThreat,mutantSecured,upgradeLevel} from '@/lib/field-combat';
 import FieldMission from './FieldMission';
 import {spendCareAnalysis,CARE_ANALYSIS_COST} from '@/lib/knowledge';
 import {telemetryChanges,type TelemetryEvent} from '@/lib/telemetry';
@@ -81,10 +80,10 @@ function StoryConversation({state,lines,index,shown,previousTalk,advanceTalk,rev
  return <div className="v44-story-overlay" role="dialog" aria-modal="true" aria-label={intro?'EVE 최초 통신':'보존구역 실시간 대화'}>
   <div className="v44-story-scene">
    <div className="v44-story-head"><div><span className="v44-story-signal"><Radio size={13}/> {intro?'FIRST CONTACT':'BIO-COMMUNICATION LINK'}</span><b>ARK // EVE 통신 채널 <em>ENCRYPTED</em></b></div><span className="v44-story-counter">{String(index+1).padStart(2,'0')} / {String(lines.length).padStart(2,'0')}</span></div>
-   <div className="v44-story-main">
-    <div className="v44-story-eve"><span>{active.speaker==='관리자'?'OPERATOR // FIELD LINK':speakerCrew?'HQ PERSONNEL // BIO-LINK':'HOLOGRAPHIC TERMINAL // EVE'}</span><div className="v44-story-eve-image" data-mood={mood}>{active.speaker==='관리자'?<img key={`protagonist-${mood}`} src={characterPortrait("protagonist",mood)} alt="담당자 000 초상" data-mood={mood}/>:speakerCrew?<StaffPortrait key={`${speakerCrew}-${mood}`} id={speakerCrew} condition={staffCondition(state?.crew?.members.find(m=>m.id===speakerCrew)?.mind)} dialogueMood={mood} dialogueText={active.text} className="v53-story-staff"/>:<img key={`eve-${mood}`} src={characterPortrait("eve",mood)} alt="EVE 홀로그램" data-mood={mood}/>}<i aria-hidden="true"/></div><strong>{active.speaker==='관리자'?'담당자 000':speakerCrew?CREW_PROFILES[speakerCrew].post:'EVE / 보존구역 안내'}</strong><small><span className="v44-story-live"/> {speakerCrew?'NEURAL LINK / UNSTABLE':'SIGNAL CONNECTED'}</small></div>
+   <div className="v44-story-main" data-actor={actor}>
+    <div className="v44-story-eve" data-actor={actor}><span>{active.speaker==='관리자'?'OPERATOR // FIELD LINK':speakerCrew?'HQ PERSONNEL // BIO-LINK':'HOLOGRAPHIC TERMINAL // EVE'}</span><div className="v44-story-eve-image" data-mood={mood}>{active.speaker==='관리자'?<img key={`protagonist-${mood}`} src={characterPortrait("protagonist",mood)} alt="담당자 000 초상" data-mood={mood}/>:speakerCrew?<StaffPortrait key={`${speakerCrew}-${mood}`} id={speakerCrew} condition={staffCondition(state?.crew?.members.find(m=>m.id===speakerCrew)?.mind)} dialogueMood={mood} dialogueText={active.text} className="v53-story-staff"/>:<img key={`eve-${mood}`} src={characterPortrait("eve",mood)} alt="EVE 홀로그램" data-mood={mood}/>}<i aria-hidden="true"/></div><strong>{active.speaker==='관리자'?'담당자 000':speakerCrew?CREW_PROFILES[speakerCrew].post:'EVE / 보존구역 안내'}</strong><small><span className="v44-story-live"/> {speakerCrew?'NEURAL LINK / UNSTABLE':'SIGNAL CONNECTED'}</small></div>
     <div className="v44-chat-area"><div className="v44-chat-stream" ref={historyRef} role="log" aria-live="off" aria-label="최근 대화 내역">
-     {visible.map((line,j)=>{const i=Math.max(0,index-3)+j;const current=i===index;return <div key={`${i}-${line.speaker}`} className={'v44-chat-row '+(line.speaker==='EVE'?'eve':line.speaker==='관리자'?'operator':'staff')+(current?' active':' previous')}><div className="v44-chat-meta"><b>{line.speaker==='EVE'?'EVE · 안내 시스템':line.speaker==='관리자'?'담당자 000':CREW_PROFILES[line.speaker].post}</b><span>{String(i+1).padStart(2,'0')}</span></div><p>{current?line.text.slice(0,shown):line.text}{current&&shown<line.text.length&&<i className="cursor-bar"/>}</p></div>})}
+     {visible.map((line,j)=>{const i=Math.max(0,index-3)+j;const current=i===index;return <div key={`${i}-${line.speaker}`} data-speaker={line.speaker} className={'v44-chat-row '+(line.speaker==='EVE'?'eve':line.speaker==='관리자'?'operator':'staff')+(current?' active':' previous')}><div className="v44-chat-meta"><b>{line.speaker==='EVE'?'EVE · 안내 시스템':line.speaker==='관리자'?'담당자 000':CREW_PROFILES[line.speaker].post}</b><span>{String(i+1).padStart(2,'0')}</span></div><p>{current?line.text.slice(0,shown):line.text}{current&&shown<line.text.length&&<i className="cursor-bar"/>}</p></div>})}
     </div><div className="v44-chat-footnote"><span>CHAT LOG // <b>{active.speaker==='EVE'?'SYSTEM TRANSMISSION':'SUBJECT RESPONSE'}</b></span><span>{shown<active.text.length?'신호 수신 중':'기록 수신 완료'}</span></div></div>
    </div>
    <div className="v44-story-controls"><span className="v44-story-progress" aria-label={`대화 진행 ${index+1}/${lines.length}`}><i style={{width:`${(index+1)/lines.length*100}%`}}/></span><div className="v44-story-buttons"><button type="button" onClick={previousTalk} disabled={index===0}><ChevronLeft size={16}/> 이전</button><button type="button" onClick={revealTalk} disabled={shown>=active.text.length}><Zap size={15}/> 글 즉시 펼치기</button><button type="button" className="is-next" onClick={advanceTalk}>{index===lines.length-1?'대화 완료':'다음 대사'} <ChevronRight size={17}/></button><button type="button" className="is-skip" onClick={skipTalk}>전체 스킵</button></div></div>
@@ -348,15 +347,16 @@ useEffect(()=>{if(ready&&s)localStorage.setItem(KEY,JSON.stringify(s))},[ready,s
 // A field threat keeps searching while the player studies tracks; every tick updates
 // the same serializable field state, so refresh/load preserves its position and alert.
 useEffect(()=>{
- if(tab!=='expedition'||!s?.run||!s.field?.threat||s.field.combat||s.field.choice)return;
+ if(tab!=='expedition'||!s?.run||s.run.firstTutorial||!s.field?.threat||s.field.combat||s.field.choice||s.pending||mutantSecured(s))return;
  const timer=window.setInterval(()=>setS(current=>{
-  if(!current?.run||!current.field?.threat||current.field.combat)return current;
+  if(!current?.run||current.run.firstTutorial||!current.field?.threat||current.field.combat||current.field.choice||current.pending||mutantSecured(current))return current;
   const next=structuredClone(current),field=next.field!;
-  if(advanceFieldThreat(field,field.noise,upgradeLevel(next,'relay'),next.run?.gear.includes('flashlight')&&next.flashlight>0)){field.combat=newFieldCombat(next.day+field.steps);field.combat.source='mobile';if(next.capture){next.capture=null;field.encountered=true;next.threat=Math.min(100,next.threat+6);}field.lastEvent='움직임을 멈춘 사이 오염체가 소음 신호를 따라 근접했습니다.';next.lastOutcome=field.lastEvent;}
+  if(tickRoamingThreat(next)){field.lastEvent='MUTANT가 접근했습니다. 중단된 포획 기록은 보존됩니다.';next.lastOutcome=field.lastEvent;}
+  field.noise=Math.max(0,field.noise-4);
   return next;
  }),1400);
  return ()=>window.clearInterval(timer);
-},[tab,s?.run,s?.field?.threat,s?.field?.threat?.position,s?.field?.threat?.alert,s?.field?.combat,s?.field?.noise,s?.field?.position,s?.field?.choice]);
+},[tab,!!s?.run,!!s?.field?.threat,!!s?.field?.combat,!!s?.field?.choice,!!s?.pending,s?.run?.firstTutorial,!!(s&&mutantSecured(s))]);
 useEffect(()=>{setStatusOpen(false)},[tab]);
 useEffect(()=>{if(!statusOpen)return;const onEscape=(event:KeyboardEvent)=>{if(event.key==='Escape')setStatusOpen(false)};window.addEventListener('keydown',onEscape);return()=>window.removeEventListener('keydown',onEscape)},[statusOpen]);
 // Nonblocking numerical readout of actual state changes: both player and animal damage.
@@ -521,7 +521,7 @@ function applyFieldMedkit(){if(!s)return;const n=performFieldMedkit(s);if(n===s)
   setS(n);setRunFeedback(n.lastOutcome);if(s.run&&!n.run)showFieldSettlement(n);beep(action==='risk'?320:500);
  }
  function onFieldRetreat(){
-  if(!s)return;
+  if(!s||s.field?.combat)return;
   if(s.capture){const n=abandonTacticalCapture(s);if(n===s)return;setS(n);setRunFeedback(n.lastOutcome);beep(300);return;}
   const n=leaveField(s);if(n===s)return;
   const firstReturn=(s.run?.firstTutorial??s.tutorialStep===2)&&!!s.field&&s.field.steps>0;
@@ -535,13 +535,12 @@ function applyFieldMedkit(){if(!s)return;const n=performFieldMedkit(s);if(n===s)
  function onFieldPredict(pos:number){if(!s?.capture)return;const n=predictTacticalMove(s,pos);if(n===s){setRunFeedback('예측 불가: 남은 작전 명령을 확인하세요.');return;}setS(n);setRunFeedback(n.capture?.lastEvent||'이동 예측을 지정했습니다.')}
  function onFieldSeal(){if(!s?.capture)return;const n=authorizeTacticalSeal(s);setS(n);setRunFeedback(n.capture?.lastEvent||'봉쇄를 승인했습니다.');beep(n.capture?.sealArmed?680:260)}
  function onFieldAdvance(){if(!s?.capture)return;const prior=s.capture;const n=executeTacticalTurn(s);if(n===s)return;const caught=!!n.pending&&!s.pending;const escaped=!n.capture&&!n.pending;const firstReturn=caught&&s.tutorialStep===2;setS(n);setRunFeedback(n.lastOutcome);if(caught){report(s,n,'전술 포획 성공');setCaptureReveal({id:n.pending!,cell:null,first:firstReturn});beep(890)}else if(escaped){setResult({success:false,title:'포획 실패 · 개체 이탈',text:n.lastOutcome,animalId:prior.species});beep(210)}else beep(420)}
-function onHuntAction(command:{type:HuntMode;cell?:number;clue?:number}){
+function onHuntAction(command:import('@/lib/hidden-hunt').HuntCommand){
  if(!s?.capture?.hunt)return;
  const prior=s.capture;
  const n=performVeiledHunt(s,command);
  if(n===s){setRunFeedback('명령을 실행할 수 없습니다. 배치할 장치 3개 제한과 남은 행동 횟수를 확인하세요.');return;}
  const won=!!n.pending&&!s.pending,failed=!n.capture&&!n.pending;
- if(n.field?.threat){n.field.noise=Math.min(100,n.field.noise+(command.type==='wait'?9:command.type==='search'?5:command.type==='net'?18:3));}
  const firstReturn=won&&s.tutorialStep===2;
  setS(n);setRunFeedback(n.lastOutcome);
  if(won){report(s,n,'은신 개체 포획');setCaptureReveal({id:n.pending!,cell:command.cell??null,first:firstReturn});beep(860);}
@@ -549,7 +548,7 @@ function onHuntAction(command:{type:HuntMode;cell?:number;clue?:number}){
  else beep(command.type==='search'?360:command.type==='reveal'?690:480);
 }
 function rescue(which:'secure'|'treat'|'release'){if(!s)return;const animal=s.pending;const n=rescueChoice(s,which);if(n===s)return;const newlyRescued=n.lastOutcome.includes('구조 성공')&&(s.tutorialStep===2||s.tutorialStep===3);if(newlyRescued)n.tutorialStep=4;const success=n.lastOutcome.includes('구조 성공');setS(n);report(s,n,'개체 처리 결과');setResult({success:which==='secure'?success:which==='treat',title:which==='secure'?(success?'구조 완료':'구조 실패'):which==='treat'?'현장 치료 완료':'방생 결정',text:n.lastOutcome,animalId:animal??undefined});if(!showFirstCrewConflict(s,n)&&newlyRescued)dialogue(tutorialScenes.rescued);setRunFeedback('');beep(success?880:230);if(animal&&success)setSelectedAnimal(animal)}
-function resolveEvent(choice:number){if(!s?.pendingIncident)return;const id=s.pendingIncident;const peaceful=['garden','keepsake','quiet'].includes(id);const n=resolveIncident(s,choice);if(n===s)return;setS(n);setRewardReport(null);const entries=changes(s,n);const animalHarm=n.animals.reduce((acc,a,i)=>acc+Math.max(0,a.stress-(s.animals[i]?.stress??a.stress)),0);if(animalHarm)entries.push({name:'개체 스트레스 증가',delta:animalHarm,unit:'합계'});setAftermath({title:incidentDefs[id].title,notes:n.lastOutcome,entries,critical:(!peaceful&&choice===2)||n.mind<s.mind-14||n.eve<s.eve-14||n.facility<s.facility-14});dialogue([{speaker:'관리자',text:incidentReactions[id]?.[choice]??'알았어. 내가 할게.'},{speaker:'EVE',text:peaceful?'오늘의 선택을 기록했습니다. 이런 날도 기억하고 싶어요.':choice===2?'담당자님. 방어에 실패했습니다. 실제 피해를 확인해 주십시오.':'처리 완료했습니다. 대응 결과를 기록했습니다.'}]);beep(!peaceful&&choice===2?190:590)}
+function resolveEvent(choice:number){if(!s?.pendingIncident)return;const id=s.pendingIncident;const peaceful=['garden','keepsake','quiet'].includes(id);const n=resolveIncident(s,choice);if(n===s)return;setS(n);setRewardReport(null);const entries=changes(s,n);const animalHarm=n.animals.reduce((acc,a,i)=>acc+Math.max(0,a.stress-(s.animals[i]?.stress??a.stress)),0);if(animalHarm)entries.push({name:'개체 스트레스 증가',delta:animalHarm,unit:'합계'});setAftermath({title:incidentDefs[id].title,notes:n.lastOutcome,entries,critical:(!peaceful&&choice===2)||n.mind<s.mind-14||n.eve<s.eve-14||n.facility<s.facility-14});dialogue([{speaker:'관리자',text:incidentReactions[id]?.[choice]??'알았어. 내가 할게.'},{speaker:'EVE',text:peaceful?'오늘의 선택을 기록했습니다. 이런 날도 기억하고 싶어요.':'대응을 기록했습니다. 실제 자원과 생체 상태의 변화를 확인해 주십시오.'}]);beep(!peaceful&&choice===2?190:590)}
 function operateSecurity(action:SecurityAction,selectedCamera?:CameraId,hotspot?:number){if(!s)return;const animalId=s.security.incident?.animalId;const n=securityAction(s,action,selectedCamera,hotspot);if(n===s)return;if(animalId)recordSpecimen(n,animalId,'CCTV · '+action,n.lastOutcome,'security');setS(n);report(s,n,'CCTV 대응 결과');const d=n.security.incident;setRunFeedback(n.lastOutcome);if(d)setCamera(d.camera);beep(d?.status==='escaped'?205:590)}
 function handleHQChoice(choice:HeadquartersChoice){
   if(!s)return;
@@ -1045,7 +1044,7 @@ return <div className={"v10-shell"+(tab==='expedition'&&!!s.run?" is-field-activ
  </section>
 </div>}
 
-{nextIncident&&!cinematic&&!s.crew?.pendingNightVote&&!aftermath&&!current&&!awakening&&!nightView&&!inspect&&!confirmRestart&&!result&&!memoryTarget&&!s.pending&&!s.headquarters?.pendingAnimal&&!s.headquarters?.pendingScene&&<div className="v10-modal-shade" role="dialog" aria-modal="true"><div className="v10-modal event-modal"><span className="micro-label">SPECIAL EVENT / 원인과 결과</span><h2><AlertTriangle/> {nextIncident.title}</h2><IncidentArtwork id={nextIncident.id} title={nextIncident.title}/><p>{nextIncident.desc}</p><div className="event-cause">발생 징후: {nextIncident.cause}<br/>현재 위협 {s.threat}% · 감염 {s.infection}% · 전력 {s.power}%</div><div className="event-options v39-incident-options">{nextIncident.options.map((optionText,i)=>{const preview=previewIncident(s,i);return <button key={i} disabled={!preview.available} onClick={()=>resolveEvent(i)}><span className="v39-incident-number">0{i+1}</span><span className="v39-incident-copy"><strong>{optionText}</strong><small className="v39-incident-effects">{preview.available?preview.effects.slice(0,6).map((e,j)=><em className={deltaIsBad(e.name,e.delta)?'loss':'gain'} key={j}>{e.name} {e.delta>0?'+':''}{e.delta}</em>):'필요 자원 부족 · 다른 대응을 선택하세요'}</small></span><ChevronRight size={15}/></button>})}</div></div></div>}
+{nextIncident&&!cinematic&&!s.crew?.pendingNightVote&&!aftermath&&!current&&!awakening&&!nightView&&!inspect&&!confirmRestart&&!result&&!memoryTarget&&!s.pending&&!s.headquarters?.pendingAnimal&&!s.headquarters?.pendingScene&&<div className="v10-modal-shade" role="dialog" aria-modal="true"><div className="v10-modal event-modal"><span className="micro-label">SPECIAL EVENT / 원인과 결과</span><h2><AlertTriangle/> {nextIncident.title}</h2><IncidentArtwork id={nextIncident.id} title={nextIncident.title}/><p>{nextIncident.desc}</p><div className="event-cause">발생 징후: {nextIncident.cause}<br/>현재 위협 {s.threat}% · 감염 {s.infection}% · 전력 {s.power}%</div><div className="event-options v39-incident-options">{[...nextIncident.options,...([0,1,2].every(i=>!previewIncident(s,i).available)?['비상 대기 · 시설 -3 / 위협 +5']:[])].map((optionText,i)=>{const preview=previewIncident(s,i);return <button key={i} disabled={!preview.available} onClick={()=>resolveEvent(i)}><span className="v39-incident-number">0{i+1}</span><span className="v39-incident-copy"><strong>{optionText}</strong><small className="v39-incident-effects">{preview.available?preview.effects.slice(0,6).map((e,j)=><em className={deltaIsBad(e.name,e.delta)?'loss':'gain'} key={j}>{e.name} {e.delta>0?'+':''}{e.delta}</em>):'필요 자원 부족 · 다른 대응을 선택하세요'}</small></span><ChevronRight size={15}/></button>})}</div></div></div>}
 {aftermath&&!current&&!awakening&&!confirmRestart&&!result&&!nightView&&!inspect&&!memoryTarget&&<div className="v10-modal-shade v39-after-shade" role="dialog" aria-modal="true" aria-label="EVE 대응 결과 보고"><div className={'v10-modal v39-after-modal '+(aftermath.critical?'has-loss':'')}><span className="micro-label">EVE // DAMAGE ASSESSMENT</span><div className="v39-after-top"><AlertTriangle size={24}/><div><h2>{aftermath.title}</h2><p>{aftermath.critical?'작전 실패 또는 방어 불능 · 피해 보고':'사건 처리 완료 · 자원 정산'}</p></div></div><div className="v39-after-effects">{aftermath.entries.length?aftermath.entries.map((d,i)=><div key={i} className={deltaIsBad(d.name,d.delta)?'negative':'positive'}><span>{d.name}</span><strong>{d.delta>0?'+':''}{d.delta}{d.unit}</strong></div>):<p>계측 가능한 자원 증감은 없습니다.</p>}</div><p className="v39-after-summary">{aftermath.notes}</p><button className="v10-primary wide" onClick={()=>{setAftermath(null);setRewardReport(null)}}>보고 확인 · 다음 일과 <ChevronRight size={15}/></button></div></div>}
 
 {fieldRewardModal&&!current&&!result&&!captureReveal&&!aftermath&&!awakening&&!nightView&&!confirmRestart&&<div className="v10-modal-shade v41-rewards-shade" role="dialog" aria-modal="true" aria-label={fieldRewardModal.kind==='settlement'?'현장 탐사 최종 보상':'현장 탐색 보상'}>

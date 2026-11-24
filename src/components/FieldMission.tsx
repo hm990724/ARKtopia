@@ -15,6 +15,7 @@ import {
   fieldHeight,
   fieldRelayBearing,
   fieldHasCover,
+  fieldThreatSignal,
   type Pace,
 } from "@/lib/tactical-field";
 import {
@@ -26,6 +27,8 @@ import {
   observedEvidence,
   observationAge,
   type HuntMode,
+  type CaptureMethod,
+  type HuntCommand,
   type HuntSetting,
   type HuntTool,
 } from "@/lib/hidden-hunt";
@@ -56,7 +59,7 @@ type Props = {
   onMove: (index: number, pace: Pace) => void;
   onRetreat: () => void;
   onHide: () => void;
-  onHunt: (action: { type: HuntMode; cell?: number; clue?: number; setting?: HuntSetting }) => void;
+  onHunt: (action: HuntCommand) => void;
   onMedkit: () => void;
   onCombat: (action:CombatAction)=>void;
   onDecision: (action: "leave" | "survey" | "risk") => void;
@@ -185,6 +188,10 @@ export default function FieldMission({
 }: Props) {
   const [mode, setMode] =
     useState<Exclude<HuntMode, "wait" | "reveal">>("search");
+  const [captureMethod,setCaptureMethod]=useState<CaptureMethod>('net');
+  const [aimStarted,setAimStarted]=useState<number|null>(null);
+  const [aim,setAim]=useState(0);
+  useEffect(()=>{if(aimStarted===null)return;let id=0;const tick=()=>{const elapsed=performance.now()-aimStarted;setAim(Math.max(0,1-Math.abs((elapsed%1500)/750-1)));id=requestAnimationFrame(tick)};id=requestAnimationFrame(tick);return()=>cancelAnimationFrame(id)},[aimStarted]);
   const [huntSetting, setHuntSetting] = useState<HuntSetting>("cool-clean");
   const [notice, setNotice] = useState("");
   const [searchFlash, setSearchFlash] = useState<number | null>(null);
@@ -304,6 +311,7 @@ export default function FieldMission({
     height = fieldHeight(field);
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
   const relayBearing = fieldRelayBearing(field, relayLevel);
+  const threatSignal=fieldThreatSignal(field);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
   );
@@ -383,7 +391,7 @@ export default function FieldMission({
       setSearchFlash(i);
       window.setTimeout(() => setSearchFlash((x) => (x === i ? null : x)), 440);
     }
-    onHunt({ type: mode, cell: i, setting: huntSetting });
+    onHunt({ type: mode, cell: i, setting: huntSetting, method:mode==='net'?captureMethod:undefined, aim:mode==='net'&&captureMethod==='net'?0.5:undefined });
     if (mode !== "search") setMode("search");
   }
   function dropNet(x: number, y: number) {
@@ -398,7 +406,7 @@ export default function FieldMission({
       row = Math.min(size-1, Math.floor(((y - r.top) / r.height) * size));
     const cell = row * size + col;
     setSearchFlash(cell);
-    onHunt({ type: "net", cell });
+    onHunt({ type: "net", cell,method:'net',aim:aimStarted===null?0.5:Math.max(0,1-Math.abs(((performance.now()-aimStarted)%1500)/750-1)) });
     setMode("search");
   }
   const trailCells = hunt ? freshTrailCells(hunt) : [];
@@ -424,14 +432,14 @@ export default function FieldMission({
           <h2>{hunt ? "보이지 않는 발자취" : "수풀이 잠든 구역"}</h2>
           <p>
             {hunt
-              ? "청음으로 이동 영역을 좁히고 풀숲의 흔적을 분석한 다음 직접 그물을 던지세요. 동물은 매 턴 이동합니다."
+              ? "청음으로 이동 영역을 좁히고 풀숲의 흔적을 분석한 다음 직접 그물을 던지세요. 동물은 행동마다 이동합니다. 수색만으로는 포획되지 않습니다."
               : "직접 걸어서 조사 구역을 확보하십시오. 시간이 지나면 오염 추적망이 가까워집니다. 압박 75%부터 정신력 피해가 생기며, 100%에도 작전은 계속되지만 적의 접근 위험이 극심해집니다."}
           </p>
         </div>
         <button
           className="v33-retreat v59-retreat"
           type="button"
-          onClick={onRetreat}
+          onClick={onRetreat} disabled={!!field.combat}
         >
           <ArrowLeft size={15} />
           {hunt ? "추적 중단" : "긴급 귀환 · 회수 30%"}
@@ -454,6 +462,7 @@ export default function FieldMission({
           <i style={{ width: `${pressure}%` }} />
         </div>
       </div>
+      {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
       {!hunt && (run.captures?.length ?? 0) > 0 && (
         <div className="v41-field-continue" role="status">
           <CheckCircle2 size={17} />
@@ -718,11 +727,12 @@ export default function FieldMission({
           {hunt && <div className="v71-primary-tools v74-capture-budget">
             <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><div className="v74-actions-copy"><span>포획 남은 행동</span><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong></div>
             <button type="button" onClick={()=>onHunt({type:'wait'})} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
-            <button type="button" aria-pressed={mode==='net'} onClick={()=>setMode(mode==='net'?'search':'net')}><Target size={16}/> {mode==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
-            <span>{mode==='net'?'십자 반경을 맞춰 그물을 놓으세요':'발자국과 풀 흔들림을 따라 조사할 지점을 클릭하세요'}</span>
+            <button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode(mode==='net'&&captureMethod==='net'?'search':'net')}}><Target size={16}/> {mode==='net'&&captureMethod==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
+            <span>{mode==='net'?(captureMethod==='cage'?'유인 우리 설치 위치 선택':captureMethod==='calm'?'확인된 개체 가까이 접근':'정확한 칸 선택 · 드래그 타이밍 성공 시 십자 범위'):'발자국과 풀 흔들림을 따라 조사할 지점을 클릭하세요'}</span>
           </div>}
           {hunt ? (
             <>
+          <section className="capture-tactics" aria-label="포획 전술"><header><strong>CAPTURE / 전술 선택</strong><small>수색은 위치 확인 · 포획은 별도 행동</small></header><div className="capture-methods"><button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode('net')}}><Target size={17}/><b>직접 그물</b><small>위치 예측 · 타이밍</small></button><button type="button" disabled={!run.gear.includes('cage')||!!hunt.trap} aria-pressed={mode==='net'&&captureMethod==='cage'} onClick={()=>{setCaptureMethod('cage');setMode('net')}}><Package size={17}/><b>유인 우리</b><small>{hunt.trap?'작동 중 '+hunt.trap.life+'턴':run.gear.includes('cage')?'설치 후 유인 · 6턴':'출동 장비 필요'}</small></button><button type="button" aria-pressed={mode==='net'&&captureMethod==='calm'} onClick={()=>{setCaptureMethod('calm');setMode('net')}}><ShieldAlert size={17}/><b>진정 접근</b><small>경계 낮추기 · 연속 접근</small></button></div><div className="capture-readouts"><label>경계도 <b>{hunt.fear}%</b><meter min={0} max={100} value={hunt.fear}/></label><label>역추적 위험 <b>{hunt.predator}%</b><meter min={0} max={100} value={hunt.predator}/></label><label>교감 진행 <b>{hunt.calmProgress??0}/{['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2}</b><meter min={0} max={['wolf','lynx','mutant','chimera'].includes(hunt.species)?3:2} value={hunt.calmProgress??0}/></label></div>{aimStarted!==null&&<div className="capture-aim" role="status"><b>투척 조준 · 녹색 구간에서 놓으세요</b><div><span style={{width:aim*100+'%'}}/></div><small>{Math.round(aim*100)}% · 65% 이상이면 인접 1칸까지 포획</small></div>}</section>
           {hunt && (hunt.species==='moth'||hunt.species==='axolotl') && <div className="v74-species-setting" role="group" aria-label="종별 환경 조절">
             <b>{hunt.species==='moth'?'나방 광량 제어':'아홀로틀 수질·수온 제어'}</b>
             {(hunt.species==='moth'?[['dim','약광 유인'],['bright','강광 차단']]:[['cool-clean','저온·청정'],['warm-clean','온수·청정'],['cool-dirty','저온·오염'],['warm-dirty','온수·오염']]).map(([value,label])=><button type="button" key={value} aria-pressed={huntSetting===value} onClick={()=>setHuntSetting(value as HuntSetting)}>{label}</button>)}
@@ -802,6 +812,7 @@ export default function FieldMission({
                           (cameraZoneActive && (i % size >= size/2 ? 1 : 0) + (Math.floor(i / size) >= size/2 ? 2 : 0) === hunt.cameraZone ? " v74-camera-echo" : "") +
                           (freshTrailCells(hunt).includes(i) ? " v71-trail-zone" : "") +
                           (mode === "net" ? " v69-net-target" : "") +
+                          (hunt.trap?.cell===i?' capture-trap-cell':'') +
                           (opened&&hunt.shaking.includes(i) ? " v57-nearby-rustle" : "")
                         }
                         type="button"
@@ -811,6 +822,7 @@ export default function FieldMission({
                         aria-label={`${Math.floor(i / size) + 1}행 ${(i % size) + 1}열 · ${label}${obj ? " · " + obj.kind + " 설치됨" : ""}`}
                         title={`${String.fromCharCode(65 + (i % size))}${Math.floor(i / size) + 1} · ${label}${evidence ? ` (T${evidence.turn} · 확인한 구역은 계속 관측)` : ""}`}
                       >
+                        {hunt.trap?.cell===i&&<span className="capture-trap-mark" aria-label="유인 우리 설치 위치">▣ {hunt.trap.life}</span>}
                         {opened && (
                           <span
                             className="v34-open-ground"
@@ -1146,10 +1158,10 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
-                        {field.threat?.position === i && visible && fieldLineOfSight(field,i,2) && !here && !field.combat && (
-                          <span className="v74-roaming-threat" role="img" aria-label="접근 중인 오염체">
-                            <img src={`/assets/field/enemy_${field.steps % 2 ? "echo" : "slime"}.png`} alt="" />
-                            <small>{field.threat.mode === "closing" ? "접근" : "잔향"}</small>
+                        {field.threat?.position === i && visible && !here && !field.combat && (
+                          <span className="v74-roaming-threat" role="img" aria-label="접근 중인 배회형 MUTANT">
+                            <img src="/assets/animals/mutant_mutant.png" alt="" />
+                            <small>{field.threat.mode === "closing" ? "추적 중" : "MUTANT"}</small>
                           </span>
                         )}
                         {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}
@@ -1331,7 +1343,7 @@ export default function FieldMission({
                       key={t.kind}
                       aria-pressed={mode === t.kind}
                       onClick={() => {
-                        setMode(t.kind);
+                        setMode(t.kind);if(t.kind==='net')setCaptureMethod('net');
                         setNotice("");
                       }}
                       className={
@@ -1359,7 +1371,7 @@ export default function FieldMission({
                 onPointerDown={(event) => {
                   event.preventDefault();
                   event.currentTarget.setPointerCapture(event.pointerId);
-                  setNetDrag({ x: event.clientX, y: event.clientY });
+                  setNetDrag({ x: event.clientX, y: event.clientY });setCaptureMethod('net');setAimStarted(performance.now());
                 }}
                 onPointerMove={(event) => {
                   if (netDrag)
@@ -1368,14 +1380,14 @@ export default function FieldMission({
                 onPointerUp={(event) => {
                   if (netDrag) {
                     dropNet(event.clientX, event.clientY);
-                    setNetDrag(null);
+                    setNetDrag(null);setAimStarted(null);
                   }
                 }}
-                onPointerCancel={() => setNetDrag(null)}
-                onClick={() => setMode("net")}
+                onPointerCancel={() => {setNetDrag(null);setAimStarted(null)}}
+                onClick={() => {setCaptureMethod('net');setMode("net")}}
               >
                 <Target size={19} /> 그물 잡고 지도에 드래그{" "}
-                <small>마우스·터치 / 클릭 모드도 지원</small>
+                <small>마우스·터치 · 65% 이상에 놓기 / 클릭은 정확한 칸</small>
               </button>
               {netDrag && (
                 <div

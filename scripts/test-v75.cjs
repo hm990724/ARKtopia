@@ -49,7 +49,7 @@ for(const id of ids){
 const eligible=beginGame('artist','generator');eligible.day=8;eligible.power=48;eligible.facility=50;eligible.infection=60;eligible.threat=70;eligible.clues=10;eligible.knowledge=50;
 eligible.parts=30;eligible.scrap=30;eligible.food=2;eligible.medicine=20;eligible.filters=8;eligible.electricCells=8;eligible.facilities.cctv=true;eligible.facilities.containment=true;
 eligible.baseLevels={relay:1};eligible.animals=[makeAnimal('rabbit',1)];Object.assign(eligible.animals[0],{stress:70,hp:60,sickness:20,memory:55,contamination:20});
-eligible.headquarters.transferred=['rabbit'];eligible.headquarters.revealStage=2;eligible.encounters=2;eligible.originZero.cat='captured';eligible.security.escapedIds=['lynx'];
+eligible.headquarters.transferred=['rabbit'];eligible.headquarters.revealStage=2;eligible.encounters=2;eligible.originZero.cat='captured';eligible.originZero.firstPositiveDay=eligible.day;eligible.security.escapedIds=['lynx'];
 eligible.threat=100;
 for(const id of ['rabbit','fox','wolf','deer'])recruitCrew(eligible,id,`${id}-fixture`);
 eligible.crew.retired.push('rabbit');
