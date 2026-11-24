@@ -24,7 +24,7 @@ export default function OriginStoryArtwork({state:s}:{state:V10}){
   cg(15,d.photos>=8,'사진 속 아이','과학자와 딸, 그리고 검은 고양이. 오래된 사진 속 아이가 EVE와 닮아 있다.'),
   cg(16,d.photos>=11,'제000번 관리자','최초 과학자의 뇌는 동물 숙주를 거쳐 관리자 신체로 돌아왔다. 기억이 같아도 선택은 같을 필요가 없다.'),
   cg(17,d.photos>=11,'EVE의 독립적 선택','EVE는 과거의 기록이 아니라 자신이 내릴 선택으로 살아가겠다고 말했다.'),
-  cg(18,!!d.route&&d.photos>=6,'다시 만나는 개체들','첫 건강 검사는 표면 상태만 확인했다. 각 개체의 기억과 신체 안정성을 재분석한다.'),
+  cg(18,!!d.route&&d.photos>=7,'다시 만나는 개체들','첫 건강 검사는 표면 상태만 확인했다. 각 개체의 기억과 신체 안정성을 재분석한다.'),
   {id:'scientist',show:d.photos>=12,sources:['/assets/characters/scientist_obsession.png'],title:'실패라고 이름 붙인 생명',text:'과학자는 인간의 뇌 없이 사고하는 M-00의 가치를 외면했다.'}
  ];
  const available=scenes.filter(x=>x.show),scene=selected===null?null:available[selected];

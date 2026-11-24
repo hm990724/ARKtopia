@@ -184,7 +184,7 @@ export function recallRecord(s:V10,c:RecallCandidate):RecallRecord|undefined{
 export function completedRecalls(s:V10){return recallCandidates(s).filter(c=>!!recallRecord(s,c));}
 function recallCanStart(s:V10,candidate:RecallCandidate):boolean{
  const powerCost=candidate.source==='hq'?12:candidate.source==='live'?8:5;
- return !!s.originZero?.route&&s.originZero.photos>=6&&s.phase==='day'&&s.ap>=1&&!s.run&&!s.pendingIncident&&s.power>=powerCost&&candidate.source!=='escaped'&&!recallRecord(s,candidate);
+ return !!s.originZero?.route&&(s.originZero.photos>=7||!!s.originZero.recallSessions?.[candidate.key])&&s.phase==='day'&&s.ap>=1&&!s.run&&!s.pendingIncident&&s.power>=powerCost&&candidate.source!=='escaped'&&!recallRecord(s,candidate);
 }
 /** Begin a specimen-specific three-stage recall. Sessions live in the save so closing the panel is safe. */
 export function beginOriginRecall(s:V10,key:string):V10{
@@ -205,7 +205,7 @@ export function answerOriginRecall(s:V10,key:string,choice:number):V10{
  return performOriginRecall(n,key,saved.correct);
 }
 export function performOriginRecall(s:V10,keyOrSpecies:string,accuracy?:number):V10{
- const d=s.originZero;if(!d?.route||d.photos<6||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
+ const d=s.originZero;if(!d?.route||d.photos<7&&!d.recallSessions?.[keyOrSpecies]||s.phase!=='day'||s.ap<1||s.run||s.pendingIncident)return s;
  const list=recallCandidates(s);
  const candidate=list.find(c=>c.key===keyOrSpecies)||list.find(c=>c.id===keyOrSpecies&&!recallRecord(s,c));
  if(!candidate||recallRecord(s,candidate)||candidate.source==='escaped')return s;
@@ -292,7 +292,7 @@ export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{ti
  const d=s.originZero;
  if(!d?.route)return {title:'닫힌 기록',text:'M-00의 신원이 확인되지 않은 채 마지막 관리자의 신경 신호가 끊겼다.'};
  const coerced=Object.values(s.archive?.entries??{}).filter(entry=>entry.records.some(record=>record.title==='강제 조직 회수')).length;
- const protectedAnimals=s.animals.filter(animal=>animal.alive).length;
+ const protectedAnimals=s.animals.filter(animal=>animal.alive&&!s.security.escapedIds.includes(animal.id)).length;
  const staffLost=s.crew?.retired?.length??0;
  const dispatched=s.archive?.dispatches??0;
  if(goal==='rebuild'){const eden=d.immunity>=100&&s.narrative?.finalStance!=='inherit';return {title:eden?'에덴':'영원한 실험',text:eden?'복제인간 사회가 구성되었다. 그러나 그들은 원본 인류와 다른 기억과 감각을 지닌 독립적인 생명들이었다.':'본부는 뇌 이식과 복제인간 생산을 멈추지 않았다. 최초 과학자의 집착이 또 한 번 명령으로 남았다.'};}

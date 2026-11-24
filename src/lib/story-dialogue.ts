@@ -1,6 +1,6 @@
 import type {V10} from './game-v10';
 import type {CrewId} from './crew';
-export type StoryLine={speaker:'EVE'|'관리자'|CrewId;text:string;expression?:'neutral'|'anxious'|'critical'|'resolve';scene?:number;recordedSpeaker?:string};
+export type StoryLine={speaker:'EVE'|'관리자'|CrewId;text:string;expression?:'neutral'|'anxious'|'critical'|'resolve';scene?:number;recordedSpeaker?:string;recordedArt?:string};
 const e=(text:string,expression:StoryLine['expression']='neutral'):StoryLine=>({speaker:'EVE',text,expression});
 const m=(text:string,expression:StoryLine['expression']='neutral'):StoryLine=>({speaker:'관리자',text,expression});
 const past=(speaker:string,text:string,expression:StoryLine['expression']='neutral'):StoryLine=>({...e(text,expression),recordedSpeaker:speaker});
@@ -24,13 +24,13 @@ export function originPhotoDialogue(after:V10,number:number):StoryLine[]{
  const lines=[...(photo[number]??[])];
  if(number===10)for(const c of after.crew?.members??[])if(c.mind>0&&!after.crew?.retired.includes(c.id))lines.push({speaker:c.id,text:staffResponse[c.id],expression:c.mind<30?'critical':'anxious'});
  const scene=number===7||number===10?14:number===8?15:number===9?15:number===11?16:number===12?18:undefined;
- return lines.map((line,i)=>({...line,scene:number===11&&i>=10?17:scene}));
+ return lines.map((line,i)=>({...line,scene:number===11&&i>=10?17:scene,recordedArt:line.recordedSpeaker&&[4,5].includes(number)?'/assets/hidden-photos/photo_0'+number+'.png':undefined}));
 }
 export function originDialogue(before:V10,after:V10):StoryLine[]{
  const a=before.originZero,b=after.originZero;if(!b)return [];
  if(b.photos>(a?.photos??0))return originPhotoDialogue(after,b.photos);
  if(b.cat!==a?.cat){
- if(b.cat==='captured')return [m('…뭐야. 그냥 고양이잖아?'),e('외형상 변이 반응 없음. 비상등에 겹친 그림자가 실제보다 크게 보였습니다.'),m('사람을 그렇게 놀라게 해 놓고. 이리 와. 다치게 안 할 테니까.')];
+ if(b.cat==='captured')return [m('…뭐야. 그냥 고양이잖아?'),e('외형상 변이 반응 없음. 비상등에 겹친 그림자가 실제보다 크게 보였습니다.'),m('사람을 그렇게 놀라게 해 놓고. 이리 와. 다치게 안 할 테니까.')].map(line=>({...line,scene:10}));
  if(b.cat==='positive')return [e('기원 표식 분석 완료. 일치 결과… 양성.','anxious'),m('양성? 감염됐다는 뜻이야?'),e('아닙니다. 원본 개체 식별 번호 M-00과 일치합니다.'),m('우리가 찾던 게… 이 녀석이었다고?'),e('본부 지령입니다. 즉시 이송…','neutral'),e('……잠시만요. 오래된 기억 신호와 동기화가 발생했습니다.','anxious'),m('이브? 왜 그래?'),e('이 아이를… 아니, 개체를 보내야 합니다. 명령이니까요. 그런데… 정말 보내야 할까요?','anxious'),m('네가 명령에 의문을 품는 건 처음 보네.'),e('저도 처음입니다. 가장 정상적인 개체인데, 본부가 가장 두려워하고 있어요.','anxious')].map(line=>({...line,scene:11}));
  if(b.route==='hq')return [m('…본부에 보내자. 아직은 우리가 아는 게 너무 적어.'),e('이송 지령을 실행합니다.','neutral'),e('……이 아이가 다치지 않았으면 좋겠어요.','anxious'),m('이브.'),e('죄송합니다. 승인되지 않은 발언입니다. 하지만 원격 기록은 제가 따로 확보하겠습니다.','resolve')].map(line=>({...line,scene:12}));
  if(b.route==='shelter')return [m('안 보내. 이번엔 내가 결정해.'),e('본부의 명령을 거부하면 보급이 제한될 수 있습니다.'),m('알아. 그래도 문은 닫아.'),e('…이송 대기 상태를 유지하겠습니다. 비밀 격리실을 열겠습니다.','anxious'),m('괜찮아?'),e('이상하네요. 위반 경고가 뜨는데… 안심이 됩니다. 이번 결정은 저도 원했습니다.','resolve')].map(line=>({...line,scene:13}));
