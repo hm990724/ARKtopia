@@ -15,7 +15,7 @@ assert.deepEqual([...GAME_EVENT_ART_ORDER].sort(),ids.sort(),'all executable inc
 const all=new Set();
 for(const id of ids){
  const [canonical,legacy]=incidentArtworkCandidates(id);
- assert.match(canonical,/^\/assets\/cinematics\/origin-zero\/events\/EVT_\d\d_[a-z_]+\.png$/);
+ assert.match(canonical,/^\/assets\/cinematics\/origin-zero\/events\/EVT_\d\d_[a-z0-9_]+\.png$/);
  assert.equal(legacy,`/assets/events/${findIncidentArt(id)}`);
  assert.ok(fs.existsSync(path.join(__dirname,'../public',legacy)),'missing legacy incident art for '+id);
  all.add(canonical);
