@@ -7,6 +7,7 @@ const {EXTENDED_INCIDENT_IDS}=require('../src/lib/incident-content.ts');
 const {GAME_EVENT_ART_ORDER,incidentArtworkCandidates,findIncidentArt}=require('../src/lib/incident-art.ts');
 const {cinematicArtworkCandidates}=require('../src/lib/cinematic-art.ts');
 const {ENDING_ART,ORIGIN_ZERO_CANONICAL_ENDING_ART,endingArtworkCandidates,findEndingArt}=require('../src/lib/ending-art.ts');
+const {staffDialogueTone,staffDialogueArtworkCandidates}=require('../src/lib/character-art.ts');
 const core=['echo','breach','blackout','spores','signal','visitor','predator','coolant','rations','intrusion','garden','keepsake','quiet'];
 const ids=[...core,...EXTENDED_INCIDENT_IDS];
 assert.equal(ids.length,41,'exactly 41 game incidents');
@@ -39,6 +40,15 @@ for(const item of ENDING_ART.slice(8)){
  assert.equal(candidates.length,1,'legacy titles must not be mapped to unrelated epilogues');
  assert.ok(fs.existsSync(path.join(__dirname,'../public',candidates[0])),'legacy ending source '+item.prefix);
 }
+assert.equal(staffDialogueTone('neutral','안녕하세요.'),'neutral');
+assert.equal(staffDialogueTone('resolve','고마워요'),'soft');
+assert.equal(staffDialogueTone('critical','살려 주세요'),'shocked');
+const stableArt=staffDialogueArtworkCandidates('rabbit','neutral','safe','안녕하세요.');
+assert.equal(stableArt[0],'/assets/staff/rabbit/portrait_talk_neutral.png');
+assert.ok(stableArt.includes('/assets/staff/rabbit/portrait.webp'));
+assert.ok(staffDialogueArtworkCandidates('rabbit','critical','safe','')[0].endsWith('/portrait_talk_shocked.png'));
+assert.ok(staffDialogueArtworkCandidates('rabbit','resolve','safe','고마워요')[0].endsWith('/portrait_talk_soft.png'));
+assert.ok(staffDialogueArtworkCandidates('rabbit','neutral','critical','안심하세요.').every(p=>!p.includes('portrait_talk_')),'critical staff cannot present a fully calm face');
 const scene=fs.readFileSync(path.join(__dirname,'../src/components/CrewSystem.tsx'),'utf8');
 const event=fs.readFileSync(path.join(__dirname,'../src/components/IncidentArtwork.tsx'),'utf8');
 assert.ok(scene.includes("cinematicArtworkCandidates(kind)"));
