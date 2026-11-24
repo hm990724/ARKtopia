@@ -67,7 +67,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(action==='heal'){run.integrity=cap(run.integrity+24);run.medkitUsed=true;shield=8;message='응급 키트로 방호 장비를 봉합했습니다. 방호 +24';}
  if(action==='pulse'){hit=10;shield=20;run.evePulseUsed=true;n.power-=3;message='EVE 전자 펄스 · 전력 -3 · 공격 차단';}
  if(action==='support'){
-  const ids=run.companions??[run.companion];const team=n.crew!.members.filter(m=>ids.includes(m.id)&&m.mind>5);team.forEach(m=>m.mind=cap(m.mind-3));run.supportUsed=true;shield=8;hit=8;
+  const ids=run.companions??[run.companion];const team=n.crew!.members.filter(m=>ids.includes(m.id)&&m.mind>5);team.forEach(m=>m.mind=cap(m.mind-(m.bond>=100?0:m.bond>=70?1:3)));run.supportUsed=true;shield=8;hit=8;
   if(team.some(m=>m.id==='wolf')){hit=14;message='보안관이 전면을 막고 핵을 제압합니다.';}
   if(team.some(m=>m.id==='rabbit')){n.mind=cap(n.mind+8);message+=' 의무관이 안정제를 투여합니다. 정신 +8';}
   if(team.some(m=>m.id==='fox')){n.scrap+=3;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=3;message+=' 보급관이 자재를 회수합니다. 고철 +3';}

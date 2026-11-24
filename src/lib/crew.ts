@@ -77,13 +77,13 @@ export function crewSupport(s:V10,id:CrewId):V10{
  const member=s.crew?.members.find(m=>m.id===id);
  if(!member||s.phase!=='day'||s.run||s.crew?.supportDay===s.day||s.crew?.sortieWorked?.includes(id)||member.mind<=0||s.crew?.pendingTermination)return s;
  const n=copy(s) as V10;const crew=ensureCrew(n);const m=crew.members.find(x=>x.id===id)!;
- crew.supportDay=n.day;crew.supportWorked=[...new Set([...crew.supportWorked,id])];m.mind=cap(m.mind-5);queueCrewTerminations(n);
- if(id==='rabbit'){n.mind=cap(n.mind+18);crew.healingDay=n.day;}
- if(id==='fox'){n.parts++;n.food++;n.credits+=30;}
- if(id==='wolf'){n.threat=cap(n.threat-13);crew.guardDay=n.day;}
- if(id==='deer'){n.infection=cap(n.infection-14);crew.decontamDay=n.day;}
- log(n,`직원 지원 · ${CREW_PROFILES[id].post}`,`${CREW_PROFILES[id].benefit}. 대가: 직원 정신 -5`,'good');
- n.lastOutcome=`${CREW_PROFILES[id].post} 지원: ${CREW_PROFILES[id].benefit}`;
+ crew.supportDay=n.day;crew.supportWorked=[...new Set([...crew.supportWorked,id])];const full=m.bond>=100;m.mind=cap(m.mind-(full?0:m.bond>=70?2:5));queueCrewTerminations(n);
+ if(id==='rabbit'){n.mind=cap(n.mind+(full?30:18));crew.healingDay=n.day;}
+ if(id==='fox'){n.parts+=full?2:1;n.food+=full?2:1;n.credits+=full?60:30;}
+ if(id==='wolf'){n.threat=cap(n.threat-(full?22:13));crew.guardDay=n.day;}
+ if(id==='deer'){n.infection=cap(n.infection-(full?24:14));if(full)n.knowledge+=3;crew.decontamDay=n.day;}
+ const gains=[n.mind!==s.mind?'관리자 정신 '+(n.mind-s.mind):'',n.parts!==s.parts?'부품 +'+(n.parts-s.parts):'',n.food!==s.food?'식량 +'+(n.food-s.food):'',n.credits!==s.credits?'CR +'+(n.credits-s.credits):'',n.threat!==s.threat?'위협 '+(n.threat-s.threat):'',n.infection!==s.infection?'감염 '+(n.infection-s.infection):'',n.knowledge!==s.knowledge?'지식 +'+(n.knowledge-s.knowledge):'', '직원 정신 '+(m.mind-member.mind)].filter(Boolean).join(' · ');
+ n.lastOutcome=`${CREW_PROFILES[id].post} 지원 완료 · ${gains}`;log(n,'직원 지원',n.lastOutcome,'good');
  return n;
 }
 /** Progressive deterioration. Early days are stable; prolonged duty and low vitals cause trouble. */
@@ -96,7 +96,7 @@ export function crewNight(s:V10):void{
   // Days 1-5 are safe. After that, stress is charged only once every few days.
   const drain=days<=2?0:days<=12?1:2;
   const infectionDrain=days<=2?0:s.infection>=90?2:s.infection>=70?1:0;
-  m.mind=cap(m.mind-drain-infectionDrain);
+  m.mind=cap(m.mind-Math.max(0,drain-(m.bond>=100?1:0))-infectionDrain);
   // Fictional neuro-somatic instability: impaired power and psychological shock matter.
   const electricalStress=s.power<15?6:s.power<30?3:0;
   const emotionalStress=m.mind<25?5:m.mind<50?2:0;
