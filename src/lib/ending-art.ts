@@ -61,3 +61,12 @@ export function endingArtworkCandidates(ending:string):readonly string[]{
  const main=ORIGIN_ZERO_CANONICAL_ENDING_ART.find(x=>ending.startsWith(x.prefix));
  return main?[`/assets/cinematics/origin-zero/endings/${main.filename}`,fallback]:[fallback];
 }
+
+/** Eleven additional storyboards, not eleven independent ending decisions. */
+export const ORIGIN_EPILOGUE_ART=[
+ 'END_09_experiment_successor.png','END_10_eden_memory_cost.png','END_11_seeds_long_research.png','END_12_zoo_protected_animals.png','END_13_subject_self_choice.png','END_14_automation_eve_offline.png','END_15_names_memorial.png','END_16_signal_uncertain.png','END_17_headquarters_aftermath.png','END_18_sanctuary_aftermath.png','END_19_eve_last_memory.png'
+] as const;
+export function originEndingSceneArt(slot:number):readonly string[]{
+ if(slot>=1&&slot<=8)return endingArtworkCandidates(ORIGIN_ZERO_CANONICAL_ENDING_ART[slot-1].prefix);
+ const name=ORIGIN_EPILOGUE_ART[slot-9];return name?['/assets/cinematics/origin-zero/endings/'+name]:[];
+}

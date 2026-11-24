@@ -19,7 +19,7 @@ function ready({goal='freedom',immunity=85,photos=12,coerced=0,retired=[],hqInte
  s.crew.retired=[...retired];
  s.archive=emptyArchive();s.archive.dispatches=dispatches;
  for(let i=0;i<coerced;i++)s.archive.entries['FORCED-'+i]=specimen('FORCED-'+i,'rabbit','강제 조직 회수');
- s.originZero=emptyOriginZero();Object.assign(s.originZero,{route:'hq',crisisDone:true,photos,immunity,hqIntel,recalls:{}});
+ s.originZero=emptyOriginZero();Object.assign(s.originZero,{route:'hq',cat:'hq',crisisDone:true,photos,immunity,hqIntel,recalls:{}});
  for(const animal of s.animals)s.originZero.recalls[animal.id]={day:20,quality:80,source:'archive',note:'fixture'};
  s.originZero.individualRecalls={};
  for(const item of recallCandidates(s))s.originZero.individualRecalls[item.key]={specimenId:item.key,day:20,quality:80,source:'archive',note:'fixture'};
@@ -94,3 +94,5 @@ assert.equal(ENDING_ART.length,19);
 assert.equal(new Set(ENDING_ART.map(item=>item.file)).size,19);
 for(const {file} of ENDING_ART)assert.ok(fs.existsSync(path.join(__dirname,'../public/assets/endings',file)),`scene exists: ${file}`);
 console.log('PASS 8 ORIGIN ZERO outcomes, 11 additional ending paths, and distinct active route files');
+
+{const {originEndingSequence}=require('../src/lib/ending-sequence.ts'),{originEndingSceneArt}=require('../src/lib/ending-art.ts');const all=new Set();const configs=[{goal:'rebuild',immunity:99},{goal:'rebuild',immunity:100},{goal:'freedom',immunity:85},{goal:'freedom',immunity:84},{goal:'preserve'},{goal:'preserve',retired:['rabbit','fox']},{goal:'freedom',coerced:2},{goal:'preserve',hqIntel:65,dispatches:1}];for(let i=0;i<configs.length;i++){const s=ready(configs[i]);const scenes=originEndingSequence(s);assert.equal(scenes[0].slot,i+1);assert.ok(scenes.some(x=>x.slot===i+9));assert.ok(scenes[0].lines.some(x=>/신호.*종료|신호.*소실|사망/.test(x.text)));assert.equal(JSON.stringify(scenes).includes('루나'),i===2);for(const scene of scenes){all.add(scene.slot);assert.ok(originEndingSceneArt(scene.slot).length);if(scene.time==='after')assert.ok(scene.lines.every(l=>l.speaker!=='관리자'));}if(i===5)assert.ok(!scenes.some(x=>x.slot===19));assert.ok(scenes.some(x=>x.slot===17));assert.ok(!scenes.some(x=>x.slot===18));}const s=ready({goal:'freedom'});s.originZero.route='shelter';s.originZero.cat='shelter';assert.ok(originEndingSequence(s).some(x=>x.slot===18));assert.ok(!originEndingSequence(s).some(x=>x.slot===17));all.add(18);assert.equal(all.size,19);console.log('PASS 8 main ending dialogues and 11 conditional epilogue slots; Luna restricted to Seed of Ark');}

@@ -185,7 +185,7 @@ export function finishWithArchive(s:V10,goal:'rebuild'|'freedom'|'preserve'):V10
  if(originReadyForFinale(s)){
   const epilogue=originEndEpilogue(s,goal);
   const coerced=Object.values(n.archive?.entries??{}).filter(entry=>entry.records.some(record=>record.title==='강제 조직 회수')).length;
-  const protectedAnimals=n.animals.filter(animal=>animal.alive).length;
+  const protectedAnimals=n.animals.filter(animal=>animal.alive&&!n.security.escapedIds.includes(animal.id)).length;
   const staffLost=n.crew?.retired?.length??0;
   const cost=`최종 기록: 보호 개체 ${protectedAnimals}, 생체 이송 ${n.headquarters.transferred.length}, 강제 회수 ${coerced}, 소실 직원 ${staffLost}.`;
   const regret=coerced>0?' 과거의 연구 방식으로 상실된 생명은 되돌릴 수 없었다.':goal==='rebuild'?' 살아 있는 개체를 강제로 해치지 않는 방법은 끝내 완전히 증명되지 않았다.':'';
