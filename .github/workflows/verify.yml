@@ -1,0 +1,59 @@
+name: ARKtopia validation
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  code-and-game-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check accidental large files
+        run: npm run check:git-size
+      - name: TypeScript
+        run: npm run typecheck
+      - name: ESLint
+        run: npm run lint
+      - name: Required image paths and headers
+        run: npm run check:assets
+      - name: Game logic and save regressions
+        run: npm run test:all
+      - name: Production-quality QA build
+        run: npm run build:qa
+  browser-regressions:
+    needs: code-and-game-regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build:qa
+      - name: Full production browser scenarios
+        env:
+          ARK_PRODUCTION_TEST: '1'
+          CI: 'true'
+        run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: arktopia-browser-failures
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
