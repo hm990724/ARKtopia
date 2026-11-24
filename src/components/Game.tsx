@@ -262,7 +262,7 @@ function settlementEntries(summary:FieldSettlement):ChangeEntry[]{
  return fieldResourceMeta.map(([key,name,unit])=>({name,delta:summary.rewards[key]||0,unit})).filter(entry=>entry.delta>0);
 }
 function changes(before:V10,after:V10):ChangeEntry[]{
-const out=rewardFields.map(([key,name,unit])=>({name,delta:Number(after[key])-Number(before[key]),unit,before:Number(before[key]),after:Number(after[key])})).filter(x=>Number.isFinite(x.delta)&&x.delta!==0);
+const out:ChangeEntry[]=rewardFields.map(([key,name,unit])=>({name,delta:Number(after[key])-Number(before[key]),unit,before:Number(before[key]),after:Number(after[key])})).filter(x=>Number.isFinite(x.delta)&&x.delta!==0);
 for(const m of after.crew?.members??[]){const old=before.crew?.members.find(x=>x.id===m.id);if(!old)continue;for(const [k,label] of [['mind','정신'],['bond','신뢰'],['stability','신체 안정']] as const){const b=old[k]??88,a=m[k]??88;if(a!==b)out.push({name:CREW_PROFILES[m.id].post+' '+label,delta:a-b,unit:'%',before:b,after:a});}}
 const added=after.animals.filter(a=>a.alive&&!before.animals.some(b=>b.id===a.id&&b.alive));
 added.forEach(a=>out.unshift({name:`${a.name} 구조`,delta:1,unit:'개체'}));
