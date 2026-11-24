@@ -1147,9 +1147,9 @@ export default function FieldMission({
                           </span>
                         ) : null}
                         {field.threat?.position === i && visible && fieldLineOfSight(field,i,2) && !here && !field.combat && (
-                          <span className="v74-roaming-threat" role="img" aria-label="접근 중인 오염체">
-                            <img src={`/assets/field/enemy_${field.steps % 2 ? "echo" : "slime"}.png`} alt="" />
-                            <small>{field.threat.mode === "closing" ? "접근" : "잔향"}</small>
+                          <span className="v74-roaming-threat" role="img" aria-label="접근 중인 배회형 MUTANT">
+                            <img src="/assets/animals/mutant_mutant.png" alt="" />
+                            <small>{field.threat.mode === "closing" ? "추적 중" : "MUTANT"}</small>
                           </span>
                         )}
                         {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}

@@ -27,7 +27,7 @@ import {CARE_ACTIONS,careMastery,getCareScenario,resolveCareChoice,quickCare,typ
 import {BaseUpgrades,ReactionStage} from './EnhancedField';
 import {FacilityPowerDispatch,NightDispatchForecast} from './FacilityPowerDispatch';
 import {setFacilityPowerPriority} from '@/lib/facility-power';
-import {resolveCombat,upgradeBase,newFieldCombat,upgradeLevel} from '@/lib/field-combat';
+import {resolveCombat,upgradeBase,beginRoamingCombat,mutantSecured,upgradeLevel} from '@/lib/field-combat';
 import {advanceFieldThreat} from '@/lib/tactical-field';
 import FieldMission from './FieldMission';
 import {spendCareAnalysis,CARE_ANALYSIS_COST} from '@/lib/knowledge';
@@ -348,15 +348,15 @@ useEffect(()=>{if(ready&&s)localStorage.setItem(KEY,JSON.stringify(s))},[ready,s
 // A field threat keeps searching while the player studies tracks; every tick updates
 // the same serializable field state, so refresh/load preserves its position and alert.
 useEffect(()=>{
- if(tab!=='expedition'||!s?.run||!s.field?.threat||s.field.combat||s.field.choice)return;
+ if(tab!=='expedition'||!s?.run||s.run.firstTutorial||!s.field?.threat||s.field.combat||s.field.choice||s.pending||mutantSecured(s))return;
  const timer=window.setInterval(()=>setS(current=>{
-  if(!current?.run||!current.field?.threat||current.field.combat)return current;
+  if(!current?.run||current.run.firstTutorial||!current.field?.threat||current.field.combat||current.field.choice||current.pending||mutantSecured(current))return current;
   const next=structuredClone(current),field=next.field!;
-  if(advanceFieldThreat(field,field.noise,upgradeLevel(next,'relay'),next.run?.gear.includes('flashlight')&&next.flashlight>0)){field.combat=newFieldCombat(next.day+field.steps);field.combat.source='mobile';if(next.capture){next.capture=null;field.encountered=true;next.threat=Math.min(100,next.threat+6);}field.lastEvent='움직임을 멈춘 사이 오염체가 소음 신호를 따라 근접했습니다.';next.lastOutcome=field.lastEvent;}
+  if(advanceFieldThreat(field,field.noise,upgradeLevel(next,'relay'),next.run?.gear.includes('flashlight')&&next.flashlight>0)&&beginRoamingCombat(next)){if(next.capture){next.capture=null;field.encountered=true;next.threat=Math.min(100,next.threat+6);}field.lastEvent='움직임을 멈춘 사이 MUTANT가 소음 신호를 따라 근접했습니다.';next.lastOutcome=field.lastEvent;}
   return next;
  }),1400);
  return ()=>window.clearInterval(timer);
-},[tab,s?.run,s?.field?.threat,s?.field?.threat?.position,s?.field?.threat?.alert,s?.field?.combat,s?.field?.noise,s?.field?.position,s?.field?.choice]);
+},[tab,s?.run,s?.field?.threat,s?.field?.threat?.position,s?.field?.threat?.alert,s?.field?.combat,s?.field?.noise,s?.field?.position,s?.field?.choice,s?.pending,s?.animals,s?.headquarters?.transferred]);
 useEffect(()=>{setStatusOpen(false)},[tab]);
 useEffect(()=>{if(!statusOpen)return;const onEscape=(event:KeyboardEvent)=>{if(event.key==='Escape')setStatusOpen(false)};window.addEventListener('keydown',onEscape);return()=>window.removeEventListener('keydown',onEscape)},[statusOpen]);
 // Nonblocking numerical readout of actual state changes: both player and animal damage.
@@ -521,7 +521,7 @@ function applyFieldMedkit(){if(!s)return;const n=performFieldMedkit(s);if(n===s)
   setS(n);setRunFeedback(n.lastOutcome);if(s.run&&!n.run)showFieldSettlement(n);beep(action==='risk'?320:500);
  }
  function onFieldRetreat(){
-  if(!s)return;
+  if(!s||s.field?.combat)return;
   if(s.capture){const n=abandonTacticalCapture(s);if(n===s)return;setS(n);setRunFeedback(n.lastOutcome);beep(300);return;}
   const n=leaveField(s);if(n===s)return;
   const firstReturn=(s.run?.firstTutorial??s.tutorialStep===2)&&!!s.field&&s.field.steps>0;
