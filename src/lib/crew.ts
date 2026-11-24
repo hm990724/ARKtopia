@@ -19,11 +19,11 @@ export type CrewNightVote={day:number;members:CrewId[]};
 export type CrewNightResult={day:number;selected:CrewId;losses:{id:CrewId;before:number;after:number}[];effect:string};
 export type CrewTermination={id:CrewId;day:number};
 export type CrewArrivalOrder={id:CrewId;transferDay:number;sourceSpecimenId?:string};
-export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;supportWorked:CrewId[];counselDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
-export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,supportWorked:[],counselDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
+export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;supportWorked:CrewId[];sortieWorked:CrewId[];counselDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
+export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,supportWorked:[],sortieWorked:[],counselDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
 export function ensureCrew(s:V10):CrewState{
  const existing=s.crew;
- const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,arrivalQueue:existing?.arrivalQueue??[],lastArrivalDay:existing?.lastArrivalDay??0,counselDay:existing?.counselDay??0,supportWorked:existing?.supportWorked??[],members:(existing?.members??[]).map(m=>({...m,lastCareDay:m.lastCareDay??0,stability:Math.max(0,Math.min(100,m.stability??88)),memoryEcho:m.memoryEcho??0})),retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
+ const crew:{[K in keyof CrewState]:CrewState[K]}={...emptyCrew(),...existing,arrivalQueue:existing?.arrivalQueue??[],lastArrivalDay:existing?.lastArrivalDay??0,counselDay:existing?.counselDay??0,supportWorked:existing?.supportWorked??[],sortieWorked:existing?.sortieWorked??[],members:(existing?.members??[]).map(m=>({...m,lastCareDay:m.lastCareDay??0,stability:Math.max(0,Math.min(100,m.stability??88)),memoryEcho:m.memoryEcho??0})),retired:existing?.retired??[],pendingTermination:existing?.pendingTermination??null,lastTermination:existing?.lastTermination??null,incidentsSeen:existing?.incidentsSeen??[],conflictsSeen:existing?.conflictsSeen??[],lastConflict:existing?.lastConflict??null,conflictSerial:existing?.conflictSerial??0,pendingNightVote:existing?.pendingNightVote??null,lastNightResult:existing?.lastNightResult??null};
  if(existing){Object.assign(existing,crew);return existing;}
  s.crew=crew;
  return crew;
@@ -75,7 +75,7 @@ export function crewDialog(s:V10,id:CrewId):{speaker:CrewId|'EVE'|'관리자';te
 }
 export function crewSupport(s:V10,id:CrewId):V10{
  const member=s.crew?.members.find(m=>m.id===id);
- if(!member||s.phase!=='day'||s.run||s.crew?.supportDay===s.day||member.mind<=0||s.crew?.pendingTermination)return s;
+ if(!member||s.phase!=='day'||s.run||s.crew?.supportDay===s.day||s.crew?.sortieWorked?.includes(id)||member.mind<=0||s.crew?.pendingTermination)return s;
  const n=copy(s) as V10;const crew=ensureCrew(n);const m=crew.members.find(x=>x.id===id)!;
  crew.supportDay=n.day;crew.supportWorked=[...new Set([...crew.supportWorked,id])];m.mind=cap(m.mind-5);queueCrewTerminations(n);
  if(id==='rabbit'){n.mind=cap(n.mind+18);crew.healingDay=n.day;}
