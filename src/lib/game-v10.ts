@@ -12,7 +12,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
-import {revealField,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,mobileSporeContact,advanceSporeSwarm,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {revealField,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -132,6 +132,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  }
  // Retain existing saves and active combat progress, but never duplicate a secured Mutant.
  if(restored.field){
+  restored.field.sporeSwarm=null;
   if(restored.field.interruptedCapture)restored.field.interruptedCapture=normalizeCapture(restored.field.interruptedCapture);
   if(mutantSecured(restored)||restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
   else if(restored.field.combat?.source==='mobile'){restored.field.combat.enemy='mutant';restored.roamingStory??={};restored.roamingStory.firstEncounterDay??=restored.day;}
@@ -229,7 +230,7 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companio
  if(!r)return '알 수 없는 탐사 구역입니다.';
  if(s.phase!=='day')return '현재는 출동할 수 없는 시간입니다.';
  if(s.run)return '진행 중인 탐사를 먼저 마치세요.';
- if(expeditionUsedToday(s))return '오늘 탐사는 완료했습니다. 돌봄·연구·기지 정비 후 다음 날 다시 출동할 수 있습니다.';
+ if(expeditionUsedToday(s)&&s.tutorialStep>=9)return '오늘 탐사는 완료했습니다. 돌봄·연구·기지 정비 후 다음 날 다시 출동할 수 있습니다.';
  if(s.pending||s.pendingIncident)return '진행 중인 구조 또는 사건을 먼저 처리하세요.';
  if(s.ap<1)return '출동에 AP 1이 필요합니다. 하루를 종료하면 회복됩니다.';
  if(s.day<r.unlocked)return r.unlocked+'일차부터 열리는 구역입니다.';
@@ -591,9 +592,8 @@ export function resolvePathologyEvent(s:V10,decision:'archive'|'headquarters'):V
 export function tickFieldSpores(s:V10):boolean{
  const f=s.field,run=s.run;
  if(!f||!run||run.firstTutorial||f.combat||f.choice||s.pending||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
- const light=run.gear.includes('flashlight')&&!f.lightOff&&s.flashlight>0;
- advanceSporeSwarm(f,light);
- if(!fieldSporeNearby(f)&&!mobileSporeContact(f)){f.sporeTicks=0;return false;}
+ advanceSporeSpread(f);
+ if((f.sporeSpread?.turn??0)<=3||!fieldSporeNearby(f)){f.sporeTicks=0;return false;}
  f.sporeTicks=(f.sporeTicks??0)+1;
  if(f.sporeTicks<4)return false;
  f.sporeTicks=0;
@@ -602,7 +602,7 @@ export function tickFieldSpores(s:V10):boolean{
  const exposure=filtered?1:3, infection=Math.max(0,2-(filtered?1:0)-(protectedByCrew?1:0));
  run.exposure+=exposure;
  s.infection=cap(s.infection+infection);
- f.lastEvent=s.lastOutcome=`감염성 포자에 노출되었습니다. 노출 +${exposure} · 감염 +${infection}. 소등·엄폐 후 거리를 확보하세요.`;
+ f.lastEvent=s.lastOutcome=`감염성 포자에 노출되었습니다. 노출 +${exposure} · 감염 +${infection}. 오염 구역에서 벗어나세요.`;
  return true;
 }
 export function toggleFieldLight(s:V10):V10{
@@ -618,13 +618,13 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  const tile=s.field.tiles[destination];if(tile==='wall')return s;
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
- field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field)&&!mobileSporeContact(field))field.sporeTicks=0;
+ field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
  if(run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
- field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
+ field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'&&(field.sporeSpread?.turn??0)>=3?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';
  field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
- n.stamina=cap(n.stamina-(noisy?6:pace==='normal'?4:2));
+ n.stamina=cap(n.stamina-(noisy?4:pace==='normal'?2:1));
  const exposed=pace==='fast'?9:pace==='normal'?5:2;
  run.exposure+=exposed;
  let observation='손전등으로 주변을 확인했습니다. 아직 새로운 흔적은 없습니다.';
@@ -636,7 +636,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
    field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+((run.companions??[run.companion]).includes('fox')?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
-  }else if(tile==='hazard'){
+  }else if(tile==='hazard'&&(field.sporeSpread?.turn??0)>=3&&!run.firstTutorial){
    // Environmental contamination is independent of the mobile enemy.
    const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-((run.companions??[run.companion]).includes('wolf')?3:0));
    run.integrity=cap(run.integrity-damage);
@@ -669,15 +669,15 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   const regionalRisk=regions.find(r=>r.id===run.region)!.danger;
   const roll=((n.day*47+destination*71+field.steps*13+(field.sortie??0)*19)%101);
   if(roll<22){const amount=1+Math.floor(regionalRisk/45);n.scrap+=amount;earnDuringRun(run,'scrap',amount);observation=`길가의 버려진 자재를 자동 회수했습니다. 고철 +${amount}.`;}
-  else if(roll>95-Math.floor(regionalRisk/30)){
+  else if(roll>95-Math.floor(regionalRisk/30)&&(field.sporeSpread?.turn??0)>=3){
    const damage=1+Math.floor(regionalRisk/27);n.mind=cap(n.mind-damage);n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?2:0)));
-   observation=`발밑 포자 구름이 터졌습니다. 정신력 -${damage}.`;
+   observation=`불안정한 잔해에 발을 헛디뎠습니다. 정신력 -${damage}.`;
   }
  }
  // Optional high-stakes side discoveries. Pending choices are saveable and block further movement.
- if(firstVisit&&!run.firstTutorial && !field.combat && !field.encountered && !field.choice && ['cache','signal'].includes(tile)){
+ if(firstVisit&&!run.firstTutorial && !field.combat && !field.choice && ['cache','signal'].includes(tile)){
   const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;
-  if(chance<42){const danger=regions.find(r=>r.id===run.region)!.danger;
+  if(tile==='cache'||chance<65){const danger=regions.find(r=>r.id===run.region)!.danger;
    const kind=tile as FieldChoice['kind'];
    field.choice={id:`${n.day}-${field.sortie??0}-${destination}`,kind,title:kind==='cache'?'봉인된 보급 컨테이너':kind==='signal'?'훼손된 기억 보관소':'포자에 잠긴 연구 상자',description:kind==='cache'?'상자를 열면 추가 물자를 얻을 수 있지만 방호 장치가 작동할 수 있습니다.':kind==='signal'?'낡은 신경 기록입니다. 강행 복원은 더 많은 단서를 남기지만 생체 신호를 교란합니다.':'잔해 아래 물자와 신호가 있습니다. 가까이 접근할수록 감염 위험이 커집니다.',danger:Math.min(85,14+Math.floor(danger*.66)),reward:1+regions.find(r=>r.id===run.region)!.reward};
    observation+=' 조사 가능한 미확인 물체가 감지됐습니다. 행동을 선택하세요.';
@@ -685,8 +685,8 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  }
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
  // Walking and stationary threat updates use the same line-of-sight and warning rules.
- if(tickRoamingThreat(n,pace))observation+=' MUTANT가 접근했습니다. 진행하던 포획은 안전하게 보존됩니다.';
- else if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
+ if(tickFieldSpores(n))observation+=' '+n.lastOutcome;
+ if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
  revealField(field,run.gear.includes('scanner')?3+Math.floor((run.scannerLevel??0)/2):run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?2:1);
  field.lastEvent=observation;
  n.lastOutcome=observation;
@@ -780,6 +780,7 @@ export function performVeiledHunt(s:V10,command:import('./hidden-hunt').HuntComm
  const outcome=performHuntAction(s.capture.hunt,command);
  if(!outcome.changed)return s;
  const n=copy(s) as V10;n.capture!.hunt=outcome.state;n.lastOutcome=outcome.state.lastEvent;
+ if(command.type!=='reveal')tickFieldSpores(n);
  if(n.field!.threat){const noise=command.type==='wait'?-8:command.type==='net'?(command.method==='calm'?-4:command.method==='cage'?6:18):command.type==='sound'?22:command.type==='search'?5:3;n.field!.noise=cap(n.field!.noise+noise);if(command.type!=='wait')n.field!.concealed=false;}
  if(command.type==='reveal'&&command.clue!==undefined&&outcome.state.revealed[command.clue])noteSpeciesTrait(n,outcome.state.species,command.clue);
  outcome.state.revealed.forEach((known,i)=>{if(known&&!s.capture!.hunt!.revealed[i])noteSpeciesTrait(n,outcome.state.species,i)});

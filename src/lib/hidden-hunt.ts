@@ -177,6 +177,7 @@ function chooseStep(state:HuntState):number{
   for(let j=1;j<=step;j++){const x=sx+dx*j,y=sy+dy*j;if(x>=0&&y>=0&&x<size&&y<size&&barred.has(y*size+x))return false;}return true;});
  if(!choices.length)choices=rangeChoices(state.position,1,size).filter(i=>!barred.has(i));
  if(!choices.length)return state.position;
+ const hidden=choices.filter(i=>huntSearchAge(state,i)<0);if(hidden.length&&!state.trap)choices=hidden;
  const prev=state.previous;
  const scored=choices.map(cell=>{
   let points=randomAt(state.seed,state.turn,cell+5)*4;
@@ -209,6 +210,7 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
  if(action.type==='search'||action.type==='net'||['bait','sound','light','barrier'].includes(action.type)){
   if(!Number.isInteger(action.cell)||action.cell!<0||action.cell!>=size*size)return unchanged;
  }
+ if(action.type==='search'&&!raw.tutorial&&action.cell===raw.position&&Object.hasOwn(raw.searchedAt??{},String(action.cell)))action={...action,type:'net',method:'net',aim:0};
  const current={...raw,objects:raw.objects.map(x=>({...x})),revealed:[...raw.revealed],
   searchedAt:{...(raw.searchedAt??{})},observations:{...(raw.observations??{})},lastSearch:raw.lastSearch??null,habits:{...raw.habits},log:[...raw.log]};
  let text='',kind:HuntLog['kind']='event';
@@ -263,7 +265,7 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
   if(action.cell===current.position&&!current.tutorial){
    current.actions--;current.turn++;current.selectedCell=searchedCell;current.lastCommand='search';current.fear=Math.min(100,current.fear+3);
    if(current.actions<=0){current.outcome='escaped';current.resultText='개체를 찾았지만 포획 행동이 남지 않았습니다.';return {state:msg(current,current.resultText,'error'),changed:true,won:false,lost:true,penalty:finishPenalty(current)};}
-   return {state:msg(current,'개체의 실제 위치를 확인했습니다. 수색은 구조가 아닙니다. 그물, 유인 우리 또는 진정 접근을 선택하세요.','hint'),changed:true,won:false,lost:false,penalty:nil};
+   return {state:msg(current,'개체 발견! 보이는 개체를 다시 클릭하면 직접 그물을 던집니다. 다른 전술도 선택할 수 있습니다.','hint'),changed:true,won:false,lost:false,penalty:nil};
   }
   if(action.cell===current.position){
    current.actions--;current.turn++;current.outcome='caught';current.selectedCell=action.cell!;current.lastCommand='search';
@@ -273,7 +275,7 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
   current.fear+=8;current.misses++;
   if(evidence==='footprint'){text='도트 발자국 발견. 개체가 이곳에 있었던 것은 이전 턴입니다. 이미 다른 칸으로 이동했을 수 있습니다.';kind='hint';}
   else if(evidence==='rustle'){text='눌린 풀이 흔들립니다. 직전 발자국에서 한 칸 반경의 흔적입니다. 현재 위치를 뜻하지는 않습니다.';kind='hint';}
-  else {text='풀숲을 열었지만 흔적이 없습니다. 이 칸은 확인한 기록으로 남고 개체는 다시 들어올 수 있습니다.';kind='warning';}
+  else {text='풀숲을 열었지만 흔적이 없습니다. 이 칸은 확인한 기록으로 남습니다. 개체는 가능한 한 미수색 칸으로 이동합니다.';kind='warning';}
   // A scan now returns a coarse distance band from the moment of inspection.
   // It is not a guaranteed future position: the creature moves immediately afterward.
   const distance=huntDistance(searchedCell,current.position,size);

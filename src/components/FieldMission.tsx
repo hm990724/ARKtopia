@@ -18,8 +18,7 @@ import {
   fieldRelayBearing,
   fieldHasCover,
   fieldSporeNearby,
-  mobileSporeSignal,
-  mobileSporeContact,
+  sporeVisibleCells,
   fieldThreatSignal,
   type Pace,
 } from "@/lib/tactical-field";
@@ -316,9 +315,7 @@ export default function FieldMission({
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
   const relayBearing = fieldRelayBearing(field, relayLevel);
   const threatSignal=fieldThreatSignal(field);
-  const sporeSignal=run.firstTutorial?null:mobileSporeSignal(field);
-  const swarm=run.firstTutorial?null:field.sporeSwarm;
-  const sporeInSight=!!swarm&&!!sporeSignal&&(fieldLineOfSight(field,swarm.position,3)||(swarm.mode==='chase'&&sporeSignal.distance<=4));
+  const sporeCells=run.firstTutorial?[]:sporeVisibleCells(field);
   const lightOn=run.gear.includes("flashlight")&&!field.lightOff&&state.flashlight>0;
   const visionRange = lightOn ? 2 : 1;
   const threatInSight = !!field.threat && (fieldLineOfSight(field,field.threat.position,visionRange) || !!threatSignal?.warning);
@@ -457,10 +454,10 @@ export default function FieldMission({
           <i style={{ width: `${pressure}%` }} />
         </div>
       </div>
-      {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀 · ST 2"],["normal","걷기 · ST 4"],["fast","달리기 · ST 6"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={!run.gear.includes("flashlight")||state.flashlight<=0||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>손전등 {lightOn?"ON":"OFF"} · {state.flashlight}%</button><small>달리기: 소음 증가 / 소등: 발각 위험 감소</small></div>}
+      {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀"],["normal","걷기"],["fast","달리기"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={!run.gear.includes("flashlight")||state.flashlight<=0||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>손전등 {lightOn?"ON":"OFF"} · {state.flashlight}%</button><small>달리기: 소음 증가 / 소등: 발각 위험 감소</small></div>}
       {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
-      {!run.firstTutorial&&!field.combat&&(sporeSignal||fieldSporeNearby(field))&&<aside className={'ark-spore-warning '+(sporeSignal?.mode==='chase'?'is-chasing':'')} role="status"><b>{sporeSignal?.mode==='chase'?'포자 역추적 중':sporeSignal?.mode==='search'?'포자 · 마지막 위치 수색':'감염성 포자 감지'}</b><span>{sporeSignal?`${sporeSignal.direction} · ${sporeSignal.distance}칸 · 감지 ${sporeSignal.alert}%`:'고정 오염원 주변'}{(fieldSporeNearby(field)||mobileSporeContact(field))?` · ${Math.max(1,4-(field.sporeTicks??0))}틱 후 감염`:''} · {run.gear.includes('filter')?'필터 장착':'필터 없음'} · 소등/엄폐/거리 확보</span>{hunt&& !field.threat&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'엄폐'}</button>}</aside>}
-      {hunt && (field.threat||swarm) && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>포획 격자와 별개인 실제 외곽 좌표 · 적은 계속 이동합니다.</small><span>{threatSignal?.warning?'발각 직전 · 엄폐 또는 교전 준비':threatSignal?threatSignal.direction+' · '+threatSignal.distance:sporeSignal?.direction+' · 포자 '+sporeSignal?.distance+'칸'}</span></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall':'')} />)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/>{field.threat&&<span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span>}{swarm&&sporeInSight&&<span className="ark-perimeter-spore" style={{left:`${(swarm.position%width+.5)/width*100}%`,top:`${(Math.floor(swarm.position/width)+.5)/height*100}%`}} aria-label="이동하는 포자"/>}</div></div>}
+      {!run.firstTutorial&&!field.combat&&sporeCells.some(i=>fieldVisible(field,i,visionRange))&&<aside className="ark-spore-warning" role="status"><b>감염성 포자 확산</b><span>{fieldSporeNearby(field)?'오염원 인접 · 이탈 권장':'오염 구역 확인'} · 시간이 지나면 인접 칸으로 증식 · {run.gear.includes('filter')?'필터 장착':'필터 없음'}</span></aside>}
+      {hunt && (field.threat||sporeCells.length>0) && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>붉은 개체: MUTANT · 주황색: 확인한 포자</small></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall ':'')+(sporeCells.includes(i)&&fieldVisible(field,i,visionRange)?'ark-spore-mini':'')}/>)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/>{field.threat&&<span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span>}</div></div>}
       {!hunt && (run.captures?.length ?? 0) > 0 && (
         <div className="v41-field-continue" role="status">
           <CheckCircle2 size={17} />
@@ -748,7 +745,7 @@ export default function FieldMission({
                 </div>
                 <div className="ark-hunt-instructions" role="status" aria-live="polite">
                   <b>{mode==='search'?'수색 · 타일 클릭':mode==='net'?(captureMethod==='calm'?'진정 접근 · 발견한 개체 클릭':captureMethod==='cage'?'유인 우리 · 설치 칸 클릭':'그물 준비 · 개체 칸 클릭'):activeMode.name+' · 설치 칸 클릭'}</b>
-                  <span>{mode==='net'?(captureMethod==='calm'?'청음으로 경계를 낮춘 뒤 발견된 개체에 연속 접근하세요.':captureMethod==='cage'?'이동 경로에 우리를 설치하고 청음으로 기다리세요.':'그물은 선택한 정확한 칸에 던집니다. 조사로 현재 위치를 확인하세요.'):'발자국은 이전 위치입니다. 청음으로 범위를 좁히고 수풀을 클릭하세요.'}</span>
+                  <span>{mode==='net'?(captureMethod==='calm'?'청음으로 경계를 낮춘 뒤 발견된 개체에 연속 접근하세요.':captureMethod==='cage'?'이동 경로에 우리를 설치하고 청음으로 기다리세요.':'그물은 선택한 정확한 칸에 던집니다. 조사로 현재 위치를 확인하세요.'):'발자국은 이전 위치입니다. 개체가 보이면 다시 클릭해 포획할 수 있습니다.'}</span>
                   <p><Radio size={15}/><strong>최근 결과</strong>{hunt.lastEvent||'수풀을 조사해 주세요.'}</p>
                 </div>
                 <div
@@ -1103,7 +1100,7 @@ export default function FieldMission({
                                   : tile === "cache"
                                     ? "물자"
                                     : tile === "hazard"
-                                      ? "감염성 포자"
+                                      ? sporeCells.includes(i)?"감염성 포자":"미확인 지면"
                                       : tile === "exit"
                                         ? "귀환 지점"
                                         : tile === "wall"
@@ -1130,7 +1127,7 @@ export default function FieldMission({
                           </span>
                         ) : tile === "track" ? (
                           <PawPixel />
-                        ) : tile === "hazard" ? (
+                        ) : tile === "hazard" && sporeCells.includes(i) ? (
                           <span className="v33-route-object v33-hazard">
                             <i className="ark-spore-cloud" aria-hidden="true"><ArtSlot src={gameplayArt.spore} fit="contain"/><i/><i/><i/><i/><i/></i><small>포자 확산</small>
                           </span>
@@ -1147,6 +1144,7 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
+                        {visible&&sporeCells.includes(i)&&tile!=='hazard'&&<span className="ark-spread-cell" aria-label="증식한 포자"><i/><i/><i/></span>}
                         {relayExit && <span className="v74-relay-exit" aria-label="CCTV로 확인한 귀환 출구">EXIT</span>}
                         {walk && visible && !walking && (
                           <span
@@ -1160,7 +1158,6 @@ export default function FieldMission({
                     );
                   })}
                   {field.threat && !field.combat && <span className="ark-moving-threat" data-chasing={field.threat.mode==='closing'} role="img" aria-label="접근 중인 배회형 MUTANT" aria-hidden={!threatInSight} style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:threatInSight?1:0}}><img src="/assets/animals/mutant_mutant.png" alt=""/><small>{field.threat.mode==='closing'?'추격 중':'MUTANT'}</small></span>}
-{swarm&&<span className="ark-moving-spore" data-chasing={swarm.mode==='chase'} aria-hidden={!sporeInSight} style={{left:`${(swarm.position%width+.5)/width*100}%`,top:`${(Math.floor(swarm.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:sporeInSight?1:0}}><span className="ark-swarm-dots"><i/><i/><i/><i/><i/><i/><i/></span><small>{swarm.mode==='chase'?'포자 추격':'포자'}</small></span>}
                    {walking && (
                     <span
                       className="v42-walker-path"

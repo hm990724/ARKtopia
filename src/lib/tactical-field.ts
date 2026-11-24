@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -29,7 +29,7 @@ export const fieldHeight=(f:FieldState)=>f.height??FIELD_ROWS;
 export const adjacentField=(a:number,b:number,width=FIELD_COLUMNS,size=FIELD_COLUMNS*FIELD_ROWS)=>a>=0&&a<size&&b>=0&&b<size&&distance(a,b,width)===1;
 /** Static contamination sources remain hazardous, independent of the mobile swarm. */
 export function fieldSporeNearby(f:FieldState):boolean{
- return f.tiles.some((tile,i)=>tile==='hazard'&&(i===f.position||adjacentField(i,f.position,fieldWidth(f),f.tiles.length)));
+ return f.tiles.some((tile,i)=>(tile==='hazard'||f.sporeSpread?.cells.includes(i))&&(i===f.position||adjacentField(i,f.position,fieldWidth(f),f.tiles.length)));
 }
 /** A fictional mobile colony follows detectable light, movement and nearby bio-signals. */
 function sporePaths(f:FieldState,target:number){
@@ -65,6 +65,27 @@ export function advanceSporeSwarm(f:FieldState,lightOn=false):void{
  const {costs,neighbors}=sporePaths(f,target);
  const next=neighbors(s.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
  if(next!==undefined&&(costs.get(next)??Infinity)<(costs.get(s.position)??Infinity))s.position=next;
+}
+/** Turn-based stationary contamination. One new adjacent cell at most per action, even in fog. */
+export function sporeVisibleCells(f:FieldState):number[]{
+ if((f.sporeSpread?.turn??0)<3)return [];
+ return [...new Set([...f.tiles.flatMap((v,i)=>v==='hazard'?[i]:[]),...(f.sporeSpread?.cells??[])])];
+}
+export function advanceSporeSpread(f:FieldState,roll?:()=>number):number|null{
+ const s=f.sporeSpread??={turn:0,active:[],cells:[]};s.turn++;
+ f.sporeSwarm=null;
+ const sources=f.tiles.flatMap((v,i)=>v==='hazard'?[i]:[]);
+ const all=[...new Set([...sources,...s.cells])],w=fieldWidth(f);
+ const near=all.filter(i=>distance(i,f.position,w)<=1);
+ // Activation applies to the FOLLOWING action, not the action that first passes it.
+ const previous=s.turn>=9?all:[...s.active,...s.cells];
+ s.active=[...new Set([...s.active,...near])];
+ if(s.turn<=3||!previous.length)return null;
+ const random=roll??(()=>hash(s.turn*7919+(f.sortie??0)*313+f.position*101+s.cells.length*43)/4294967296);
+ if(random()>=.30)return null;
+ const candidates=[...new Set(previous.flatMap(i=>[i-w,i+w,i-1,i+1].filter(j=>adjacentField(i,j,w,f.tiles.length)&&f.tiles[j]!=='wall'&&f.tiles[j]!=='exit'&&!all.includes(j))))];
+ if(!candidates.length)return null;
+ const at=candidates[Math.floor(random()*candidates.length)%candidates.length];s.cells.push(at);return at;
 }
 export function fieldHasCover(f:FieldState,index=f.position):boolean{const width=fieldWidth(f);return [index-width,index+width,index-1,index+1].some(i=>adjacentField(index,i,width,f.tiles.length)&&f.tiles[i]==='wall');}
 export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{
@@ -117,18 +138,14 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,light
  steps.sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity));
  // Keep a visible adjacent pursuer outside the player's tile until the warning resolves.
  if(!(t.mode==='closing'&&t.alert>=35&&!f.concealed&&dist(from,f.position)<=1)&&steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
- if(t.stage==='chase'&&t.alert>=45&&dist(t.position,f.position)>1){
-  const next=neighbors(t.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
-  if(next!==undefined&&next!==f.position&&(costs.get(next)??Infinity)<(costs.get(t.position)??Infinity))t.position=next;
- }
  const close=!f.concealed&&dist(t.position,f.position)<=1&&t.alert>=35&&fieldLineOfSight(f,t.position,1);
  t.warningTicks=close?(t.warningTicks??0)+1:0;
- return close&&t.warningTicks>=2;
+ return close&&t.warningTicks>=3;
 }
 
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
 export function createField(day:number,region:RegionId,sortie=0):FieldState {
- const {width,height}=fieldDimensions(region),size=width*height;
+ const dims=fieldDimensions(region),width=dims.width,height=dims.height+(day===1&&region==='garden'?0:4),size=width*height;
  const seed=hash(seedFor(day,region)+sortie*7919);
  const tiles:FieldTile[]=Array(size).fill('empty');
  const startingRow=(day===1&&region==='garden')?2:1+(hash(seed+113)%(height-2));
@@ -156,8 +173,8 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  // A connected footprint corridor leads to the animal rather than arbitrary decoy grass.
  for(let c=1;c<wildlifeCol;c++)tiles[startingRow*width+c]='track';
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
- const threatCandidates=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==start&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=3&&(Math.floor(i/width)===startingRow||i%width===width-1)?[i]:[]);
- const threatIndex=threatCandidates.length?threatCandidates[hash(seed+2017)%threatCandidates.length]:-1;
+ const threatCandidates=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==start&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=5&&(Math.floor(i/width)===startingRow||i%width===width-1)?[i]:[]);
+ const fallback=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=3?[i]:[]);const pool=threatCandidates.length?threatCandidates:fallback;const threatIndex=pool.length?pool[hash(seed+2017)%pool.length]:-1;
  return {tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
