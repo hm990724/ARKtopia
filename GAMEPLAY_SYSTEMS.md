@@ -36,7 +36,7 @@
 - Portable flashlight sorties spend the flashlight charge and one AP, not facility power. EVE's scanner route requires facility power. Charging the flashlight consumes one cell, 12 facility power and one AP, then restores 38 flashlight charge.
 - The optional night fuse board persists sequence/faults for the current day. A wrong terminal costs 4 power, 3 facility stability and adds 3 threat; after three faults it locks. A correct four-terminal connection adds 4 power and 6 facility stability during settlement.
 - Trust conversation costs AP 1 and food 1 but does not restore morale. Counseling costs AP 2 and food 1, restores 9 morale once per day; medical support costs AP 2 and one medicine, restores 20 once per staff per day. Staff morale deteriorates with elapsed days.
-- The event system currently has 13 registered incident IDs plus daily peaceful decisions and state-based night/field events. The master prompt's 40 materially distinct incident scenarios are not implemented yet; do not describe that target as complete.
+- Historical v78 note: at that point only 13 incident IDs were registered. The current registry has 41 consequential conditional events as documented below.
 - Natural multi-day survival balance and expert play remain unverified. Deterministic checks cover costs, blockers, state changes, legacy saves and the day transition, not a full player campaign.
 
 
@@ -45,6 +45,13 @@
 - The expedition loop now includes a preflight loadout, a saved roaming contaminant, a blocking tactical encounter, action-specific support from the selected employee, one-time salvage on victory, retreat without salvage, and safe extraction. One sortie per day and AP 1 remain the launch rule.
 - A complete production-browser outing links loadout, moving-threat combat, rabbit trail tracking/rescue, cache salvage, extraction, and rebuilding CCTV from recovered scrap, parts, and power. CCTV repair shows an assembly/wiring/power-on sequence and ONLINE status.
 - The live ending record displays portraits only for employees present in the save's active crew; retired staff are reported as losses and are not presented as living cast. This is a roster-aware UI layer, not bespoke ending scene art.
-- The current incident registry is 40 distinct IDs: 13 original and 27 state-gated additions. This supersedes the historical v78 note above, which described the registry before those additions. Six existing incident illustrations are reused; forty unique cinematic illustrations are not present.
+- The current incident registry is 41 distinct IDs: 13 original and 28 state-gated additions. Facility investment now supports tracking (5 levels), battery, clinic, net tensioner, protective suit and scanner lens (3 levels each). Net tuning adds actual hunt actions, suit reinforcement reduces combat damage, and scanner optics extend equipped scanner visibility. The 41st event handles critical tracking pressure; six existing incident illustrations are reused, and 41 unique cinematic illustrations are not present.
 - Verification after these changes: `npm run test:all`, `npm run typecheck`, `npm run lint`, `npm run check:assets`, `npm run build:qa`, and the production browser suite (40/40) pass. Existing React Hook and Autoprefixer warnings remain.
 - Still not certified: natural multi-day campaign difficulty and novice accessibility through a human playthrough, per-facility power priority controls, custom high-quality artwork for all 13 species and 18 interim ending routes, and an actual hosting deployment.
+
+## Resource upkeep continuation · 2026-11-23
+
+- Generator fuel and purifier filters are now explicit night costs. Each settlement spends one of each when available; fuel shortage drains additional power, damages facility stability and raises external threat, while filter shortage accelerates infection and incident risk.
+- The forecast applies the same fuel/filter availability rules as the committed night transition and shows stock before and after settlement. Fuel can be restocked in the supply room; older saves receive a small migrated reserve.
+- Root `public.zip` remains a local, ignored bundle, not a tracked source artifact. `npm run check:git-size` flags tracked files at GitHub's 100 MiB per-file limit.
+- Implementation is in progress; focused regressions and final integrated checks are pending until the remaining implementation pass is done.

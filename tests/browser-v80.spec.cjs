@@ -18,6 +18,10 @@ test('mobile contaminant enters central combat and retreat preserves the pursuer
  await combat.getByRole('button',{name:/안전 우회/}).click();await expect(combat).toBeHidden();await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.combat,KEY)).toBeNull();
  const after=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field,KEY);expect(after.threat).not.toBeNull();expect(after.threat.mode).toBe('search');
 });
+test('player hides behind a wall while the live contaminant searches the last seen tile',async({page})=>{
+ let s=game.beginGame('medic','generator');s.day=4;s.tutorialStep=9;s.onboardingSeen=['base-work','first-sortie','field-map','cctv','night-shift','first-capture'];s=game.startRun(s,'garden',['flashlight']);const f=s.field,start=f.position;f.tiles.fill('empty');f.tiles[start+1]='wall';f.threat={position:start+3,origin:start+3,lastSeen:start,alert:45,mode:'closing'};f.discovered=[start,start+1,start+2,start+3];await seed(page,s);
+ await page.getByRole('button',{name:'탐사',exact:true}).click();const hide=page.getByRole('button',{name:/장애물 뒤 숨기/});await expect(hide).toBeEnabled();await hide.click();await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.concealed,KEY)).toBe(true);const before=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.threat.position,KEY);await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.threat.position,KEY),{timeout:7000}).not.toBe(before);await expect(page.locator('.v74-combat[role="dialog"]')).toBeHidden();await expect(page.getByRole('button',{name:/은신 해제/})).toBeEnabled();
+});
 test('one sortie links preparation, combat salvage, animal rescue, and extraction',async({page})=>{
  test.setTimeout(90000);
  let s=game.beginGame('medic','generator');s.day=4;s.tutorialStep=9;s.onboardingSeen=['base-work','first-sortie','field-map','cctv','night-shift','first-capture'];recruitCrew(s,'wolf','WOLF-E2E');await seed(page,s);

@@ -14,6 +14,7 @@ import {
   fieldWidth,
   fieldHeight,
   fieldRelayBearing,
+  fieldHasCover,
   type Pace,
 } from "@/lib/tactical-field";
 import {
@@ -54,6 +55,7 @@ type Props = {
   animalSrc: (id: AnimalId) => string;
   onMove: (index: number, pace: Pace) => void;
   onRetreat: () => void;
+  onHide: () => void;
   onHunt: (action: { type: HuntMode; cell?: number; clue?: number; setting?: HuntSetting }) => void;
   onMedkit: () => void;
   onCombat: (action:CombatAction)=>void;
@@ -174,6 +176,7 @@ export default function FieldMission({
   animalSrc,
   onMove,
   onRetreat,
+  onHide,
   onHunt,
   onMedkit,
   onDecision,
@@ -299,7 +302,7 @@ export default function FieldMission({
     field.pressure ?? clamp(field.steps * (7 + Math.round(region.danger / 22)));
   const width = fieldWidth(field),
     height = fieldHeight(field);
-  const relayLevel = Math.max(0, Math.min(3, state.baseLevels?.relay ?? 0));
+  const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
   const relayBearing = fieldRelayBearing(field, relayLevel);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
@@ -1054,7 +1057,7 @@ export default function FieldMission({
                         field,
                         i,
                         run.gear.includes("scanner")
-                          ? 3
+                          ? 3 + Math.floor((run.scannerLevel ?? 0) / 2)
                           : (run.gear.includes("flashlight") && state.flashlight>0)
                             ? 2
                             : 1,
@@ -1495,6 +1498,7 @@ export default function FieldMission({
                   </span>
                 ))}
               </div>
+              {!hunt && <button className="v33-wait v33-medkit" type="button" disabled={!!field.combat||!!field.choice||(!field.concealed&&!fieldHasCover(field))} aria-pressed={!!field.concealed} onClick={onHide}><ShieldAlert size={16}/>{field.concealed?'은신 해제':`장애물 뒤 숨기 · ST -1${fieldHasCover(field)?'':' · 인접 엄폐물 없음'}`}</button>}
               {canWalkMedkit && (
                 <button
                   className="v33-wait v33-medkit"
@@ -1513,7 +1517,7 @@ export default function FieldMission({
                 <p>
                   {field.choice
                     ? "지도 중앙에 나타난 현장 선택지 3개 중 하나를 선택하세요. 선택 후 탐사가 계속됩니다."
-                    : "빛나는 인접 칸 클릭·WASD 이동 · 정식 출구 100% · 긴급 철수 30%."}
+                    : field.concealed ? "장애물 뒤 은신 중 · 적은 마지막 목격 위치를 수색합니다." : "빛나는 인접 칸 클릭·WASD 이동 · 장애물 뒤 숨기 · 정식 출구 100% 회수."}
                 </p>
               </div>
               <div

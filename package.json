@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "check:assets": "node scripts/check-assets.cjs",
+    "check:git-size": "node scripts/check-git-size.cjs",
     "test:logic": "node scripts/test-logic.cjs",
     "test:v69": "node scripts/test-v69.cjs",
     "test:v70": "node scripts/test-v70.cjs",

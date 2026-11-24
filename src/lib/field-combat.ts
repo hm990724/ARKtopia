@@ -36,18 +36,21 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(b.hp<=0){const loot=4+(run.region==='garden'?0:2);n.scrap+=loot;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=loot;run.loot+=2;f.loot+=2;if(b.source==='mobile')f.threat=null;f.combat=null;f.pressure=Math.max(0,(f.pressure??0)-12);message+=` · 오염 제거. 고철 +${loot}, 회수 점수 +2, 추적망 -12. 지정 출구로 회수하세요.`;}
  else{
   const attack=b.intent==='charge'?0:b.intent==='lunge'?7:5;
-  const damage=Math.max(0,attack-shield-((run.companions??[run.companion]).includes('wolf')?2:0));run.integrity=cap(run.integrity-damage);
+  const damage=Math.max(0,attack-shield-Math.max(0,Math.min(3,run.suitLevel??0))-((run.companions??[run.companion]).includes('wolf')?2:0));run.integrity=cap(run.integrity-damage);
   if(b.intent==='spray')n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?3:0)));
   b.round++;b.intent=b.round%3===0?'spray':b.round%3===1?'lunge':'charge';b.log=[message+` · 방호 -${damage}`, ...b.log].slice(0,4);
   if(b.round>6||run.integrity<=0){f.combat=null;run.integrity=Math.max(1,run.integrity);n.mind=cap(n.mind-5);message+=' · 안전 거리로 긴급 이탈. 정신 -5, 전리품 없음.';}
  }
  f.lastEvent=n.lastOutcome=message;log(n,'현장 오염 대응',message,'info');return n;
 }
-export type UpgradeId='relay'|'battery'|'clinic';
+export type UpgradeId='relay'|'battery'|'clinic'|'net'|'suit'|'scanner';
 export const baseUpgrades:Record<UpgradeId,{name:string;effect:string;scrap:number;parts:number;power:number}>={
  relay:{name:'현장 추적망',effect:'1–5단계: 이동 압박 감소 · Lv1 출구 표시 · Lv2 동물 방위 · Lv4 적 경계 완화 · Lv5 적 감지 거리 감소',scrap:8,parts:1,power:4},
  battery:{name:'전력 축전기',effect:'단계마다 야간 전력 +5 · 탐사 손전등 소모 완화',scrap:10,parts:2,power:4},
- clinic:{name:'안정화 병동',effect:'단계마다 야간 개체 스트레스 -2 · 직원 정신 +1',scrap:9,parts:1,power:5}
+ clinic:{name:'안정화 병동',effect:'단계마다 야간 개체 스트레스 -2 · 직원 정신 +1',scrap:9,parts:1,power:5},
+ net:{name:'포획망 장력기',effect:'단계마다 추적 포획 행동 +1 · 그물 저항 중 추가 관찰 여유',scrap:8,parts:2,power:3},
+ suit:{name:'방호복 보강판',effect:'단계마다 전투 피격 피해 -1 · 위험 지대 방호 내구도 보존',scrap:9,parts:2,power:4},
+ scanner:{name:'EVE 스캐너 렌즈',effect:'EVE 스캐너 장착 시 2단계마다 조사 시야 +1칸',scrap:10,parts:2,power:5}
 };
 export function upgradeMaxLevel(id:UpgradeId){return id==='relay'?5:3;}
 export function upgradeLevel(s:V10,id:UpgradeId){return Math.max(0,Math.min(upgradeMaxLevel(id),s.baseLevels?.[id]??0));}
