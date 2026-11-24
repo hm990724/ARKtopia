@@ -14,7 +14,7 @@ export type ProtocolStepRecord={stage:number;prompt:string;chosen:string;expecte
 export type ProtocolAttempt={day:number;quality:number;mode:'gentle'|'force';result:string;steps:ProtocolStepRecord[]};
 export type SpecimenDossier={key:string;species:AnimalId;name:string;firstDay:number;lastDay:number;status:ArchiveStatus;captureMethod:string;observedTraits:number[];records:ArchiveRecord[];maxStress:number;maxMemory:number;protocolAttempts?:ProtocolAttempt[]};
 export type ArchiveGift='tracking'|'power'|'serum';
-export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;processedKeys:string[];dispatches:number;rewardPolicyVersion?:number;};
+export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;sampleSpecies?:Partial<Record<AnimalId,number>>;lastShipmentSpecies?:AnimalId;processedKeys:string[];dispatches:number;rewardPolicyVersion?:number;};
 const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',wolf:'WF',crow:'CR',otter:'OT',lynx:'LX',axolotl:'AX',moth:'MT',mutant:'MX',chimera:'CH',specter:'SP'};
 export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0,rewardPolicyVersion:2});
 export function archiveOf(s:V10):ArchiveState{return s.archive??emptyArchive();}
@@ -130,10 +130,11 @@ export function acknowledgeArchiveTruth(s:V10):V10{
 }
 export type DissectionAction='postmortem'|'forced'|'transmit';
 export function applyDissection(s:V10,action:DissectionAction,specimenKey?:string):V10{
- if(!s.archive?.revealed||s.run||s.phase!=='day')return s;
+ const task=s.hqOrders?.active;const authorized=task?.status==='accepted'&&s.facilities.synthesis;if((!s.archive?.revealed&&!authorized)||s.run||s.phase!=='day')return s;
  const n=copy(s) as V10;const archive=ensureArchive(n);
  if(action==='transmit'){
   if(archive.samples<1||n.power<4)return s;
+  const target=task?.status==='accepted'?task.species:undefined;const stock=archive.sampleSpecies??={};if(target&&(stock[target]??0)<1)return s;const selected=target??(Object.keys(stock) as AnimalId[]).find(id=>(stock[id]??0)>0);if(selected)stock[selected]=(stock[selected]??0)-1;archive.lastShipmentSpecies=selected;
   archive.samples--;archive.dispatches++;archive.pendingGifts++;
   n.power=cap(n.power-4);n.credits+=180;n.trust=cap(n.trust-5);
   log(n,'본부 표본 송신','보존 신경 조직 1개를 외부로 전송했다. CR +180과 고급 지원품 선택권 1건 지급. 살아 있는 개체 인계로는 지급되지 않는다.','bad');
@@ -142,7 +143,7 @@ export function applyDissection(s:V10,action:DissectionAction,specimenKey?:strin
  }
  const entry=archive.entries[specimenKey||''];if(!entry||archive.processedKeys.includes(entry.key)||n.ap<(action==='forced'?2:1)||n.power<(action==='forced'?10:5))return s;
  const specimen=n.animals.find(a=>a.specimenId===entry.key);
- if(!specimen||n.security.escapedIds.includes(specimen.id))return s;
+ if(!specimen||n.security.escapedIds.includes(specimen.id)||(!s.archive.revealed&&task?.species&&entry.species!==task.species))return s;
  if(action==='forced'&&!specimen.alive)return s;
  if(action==='postmortem'&&specimen.alive)return s;
  if(entry.status==='transferred'||entry.status==='dissected')return s;
@@ -155,6 +156,7 @@ export function applyDissection(s:V10,action:DissectionAction,specimenKey?:strin
   archive.samples++;n.knowledge+=10;
   log(n,'사후 병리 분석',`${entry.key} 사인 확인 및 신경 조직 표본화. 표본 +1, 지식 +10.`,'mystery');
  }
+ archive.sampleSpecies??={};archive.sampleSpecies[entry.species]=(archive.sampleSpecies[entry.species]??0)+(action==='forced'?2:1);
  archive.processedKeys.push(entry.key);entry.status='dissected';
  entry.records.unshift({day:n.day,title:action==='forced'?'강제 조직 회수':'사후 병리 분석',detail:action==='forced'?'담당자가 살아 있는 개체의 생체 표본화를 승인했다.':'사후 검체 채취 및 장기 보존 절차가 종료됐다.',kind:'loss'});
  n.lastOutcome=action==='forced'?'개체가 영구 소실되었습니다. 신경 조직 표본 2개를 확보했습니다.':'사후 검체 1개를 확보했습니다.';

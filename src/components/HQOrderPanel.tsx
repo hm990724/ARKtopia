@@ -2,30 +2,19 @@
 import {AlertTriangle,BookOpen,ChevronRight,FileWarning,RadioTower,ShieldCheck,Skull,Timer} from 'lucide-react';
 import type {V10} from '@/lib/game-v10';
 import {CREW_PROFILES,type CrewId} from '@/lib/crew';
+import {animalSprite} from '@/lib/animal-art';
+import {specs} from '@/lib/sim';
 import type {HqOrderChoice} from '@/lib/hq-orders';
-const opinions:Record<CrewId,string>={
- rabbit:'그 조직은 살아 있었을 수도 있어요. 그냥 보내선 안 돼요. 기록부터 검토해 주세요.',
- fox:'물자 잔고를 보세요. 본부 지원 없이 이 시설이 얼마나 버틸 수 있다고 생각하세요?',
- wolf:'위험한 개체를 놔둘 수도 없어요. 하지만 저쪽이 요구하는 이유도 확인해야죠!',
- deer:'표본 일련번호가 이상해요. 이전 송신 기록과 겹쳐요... 제가 기록을 다시 볼게요.'
-};
-type Props={state:V10;onChoose:(choice:HqOrderChoice)=>void};
-export default function HQOrderPanel({state,onChoose}:Props){
- const order=state.hqOrders?.active;
- if(!order||order.status!=='offered')return null;
+const opinions:Record<CrewId,string>={rabbit:'살아 있는 개체입니다. 다른 방법도 검토해 주세요.',fox:'본부 지원을 거부하면 물자 확보가 어려워질 거예요.',wolf:'명령의 목적을 모르는데 무조건 따를 수는 없죠.',deer:'새 개체 등록과 지령의 시각이 일치해요. 기록해 두겠습니다.'};
+export default function HQOrderPanel({state,onChoose}:{state:V10;onChoose:(choice:HqOrderChoice)=>void}){
+ const order=state.hqOrders?.active;if(!order||order.status!=='offered')return null;
  const available=state.knowledge>=12&&state.clues>=2&&state.power>=6;
  const staff=(state.crew?.members??[]).filter(m=>m.mind>0&&!state.crew?.retired?.includes(m.id));
- return <div className="v56-hq-backdrop" role="dialog" aria-modal="true" aria-label="본부 우선 회수 지령">
-  <div className="v56-hq-modal"><div className="v56-hq-top"><div><span className="v56-micro"><RadioTower size={15}/> HEADQUARTERS / CRITICAL TRANSMISSION</span><h2>{order.title}</h2><p>권한 등급 RED · 중앙 회수처에서 발신된 명령입니다.</p></div><span className="v56-hq-deadline"><Timer size={18}/> D{order.issueDay} → D{order.dueDay}</span></div>
-   <section className="v56-hq-message"><span>중앙 본부 / 미확인 발신처</span><p>“시설 내 신경 조직 표본 하나를 회수하여 송신하십시오. 정해진 기한 내 회수가 이루어지지 않을 경우 지원 및 격리 안전 프로토콜이 조정됩니다.”</p><small>{order.brief}</small></section>
-   <div className="v56-hq-crew"><b><BookOpen size={14}/> 내부 인력 의견 · 실제 배치 인원만 표시</b><div>{staff.length?staff.map(m=><div key={m.id}><span>{CREW_PROFILES[m.id].post}</span><p>“{opinions[m.id]}”</p></div>):<p className="v56-hq-empty">배치된 직원이 없어 EVE 분석만 수신됩니다.</p>}</div></div>
-   <div className="v56-hq-choice-title">관리자 최종 응답 · 세 가지 지령 대응</div>
-   <div className="v56-hq-options">
-    <button type="button" onClick={()=>onChoose('accept')}><Skull size={23}/><strong>01 · 지령 수락</strong><p>기한 내 해부 신경 표본 1개 송신</p><small>완수 시 기본 표본 보상 외 CR +300 · 부품 +2 · 간섭도 -10</small></button>
-    <button type="button" disabled={!available} title={!available?'지식 12·단서 2·전력 6 필요':'대체 자료 제출 가능'} onClick={()=>onChoose('substitute')}><ShieldCheck size={23}/><strong>02 · 대체 자료 제안</strong><p>비침습적 연구 자료로 협상</p><small>{available?'지식 -12 · 단서 -2 · 전력 -6 / CR +65 · 간섭도 +7':'지식 12 · 단서 2 · 전력 6 필요 · 현재 자원 부족'}</small></button>
-    <button type="button" onClick={()=>onChoose('refuse')}><FileWarning size={23}/><strong>03 · 명령 거부</strong><p>동물의 생존과 독립 연구를 우선</p><small>즉시 불이익: 간섭도 +18 · 외부 위협 +11</small></button>
-   </div>
-   <footer className="v56-hq-footer"><AlertTriangle size={15}/> 인계된 살아 있는 개체는 조직 납품으로 계산되지 않습니다. 판정은 기록과 시설 상태에 영구 반영됩니다.</footer>
-  </div>
- </div>
+ const name=specs.find(s=>s.id===order.species)?.name??'미지정 표본';
+ return <div className="v56-hq-backdrop ark-directive-overlay" role="dialog" aria-modal="true" aria-label="본부 기밀 지령"><section className="ark-directive">
+ <header><div><span><RadioTower size={16}/> ARK HEADQUARTERS / SECURE LINK</span><h2>기밀 회수 지령</h2></div><div className="ark-directive-live"><i/> 수신 완료 <small>CLASSIFIED / RED</small></div></header>
+ <div className="ark-directive-main"><aside className="ark-directive-subject"><span>SUBJECT / 최초 등록</span>{order.species&&<img src={animalSprite(order.species)} alt={name}/>}<h3>{name}</h3><small>{order.id}</small><div><Timer size={16}/> DAY {order.dueDay}까지 제출</div></aside>
+ <div className="ark-directive-letter"><span>중앙 본부 · 암호화 전문</span><h3>{order.title}</h3><p>신규 등록 생체의 신경 조직을 회수하여 본부로 송신하십시오. 이 지령의 세부 연구 목적은 공개하지 않습니다.</p><p>{order.brief}</p><div className="ark-directive-eve"><RadioTower size={16}/><span>EVE: 지령 수락은 조직 제출 계약입니다. 실제 회수 여부는 담당자님이 결정합니다.</span></div>{staff.length>0&&<details><summary><BookOpen size={14}/> 직원 의견 {staff.length}건</summary>{staff.map(m=><p key={m.id}><b>{CREW_PROFILES[m.id].post}</b> · {opinions[m.id]}</p>)}</details>}</div></div>
+ <div className="ark-directive-actions"><button onClick={()=>onChoose('accept')}><Skull size={20}/><span><b>지령 수락</b><small>지정 개체 조직 회수 계약</small></span><ChevronRight size={16}/></button><button disabled={!available} onClick={()=>onChoose('substitute')}><ShieldCheck size={20}/><span><b>대체 자료 제안</b><small>{available?'비침습 연구 기록으로 협상':'연구 자원 부족'}</small></span><ChevronRight size={16}/></button><button onClick={()=>onChoose('refuse')}><FileWarning size={20}/><span><b>명령 거부</b><small>개체 보호 · 본부와 갈등</small></span><ChevronRight size={16}/></button></div>
+ <footer><AlertTriangle size={14}/> 수락만으로 개체가 사라지지 않습니다. 실제 회수는 분석실에서 별도로 승인합니다.</footer></section></div>
 }

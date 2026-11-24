@@ -11,7 +11,7 @@ import {initialSecurity,nightlySecurity,roomCamera,type SecurityState} from './s
 import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
-import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
+import {emptyHqOrders,ensureHqOrders,tickHqOrders,registerHqSpecies,issueNextHqOrder,type HqOrderState} from './hq-orders';
 import {revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
@@ -296,7 +296,7 @@ export function rescueChoice(s:V10,choice:'secure'|'treat'|'release',rand=Math.r
 if(n.animals.filter(a=>a.alive).length>=n.rooms){recordCapture(n.run,id,'failed');if(s.pendingCage)n.parts++;return summary(n,'격리실 부족',`${sp.name}를 안전하게 옮길 공간이 없어 현장에 남겨두었다.`,'bad')}const chance=captureChance(s,quality);n.tacticalCaptured=false;if(rand*100<chance){const rooms=new Set(n.animals.filter(a=>a.alive).map(a=>a.room));let room=targetRoom??1;while(rooms.has(room))room++;const rescued=makeAnimal(id,room);if(id==='rabbit'&&s.lifeSaved===0&&s.tutorialStep<=4){
   // Fixed first-lesson baseline: do not generate unstable tutorial stats.
   rescued.tutorialProtected=true;rescued.hp=90;rescued.stress=18;rescued.contamination=0;rescued.bond=34;rescued.memory=0;
- }if(n.fieldGoodwill?.[id])rescued.bond=cap(rescued.bond+n.fieldGoodwill[id]!*4);n.animals.push(rescued);noteRescue(n,id);recordCapture(n.run,id,'secured');if(id==='rabbit'&&n.lifeSaved===0&&s.tutorialStep<=4){n.scrap+=16;earnDuringRun(n.run!,'scrap',16);log(n,'시설 복구용 고철 확보','첫 구조 현장에서 고철 16개를 회수했습니다. 감시망과 병리·검시실을 복구할 수 있습니다.','good');}n.lifeSaved++;n.trust=cap(n.trust+4);n.eventRisk=cap(n.eventRisk+4);return summary(n,'구조 완료',`${sp.name} 구조 성공 (시도 확률 ${chance}%). 격리실 ${room}번에 배정됐다.`,'good')}recordCapture(n.run,id,'failed');n.mind=cap(n.mind-7);n.threat=cap(n.threat+8);return summary(n,'구조 실패',`${sp.name}가 수색망을 벗어났다 (시도 확률 ${chance}%). 신경적 충격으로 정신력이 떨어졌다.`,'bad')}
+ }if(n.fieldGoodwill?.[id])rescued.bond=cap(rescued.bond+n.fieldGoodwill[id]!*4);registerHqSpecies(n,id);n.animals.push(rescued);noteRescue(n,id);recordCapture(n.run,id,'secured');if(id==='rabbit'&&n.lifeSaved===0&&s.tutorialStep<=4){n.scrap+=16;earnDuringRun(n.run!,'scrap',16);log(n,'시설 복구용 고철 확보','첫 구조 현장에서 고철 16개를 회수했습니다. 감시망과 병리·검시실을 복구할 수 있습니다.','good');}n.lifeSaved++;n.trust=cap(n.trust+4);n.eventRisk=cap(n.eventRisk+4);return summary(n,'구조 완료',`${sp.name} 구조 성공 (시도 확률 ${chance}%). 격리실 ${room}번에 배정됐다.`,'good')}recordCapture(n.run,id,'failed');n.mind=cap(n.mind-7);n.threat=cap(n.threat+8);return summary(n,'구조 실패',`${sp.name}가 수색망을 벗어났다 (시도 확률 ${chance}%). 신경적 충격으로 정신력이 떨어졌다.`,'bad')}
 export function incidentWeight(s:V10){return cap(7+s.threat*.24+s.infection*.19+(100-s.facility)*.20+(100-s.power)*.16+s.animals.filter(a=>a.alive).length*3+Math.min(15,s.encounters));}
 // Event occurrence and event-type selection use INDEPENDENT random draws.
 // Repeated incidents are suppressed, but high-risk states can still cause them.
@@ -781,7 +781,7 @@ export function leaveField(s:V10,kind='조기 철수'):V10{
  returnUnusedRunSupplies(n,run,false);
  n.run=null;n.stamina=exhausted?50:100;n.field=null;n.capture=null;
  n.lastOutcome=`${kind}: ${field.steps}칸 이동 · 물자 ${score}점 (${isFull?'정식 귀환 100%':'귀환 지점 미사용 30%'} 확보). 고철 +${kept.scrap} · 지식 +${kept.knowledge} · 단서 +${kept.clues}, 부품 +${bonuses.parts}, 식량 +${bonuses.food}, CR +${bonuses.credits}.`;
- log(n,'격자 탐사 정산',n.lastOutcome,'info');return n;
+ log(n,'격자 탐사 정산',n.lastOutcome,'info');issueNextHqOrder(n);return n;
 }
 /** v33 hidden-pursuit command; the UI never receives the living creature's actual cell. */
 export function performVeiledHunt(s:V10,command:import('./hidden-hunt').HuntCommand):V10{
