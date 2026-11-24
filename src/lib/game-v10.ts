@@ -12,7 +12,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,registerHqSpecies,issueNextHqOrder,type HqOrderState} from './hq-orders';
-import {revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {fieldVision,acousticBearing,metalFloor,falseFieldSignal,revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -46,9 +46,9 @@ export type V10=State & {fieldGoodwill?:Partial<Record<AnimalId,number>>;operati
 export const regions:{id:RegionId;name:string;desc:string;art:string;danger:number;reward:number;ap:number;power:number;unlocked:number;animals:AnimalId[]}[]=[
 {id:'garden',name:'중앙 외곽',desc:'폐쇄된 매표소와 정원. 작은 개체의 흔적.',art:'gate',danger:16,reward:1,ap:1,power:9,unlocked:1,animals:['rabbit','fox']},
 {id:'conservatory',name:'온실 폐쇄동',desc:'축축한 식물과 감염 포자가 자라는 구역.',art:'sanctuary',danger:31,reward:2,ap:1,power:15,unlocked:2,animals:['deer','otter','crow']},
-{id:'rail',name:'폐역 승강장',desc:'열차 아래에서 생체 신호가 잡힌다.',art:'wasteland',danger:46,reward:3,ap:1,power:19,unlocked:3,animals:['fox','wolf','lynx']},
-{id:'archive',name:'관측소 기록실',desc:'위성 장비와 알아볼 수 없는 기록.',art:'laboratory',danger:55,reward:3,ap:1,power:23,unlocked:5,animals:['owl','moth','deer']},
-{id:'vault',name:'B-3 밀폐 연구동',desc:'격리 실패 기록과 봉인된 생물 캡슐.',art:'laboratory',danger:72,reward:5,ap:1,power:30,unlocked:9,animals:['axolotl','mutant']},
+{id:'rail',name:'폐역 승강장',desc:'완전 암전. 청음으로 생체와 귀환 방향을 추적한다.',art:'wasteland',danger:46,reward:3,ap:1,power:19,unlocked:3,animals:['fox','wolf','lynx']},
+{id:'archive',name:'관측소 기록실',desc:'정상 기록과 가짜 신호가 뒤섞인다.',art:'laboratory',danger:55,reward:3,ap:1,power:23,unlocked:5,animals:['owl','moth','deer']},
+{id:'vault',name:'B-3 밀폐 연구동',desc:'봉인된 보급 설비. 스캐너·보급관과 회수 효율 상승.',art:'laboratory',danger:72,reward:5,ap:1,power:30,unlocked:9,animals:['axolotl','mutant']},
 {id:'tunnels',name:'제0구역 통로',desc:'EVE의 기록에서 존재하지 않는 장소.',art:'wasteland',danger:86,reward:6,ap:1,power:37,unlocked:14,animals:['specter','mutant','chimera']}
 ];
 export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'수동 손전등',desc:'정전 수동 탐사 · 조사 시야 반경 2칸 · 수동 출동 전지 25%'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 추가 8 · 조사 시야 반경 3칸 · 포자 노출 피해 -3'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 정신력 +20 · 미사용 귀환 시 반환'}];
@@ -132,7 +132,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  }
  // Retain existing saves and active combat progress, but never duplicate a secured Mutant.
  if(restored.field){
-  restored.field.sporeSwarm=null;
+  restored.field.region??=restored.run?.region;restored.field.sporeSwarm=null;
   if(restored.field.interruptedCapture)restored.field.interruptedCapture=normalizeCapture(restored.field.interruptedCapture);
   if(mutantSecured(restored)||restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
   else if(restored.field.combat?.source==='mobile'){restored.field.combat.enemy='mutant';restored.roamingStory??={};restored.roamingStory.firstEncounterDay??=restored.day;}
@@ -615,27 +615,28 @@ export function tickFieldSpores(s:V10):boolean{
 export function toggleFieldLight(s:V10):V10{
  if(!s.run?.gear.includes('flashlight')||!s.field||s.field.combat||s.field.choice||s.pending||s.flashlight<=0)return s;
  const n=copy(s) as V10;const f=n.field!;f.lightOff=!f.lightOff;
- if(!f.lightOff){f.noise=cap(f.noise+3);f.concealed=false;revealField(f,2);}
+ if(!f.lightOff){f.noise=cap(f.noise+3);f.concealed=false;revealField(f,fieldVision(n.run!.region,true));}
  f.lastEvent=n.lastOutcome=f.lightOff?'손전등 소등 · 시야 감소, 노출 감소':'손전등 점등 · 시야 확장, 발각 위험 증가';
  return n;
 }
+export function listenField(s:V10,kind:'animal'|'exit'|'threat'):V10{if(!s.field||!s.run||s.capture||s.field.combat||s.field.choice||s.pending||s.stamina<3)return s;const signal=acousticBearing(s.field,kind);if(!signal)return s;const n=copy(s) as V10;n.stamina=cap(n.stamina-2);n.field!.noise=cap(n.field!.noise-12);n.field!.acoustic=signal;const label=kind==='animal'?'생체 울음':kind==='exit'?'귀환 유도음':'변이체 발소리';n.lastOutcome=n.field!.lastEvent=label+' · '+signal.direction+' · '+signal.range+' · ST -2';const message=n.lastOutcome;if(tickFieldSpores(n))n.lastOutcome=n.field!.lastEvent=message+' · '+n.lastOutcome;return n;}
 export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  if(s.run&&s.field&&!s.capture&&!s.field.combat&&s.stamina<2)return leaveField(s,'탈진 · 긴급 귀환');
  if(!s.run||!s.field||s.capture||s.phase!=='day'||s.pending||!adjacentField(s.field.position,destination,s.field.width??7,s.field.tiles.length)||s.field.choice||s.field.combat)return s;
- const tile=s.field.tiles[destination];if(tile==='wall')return s;
+ const tile=s.field.tiles[destination];if(tile==='wall'){if(s.run.region!=='rail'||s.field.discovered?.includes(destination))return s;const n=copy(s) as V10;n.field!.discovered=[...new Set([...(n.field!.discovered??[]),destination])];n.stamina=cap(n.stamina-1);n.lastOutcome=n.field!.lastEvent='금속 벽에 닿았습니다. 다른 방향을 찾으세요. ST -1';return n;}
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
  field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
  if(run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
  field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'&&(field.sporeSpread?.turn??0)>=3?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
- const noisy=pace==='fast';
- field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
+ const noisy=pace==='fast';const metal=metalFloor(field,destination);const masked=run.region==='rail';
+ field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(metal?(noisy?18:pace==='normal'?10:1):0)+(run.region==='tunnels'&&pace!=='quiet'?6:0)+(run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
  n.stamina=cap(n.stamina-(noisy?4:pace==='normal'?2:1));
  const exposed=pace==='fast'?9:pace==='normal'?5:2;
  run.exposure+=exposed;
  const shard=field.originFragments?.[destination];const recovered=shard!==undefined&&collectOriginFragment(n,shard);if(shard!==undefined)delete field.originFragments![destination];
- let observation='손전등으로 주변을 확인했습니다. 아직 새로운 흔적은 없습니다.';
+ let observation=masked?'어둠 속에서 바닥을 더듬어 이동했습니다.':'손전등으로 주변을 확인했습니다. 아직 새로운 흔적은 없습니다.';
  if(firstVisit){
   if(tile==='track'){
    field.clues++;n.knowledge+=2;earnDuringRun(run,'knowledge',2);field.noise=Math.max(0,field.noise-4);
@@ -652,8 +653,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    n.mind=cap(n.mind-Math.max(0,Math.floor(damage/3)));
    observation=`감염성 포자에 노출됐습니다. 방호 -${damage}, 감염 위험 증가.`;
   }else if(tile==='signal'){
-   n.knowledge+=4;n.clues++;field.clues++;earnDuringRun(run,'knowledge',4);earnDuringRun(run,'clues',1);
-   observation='폐쇄된 연구 신호를 복원했습니다. 지식 +4, 기록 단서 +1.';
+   if(run.region==='archive'){observation='불규칙한 신호가 수신됩니다. 진위 확인이 필요합니다.';}else{n.knowledge+=4;n.clues++;field.clues++;earnDuringRun(run,'knowledge',4);earnDuringRun(run,'clues',1);observation='폐쇄된 연구 신호를 복원했습니다. 지식 +4, 기록 단서 +1.';}
   }else if(tile==='animal' && !field.encountered){
    field.encountered=true;
    const firstRabbit=n.lifeSaved===0&&!n.animals.some(a=>a.id==='rabbit'&&a.alive)&&run.region==='garden';
@@ -687,16 +687,17 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  // Optional high-stakes side discoveries. Pending choices are saveable and block further movement.
  if(firstVisit&&!run.firstTutorial && !field.combat && !field.choice && ['cache','signal'].includes(tile)){
   const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;
-  if(tile==='cache'||chance<65){const danger=regions.find(r=>r.id===run.region)!.danger;
+  if(tile==='cache'||run.region==='archive'||chance<65){const danger=regions.find(r=>r.id===run.region)!.danger;
    const kind=tile as FieldChoice['kind'];
-   field.choice={id:`${n.day}-${field.sortie??0}-${destination}`,kind,title:kind==='cache'?'봉인된 보급 컨테이너':kind==='signal'?'훼손된 기억 보관소':'포자에 잠긴 연구 상자',description:kind==='cache'?'상자를 열면 추가 물자를 얻을 수 있지만 방호 장치가 작동할 수 있습니다.':kind==='signal'?'낡은 신경 기록입니다. 강행 복원은 더 많은 단서를 남기지만 생체 신호를 교란합니다.':'잔해 아래 물자와 신호가 있습니다. 가까이 접근할수록 감염 위험이 커집니다.',danger:Math.min(85,14+Math.floor(danger*.66)),reward:1+regions.find(r=>r.id===run.region)!.reward};
+   field.choice={id:`${n.day}-${field.sortie??0}-${destination}`,kind,title:kind==='cache'?'봉인된 보급 컨테이너':kind==='signal'?'훼손된 기억 보관소':'포자에 잠긴 연구 상자',description:kind==='cache'?(run.region==='vault'?'봉인된 연구 설비입니다. 스캐너나 보급관이 있다면 안전하게 잠금을 풀 수 있습니다.':'상자를 열면 추가 물자를 얻을 수 있지만 방호 장치가 작동할 수 있습니다.'):kind==='signal'?(run.region==='archive'?(run.gear.includes('scanner')||(run.companions??[]).includes('deer')?(falseFieldSignal(field,destination)?'독립 센서 판독: 반복 주기가 동일한 가짜 신호입니다. 안전 분석으로 판별 기록을 남길 수 있습니다.':'독립 센서 판독: 정상 기록입니다. 복원할 가치가 있습니다.'):'반복되는 파형의 출처가 불분명합니다. 신중하게 분석하거나 위험을 감수할 수 있습니다.'):'낡은 신경 기록입니다. 강행 복원은 더 많은 단서를 남기지만 생체 신호를 교란합니다.'):'잔해 아래 물자와 신호가 있습니다. 가까이 접근할수록 감염 위험이 커집니다.',danger:Math.min(85,14+Math.floor(danger*.66)),reward:1+regions.find(r=>r.id===run.region)!.reward};
    observation+=' 조사 가능한 미확인 물체가 감지됐습니다. 행동을 선택하세요.';
   }
  }
+ if(metal)observation+=' · 금속 바닥 '+(pace==='quiet'?'조용히 통과.':'울림 발생. 주변 추적 위험 증가.');
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
  // MUTANT advances on the independent real-time clock.
  if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
- revealField(field,run.gear.includes('scanner')?3+Math.floor((run.scannerLevel??0)/2):run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?2:1);
+ revealField(field,fieldVision(run.region,run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0,run.gear.includes('scanner'),run.scannerLevel??0));
  field.lastEvent=observation;
  n.lastOutcome=observation;
  if(tile==='exit'&&!field.combat&&!n.capture)return leaveField(n,'정상 귀환');
@@ -719,16 +720,17 @@ export function concealInField(s:V10):V10{
 export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Math.random()):V10{
  if(!s.run||!s.field?.choice||s.capture)return s;
  const n=copy(s) as V10,choice=n.field!.choice!,run=n.run!,field=n.field!;
+ const fake=choice.kind==='signal'&&falseFieldSignal(field,field.position),vault=run.region==='vault'&&choice.kind==='cache',assisted=run.gear.includes('scanner')||(run.companions??[]).includes('fox');
  field.choice=null;
  if(action==='leave'){
   n.lastOutcome=`${choice.title}: 위험을 무시하고 이동을 계속합니다.`;
  }else if(action==='survey'){
   n.stamina=cap(n.stamina-3);
   n.knowledge+=2;earnDuringRun(run,'knowledge',2);
-  if(choice.kind==='cache'){n.scrap+=2;earnDuringRun(run,'scrap',2);run.loot+=2;field.loot+=2;}else{n.clues++;earnDuringRun(run,'clues',1);}
-  n.lastOutcome=`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?' · 고철 +2 · 회수 점수 +2':' · 단서 +1'}.`;
+  if(choice.kind==='cache'){const amount=vault&&assisted?5:2;n.scrap+=amount;earnDuringRun(run,'scrap',amount);run.loot+=amount;field.loot+=amount;}else if(!fake){n.clues++;earnDuringRun(run,'clues',1);}
+  n.lastOutcome=fake?'가짜 신호 판별 완료. 잘못된 신호에 접근하지 않았습니다. 지식 +2 · ST -3':`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?` · 고철 +${vault&&assisted?5:2}`:' · 단서 +1'}.`;
  }else{
-  const win=rand*100>=choice.danger;
+  const win=!fake&&rand*100>=Math.max(5,choice.danger-(vault&&assisted?25:0));
   n.stamina=cap(n.stamina-6);
   if(win){
    const salvage=choice.reward*2;
@@ -739,7 +741,7 @@ export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Mat
   }else{
    const damage=Math.max(3,Math.ceil(choice.danger/7));
    n.mind=cap(n.mind-damage);n.infection=cap(n.infection+Math.ceil(damage/2));
-   n.lastOutcome=`위험 감수 실패. 정신력 -${damage}, 감염 +${Math.ceil(damage/2)}, ST -6. 다음 행동을 선택하세요.`;
+   n.lastOutcome=`${fake?'가짜 신호의 교란에 노출':'위험 감수 실패'}. 정신력 -${damage}, 감염 +${Math.ceil(damage/2)}, ST -6. 다음 행동을 선택하세요.`;
   }
  }
  const sideOutcome=n.lastOutcome;if(tickFieldSpores(n))n.lastOutcome=sideOutcome+' · '+n.lastOutcome;else n.lastOutcome=sideOutcome;

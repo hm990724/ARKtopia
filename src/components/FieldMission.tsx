@@ -11,7 +11,7 @@ import {directionForMove,type WalkDirection} from '@/lib/character-art';
 import type { AnimalId } from "@/lib/sim";
 import {
   adjacentField,
-  fieldVisible,
+  REGION_RULES,fieldVision,fieldVisible,
   fieldLineOfSight,
   fieldWidth,
   fieldHeight,
@@ -61,6 +61,8 @@ type Props = {
   state: V10;
   animalSrc: (id: AnimalId) => string;
   onMove: (index: number, pace: Pace) => void;
+  onListen:(kind:'animal'|'exit'|'threat')=>void;
+  sound?:boolean;
   onRetreat: () => void;
   onHide: () => void;
   onToggleLight: () => void;
@@ -182,7 +184,7 @@ function Status({
 export default function FieldMission({
   state,
   animalSrc,
-  onMove,
+  onMove,onListen,sound=true,
   onRetreat,
   onHide,
   onToggleLight,
@@ -202,6 +204,8 @@ export default function FieldMission({
   const [walking, setWalking] = useState<{ from: number; to: number } | null>(
     null,
   );
+  const acousticRef=useRef<string>('');
+  useEffect(()=>{const a=state.field?.acoustic;if(!a||!sound)return;const key=JSON.stringify(a);if(acousticRef.current===key)return;acousticRef.current=key;try{const ctx=new AudioContext(),osc=ctx.createOscillator(),gain=ctx.createGain(),pan=ctx.createStereoPanner();osc.type=a.kind==='threat'?'triangle':'sine';osc.frequency.value=a.kind==='exit'?660:a.kind==='threat'?100:360;pan.pan.value=a.pan;gain.gain.setValueAtTime(.001,ctx.currentTime);gain.gain.linearRampToValueAtTime(.12*a.strength,ctx.currentTime+.05);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.65);osc.connect(gain);gain.connect(pan);pan.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.7);osc.onended=()=>{void ctx.close()};}catch{}},[state.field?.acoustic,sound]);
   const latestMove=useRef(onMove);latestMove.current=onMove;
   const walkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [facing,setFacing]=useState<WalkDirection>('down');
@@ -281,7 +285,7 @@ export default function FieldMission({
           fieldWidth(state.field),
           state.field.tiles.length,
         ) ||
-        state.field.tiles[at] === "wall"
+        (state.field.tiles[at] === "wall"&&(state.run?.region!=="rail"||state.field.discovered?.includes(at)))
       )
         return;
       event.preventDefault();
@@ -313,12 +317,13 @@ export default function FieldMission({
   const width = fieldWidth(field),
     height = fieldHeight(field);
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
-  const relayBearing = fieldRelayBearing(field, relayLevel);
+  const rule=REGION_RULES[run.region],blind=rule.blind;
+  const relayBearing = blind?null:fieldRelayBearing(field, relayLevel);
   const threatSignal=fieldThreatSignal(field);
   const sporeCells=run.firstTutorial?[]:sporeVisibleCells(field);
   const lightOn=run.gear.includes("flashlight")&&!field.lightOff&&state.flashlight>0;
-  const visionRange = lightOn ? 2 : 1;
-  const threatInSight = !!field.threat && (fieldLineOfSight(field,field.threat.position,visionRange) || !!threatSignal?.warning);
+  const visionRange = fieldVision(run.region,lightOn,run.gear.includes('scanner'),run.scannerLevel??0);
+  const threatInSight = !blind && !!field.threat && (fieldLineOfSight(field,field.threat.position,visionRange) || !!threatSignal?.warning);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
   );
@@ -454,8 +459,9 @@ export default function FieldMission({
           <i style={{ width: `${pressure}%` }} />
         </div>
       </div>
-      {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀"],["normal","걷기"],["fast","달리기"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={!run.gear.includes("flashlight")||state.flashlight<=0||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>손전등 {lightOn?"ON":"OFF"} · {state.flashlight}%</button><small>달리기: 소음 증가 / 소등: 발각 위험 감소</small></div>}
-      {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
+      {!hunt&&<section className="ark-biome-rule"><b>{rule.title}</b><span>{rule.description}</span><div className="ark-acoustic-actions">{(['animal','exit','threat'] as const).map((kind,i)=><button key={kind} disabled={!!walking||!!field.choice||!!field.combat||state.stamina<3||(kind==='animal'&&field.encountered)||(kind==='threat'&&!field.threat)} onClick={()=>{setNotice('');onListen(kind)}}><Radio size={14}/> {['생체 청음','귀환 유도음','위협 청음'][i]}</button>)}</div>{field.acoustic&&<div className="ark-acoustic-result" role="status"><b>{field.acoustic.kind==='animal'?'생체':field.acoustic.kind==='exit'?'귀환':'위협'} · {field.acoustic.direction} · {field.acoustic.range}</b><span>{field.steps===field.acoustic.step?'최근 청음':'이동 전 기록 · 다시 청음 권장'}</span><div>{Array.from({length:8},(_,i)=><i key={i} style={{height:5+i*2,opacity:field.acoustic!.strength*8>=i+1?1:.16}}/>)}</div></div>}</section>}
+      {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀"],["normal","걷기"],["fast","달리기"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={blind||!run.gear.includes("flashlight")||state.flashlight<=0||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>{blind?"완전 암전":`손전등 ${lightOn?"ON":"OFF"} · ${state.flashlight}%`}</button><small>달리기: 소음 증가 / 소등: 발각 위험 감소</small></div>}
+      {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{blind&&!threatSignal.warning?"방향은 위협 청음으로 확인":`${threatSignal.direction} · ${threatSignal.distance}`} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
       {field.originFragments&&Object.keys(field.originFragments).length>0&&<aside className="ark-fragment-notice">기록 조각 신호 · 이 지역 미회수 {Object.keys(field.originFragments).length}개 · 밝혀진 조각 칸으로 이동해 확보</aside>}
       {!run.firstTutorial&&!field.combat&&sporeCells.some(i=>fieldVisible(field,i,visionRange))&&<aside className="ark-spore-warning" role="status"><b>감염성 포자 확산</b><span>{fieldSporeNearby(field)?'오염원 인접 · 이탈 권장':'오염 구역 확인'} · 시간이 지나면 인접 칸으로 증식 · {run.gear.includes('filter')?'필터 장착':'필터 없음'}</span></aside>}
       {hunt && (field.threat||sporeCells.length>0) && !field.combat && <div className="ark-hunt-perimeter" aria-label="포획 중 주변 탐사 지도"><div><b>주변 경계 / 실시간</b><small>붉은 개체: MUTANT · 주황색: 확인한 포자</small></div><div className="ark-perimeter-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=><i key={i} className={(fieldLineOfSight(field,i,visionRange)?'lit ':'')+(tile==='wall'&&fieldVisible(field,i)?'wall ':'')+(sporeCells.includes(i)&&fieldVisible(field,i,visionRange)?'ark-spore-mini':'')}/>)}<span className="ark-perimeter-player" style={{left:`${(field.position%width+.5)/width*100}%`,top:`${(Math.floor(field.position/width)+.5)/height*100}%`}} aria-label="관리자 위치"/>{field.threat&&<span className="ark-perimeter-enemy" style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,opacity:threatInSight?1:0}} aria-hidden={!threatInSight}><img src="/assets/animals/mutant_mutant.png" alt="추격 개체"/></span>}</div></div>}
@@ -1033,7 +1039,7 @@ export default function FieldMission({
                 </div>
                 <div
                   className={
-                    "v33-route-map v57-field-map v33-biome-" + run.region
+                    "v33-route-map v57-field-map v33-biome-" + run.region+(blind?" ark-blind-field":"")
                   }
                   style={
                     {
@@ -1054,11 +1060,7 @@ export default function FieldMission({
                     const visible = fieldVisible(
                         field,
                         i,
-                        run.gear.includes("scanner")
-                          ? 3 + Math.floor((run.scannerLevel ?? 0) / 2)
-                          : lightOn
-                            ? 2
-                            : 1,
+                        visionRange,
                       ),
                       lit = fieldLineOfSight(field,i,visionRange),
                       here = field.position === i,
@@ -1070,13 +1072,13 @@ export default function FieldMission({
                           width,
                           field.tiles.length,
                         ) &&
-                        tile !== "wall" &&
+                        (tile !== "wall" || (blind&&!visible)) &&
                         !field.choice && !field.combat;
                     return (
                       <button
                         type="button"
                         key={i}
-                        disabled={!walk || !visible || !!walking}
+                        disabled={!walk || (!visible&&!blind) || !!walking}
                         className={
                           "v33-route-cell " +
                           (!visible ? "v33-route-fog" : !lit ? " ark-field-remembered" : " ark-field-lit") +
@@ -1086,7 +1088,7 @@ export default function FieldMission({
                             : "") +
                           (here ? " v33-route-current" : "") +
                           " v33-land-" +
-                          tile
+                          (visible?tile:"unknown")
                         }
                         onClick={() => walkTo(i)}
                         title={

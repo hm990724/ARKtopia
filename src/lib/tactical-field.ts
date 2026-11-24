@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'};}originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -24,6 +24,22 @@ const hash=(seed:number)=>{let v=(seed^0x9e3779b9)>>>0;v^=v<<13;v^=v>>>17;v^=v<<
 const seedFor=(day:number,region:RegionId)=>region.split('').reduce((n,c)=>hash(n+c.charCodeAt(0)),day*313+19);
 const distance=(a:number,b:number,width:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
 export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({garden:{width:7,height:5},conservatory:{width:8,height:6},rail:{width:9,height:6},archive:{width:10,height:7},vault:{width:11,height:8},tunnels:{width:12,height:9}}[region]);
+export const REGION_RULES:Record<RegionId,{title:string;description:string;blind:boolean;sporeRate:number;sporeWake:number}> = {
+ garden:{title:'기본 수색',description:'발자국과 시야를 따라 생체 신호를 추적한다.',blind:false,sporeRate:.30,sporeWake:9},
+ conservatory:{title:'온실 · 급속 오염',description:'포자가 빠르게 번진다. 바이오필터와 빠른 귀환이 유리하다.',blind:false,sporeRate:.55,sporeWake:6},
+ rail:{title:'폐역 · 완전 암전',description:'조명은 무용하다. 청음의 방향과 강도로 길을 찾아라. 소음이 적을수록 안전하다.',blind:true,sporeRate:.30,sporeWake:9},
+ archive:{title:'관측소 · 혼선 신호',description:'정상 기록과 가짜 신호가 뒤섞인다. 스캐너나 기록관으로 판별할 수 있다.',blind:false,sporeRate:.30,sporeWake:9},
+ vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:.30,sporeWake:9},
+ tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:.45,sporeWake:7}
+};
+export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?0:region==='tunnels'?(scanner?2+Math.floor(level/2):1):scanner?3+Math.floor(level/2):light?2:1;}
+export function acousticBearing(f:FieldState,kind:'animal'|'exit'|'threat'){
+ const target=kind==='threat'?f.threat?.position:kind==='exit'?f.exitIndex:f.encountered?undefined:f.wildlifeIndex;
+ if(target===undefined||target<0)return null;const w=fieldWidth(f),dx=target%w-f.position%w,dy=Math.floor(target/w)-Math.floor(f.position/w),d=Math.abs(dx)+Math.abs(dy);
+ return {step:f.steps,serial:(f.acoustic?.serial??0)+1,direction:d===0?'현재 위치':(dy<0?'북':dy>0?'남':'')+(dx<0?'서':dx>0?'동':'')+'쪽',range:d<=2?'근거리':d<=5?'중거리':'원거리',pan:dx===0?0:dx<0?-.85:.85,strength:Math.max(.12,1-d/18),kind};
+}
+export function metalFloor(f:FieldState,index:number){return (f.region==='rail'||f.region==='tunnels')&&hash((f.sortie??0)*7919+index*313)%100<30;}
+export function falseFieldSignal(f:FieldState,index:number){return f.region==='archive'&&hash((f.sortie??0)*5119+index*313)%100<42;}
 export const fieldWidth=(f:FieldState)=>f.width??FIELD_COLUMNS;
 export const fieldHeight=(f:FieldState)=>f.height??FIELD_ROWS;
 export const adjacentField=(a:number,b:number,width=FIELD_COLUMNS,size=FIELD_COLUMNS*FIELD_ROWS)=>a>=0&&a<size&&b>=0&&b<size&&distance(a,b,width)===1;
@@ -78,11 +94,11 @@ export function advanceSporeSpread(f:FieldState,roll?:()=>number):number|null{
  const all=[...new Set([...sources,...s.cells])],w=fieldWidth(f);
  const near=all.filter(i=>distance(i,f.position,w)<=1);
  // Activation applies to the FOLLOWING action, not the action that first passes it.
- const previous=s.turn>=9?all:[...s.active,...s.cells];
+ const rule=REGION_RULES[f.region??'garden'];const previous=s.turn>=rule.sporeWake?all:[...s.active,...s.cells];
  s.active=[...new Set([...s.active,...near])];
  if(s.turn<=3||!previous.length)return null;
  let salt=0;const random=roll??(()=>hash(s.turn*7919+(f.sortie??0)*313+f.position*101+s.cells.length*43+(++salt)*11239)/4294967296);
- if(random()>=.30)return null;
+ if(random()>=rule.sporeRate)return null;
  const candidates=[...new Set(previous.flatMap(i=>[i-w,i+w,i-1,i+1].filter(j=>adjacentField(i,j,w,f.tiles.length)&&f.tiles[j]!=='wall'&&f.tiles[j]!=='exit'&&!all.includes(j))))];
  if(!candidates.length)return null;
  const at=candidates[Math.floor(random()*candidates.length)%candidates.length];s.cells.push(at);return at;
@@ -177,7 +193,7 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
  const threatCandidates=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==start&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=5&&(Math.floor(i/width)===startingRow||i%width===width-1)?[i]:[]);
  const fallback=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=3?[i]:[]);const pool=threatCandidates.length?threatCandidates:fallback;const threatIndex=pool.length?pool[hash(seed+2017)%pool.length]:-1;
- return {tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
