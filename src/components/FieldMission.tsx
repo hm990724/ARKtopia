@@ -196,6 +196,7 @@ export default function FieldMission({
   const [notice, setNotice] = useState("");
   const [searchFlash, setSearchFlash] = useState<number | null>(null);
   const [netDrag, setNetDrag] = useState<{ x: number; y: number } | null>(null);
+  const dragStart=useRef<number|null>(null);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [walking, setWalking] = useState<{ from: number; to: number } | null>(
     null,
@@ -392,7 +393,7 @@ export default function FieldMission({
       window.setTimeout(() => setSearchFlash((x) => (x === i ? null : x)), 440);
     }
     onHunt({ type: mode, cell: i, setting: huntSetting, method:mode==='net'?captureMethod:undefined, aim:mode==='net'&&captureMethod==='net'?0.5:undefined });
-    if (mode !== "search") setMode("search");
+    if (mode !== "search" && !(mode==='net'&&captureMethod==='calm')) setMode("search");
   }
   function dropNet(x: number, y: number) {
     const el = mapRef.current;
@@ -402,11 +403,11 @@ export default function FieldMission({
       setNotice("그물을 지도 안쪽에 놓아주세요.");
       return;
     }
-    const col = Math.min(size-1, Math.floor(((x - r.left) / r.width) * size)),
-      row = Math.min(size-1, Math.floor(((y - r.top) / r.height) * size));
-    const cell = row * size + col;
+    const tile=document.elementFromPoint(x,y)?.closest<HTMLButtonElement>('button[data-hunt-cell]');
+    const cell=tile&&el.contains(tile)?Number(tile.dataset.huntCell):Array.from(el.querySelectorAll<HTMLButtonElement>('button[data-hunt-cell]')).findIndex(node=>{const b=node.getBoundingClientRect();return x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom});
+    if(cell<0||cell>=size*size){setNotice('격자 칸 내부로 그물을 놓아주세요.');return;}
     setSearchFlash(cell);
-    onHunt({ type: "net", cell,method:'net',aim:aimStarted===null?0.5:Math.max(0,1-Math.abs(((performance.now()-aimStarted)%1500)/750-1)) });
+    onHunt({ type: "net", cell,method:'net',aim:dragStart.current===null?0.5:Math.max(0,1-Math.abs(((performance.now()-dragStart.current)%1500)/750-1)) });
     setMode("search");
   }
   const trailCells = hunt ? freshTrailCells(hunt) : [];
@@ -739,6 +740,46 @@ export default function FieldMission({
             <span>설정을 고른 뒤 광원 또는 먹이 표식을 지도에 놓으세요. 설치 행동은 1회 소모됩니다.</span>
           </div>}
               <div className="v33-map-frame">
+                <div className="capture-net-dock">              <button
+                type="button"
+                className="v69-drag-net"
+                disabled={hunt.outcome !== "playing" || hunt.actions <= 0}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  dragStart.current=performance.now();setNetDrag({ x: event.clientX, y: event.clientY });setCaptureMethod('net');setMode('net');setAimStarted(dragStart.current);
+                }}
+                onPointerMove={(event) => {
+                  if (dragStart.current!==null)
+                    setNetDrag({ x: event.clientX, y: event.clientY });
+                }}
+                onPointerUp={(event) => {
+                  if (dragStart.current!==null) {
+                    dropNet(event.clientX, event.clientY);
+                    dragStart.current=null;setNetDrag(null);setAimStarted(null);
+                  }
+                }}
+                onPointerCancel={() => {dragStart.current=null;setNetDrag(null);setAimStarted(null)}}
+                onClick={() => {setCaptureMethod('net');setMode("net")}}
+              >
+                <Target size={19} /> 그물 잡고 지도에 드래그{" "}
+                <small>마우스·터치 · 65% 이상에 놓기 / 클릭은 정확한 칸</small>
+              </button>
+              {netDrag && (
+                <div
+                  className="v69-net-cursor"
+                  aria-hidden="true"
+                  style={{ left: netDrag.x, top: netDrag.y }}
+                >
+                  ◉
+                </div>
+              )}
+              {notice && (
+                <p className="v69-net-feedback" role="status">
+                  {notice}
+                </p>
+              )}
+</div>
                 <div className="v33-map-overline">
                   <span>
                     <i /> SECTOR {run.region.toUpperCase()} · THICKET SCAN
@@ -817,6 +858,7 @@ export default function FieldMission({
                         }
                         type="button"
                         key={i}
+                        data-hunt-cell={i}
                         onClick={() => tap(i)}
                         disabled={hunt.outcome !== "playing"}
                         aria-label={`${Math.floor(i / size) + 1}행 ${(i % size) + 1}열 · ${label}${obj ? " · " + obj.kind + " 설치됨" : ""}`}
@@ -1364,45 +1406,6 @@ export default function FieldMission({
                     </button>
                   ))}
               </div>
-              <button
-                type="button"
-                className="v69-drag-net"
-                disabled={hunt.outcome !== "playing" || hunt.actions <= 0}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  setNetDrag({ x: event.clientX, y: event.clientY });setCaptureMethod('net');setAimStarted(performance.now());
-                }}
-                onPointerMove={(event) => {
-                  if (netDrag)
-                    setNetDrag({ x: event.clientX, y: event.clientY });
-                }}
-                onPointerUp={(event) => {
-                  if (netDrag) {
-                    dropNet(event.clientX, event.clientY);
-                    setNetDrag(null);setAimStarted(null);
-                  }
-                }}
-                onPointerCancel={() => {setNetDrag(null);setAimStarted(null)}}
-                onClick={() => {setCaptureMethod('net');setMode("net")}}
-              >
-                <Target size={19} /> 그물 잡고 지도에 드래그{" "}
-                <small>마우스·터치 · 65% 이상에 놓기 / 클릭은 정확한 칸</small>
-              </button>
-              {netDrag && (
-                <div
-                  className="v69-net-cursor"
-                  aria-hidden="true"
-                  style={{ left: netDrag.x, top: netDrag.y }}
-                >
-                  ◉
-                </div>
-              )}
-              {notice && (
-                <p className="v69-net-feedback" role="status">
-                  {notice}
-                </p>
-              )}
               {mode !== "search" && (
                 <button
                   type="button"

@@ -80,12 +80,12 @@ test('hunt earned evidence, pointer net capture and pending save survive reload'
  await page.reload();await page.getByRole('button',{name:'탐사',exact:true}).click();
  await expect(page.locator('.v71-trail-zone')).toHaveCount(4);
  // Choose only from visible four-cell evidence, without reading hidden position.
- const target=page.locator('.v71-trail-zone').first();await target.scrollIntoViewIfNeeded();
+ const target=page.locator('.v71-trail-zone').first();
  const net=page.locator('.v69-drag-net');await net.scrollIntoViewIfNeeded();
  const a=await net.boundingBox(),b=await target.boundingBox();
  await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();
  await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:12});await page.mouse.up();
- const after=await state(page);expect(after.pending||after.capture?.hunt.turn===6).toBeTruthy();
+ await expect.poll(async()=>{const after=await state(page);return !!after.pending||after.capture?.hunt.turn===6}).toBe(true);const after=await state(page);
  if(after.pending){await page.reload();expect((await state(page)).pending).toBe('rabbit')}
  expect(errors).toEqual([]);
 });

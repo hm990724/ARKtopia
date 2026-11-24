@@ -42,7 +42,7 @@ export function observationAge(state:HuntState,cell:number):number{
 }
 
 export type HuntState={
- version:35;trap?:{cell:number;life:number}|null;calmProgress?:number;captureMethod?:CaptureMethod;size?:6|8;trail?:{cell:number;turn:number}[];species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
+ version:35;trap?:{cell:number;life:number;armedTurn?:number}|null;calmProgress?:number;captureMethod?:CaptureMethod;size?:6|8;trail?:{cell:number;turn:number}[];species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
  // Hidden except in searched clearings; the creature moves after an action.
  position:number;previous:number;footprints:number[];shaking:number[];
  terrain:Terrain[];objects:HuntObject[];revealed:boolean[];
@@ -141,7 +141,7 @@ export function normalizeHunt(raw:HuntState):HuntState {
  const previousBase=['wolf','lynx','mutant','chimera'].includes(raw.species)?9:10;
  const upgradedMax=!raw.tutorial&&raw.maxActions<20?20+Math.max(0,raw.maxActions-previousBase):raw.maxActions;
  const actionBonus=upgradedMax-raw.maxActions;
- return {...raw,version:35,trap:raw.trap&&Number.isInteger(raw.trap.cell)&&raw.trap.cell>=0&&raw.trap.cell<cells&&raw.trap.life>0?{cell:raw.trap.cell,life:Math.min(6,raw.trap.life)}:undefined,calmProgress:raw.calmProgress?Math.max(0,Math.min(3,raw.calmProgress)):undefined,size:size as 6|8,searchedAt,observations,lastSearch,maxActions:upgradedMax,actions:Math.min(upgradedMax,raw.actions+actionBonus),scanZone:Number.isInteger(raw.scanZone)&&raw.scanZone!>=0&&raw.scanZone!<=3?raw.scanZone:null,scanTurn:Number.isFinite(raw.scanTurn)?raw.scanTurn:undefined};
+ return {...raw,version:35,trap:raw.trap&&Number.isInteger(raw.trap.cell)&&raw.trap.cell>=0&&raw.trap.cell<cells&&raw.trap.life>0?{cell:raw.trap.cell,life:Math.min(6,raw.trap.life),armedTurn:raw.trap.armedTurn??raw.turn-1}:undefined,calmProgress:raw.calmProgress?Math.max(0,Math.min(3,raw.calmProgress)):undefined,size:size as 6|8,searchedAt,observations,lastSearch,maxActions:upgradedMax,actions:Math.min(upgradedMax,raw.actions+actionBonus),scanZone:Number.isInteger(raw.scanZone)&&raw.scanZone!>=0&&raw.scanZone!<=3?raw.scanZone:null,scanTurn:Number.isFinite(raw.scanTurn)?raw.scanTurn:undefined};
 }
 function relocateOnCreate(seed:number,species:AnimalId,size:number):{old:number;now:number}{const old=size+Math.floor(randomAt(seed,0,1)*(size*(size-2)));const options=rangeChoices(old,HUNT_TRAITS[species].speed,size);return {old,now:options[Math.floor(randomAt(seed,0,2)*options.length)]??old}}
 function rangeChoices(at:number,steps:number,size=8){const [x,y]=coord(at,size);const out:number[]=[];for(let dy=-steps;dy<=steps;dy++)for(let dx=-steps;dx<=steps;dx++){if(Math.abs(dx)+Math.abs(dy)!==steps)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&nx<size&&ny>=0&&ny<size)out.push(ny*size+nx)}return out;}
@@ -220,7 +220,7 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
  if(action.type==='net'&&method==='cage'){
   const target=action.cell!;
   if(current.trap||current.terrain[target]==='water'||current.objects.some(o=>o.cell===target&&o.kind==='barrier'))return unchanged;
-  current.trap={cell:target,life:6};text='유인 우리 설치 · 6턴 동안 작동합니다. 선호하는 자극을 가까이 배치하고 기다리세요.';kind='hint';
+  current.trap={cell:target,life:6,armedTurn:current.turn+1};text='유인 우리 설치 · 6턴 동안 작동합니다. 선호하는 자극을 가까이 배치하고 기다리세요.';kind='hint';
  }else if(action.type==='net'&&method==='calm'){
   const target=action.cell!,distance=huntDistance(target,current.position,size);
   const observed=Object.hasOwn(current.searchedAt,String(current.position))||(current.lastSearch?.found&&current.turn-current.lastSearch.turn<=1);
@@ -308,11 +308,11 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
  if(current.trap){
   const trap=current.trap;
   const lure=current.objects.some(o=>o.kind!=='barrier'&&o.life>0&&huntDistance(o.cell,trap.cell,size)<=2&&rate(current,o.kind)>0);
-  if((next===trap.cell||from===trap.cell)&&(lure||current.fear<=35)){
+  if(current.turn>(trap.armedTurn??0)&&(next===trap.cell||from===trap.cell)&&(lure||current.fear<=35)){
    current.selectedCell=trap.cell;current.trap=null;
    return capture('개체가 유인 우리 안으로 들어왔습니다. 자동 잠금으로 안전하게 확보했습니다.','cage');
   }
-  current.trap=trap.life>1?{...trap,life:trap.life-1}:null;
+  current.trap=current.turn===(trap.armedTurn??-1)?trap:trap.life>1?{...trap,life:trap.life-1}:null;
   if(!current.trap)text+=' · 유인 우리 작동 시간이 끝났습니다.';
  }
  // Listening is an informed alternative to blind clicking. The animal has ALREADY
