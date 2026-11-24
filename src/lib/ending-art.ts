@@ -5,7 +5,7 @@ export const ENDING_ART: ReadonlyArray<{ prefix: string; file: string; label: st
   { prefix: '영원한 실험', file: 'ending_eternal_experiment_finale.png', label: '임종 직전 관리자와 냉정한 인수인계 시스템' },
   { prefix: '에덴', file: 'ending_eden_finale.png', label: '임종을 맞은 관리자와 인공 낙원의 첫 새벽' },
   { prefix: '방주의 씨앗', file: 'ending_seed_ark_finale.png', label: '젊은 관리자의 마지막 보고를 이어받는 EVE' },
-  { prefix: '마지막 동물원', file: 'ending_last_zoo_finale.png', label: '보호구역을 바라보는 관리자와 EVE의 작별' },
+  { prefix: '마지막 동물원', file: 'ending_last_zoo_finale.png', label: '복원된 푸른 들판의 나무 아래에서 눈을 감는 관리자' },
   { prefix: '제000번 우리', file: 'ending_subject_000_choice.png', label: '자신의 정체성을 직접 선택하는 젊은 관리자와 EVE' },
   { prefix: '침묵의 자동화', file: 'ending_silent_automation_finale.png', label: '감정 없이 자동 운영되는 시설의 EVE' },
   { prefix: '흩어진 이름들', file: 'ending_scattered_names_finale.png', label: '기록 보관실에서 이름과 흔적을 복원하는 EVE' },
