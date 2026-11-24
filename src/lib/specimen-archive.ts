@@ -14,7 +14,7 @@ export type ProtocolStepRecord={stage:number;prompt:string;chosen:string;expecte
 export type ProtocolAttempt={day:number;quality:number;mode:'gentle'|'force';result:string;steps:ProtocolStepRecord[]};
 export type SpecimenDossier={key:string;species:AnimalId;name:string;firstDay:number;lastDay:number;status:ArchiveStatus;captureMethod:string;observedTraits:number[];records:ArchiveRecord[];maxStress:number;maxMemory:number;protocolAttempts?:ProtocolAttempt[]};
 export type ArchiveGift='tracking'|'power'|'serum';
-export type ArchiveState={version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;sampleSpecies?:Partial<Record<AnimalId,number>>;lastShipmentSpecies?:AnimalId;processedKeys:string[];dispatches:number;rewardPolicyVersion?:number;};
+export type ArchiveState={careResearch?:Partial<Record<AnimalId,number>>;version:37;serials:Partial<Record<AnimalId,number>>;entries:Record<string,SpecimenDossier>;knownTraits:Partial<Record<AnimalId,number[]>>;fieldJournal:Partial<Record<AnimalId,string[]>>;revealed:boolean;revealPending:boolean;revealSeen:boolean;pendingGifts:number;giftHistory:ArchiveGift[];bonuses:{tracking:boolean;power:boolean};samples:number;sampleSpecies?:Partial<Record<AnimalId,number>>;lastShipmentSpecies?:AnimalId;processedKeys:string[];dispatches:number;rewardPolicyVersion?:number;};
 const prefixes:Record<AnimalId,string>={rabbit:'RB',fox:'FX',deer:'DR',owl:'OW',wolf:'WF',crow:'CR',otter:'OT',lynx:'LX',axolotl:'AX',moth:'MT',mutant:'MX',chimera:'CH',specter:'SP'};
 export const emptyArchive=():ArchiveState=>({version:37,serials:{},entries:{},knownTraits:{},fieldJournal:{},revealed:false,revealPending:false,revealSeen:false,pendingGifts:0,giftHistory:[],bonuses:{tracking:false,power:false},samples:0,processedKeys:[],dispatches:0,rewardPolicyVersion:2});
 export function archiveOf(s:V10):ArchiveState{return s.archive??emptyArchive();}
@@ -60,6 +60,7 @@ export function ensureArchive(s:V10):ArchiveState{
  }
  return state;
 }
+export function recordCareResearch(s:V10,id:AnimalId){const archive=ensureArchive(s);const ranks=archive.careResearch??={};const before=ranks[id]??0;ranks[id]=Math.min(3,before+1);if(ranks[id]>before)log(s,'비침습 행동 연구',`${s.animals.find(x=>x.id===id)?.name??id} · 종별 돌봄 연구 ${ranks[id]}/3 · 다음 현장 포획에 적용됩니다.`,'good');return ranks[id];}
 export function noteSpeciesTrait(s:V10,species:AnimalId,index:number):void{
  if(!Number.isInteger(index)||index<0||index>2)return;
  const archive=ensureArchive(s);const found=archive.knownTraits[species]??[];
