@@ -99,7 +99,7 @@ function StoryConversation({state,lines,index,shown,previousTalk,advanceTalk,rev
    </div>
    <div className="v44-story-controls"><span className="v44-story-progress" aria-label={`대화 진행 ${index+1}/${lines.length}`}><i style={{width:`${(index+1)/lines.length*100}%`}}/></span><div className="v44-story-buttons"><label className="story-speed-control">대화 속도 <select aria-label="대화 속도" value={speed} onChange={event=>onSpeed(Number(event.target.value))}><option value={65}>느리게</option><option value={37}>보통</option><option value={16}>빠르게</option><option value={0}>즉시</option></select></label><button type="button" onClick={previousTalk} disabled={index===0}><ChevronLeft size={16}/> 이전</button><button type="button" onClick={revealTalk} disabled={shown>=active.text.length}><Zap size={15}/> 글 즉시 펼치기</button><button type="button" className="is-next" onClick={advanceTalk}>{index===lines.length-1?'대화 완료':'다음 대사'} <ChevronRight size={17}/></button><button type="button" className="is-skip" onClick={skipTalk}>전체 스킵</button></div></div>
   </div>
- </div>
+ </div>,document.body);
 }
 
 const talkIntro:Talk[]=[
@@ -275,7 +275,7 @@ function EndingArtwork({ending,state}:{ending:string;state:V10}){
  return <div className={'ending-art-display'+(failed?' is-fallback':'')}>
   {!failed?<img key={`${ending}-${imageIndex}`} src={artwork[Math.min(imageIndex,artwork.length-1)]} alt={entry.label} onError={()=>{if(imageIndex<artwork.length-1)setImageIndex(v=>v+1);else setFailed(true)}}/>:<div className="ending-art-fallback"><span>ARK // END RECORD</span><strong>{ending.split(' — ')[0]}</strong><small>엔딩 장면을 불러오지 못했습니다. 기록과 결말은 보존되어 있습니다.</small></div>}
   {!failed&&sanctuaryEnding&&<div className="ending-habitat-survivors" aria-label="보호구역에 실제로 살아 있는 개체">{livingAnimals.map(animal=><img className="ending-habitat-survivor" data-animal-id={animal.id} key={animal.id} src={animalArt(animal)} alt={`${animal.name} · 보호구역 생존`}/>)}{state.originZero?.cat==='shelter'&&<img className="ending-habitat-survivor" data-animal-id="m00" key="m00" src={animalSprite('m00')} alt="M-00 · 보호구역 생존"/>}</div>}
- </div>,document.body);
+ </div>
 }
 function Bar({v,color='#f39cba'}:{v:number;color?:string}){return <div className="vbar"><span style={{width:`${cap(v)}%`,background:color}}/></div>}
 function MiniStat({name,value,color,points=false}:{name:string;value:number;color?:string;points?:boolean}){return <div className="mini-stat"><span>{name}</span><Bar v={value} color={color}/><b>{Math.round(value)}{points?'/100':'%'}</b></div>}
