@@ -45,26 +45,30 @@ function play(origin,seed){
    if(state.pending){const beforeCount=state.animals.filter(animal=>animal.alive).length;const rescued=rescueChoice(state,'secure',Math.random());if(rescued===state)throw new Error(`${origin}: rescue choice refused on DAY ${state.day}`);state=rescued;if(state.animals.filter(animal=>animal.alive).length>beforeCount)captures++}
    if(state.run)throw new Error(`${origin}: expedition did not settle on DAY ${state.day}`);
   }
+  // A survivable campaign must deliberately fund the new recurring purifier/fuel upkeep.
+  // Purchasing these supplies is a real credit trade-off, not a test-only resource grant.
+  if(state.filters<2&&state.credits>=170)state=purchase(state,'filter');
+  if(state.fuel<2&&state.credits>=110)state=purchase(state,'fuel');
   if(state.animals.some(a=>a.alive)&&state.food<2&&state.credits>=90)state=purchase(state,'food');
   // Care for the current enclosure, then keep either the failing generator or damaged facility online.
   const vulnerable=state.animals.find(a=>a.alive&&(a.hunger>55||a.stress>55||a.hp<55));
   if(vulnerable&&state.ap>0&&state.food>0)state=doBase(state,'feed');
-  if(state.infection>=40&&state.filters>0&&state.ap>0)state=doBase(state,'decontam');
+  if(state.infection>=26&&state.filters>1&&state.ap>0)state=doBase(state,'decontam');
   if(state.power<52&&state.parts>0&&state.ap>0)state=doBase(state,'recharge');
-  else if(state.facility<52&&state.parts>0&&state.ap>0)state=doBase(state,'repair');
+  if(state.facility<52&&state.parts>0&&state.ap>0)state=doBase(state,'repair');
   state=resolveBlockers(state);
   const night=state.threat>=30&&state.power>=28?'shield':state.mind<72&&state.power>=11?'rest':state.power>=11?'rest':'standby';
   const before=state;state=finishDay(state,night);
   assert.equal(state.day,before.day+1,`${origin} day transition ${before.day}`);
   assert.ok(state.phase==='day'||state.phase==='finale',`${origin} remains in playable campaign`);
-  log.push({day:state.day,night,sortie:shouldSortie?before.day:null,power:state.power,facility:state.facility,threat:state.threat,infection:state.infection,morale:state.mind,food:state.food,parts:state.parts,flashlight:state.flashlight,animals:state.animals.filter(a=>a.alive).length,event:state.lastEvent});
+  log.push({day:state.day,night,sortie:shouldSortie?before.day:null,power:state.power,facility:state.facility,threat:state.threat,infection:state.infection,morale:state.mind,food:state.food,parts:state.parts,flashlight:state.flashlight,filters:state.filters,fuel:state.fuel,credits:state.credits,animals:state.animals.filter(a=>a.alive).length,event:state.lastEvent});
  }
  assert.equal(state.day,13,`${origin} reaches DAY 13`);
  assert.equal(sorties,3,`${origin} completes all planned sorties`);
  assert.ok(captures>=1,`${origin} secures at least one specimen`);
  assert.ok(state.animals.some(a=>a.alive),`${origin} preserves a living animal`);
  assert.ok(state.power>0&&state.facility>0,`${origin} avoids a total power/facility collapse`);
- assert.ok(state.infection<80,`${origin} avoids the critical infection band`);
+ assert.ok(state.infection<80,`${origin} avoids the critical infection band: ${JSON.stringify(log)}`);
  return {origin,seed:seed>>>0,day:state.day,phase:state.phase,sorties,captures,metrics:{power:state.power,facility:state.facility,threat:state.threat,infection:state.infection,morale:state.mind,food:state.food,parts:state.parts,flashlight:state.flashlight,animals:state.animals.filter(a=>a.alive).length},log};
 }
 
