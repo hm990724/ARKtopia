@@ -72,7 +72,7 @@ export function pickOriginTrace(s:V10,frame:number):V10{
  const n=copy(s) as V10;const d=o(n);const point=catTrackFrames[d.trackProgress];
  if(frame!==point.answer){d.wrongTracks++;n.threat=cap(n.threat+3);return report(n,'영상 경로 불일치','화면의 움직임이 끊어졌다. 흔적은 아직 남아 있다. 위협 +3.','bad');}
  d.trackProgress++;
- if(d.trackProgress===3){d.cat='captured';return report(n,'시초가 아니었다 · M-00 포획','시초라고 의심한 괴물은 별개의 개체가 아니었다. 겹친 그림자와 깨진 CCTV가 작은 검은 고양이를 거대 변이체처럼 보이게 했다. 오른쪽 귀 흠집과 흰 털 한 가닥이 M-00 기록과 일치한다. 고양이가 유출을 일으켰다는 증거는 없다.');}
+ if(d.trackProgress===3){d.cat='captured';return report(n,'시초가 아니었다 · M-00 포획','이번 CCTV에서 시초라고 의심한 괴물은 별개의 개체가 아니었다. 겹친 그림자와 깨진 CCTV가 작은 검은 고양이를 거대 변이체처럼 보이게 했다. 외곽을 배회하는 특수 변이체 MUTANT와 M-00은 서로 다른 생명체다. 오른쪽 귀 흠집과 흰 털 한 가닥이 M-00 기록과 일치한다. 고양이가 유출을 일으켰다는 증거는 없다.');}
  return report(n,'영상 경로 확보',`감시 기록 ${d.trackProgress}/3 일치. 다음 카메라 흔적으로 이동한다.`,'good');
 }
 export function analyzeOriginCat(s:V10):V10{

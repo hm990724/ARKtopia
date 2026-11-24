@@ -27,7 +27,7 @@ const arrivals=['rabbit','fox','deer','wolf','eve'];
 for(const id of arrivals){
  const [canonical,legacy]=cinematicArtworkCandidates(id);
  assert.ok(canonical.startsWith('/assets/cinematics/origin-zero/story/SCN_'),id+' canonical art path');
- assert.ok(fs.existsSync(path.join(__dirname,'../public',legacy)),id+' legacy cinematic must be playable');
+ if(legacy)assert.ok(fs.existsSync(path.join(__dirname,'../public',legacy)),id+' legacy cinematic must be playable');else assert.ok(fs.existsSync(path.join(__dirname,'../public',canonical)),id+' canonical cinematic must be playable');
 }
 assert.equal(ORIGIN_ZERO_CANONICAL_ENDING_ART.length,8);
 for(const item of ORIGIN_ZERO_CANONICAL_ENDING_ART){

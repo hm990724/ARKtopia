@@ -1,0 +1,11 @@
+# Single Mutant and story art integration
+
+- The special Mutant always uses `public/assets/animals/mutant_mutant.png`. The uncanny variant is intentionally removed. It is one roaming individual; the existing day/region capture route remains, but a secured, transferred or archived Mutant cannot spawn again. Stationary environmental contamination challenges remain separate from the roaming creature.
+- M-00's false lead remains an optical/CCTV distortion; M-00 is an ordinary black cat, not the hostile Mutant.
+- SCN_08 occurs at the first actual mobile encounter and is saved across reload. Place the new CG at `public/assets/cinematics/origin-zero/story/SCN_08_first_roaming_threat.png`. No new illustration was generated in this change; missing CGs use the original matching art or text.
+- SCN_09 is optional and never a main-story gate. Available only in mobile Mutant combat, round 2+, integrity <=35, with a living Wolf companion. The player can cancel or retreat normally. The scene uses the existing `staff-terminations/wolf/scene.webp`. Confirmed sacrifice is permanent, invokes the shared once-only grief/retirement path, and records a distinct cause. Zero-morale collapse still uses `wolf_identity_collapse.png`.
+- Story routes 01–19 are centralized in `src/lib/story-art.ts`. The opening, crew arrivals, evidence-gap event, field scenes, M-00 discovery/inspection, branch archive, recovered photos, EVE's actual independent choice, recall and Seed of the Ark farewell are wired to actual game conditions. SCN_19 should depict the administrator's farewell; EVE continues the work in this ending.
+- The two tracked double-extension story PNG names were corrected without re-encoding their content. Seven original origin-zero root images remain supported fallbacks or distinct flashbacks. Remove them only after the corresponding replacement is verified; the protected staff-terminations files are untouched.
+
+## Verification
+Added regression fixtures for identity, save/load, optional sacrifice and collapse, plus asset paths. The remote editing environment cannot execute npm/browser tests; run `npm run test:roaming-mutant`, `npm run typecheck`, `npm run test:all`, and `npm run build` on a checkout before merge. A newly painted SCN_08 and other missing story CGs are still user-supplied assets.

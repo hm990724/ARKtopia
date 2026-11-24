@@ -2,18 +2,18 @@ import type {V10} from './game-v10';
 import {cap,log} from './sim';
 import {canWolfLastStand,sacrificeWolf} from './crew';
 export type FieldEnemy='slime'|'echo'|'mutant';
-export type CombatAction='strike'|'guard'|'cover'|'heal'|'pulse'|'support'|'retreat'|'intro-continue'|'wolf-last-stand';
+export type CombatAction='strike'|'guard'|'cover'|'heal'|'pulse'|'support'|'retreat'|'intro-continue'|'wolf-last-stand'|'cancel-last-stand';
 export type FieldCombat={enemy:FieldEnemy;hp:number;maxHp:number;round:number;intent:'lunge'|'charge'|'spray';stagger:boolean;log:string[];source?:'hazard'|'mobile';lastAction?:CombatAction;introPending?:boolean;lastStand?:boolean};
 export const combatIntent={lunge:'돌진 준비 · 방어하면 반격 기회가 생깁니다.',charge:'핵 노출 · 지금 제압하면 큰 피해를 줍니다.',spray:'포자 분사 · EVE 펄스로 차단하거나 방어하십시오.'};
 export function newFieldCombat(seed:number):FieldCombat{return {enemy:seed%2?'echo':'slime',hp:24,maxHp:24,round:1,intent:seed%2?'spray':'lunge',stagger:false,log:['EVE: 동물의 생체 신호가 아닙니다. 오염 덩어리의 다음 움직임을 확인하세요.']};}
 /** The special Mutant is one persistent individual, distinct from M-00. */
-export function mutantSecured(s:V10):boolean{return s.animals.some(a=>a.id==='mutant')||!!s.headquarters?.transferred.includes('mutant')||s.pending==='mutant';}
+export function mutantSecured(s:V10):boolean{return s.animals.some(a=>a.id==='mutant')||!!s.headquarters?.transferred.includes('mutant')||s.pending==='mutant'||Object.values(s.archive?.entries??{}).some(entry=>entry.species==='mutant');}
 /** Movement and realtime pursuit enter exactly the same encounter. */
 export function beginRoamingCombat(s:V10):boolean{
  const f=s.field;if(!s.run||!f?.threat||f.combat||f.choice||s.pending||s.run.firstTutorial||mutantSecured(s))return false;
  const first=!s.roamingStory?.firstEncounterDay;
  s.roamingStory??={};if(first)s.roamingStory.firstEncounterDay=s.day;
- f.combat={enemy:'mutant',hp:36,maxHp:36,round:1,intent:'lunge',stagger:false,source:'mobile',introPending:first,log:['EVE: 배회형 MUTANT입니다. M-00과 무관한 특수 변이체입니다. 방어하거나 안전하게 우회하세요.']};
+ f.combat={enemy:'mutant',hp:36,maxHp:36,round:1,intent:'lunge',stagger:false,source:'mobile',introPending:first,log:['EVE: 배회형 MUTANT입니다. 등록되지 않은 특수 변이체입니다. 방어하거나 안전하게 우회하세요.']};
  f.threat.mode='closing';
  if(first)log(s,'최초 배회 위협 조우','외곽에서 특수 변이체 MUTANT를 확인했습니다. 동일 개체의 추적 경로가 기록되었습니다.','bad');
  return true;
@@ -22,8 +22,8 @@ export function combatBlock(s:V10,action:CombatAction):string|null{
  if(!s.run||!s.field?.combat||s.capture||s.phase!=='day')return '진행 중인 현장 전투가 없습니다.';
  const b=s.field.combat;
  if(b.introPending)return action==='intro-continue'?null:'최초 조우 기록을 먼저 확인하세요.';
- if(b.lastStand)return action==='retreat'?null:'경비관의 마지막 엄호를 확인한 뒤 철수하세요.';
- if(action==='intro-continue')return '이미 확인한 장면입니다.';
+ if(b.lastStand)return action==='retreat'||action==='cancel-last-stand'?null:'경비관의 마지막 엄호를 확인한 뒤 철수하세요.';
+ if(action==='intro-continue'||action==='cancel-last-stand')return '현재 선택할 수 없는 행동입니다.';
  if(action==='wolf-last-stand'&&!canWolfLastStand(s))return '배회형 MUTANT와 교전 2라운드 이후, 방호 35 이하, 생존 경비관 동행 시에만 선택 가능';
  if(action==='pulse'&&(s.run.evePulseUsed||s.power<3))return s.run.evePulseUsed?'EVE 지원은 출동당 한 번입니다.':'전력 3 필요';
  if(action==='heal'&&(!s.run.gear.includes('medkit')||s.run.medkitUsed||s.run.integrity>=100))return !s.run.gear.includes('medkit')?'응급 처치 키트를 가져오지 않았습니다.':s.run.medkitUsed?'출동 응급 키트를 이미 사용했습니다.':'방호가 충분합니다.';
@@ -43,8 +43,9 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  }
  const n=structuredClone(s),f=n.field!,b=f.combat!,run=n.run!;
  if(action==='intro-continue'){b.introPending=false;return n;}
+ if(action==='cancel-last-stand'){b.lastStand=false;b.log=['엄호 제안을 거절했습니다. 경비관과 함께 다른 대응을 선택하세요.'];return n;}
  if(action==='wolf-last-stand'){b.lastStand=true;b.log=['경비관: 관리자님, 먼저 가세요. 이번에는 제가 문을 지킬게요.','EVE: 엄호를 수락하면 경비관은 돌아오지 않습니다.'];return n;}
- if(action==='retreat'){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(94,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile){const w=f.width??7,from=mobile.position,to=f.position,dist=(a:number)=>Math.abs(a%w-to%w)+Math.abs(Math.floor(a/w)-Math.floor(to/w));const options=[from-w,from+w,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall');options.sort((a,c)=>dist(c)-dist(a));if(options[0])mobile.position=options[0];mobile.alert=Math.max(0,mobile.alert-22);mobile.mode='search';}f.lastEvent=n.lastOutcome='후퇴로를 확보했습니다. ST -2 · 추적망 +7 · 전리품 없음.';return n;}
+ if(action==='retreat'){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(94,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile){const w=f.width??7,from=mobile.position,to=f.position,dist=(a:number)=>Math.abs(a%w-to%w)+Math.abs(Math.floor(a/w)-Math.floor(to/w));const options=[from-w,from+w,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&Math.abs(i%w-from%w)+Math.abs(Math.floor(i/w)-Math.floor(from/w))===1);options.sort((a,c)=>dist(c)-dist(a));if(options[0]!==undefined)mobile.position=options[0];mobile.alert=Math.max(0,mobile.alert-22);mobile.mode='search';}f.lastEvent=n.lastOutcome='후퇴로를 확보했습니다. ST -2 · 추적망 +7 · 전리품 없음.';return n;}
  b.lastAction=action;let hit=0,shield=0,message='';
  if(action==='strike'){hit=b.intent==='charge'||b.stagger?14:8;message=`제압봉으로 핵 타격 · 내구 -${hit}`;}
  if(action==='guard'){shield=8;b.stagger=true;message='방호 자세 · 이번 공격 차단, 다음 타격 강화';}

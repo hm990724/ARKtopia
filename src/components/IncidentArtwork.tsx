@@ -3,10 +3,11 @@
 import {useEffect,useState} from 'react';
 import type {IncidentId} from '@/lib/game-v10';
 import {incidentArtworkCandidates} from '@/lib/incident-art';
+import {storyArtworkCandidates} from '@/lib/story-art';
 
 /** A CG that has not yet been committed must never break the event panel. */
 export default function IncidentArtwork({id,title}:{id:IncidentId;title:string}){
- const sources=incidentArtworkCandidates(id);
+ const sources=id==='evidence_gap'?[...storyArtworkCandidates(3),...incidentArtworkCandidates(id)]:incidentArtworkCandidates(id);
  const [imageIndex,setImageIndex]=useState(0);
  useEffect(()=>setImageIndex(0),[id]);
  const source=sources[Math.min(imageIndex,sources.length-1)];
