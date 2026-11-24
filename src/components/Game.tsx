@@ -19,7 +19,7 @@ import type {PortraitMood} from '@/lib/character-art';
 import {shareCrewMemory,watchEmptyCage} from '@/lib/crew-memory';
 import CrewMemoryCCTV from './CrewMemoryCCTV';
 import {OriginFarewell} from './OriginStoryArtwork';
-import {findEndingArt,ENDING_ASSET_DIRECTORY} from '@/lib/ending-art';
+import {findEndingArt,endingArtworkCandidates} from '@/lib/ending-art';
 import {V10,beginGame,loadGame,regions,gearData,RegionId,Gear,incidentDefs,doBase,purchase,handleMutant,type MutantDecision,buildFacility,facilityRecipes,type FacilityId,startRun,moveField,concealInField,leaveField,resolveFieldChoice,abandonTacticalCapture,placeTacticalDevice,removeTacticalDevice,executeTacticalTurn,predictTacticalMove,authorizeTacticalSeal,performVeiledHunt,rescueChoice,captureChance,useFieldMedkit as performFieldMedkit,resolveIncident,previewIncident,getDayEndBlocker,previewNight,resolveNightTransition,incidentWeight,nightCircuitVoltage,nightCircuitSequence,getNightCircuitState,attemptNightCircuit,extract,finish,runPathology,resolvePathologyEvent,type PathologyMethod,registerFullResonance,resolveHeadquarters,requestHeadquartersTransfer,staffTransferIssues,type HeadquartersChoice,type NightChoice,type FieldSettlement} from '@/lib/game-v10';
 import type {DeviceKind,Pace} from '@/lib/tactical-field';
 import type {HuntMode} from '@/lib/hidden-hunt';
@@ -255,12 +255,14 @@ return out;
 
 function EndingArtwork({ending,state}:{ending:string;state:V10}){
  const [failed,setFailed]=useState(false);
+ const [imageIndex,setImageIndex]=useState(0);
  const entry=findEndingArt(ending);
+ const artwork=endingArtworkCandidates(ending);
  const sanctuaryEnding=ending.startsWith('마지막 동물원');
- const livingAnimals=state.animals.filter(animal=>animal.alive);
- useEffect(()=>setFailed(false),[ending]);
+ const livingAnimals=state.animals.filter(animal=>animal.alive&&!state.security.escapedIds.includes(animal.id)&&!state.headquarters.transferred.includes(animal.id));
+ useEffect(()=>{setFailed(false);setImageIndex(0);},[ending]);
  return <div className={'ending-art-display'+(failed?' is-fallback':'')}>
-  {!failed?<img src={ENDING_ASSET_DIRECTORY+entry.file} alt={entry.label} onError={()=>setFailed(true)}/>:<div className="ending-art-fallback"><span>ARK // END RECORD</span><strong>{ending.split(' — ')[0]}</strong><small>엔딩 장면을 불러오지 못했습니다. 기록과 결말은 보존되어 있습니다.</small></div>}
+  {!failed?<img key={`${ending}-${imageIndex}`} src={artwork[Math.min(imageIndex,artwork.length-1)]} alt={entry.label} onError={()=>{if(imageIndex<artwork.length-1)setImageIndex(v=>v+1);else setFailed(true)}}/>:<div className="ending-art-fallback"><span>ARK // END RECORD</span><strong>{ending.split(' — ')[0]}</strong><small>엔딩 장면을 불러오지 못했습니다. 기록과 결말은 보존되어 있습니다.</small></div>}
   {!failed&&sanctuaryEnding&&<div className="ending-habitat-survivors" aria-label="보호구역에 실제로 살아 있는 개체">{livingAnimals.map(animal=><img className="ending-habitat-survivor" data-animal-id={animal.id} key={animal.id} src={animalArt(animal)} alt={`${animal.name} · 보호구역 생존`}/>)}{state.originZero?.cat==='shelter'&&<img className="ending-habitat-survivor" data-animal-id="m00" key="m00" src={animalSprite('m00')} alt="M-00 · 보호구역 생존"/>}</div>}
  </div>;
 }
