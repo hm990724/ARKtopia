@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -88,8 +88,36 @@ export function sporeVisibleCells(f:FieldState):number[]{
  if((f.sporeSpread?.turn??0)<=3)return [];
  return [...new Set([...f.tiles.flatMap((v,i)=>v==='hazard'?[i]:[]),...(f.sporeSpread?.cells??[])])];
 }
+/** Dynamic field changes are movement-gated, saveable and never remove a nearby exit. */
+function advanceFieldShift(f:FieldState){
+ const shift=f.worldShift??={serial:0,nextStep:6,lastStep:-1,notice:''};
+ if(f.steps<shift.nextStep)return;
+ shift.nextStep=f.steps+6+hash((f.sortie??0)*7919+f.steps*313)%4;
+ const w=fieldWidth(f),{costs,neighbors}=sporePaths(f,f.position);
+ const seed=hash((f.sortie??0)*7919+f.steps*313+(shift.serial+1)*1709);
+ const safe=(i:number)=>i!==f.position&&i!==f.origin&&i!==f.wildlifeIndex&&i!==f.exitIndex&&i!==f.threat?.position&&f.originFragments?.[i]===undefined&&(costs.get(i)??-1)>=3;
+ const clean=(i:number)=>safe(i)&&f.tiles[i]==='empty'&&!f.visited.includes(i)&&!f.sporeSpread?.cells.includes(i);
+ const order=(a:number,b:number)=>hash(seed+a*337)-hash(seed+b*337);
+ const changes:string[]=[];
+ const old=f.exitIndex;
+ if(old!==undefined&&f.tiles[old]==='exit'&&(costs.get(old)??Infinity)>2){
+  const candidates=[...costs.keys()].filter(i=>clean(i)&&(i%w===0||i%w===w-1||i<w||i>=f.tiles.length-w)&&(costs.get(i)??Infinity)<=Math.min(12,(costs.get(old)??10)+2)).sort(order);
+  const at=candidates[0];
+  if(at!==undefined){f.tiles[old]='empty';f.tiles[at]='exit';f.exitIndex=at;if(f.acoustic?.kind==='exit')delete f.acoustic;changes.push('귀환 유도 신호 변경 · 다시 청음하십시오');}
+ }
+ const from=[...costs.keys()].filter(i=>safe(i)&&f.tiles[i]==='cache'&&!f.visited.includes(i)).sort(order)[0];
+ const to=[...costs.keys()].filter(clean).sort(order)[0];
+ if(from!==undefined&&to!==undefined){f.tiles[from]='empty';f.tiles[to]='cache';changes.push('미회수 보급 신호 이동');}
+ const spread=f.sporeSpread;
+ if(spread&&spread.turn>3){
+  const drift=spread.cells.filter(safe).sort(order).find(i=>neighbors(i).some(j=>clean(j)&&!spread.cells.includes(j)));
+  if(drift!==undefined){const at=neighbors(drift).filter(j=>clean(j)&&!spread.cells.includes(j)).sort(order)[0];if(at!==undefined){spread.cells=spread.cells.map(i=>i===drift?at:i);spread.active=spread.active.filter(i=>i!==drift);changes.push('포자 분포 변화');}}
+ }
+ if(changes.length){shift.serial++;shift.lastStep=f.steps;shift.notice=changes.join(' · ');}
+}
 export function advanceSporeSpread(f:FieldState,roll?:()=>number):number|null{
  const s=f.sporeSpread??={turn:0,active:[],cells:[]};s.turn++;
+ advanceFieldShift(f);
  f.sporeSwarm=null;
  const sources=f.tiles.flatMap((v,i)=>v==='hazard'?[i]:[]);
  const all=[...new Set([...sources,...s.cells])],w=fieldWidth(f);
@@ -194,7 +222,7 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
  const threatCandidates=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==start&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=5&&(Math.floor(i/width)===startingRow||i%width===width-1)?[i]:[]);
  const fallback=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=3?[i]:[]);const pool=threatCandidates.length?threatCandidates:fallback;const threatIndex=pool.length?pool[hash(seed+2017)%pool.length]:-1;
- return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 정식 귀환 지점은 매 출동마다 바뀝니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
