@@ -1,4 +1,4 @@
-import {newFieldCombat,beginRoamingCombat,mutantSecured,upgradeLevel,type UpgradeId} from './field-combat';
+import {newFieldCombat,tickRoamingThreat,mutantSecured,upgradeLevel,type UpgradeId} from './field-combat';
 import {emptyOriginZero,ensureOriginZero,importOldOriginScans,originReadyForFinale,tickOriginDay,type OriginZeroState} from './origin-zero';
 import {emptyNarrative,ensureNarrative,type NarrativeState} from './narrative';
 import {neuralProfile} from './neural-state';
@@ -126,7 +126,8 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  const crewState=ensureCrew(restored);
  // Retain existing saves and active combat progress, but never duplicate a secured Mutant.
  if(restored.field){
-  if(mutantSecured(restored)||restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile')restored.field.combat=null;}
+  if(restored.field.interruptedCapture)restored.field.interruptedCapture=normalizeCapture(restored.field.interruptedCapture);
+  if(mutantSecured(restored)||restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
   else if(restored.field.combat?.source==='mobile'){restored.field.combat.enemy='mutant';restored.roamingStory??={};restored.roamingStory.firstEncounterDay??=restored.day;}
  }
  if(restored.run){const participants=(restored.run.companions??(restored.run.companion?[restored.run.companion]:[])).filter((id):id is CrewId=>id==='rabbit'||id==='fox'||id==='deer'||id==='wolf');crewState.sortieWorked=[...new Set([...(crewState.sortieWorked??[]),...participants])];}
@@ -318,13 +319,20 @@ export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random(
  for(const [id,weight] of weighted){pick-=weight;if(pick<0)return id;}
  return weighted[weighted.length-1][0];
 }
+function settleIncidentConsequences(before:V10,n:V10):V10{
+ if(n===before)return n;
+ for(const a of n.animals.filter(a=>a.alive&&a.hp<=0)){a.alive=false;recordSpecimen(n,a.id,'사건 중 개체 사망','사건 대응으로 생체 신호가 소실됐습니다.','loss');}
+ queueCrewTerminations(n);recalc(n);return n;
+}
 export function resolveIncident(s:V10,option:number):V10{
  const id=s.pendingIncident;
+ if(id&&option===3){if([0,1,2].some(i=>resolveIncident(s,i)!==s))return s;const n=copy(s) as V10;n.pendingIncident=null;n.facility=cap(n.facility-3);n.threat=cap(n.threat+5);n.eventHistory=[...n.eventHistory,`${n.day}일차 ${incidentDefs[id]?.title??id} · 비상 대기`].slice(-30);n.lastEvent=incidentDefs[id]?.title??id;return settleIncidentConsequences(s,summary(n,n.lastEvent,'대응 자원 또는 담당자가 없어 접근을 봉쇄했습니다. 시설 -3, 위협 +5.','bad'));}
  if(!id||!Number.isInteger(option)||option<0||option>2)return s;
- if(!(id in coreIncidentDefs))return resolveExtendedIncident(s,id as ExtendedIncidentId,option);
+ if(!(id in coreIncidentDefs))return settleIncidentConsequences(s,resolveExtendedIncident(s,id as ExtendedIncidentId,option));
  if((id==='keepsake'&&!s.animals.some(a=>a.alive))||(id==='quiet'&&!s.crew?.members.some(m=>m.mind>0)))return s;
  if(option===0&&((id==='garden'&&s.power<6)||((id==='keepsake'||id==='quiet')&&s.food<1)))return s;
  if(!id||!Number.isInteger(option)||option<0||option>2||(id==='visitor'&&!s.crew?.members.some(m=>m.mind>0))||((id==='echo'||id==='rations')&&!s.animals.some(a=>a.alive)))return s;
+ if(option===1&&((id==='spores'&&s.power<12)||(id==='echo'&&s.power<5)||(id==='rations'&&s.food<1)))return s;
  if((id==='breach'&&option===0&&s.power<22)||(id==='blackout'&&option===0&&s.parts<2)||(id==='spores'&&option===0&&s.filters<1)||(id==='predator'&&option===0&&s.power<14)||(id==='coolant'&&option===0&&s.parts<2)||(id==='rations'&&option===0&&s.food<2)||(id==='intrusion'&&option===0&&s.power<10))return s;
  const n=copy(s) as V10;n.pendingIncident=null;const def=incidentDefs[id];
  if(id==='garden'){
@@ -377,14 +385,14 @@ export function resolveIncident(s:V10,option:number):V10{
  }
  n.eventHistory=[...n.eventHistory,`${n.day}일차 ${def.title} · ${def.options[option]}`].slice(-30);
  n.lastEvent=def.title;
- if(['garden','keepsake','quiet'].includes(id))return summary(n,def.title,`${def.options[option]} — 오늘의 작은 선택을 기록했습니다.`,'good');
- return summary(n,def.title,`${def.options[option]} — ${option===2?'대응 실패. 시설과 생체 신호에 큰 피해가 발생했습니다.':'대응 결과가 기록되었습니다. 실제 증감 수치를 확인하십시오.'}`,option===2?'bad':option===0?'good':'mystery');
+ if(['garden','keepsake','quiet'].includes(id))return settleIncidentConsequences(s,summary(n,def.title,`${def.options[option]} — 오늘의 작은 선택을 기록했습니다.`,'good'));
+ return settleIncidentConsequences(s,summary(n,def.title,`${def.options[option]} — 대응 결과가 기록되었습니다. 실제 증감 수치를 확인하십시오.`,option===2?'bad':option===0?'good':'mystery'));
 }
 // Safe, read-only preview for event choice cards; uses the same actual outcome rules.
 export function previewIncident(s:V10,option:number):{available:boolean;effects:{name:string;delta:number}[]}{
  const n=resolveIncident(s,option);
  if(n===s)return {available:false,effects:[]};
- const fields:[keyof V10,string][]=[['mind','정신력'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['scrap','고철'],['electricCells','전지'],['filters','필터'],['medicine','의약품'],['food','식량'],['credits','크레딧'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
+ const fields:[keyof V10,string][]=[['ap','행동력'],['mind','정신력'],['eve','EVE 코어'],['power','전력'],['facility','시설'],['infection','감염'],['threat','위협'],['parts','부품'],['scrap','고철'],['electricCells','전지'],['filters','필터'],['medicine','의약품'],['food','식량'],['credits','크레딧'],['knowledge','지식'],['clues','단서'],['trust','신뢰']];
  const effects=fields.map(([key,name])=>({name,delta:Number(n[key])-Number(s[key])})).filter(x=>Number.isFinite(x.delta)&&x.delta!==0);
  const oldAnimals=s.animals.filter(a=>a.alive),newAnimals=n.animals.filter(a=>a.alive);
  const bondDelta=newAnimals.reduce((sum,a)=>sum+a.bond,0)-oldAnimals.reduce((sum,a)=>sum+a.bond,0);
@@ -644,37 +652,23 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   }
  }
  if(field.noise>=65 && !field.encountered){n.threat=cap(n.threat+4);observation+=' 소음이 높아 주변 경계 신호가 증가했습니다.';}
- // Independent roaming contaminant: its position and alert state persist in the field save.
- // Quiet movement delays it; normal/fast movement draws it toward the player.
- if(field.threat&&!field.combat&&!field.choice&&!n.capture&&!run.firstTutorial&&!mutantSecured(n)){
-  const stalker=field.threat,width=field.width??7,from=stalker.position,target=field.position;
-  const dist=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
-  stalker.alert=Math.max(0,Math.min(100,stalker.alert+(pace==='quiet'?-8:pace==='fast'?22:13)+(field.noise>=40?6:0)));
-  if(stalker.alert>=18){
-   const options=[from-width,from+width,from-1,from+1].filter(i=>i>=0&&i<field.tiles.length&&field.tiles[i]!=='wall'&&dist(from,i)===1);
-   options.sort((a,b)=>dist(a,target)-dist(b,target));
-   if(options.length&&dist(options[0],target)<dist(from,target))stalker.position=options[0];
-   stalker.mode='closing';
-  }
-  const near=dist(stalker.position,target);
-  if(near<=1&&stalker.alert>=26){
-   if(beginRoamingCombat(n))observation+=' 어둠 속 MUTANT가 접근해 퇴로를 막았습니다. 중앙 전투 대응으로 전환합니다.';
-  }else if(near<=2&&stalker.mode==='closing')observation+=' 손전등 가장자리에 MUTANT의 실루엣이 스쳤습니다. 조용히 이동하면 추적을 늦출 수 있습니다.';
- }
+ // Walking and stationary threat updates use the same line-of-sight and warning rules.
+ if(tickRoamingThreat(n,pace))observation+=' MUTANT가 접근했습니다. 진행하던 포획은 안전하게 보존됩니다.';
+ else if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
  revealField(field,run.gear.includes('scanner')?3+Math.floor((run.scannerLevel??0)/2):run.gear.includes('flashlight')&&n.flashlight>0?2:1);
  field.lastEvent=observation;
  n.lastOutcome=observation;
- if(tile==='exit'&&!field.combat)return leaveField(n,'정상 귀환');
+ if(tile==='exit'&&!field.combat&&!n.capture)return leaveField(n,'정상 귀환');
  if(n.stamina<=0 && !n.capture&&!field.combat){n.mind=cap(n.mind-5);return leaveField(n,'탈진 · 긴급 귀환');}
  if(destination===(field.origin??14)&&field.steps>1&&!n.capture&&!field.combat)return leaveField(n,'진입 지점 회군');
  if((field.pressure??0)>=75&&!n.capture&&!field.combat){const danger=Math.max(1,Math.floor(regions.find(r=>r.id===run.region)!.danger/35));n.mind=cap(n.mind-danger);n.threat=cap(n.threat+Math.ceil(danger/2));observation+=` 추적망 ${field.pressure}% · 적이 퇴로를 좁힙니다. 정신력 -${danger}; 직접 은폐하거나 교전·철수를 선택하세요.`;field.lastEvent=n.lastOutcome=observation;}
- if(run.integrity<=0){n.mind=cap(n.mind-8);return leaveField(n,'방호 파괴 · 긴급 철수');}
- if(n.mind<=0||n.eve<=0){return leaveField(n,'신경 신호 위험 · 긴급 귀환');}
+ if(run.integrity<=0&&!field.combat){n.capture=null;n.mind=cap(n.mind-8);return leaveField(n,'방호 파괴 · 긴급 철수');}
+ if((n.mind<=0||n.eve<=0)&&!field.combat){n.capture=null;return leaveField(n,'신경 신호 위험 · 긴급 귀환');}
  return n;
 }
 /** Hide beside a solid obstacle; the roaming AI keeps ticking and searches the last seen position. */
 export function concealInField(s:V10):V10{
- const field=s.field;if(!s.run||!field||s.capture||field.combat||field.choice||s.phase!=='day')return s;
+ const field=s.field;if(!s.run||!field||field.combat||field.choice||s.phase!=='day')return s;
  const n=copy(s) as V10,active=n.field!;
  if(active.concealed){active.concealed=false;active.noise=Math.min(100,active.noise+2);active.lastEvent=n.lastOutcome='장애물 뒤에서 나왔습니다. 이동하거나 밝히면 다시 발각될 수 있습니다.';return n;}
  if(!fieldHasCover(active)||n.stamina<1)return s;
@@ -724,7 +718,7 @@ export function abandonTacticalCapture(s:V10):V10{
  return n;
 }
 export function leaveField(s:V10,kind='조기 철수'):V10{
- if(!s.run||!s.field||s.capture||s.field.combat?.lastStand)return s;
+ if(!s.run||!s.field||s.capture||s.field.combat)return s;
  const n=copy(s) as V10,run=n.run!,field=n.field!;
  const away=run.companions??(run.companion?[run.companion]:[]);if(away.length&&field.steps>0){for(const id of away){const member=n.crew?.members.find(m=>m.id===id);if(member)member.mind=cap(member.mind-1);}queueCrewTerminations(n);}
  if(away.includes('rabbit')&&field.steps>0)n.mind=cap(n.mind+Math.min(8,Math.floor(field.steps/3)+2));
@@ -749,10 +743,11 @@ export function leaveField(s:V10,kind='조기 철수'):V10{
 }
 /** v33 hidden-pursuit command; the UI never receives the living creature's actual cell. */
 export function performVeiledHunt(s:V10,command:{type:HuntMode;cell?:number;clue?:number;setting?:import('./hidden-hunt').HuntSetting}):V10{
- if(!s.capture||!s.field||!s.run||!s.capture.hunt||s.phase!=='day')return s;
+ if(!s.capture||!s.field||!s.run||!s.capture.hunt||s.field.combat||s.phase!=='day')return s;
  const outcome=performHuntAction(s.capture.hunt,command);
  if(!outcome.changed)return s;
  const n=copy(s) as V10;n.capture!.hunt=outcome.state;n.lastOutcome=outcome.state.lastEvent;
+ if(n.field!.threat){const noise=command.type==='wait'?-8:command.type==='net'?18:command.type==='sound'?22:command.type==='search'?5:3;n.field!.noise=cap(n.field!.noise+noise);if(command.type!=='wait')n.field!.concealed=false;}
  if(command.type==='reveal'&&command.clue!==undefined&&outcome.state.revealed[command.clue])noteSpeciesTrait(n,outcome.state.species,command.clue);
  outcome.state.revealed.forEach((known,i)=>{if(known&&!s.capture!.hunt!.revealed[i])noteSpeciesTrait(n,outcome.state.species,i)});
  if(['search','reveal','bait','sound','light','barrier','wait'].includes(command.type)){const cell=command.cell===undefined?'':` / 조사 칸 ${String.fromCharCode(65+(command.cell%8))}${Math.floor(command.cell/8)+1}`;noteFieldAction(n,outcome.state.species,outcome.state.lastEvent+cell);}

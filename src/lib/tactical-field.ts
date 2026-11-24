@@ -13,8 +13,8 @@ export const FIELD_EXIT=20;
 export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|'exit';
 export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
-export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number};
-export type FieldState={combat?:FieldCombat|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
+export type FieldState={combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -44,22 +44,41 @@ export function fieldRelayBearing(f:FieldState,level:number):string|null{
  return `${direction}쪽에서 약한 생체 신호${distance>5?' · 원거리':distance>2?' · 중거리':' · 근거리'}`;
 }
 /** Advance a roaming threat by one real-time step without spending player AP. */
-export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,lightOn=false):boolean{
+export function fieldThreatSignal(f:FieldState){
+ const t=f.threat;if(!t)return null;
+ const w=fieldWidth(f),dx=t.position%w-f.position%w,dy=Math.floor(t.position/w)-Math.floor(f.position/w);
+ const distance=Math.abs(dx)+Math.abs(dy), strength=Math.max(0,Math.min(100,100-distance*15));
+ const direction=distance===0?'바로 근처':(dy<0?'북':dy>0?'남':'')+(dx>0?'동':dx<0?'서':'')+'쪽';
+ return {direction,distance:distance<=2?'근거리':distance<=5?'중거리':'원거리',strength,alert:t.alert,warning:(t.warningTicks??0)>0,stage:t.stage??(t.mode==='closing'?'chase':'patrol')};
+}
+export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,lightOn=false,pace?:Pace):boolean{
  const t=f.threat;if(!t||f.combat)return false;
- const width=fieldWidth(f),distance=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
- const detectionRange=Math.max(3,6-Math.floor(Math.max(0,relayLevel)/2)+(lightOn?2:0));
- const seen=!f.concealed&&fieldLineOfSight(f,t.position,detectionRange),heard=noise>=24,remembered=t.lastSeen??t.origin??t.position;
- const target=seen||heard?f.position:distance(t.position,remembered)>0?remembered:t.origin??remembered;
- if(seen)t.lastSeen=f.position;
- const alertGain=Math.max(4,12-Math.max(0,relayLevel-2)*2)+(lightOn?6:0),hearingGain=Math.max(3,8-Math.floor(Math.max(0,relayLevel)/2));
- t.alert=Math.max(0,Math.min(100,t.alert+(seen?alertGain:heard?hearingGain:-5)));
- const from=t.position,steps=[from-width,from+width,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&distance(from,i)===1);
- const costs=new Map<number,number>([[target,0]]),queue=[target];
- for(let cursor=0;cursor<queue.length;cursor++){const at=queue[cursor],nextCost=costs.get(at)!+1;for(const next of [at-width,at+width,at-1,at+1])if(next>=0&&next<f.tiles.length&&f.tiles[next]!=='wall'&&distance(at,next)===1&&!costs.has(next)){costs.set(next,nextCost);queue.push(next);}}
+ const width=fieldWidth(f),dist=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
+ const neighbors=(at:number)=>[at-width,at+width,at-1,at+1].filter(i=>adjacentField(at,i,width,f.tiles.length)&&f.tiles[i]!=='wall');
+ t.ticks=(t.ticks??0)+1;
+ if((t.cooldown??0)>0){t.cooldown!--;t.warningTicks=0;t.stage='retreat';t.mode='search';t.alert=Math.max(0,t.alert-8);return false;}
+ const range=Math.max(3,6-Math.floor(Math.max(0,relayLevel)/2)+(lightOn?2:0));
+ const seen=!f.concealed&&fieldLineOfSight(f,t.position,range),heard=!f.concealed&&noise>=24&&dist(t.position,f.position)<=3+Math.floor(noise/20);
+ const remembered=t.lastSeen??t.origin??t.position;
+ let target=seen||heard?f.position:remembered;
+ if(seen||heard)t.lastSeen=f.position;
+ const gain=seen?Math.max(4,12-Math.max(0,relayLevel-2)*2)+(lightOn?6:0):heard?Math.max(3,8-Math.floor(relayLevel/2)): -7;
+ t.alert=Math.max(0,Math.min(100,t.alert+gain+(pace==='fast'?8:pace==='quiet'?-7:0)));
+ if(seen||heard){t.stage=seen?(t.alert>=35?'chase':'alerted'):'investigate';t.mode='closing';}
+ else{t.mode='search';t.stage='search';
+  if(t.position===remembered||t.alert===0){
+   if(t.alert===0)t.lastSeen=undefined;
+   const patrol=neighbors(t.position).filter(i=>i!==f.position);
+   target=patrol.length?patrol[(t.ticks+Math.floor(t.position/width))%patrol.length]:t.position;t.stage='patrol';
+  }
+ }
+ const from=t.position,steps=neighbors(from),costs=new Map<number,number>([[target,0]]),queue=[target];
+ for(let cursor=0;cursor<queue.length;cursor++){const at=queue[cursor];for(const next of neighbors(at))if(!costs.has(next)){costs.set(next,costs.get(at)!+1);queue.push(next);}}
  steps.sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity));
  if(steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
- t.mode=seen||heard?'closing':'search';
- return !f.concealed&&distance(t.position,f.position)<=1&&t.alert>=55;
+ const close=!f.concealed&&dist(t.position,f.position)<=1&&t.alert>=35&&fieldLineOfSight(f,t.position,1);
+ t.warningTicks=close?(t.warningTicks??0)+1:0;
+ return close&&t.warningTicks>=2;
 }
 
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */

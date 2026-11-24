@@ -15,6 +15,7 @@ import {
   fieldHeight,
   fieldRelayBearing,
   fieldHasCover,
+  fieldThreatSignal,
   type Pace,
 } from "@/lib/tactical-field";
 import {
@@ -304,6 +305,7 @@ export default function FieldMission({
     height = fieldHeight(field);
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
   const relayBearing = fieldRelayBearing(field, relayLevel);
+  const threatSignal=fieldThreatSignal(field);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
   );
@@ -431,7 +433,7 @@ export default function FieldMission({
         <button
           className="v33-retreat v59-retreat"
           type="button"
-          onClick={onRetreat}
+          onClick={onRetreat} disabled={!!field.combat}
         >
           <ArrowLeft size={15} />
           {hunt ? "추적 중단" : "긴급 귀환 · 회수 30%"}
@@ -454,6 +456,7 @@ export default function FieldMission({
           <i style={{ width: `${pressure}%` }} />
         </div>
       </div>
+      {threatSignal&&!field.combat&&<aside className={'field-live-warning '+(threatSignal.warning?'is-alert':'')} role="status" aria-live="polite"><div><strong>{threatSignal.warning?'즉시 엄폐 · 발각 직전':threatSignal.alert>=35?'접근 신호 · 추적 중':'외곽 청음 · 독립 생체 신호'}</strong><small>{threatSignal.direction} · {threatSignal.distance} · 경계 {threatSignal.alert}%</small></div><div className="field-live-signal" aria-label={'청음 세기 '+threatSignal.strength+'%'}>{[1,2,3,4,5,6,7,8,9,10].map(i=><i key={i} className={threatSignal.strength>=i*10?'active':''} style={{height:8+i*2}}/>)}</div>{hunt&&<button type="button" disabled={!field.concealed&&!fieldHasCover(field)} onClick={onHide}>{field.concealed?'은신 해제':'포획 잠시 멈추고 엄폐'}</button>}</aside>}
       {!hunt && (run.captures?.length ?? 0) > 0 && (
         <div className="v41-field-continue" role="status">
           <CheckCircle2 size={17} />
@@ -1146,7 +1149,7 @@ export default function FieldMission({
                             ↩<small>입구 30%</small>
                           </span>
                         ) : null}
-                        {field.threat?.position === i && visible && fieldLineOfSight(field,i,2) && !here && !field.combat && (
+                        {field.threat?.position === i && visible && !here && !field.combat && (
                           <span className="v74-roaming-threat" role="img" aria-label="접근 중인 배회형 MUTANT">
                             <img src="/assets/animals/mutant_mutant.png" alt="" />
                             <small>{field.threat.mode === "closing" ? "추적 중" : "MUTANT"}</small>

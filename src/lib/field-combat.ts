@@ -1,6 +1,7 @@
 import type {V10} from './game-v10';
 import {cap,log} from './sim';
-import {canWolfLastStand,sacrificeWolf} from './crew';
+import {canWolfLastStand,sacrificeWolf,queueCrewTerminations} from './crew';
+import {advanceFieldThreat,type Pace} from './tactical-field';
 export type FieldEnemy='slime'|'echo'|'mutant';
 export type CombatAction='strike'|'guard'|'cover'|'heal'|'pulse'|'support'|'retreat'|'intro-continue'|'wolf-last-stand'|'cancel-last-stand';
 export type FieldCombat={enemy:FieldEnemy;hp:number;maxHp:number;round:number;intent:'lunge'|'charge'|'spray';stagger:boolean;log:string[];source?:'hazard'|'mobile';lastAction?:CombatAction;introPending?:boolean;lastStand?:boolean};
@@ -11,12 +12,25 @@ export function mutantSecured(s:V10):boolean{return s.animals.some(a=>a.id==='mu
 /** Movement and realtime pursuit enter exactly the same encounter. */
 export function beginRoamingCombat(s:V10):boolean{
  const f=s.field;if(!s.run||!f?.threat||f.combat||f.choice||s.pending||s.run.firstTutorial||mutantSecured(s))return false;
+ if(s.capture){f.interruptedCapture=s.capture;s.capture=null;}
  const first=!s.roamingStory?.firstEncounterDay;
  s.roamingStory??={};if(first)s.roamingStory.firstEncounterDay=s.day;
  f.combat={enemy:'mutant',hp:36,maxHp:36,round:1,intent:'lunge',stagger:false,source:'mobile',introPending:first,log:['EVE: 배회형 MUTANT입니다. 등록되지 않은 특수 변이체입니다. 방어하거나 안전하게 우회하세요.']};
- f.threat.mode='closing';
+ f.threat.mode='closing';f.threat.stage='chase';
  if(first)log(s,'최초 배회 위협 조우','외곽에서 특수 변이체 MUTANT를 확인했습니다. 동일 개체의 추적 경로가 기록되었습니다.','bad');
  return true;
+}
+/** One simulation entry point for walking and realtime ticks. */
+export function tickRoamingThreat(s:V10,pace?:Pace):boolean{
+ const f=s.field,run=s.run;if(!run||!f?.threat||f.combat||f.choice||s.pending||run.firstTutorial||mutantSecured(s)||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
+ const light=run.gear.includes('flashlight')&&s.flashlight>0;
+ if(advanceFieldThreat(f,f.noise,upgradeLevel(s,'relay'),light,pace)&&beginRoamingCombat(s))return true;
+ return false;
+}
+function resumeCapture(s:V10){
+ const f=s.field;if(!f?.interruptedCapture)return;
+ if(!s.pending&&s.mind>0&&s.run&&s.run.integrity>0){s.capture=f.interruptedCapture;}
+ f.interruptedCapture=null;
 }
 export function combatBlock(s:V10,action:CombatAction):string|null{
  if(!s.run||!s.field?.combat||s.capture||s.phase!=='day')return '진행 중인 현장 전투가 없습니다.';
@@ -36,7 +50,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(combatBlock(s,action))return s;
  if(s.field!.combat!.lastStand&&action==='retreat'){
   const loss=sacrificeWolf(s),n=loss===s?structuredClone(s):loss,f=n.field!;
-  f.combat=null;f.threat=null;f.pressure=Math.max(0,(f.pressure??0)-18);
+  f.combat=null;f.threat=null;f.interruptedCapture=null;f.pressure=Math.max(0,(f.pressure??0)-18);
   if(loss!==s){n.roamingStory??={};n.roamingStory.lastStandDay=n.day;}
   else n.lastOutcome='엄호 조건 변경 · 추가 인력 손실 없이 우회했습니다.';
   f.lastEvent=n.lastOutcome;return n;
@@ -45,7 +59,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(action==='intro-continue'){b.introPending=false;return n;}
  if(action==='cancel-last-stand'){b.lastStand=false;b.log=['엄호 제안을 거절했습니다. 경비관과 함께 다른 대응을 선택하세요.'];return n;}
  if(action==='wolf-last-stand'){b.lastStand=true;b.log=['경비관: 관리자님, 먼저 가세요. 이번에는 제가 문을 지킬게요.','EVE: 엄호를 수락하면 경비관은 돌아오지 않습니다.'];return n;}
- if(action==='retreat'){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(94,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile){const w=f.width??7,from=mobile.position,to=f.position,dist=(a:number)=>Math.abs(a%w-to%w)+Math.abs(Math.floor(a/w)-Math.floor(to/w));const options=[from-w,from+w,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&Math.abs(i%w-from%w)+Math.abs(Math.floor(i/w)-Math.floor(from/w))===1);options.sort((a,c)=>dist(c)-dist(a));if(options[0]!==undefined)mobile.position=options[0];mobile.alert=Math.max(0,mobile.alert-22);mobile.mode='search';}f.lastEvent=n.lastOutcome='후퇴로를 확보했습니다. ST -2 · 추적망 +7 · 전리품 없음.';return n;}
+ if(action==='retreat'){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(94,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile){const w=f.width??7,from=mobile.position,to=f.position,dist=(a:number)=>Math.abs(a%w-to%w)+Math.abs(Math.floor(a/w)-Math.floor(to/w));const options=[from-w,from+w,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&Math.abs(i%w-from%w)+Math.abs(Math.floor(i/w)-Math.floor(from/w))===1);options.sort((a,c)=>dist(c)-dist(a));if(options[0]!==undefined)mobile.position=options[0];mobile.alert=Math.max(0,mobile.alert-22);mobile.mode='search';mobile.stage='retreat';mobile.warningTicks=0;mobile.cooldown=3;}resumeCapture(n);f.lastEvent=n.lastOutcome='후퇴로를 확보했습니다. ST -2 · 추적망 +7 · 전리품 없음.';return n;}
  b.lastAction=action;let hit=0,shield=0,message='';
  if(action==='strike'){hit=b.intent==='charge'||b.stagger?14:8;message=`제압봉으로 핵 타격 · 내구 -${hit}`;}
  if(action==='guard'){shield=8;b.stagger=true;message='방호 자세 · 이번 공격 차단, 다음 타격 강화';}
@@ -61,15 +75,15 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  }
  if(action==='strike')b.stagger=false;
  b.hp=Math.max(0,b.hp-hit);n.stamina=Math.max(1,n.stamina-2);
- if(b.hp<=0){const loot=4+(run.region==='garden'?0:2);n.scrap+=loot;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=loot;run.loot+=2;f.loot+=2;if(b.source==='mobile')f.threat=null;f.combat=null;f.pressure=Math.max(0,(f.pressure??0)-12);message+=` · ${b.enemy==='mutant'?'MUTANT 격퇴 · 생존 신호는 멀어졌습니다.':'오염 제거'}. 고철 +${loot}, 회수 점수 +2, 추적망 -12. 지정 출구로 회수하세요.`;}
+ if(b.hp<=0){const loot=4+(run.region==='garden'?0:2);n.scrap+=loot;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=loot;run.loot+=2;f.loot+=2;if(b.source==='mobile')f.threat=null;f.combat=null;resumeCapture(n);f.pressure=Math.max(0,(f.pressure??0)-12);message+=` · ${b.enemy==='mutant'?'MUTANT 격퇴 · 생존 신호는 멀어졌습니다.':'오염 제거'}. 고철 +${loot}, 회수 점수 +2, 추적망 -12. 지정 출구로 회수하세요.`;}
  else{
   const attack=b.intent==='charge'?0:b.enemy==='mutant'?(b.intent==='lunge'?15:11):(b.intent==='lunge'?7:5);
   const damage=Math.max(0,attack-shield-Math.max(0,Math.min(3,run.suitLevel??0))-((run.companions??[run.companion]).includes('wolf')?2:0));run.integrity=cap(run.integrity-damage);
   if(b.intent==='spray')n.infection=cap(n.infection+Math.max(0,damage-(run.gear.includes('filter')?3:0)));
   b.round++;b.intent=b.round%3===0?'spray':b.round%3===1?'lunge':'charge';b.log=[message+` · 방호 -${damage}`, ...b.log].slice(0,4);
-  if(b.round>6||run.integrity<=0){f.combat=null;run.integrity=Math.max(1,run.integrity);n.mind=cap(n.mind-5);message+=' · 안전 거리로 긴급 이탈. 정신 -5, 전리품 없음.';}
+  if(b.round>6||run.integrity<=0){f.combat=null;f.interruptedCapture=null;if(f.threat){f.threat.cooldown=3;f.threat.warningTicks=0;f.threat.mode='search';f.threat.stage='retreat';}run.integrity=Math.max(1,run.integrity);n.mind=cap(n.mind-5);message+=' · 안전 거리로 긴급 이탈. 정신 -5, 전리품 없음.';}
  }
- f.lastEvent=n.lastOutcome=message;log(n,'현장 오염 대응',message,'info');return n;
+ queueCrewTerminations(n);f.lastEvent=n.lastOutcome=message;log(n,'현장 오염 대응',message,'info');return n;
 }
 export type UpgradeId='relay'|'battery'|'clinic'|'net'|'suit'|'scanner';
 export const baseUpgrades:Record<UpgradeId,{name:string;effect:string;scrap:number;parts:number;power:number}>={

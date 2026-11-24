@@ -249,11 +249,11 @@ export function originEndEpilogue(s:V10,goal:'rebuild'|'freedom'|'preserve'):{ti
  const dispatched=s.archive?.dispatches??0;
  if(goal==='rebuild')return {title: d.immunity>=100?'에덴':'영원한 실험',text:d.immunity>=100?'복제인간 사회가 구성되었다. 그러나 그들은 원본 인류와 다른 기억과 감각을 지닌 독립적인 생명들이었다.':'본부는 뇌 이식과 복제인간 생산을 멈추지 않았다. 최초 과학자의 집착이 또 한 번 명령으로 남았다.'};
  if(goal==='freedom'){
-  if(d.immunity>=85&&d.photos===12&&coerced<2)return {title:'방주의 씨앗',text:'관리자는 M-00의 저항성 기록과 각 개체의 비교 자료를 EVE에게 남겼다. 예방 연구가 언젠가 결실을 볼지는 아무도 모른다.'};
+  if(d.immunity>=85&&d.photos===12&&coerced<2&&s.eve>=55&&s.trust>=35&&protectedAnimals>=2)return {title:'방주의 씨앗',text:'관리자는 M-00의 저항성 기록과 각 개체의 비교 자료를 EVE에게 남겼다. 예방 연구가 언젠가 결실을 볼지는 아무도 모른다.'};
   if(coerced>=2||protectedAnimals<=1)return {title:'흩어진 이름들',text:'복원은 실패했고 여러 생명이 돌아오지 못했다. EVE는 마지막 명부에서 그들의 이름을 지우지 않고, 누구의 소유도 아닌 기억으로 남겼다.'};
   return {title:'마지막 동물원',text:'추출 장치가 멈췄다. 보존된 개체는 누구의 연구 재료가 아닌 생명으로 남았다.'};
  }
- if(staffLost>=2)return {title:'침묵의 자동화',text:'관리자와 직원들의 신호가 끊긴 뒤에도 시설은 정해진 일과를 반복했다. EVE의 목소리는 사라졌고, 남겨진 이름만 자동 기록에 남았다.'};
+ if(staffLost>=2||s.eve<25||s.trust<20)return {title:'침묵의 자동화',text:'관리자와 직원들의 신호가 끊긴 뒤에도 시설은 정해진 일과를 반복했다. EVE의 목소리는 사라졌고, 남겨진 이름만 자동 기록에 남았다.'};
  if(d.hqIntel>=65&&dispatched>0)return {title:'마지막 신호',text:'관리자는 보존한 자료와 구조 요청을 마지막으로 송신했다. 응답이 돌아왔는지 확인하기 전에 그의 신체는 멈췄다.'};
  return {title:'제000번 우리',text:'관리자는 최초 과학자의 뇌를 물려받았지만 그의 신념을 따를 의무는 없다고 기록했다. EVE는 기억이 아니라 지금의 결정을 보존했다.'};
 }
