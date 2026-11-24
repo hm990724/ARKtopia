@@ -54,9 +54,9 @@ test('current cinematic opens without cropping or duplicate characters from UI l
  await skipStory(page);await seed(page,s);await page.getByRole('button',{name:'분석실',exact:true}).click();
  await page.locator('.v71-story-archive summary').click();await page.getByRole('button',{name:'기원 표식 일치 장면 보기'}).click();
  const dialog=page.getByRole('dialog',{name:'복원된 사건 영상 보기'});await expect(dialog).toBeVisible();await expect(dialog.locator('img')).toHaveCount(1);
- await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_positive/);await expect(dialog.locator('img')).toHaveCSS('object-fit','contain');
+ await expect(dialog.locator('img')).toHaveAttribute('src',/(scene_m00_positive|SCN_11_m00_origin_signature)/);await expect(dialog.locator('img')).toHaveCSS('object-fit','contain');
  await expect.poll(()=>dialog.locator('img').evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
  await page.screenshot({path:'docs/qa-v71/v72-cinematic.png',fullPage:true});
- await dialog.getByRole('button',{name:'다음 장면'}).click();await expect(dialog.locator('img')).toHaveAttribute('src',/scene_m00_protect/);
+ await dialog.getByRole('button',{name:'다음 장면'}).click();await expect(dialog.locator('img')).toHaveAttribute('src',/(scene_m00_protect|SCN_13_m00_protection)/);
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
 });

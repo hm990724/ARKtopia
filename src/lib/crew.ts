@@ -17,7 +17,7 @@ export type CrewConflictChoice='treat'|'withhold'|'protect'|'dispose';
 export type CrewConflict={serial:number;day:number;kind:CrewConflictKind;choice:CrewConflictChoice;first:boolean;dissent:CrewId;mindBefore:number;mindAfter:number};
 export type CrewNightVote={day:number;members:CrewId[]};
 export type CrewNightResult={day:number;selected:CrewId;losses:{id:CrewId;before:number;after:number}[];effect:string};
-export type CrewTermination={id:CrewId;day:number};
+export type CrewTermination={id:CrewId;day:number;cause?:'collapse'|'last-stand'};
 export type CrewArrivalOrder={id:CrewId;transferDay:number;sourceSpecimenId?:string};
 export type CrewState={arrivalQueue:CrewArrivalOrder[];lastArrivalDay:number;retired:CrewId[];pendingTermination:CrewId|null;lastTermination:CrewTermination|null;members:CrewMember[];supportDay:number;supportWorked:CrewId[];sortieWorked:CrewId[];counselDay:number;healingDay:number;guardDay:number;decontamDay:number;lastIncident:CrewIncident|null;incidentsSeen:string[];conflictsSeen:string[];lastConflict:CrewConflict|null;conflictSerial:number;pendingNightVote:CrewNightVote|null;lastNightResult:CrewNightResult|null};
 export const emptyCrew=():CrewState=>({arrivalQueue:[],lastArrivalDay:0,retired:[],pendingTermination:null,lastTermination:null,members:[],supportDay:0,supportWorked:[],sortieWorked:[],counselDay:0,healingDay:0,guardDay:0,decontamDay:0,lastIncident:null,incidentsSeen:[],conflictsSeen:[],lastConflict:null,conflictSerial:0,pendingNightVote:null,lastNightResult:null});
@@ -210,11 +210,24 @@ export const CREW_LOSS_EFFECTS:Record<CrewId,{name:string;summary:string;eve:str
 export function terminateCrew(s:V10,id:CrewId):V10{
  const c=s.crew;
  if(!c||c.pendingTermination!==id||!c.members.some(m=>m.id===id&&m.mind<=0))return s;
+ return finalizeCrewLoss(s,id,'collapse');
+}
+/** A separate field sacrifice, not a fabricated zero-SANITY collapse. */
+export function canWolfLastStand(s:V10):boolean{
+ const c=s.crew,b=s.field?.combat,run=s.run;
+ return !!(c&&!c.pendingTermination&&!c.retired.includes('wolf')&&run&&b?.source==='mobile'&&b.enemy==='mutant'&&b.round>=2&&run.integrity<=35&&(run.companions??[run.companion]).includes('wolf')&&c.members.some(m=>m.id==='wolf'&&m.mind>0));
+}
+export function sacrificeWolf(s:V10):V10{
+ if(!canWolfLastStand(s)||!s.field?.combat?.lastStand)return s;
+ return finalizeCrewLoss(s,'wolf','last-stand');
+}
+function finalizeCrewLoss(s:V10,id:CrewId,cause:'collapse'|'last-stand'):V10{
  const n=copy(s) as V10;const crew=ensureCrew(n);
  crew.members=crew.members.filter(m=>m.id!==id);
  if(!crew.retired.includes(id))crew.retired.push(id);
  crew.pendingTermination=null;
- crew.lastTermination={id,day:n.day};
+ crew.lastTermination={id,day:n.day,cause};
+ if(n.run){n.run.companions=(n.run.companions??(n.run.companion?[n.run.companion]:[])).filter(memberId=>memberId!==id);if(n.run.companion===id)n.run.companion=null;}
  const grief=crew.members.filter(member=>member.mind>0).map(member=>{
   const before=member.mind;member.mind=cap(member.mind-30);
   return `${CREW_PROFILES[member.id].post} ${before}→${member.mind}`;
@@ -224,8 +237,8 @@ export function terminateCrew(s:V10,id:CrewId):V10{
   if(!crew.pendingNightVote.members.length)crew.pendingNightVote=null;
  }
  const griefText=grief.length?` 남은 직원 정신력 -30: ${grief.join(', ')}.`:' 남은 직원이 없어 정신력 후폭풍은 없습니다.';
- log(n,`인력 처리 완료 · ${CREW_PROFILES[id].post}`,`직원 신호 제거. ${CREW_LOSS_EFFECTS[id].name}: ${CREW_LOSS_EFFECTS[id].summary}.${griefText} 처리 기록은 되돌릴 수 없습니다.`,'bad');
- n.lastOutcome=`인력 처리: ${CREW_PROFILES[id].title}. ${CREW_LOSS_EFFECTS[id].summary}.${griefText}`;
+ log(n,`인력 처리 완료 · ${CREW_PROFILES[id].post}`,`${cause==='last-stand'?'현장 엄호 중 신호 소실':'직원 신호 제거'}. ${CREW_LOSS_EFFECTS[id].name}: ${CREW_LOSS_EFFECTS[id].summary}.${griefText} 처리 기록은 되돌릴 수 없습니다.`,'bad');
+ n.lastOutcome=`${cause==='last-stand'?'마지막 엄호':'인력 처리'}: ${CREW_PROFILES[id].title}. ${CREW_LOSS_EFFECTS[id].summary}.${griefText}`;
  queueCrewTerminations(n);
  return n;
 }
