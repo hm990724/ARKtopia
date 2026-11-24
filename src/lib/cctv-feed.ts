@@ -1,10 +1,10 @@
 import type {V10} from './game-v10';
 import type {AnimalState} from './sim';
-import {cctvHotspotIndex,type CameraId} from './security';
+import {cctvHotspotIndex,roomCamera,type CameraId} from './security';
 /** Rendering positions are deterministic observations, not a second simulation. */
 export function cameraSubjects(s:V10,camera:CameraId):AnimalState[]{
  const inc=s.security.incident;
- return s.animals.filter(a=>a.alive&&(!s.security.escapedIds.includes(a.id)?camera==='CAM-02'?a.room<=2:camera==='CAM-03'?a.room>2:camera==='CAM-04'&&inc?.animalId===a.id&&inc.camera===camera:false));
+ return s.animals.filter(a=>a.alive&&(!s.security.escapedIds.includes(a.id)?roomCamera(a.room)===camera||(camera==='CAM-04'&&inc?.animalId===a.id&&inc.camera===camera):false));
 }
 export function cameraPosition(s:V10,camera:CameraId,a:AnimalState,index:number,frame:number,reference=false){
  const col=index%3,row=Math.floor(index/3)%2,phase=(frame+a.room*3+s.day)%12;

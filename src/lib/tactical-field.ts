@@ -148,12 +148,12 @@ export const captureBehaviours:Record<AnimalId,Behaviour>={
 export const captureWidth=6;
 export const captureStart=22;
 export const gateForSpecies=(species:AnimalId)=>['deer','owl','otter','axolotl','chimera'].includes(species)?30:5;
-export function createCapture(species:AnimalId,tutorial=false,seed=39213+species.length*43):CaptureState{
+export function createCapture(species:AnimalId,tutorial=false,seed=39213+species.length*43,size:6|8=6):CaptureState{
  return {species,position:captureStart,devices:[],turn:0,fear:tutorial?8:23,trust:tutorial?55:28,
   maxTurns:tutorial?10:Math.max(11,captureBehaviours[species].patience+5),
   lastEvent:'황금색 이송구에 케이지를 놓고, 반응을 유도할 신호를 배치해 이동 칸을 예측하십시오.',
   tutorial,outcome:'playing',path:[captureStart],gate:gateForSpecies(species),prediction:null,
-  confirmed:0,lastConfirmed:null,sealArmed:false,focus:tutorial?99:9,hunt:newHunt(species,seed,tutorial)};
+  confirmed:0,lastConfirmed:null,sealArmed:false,focus:tutorial?99:9,hunt:newHunt(species,seed,tutorial,tutorial?6:size)};
 }
 /** Upgrade in-flight legacy saves without destroying an animal or rewriting existing progress. */
 export function normalizeCapture(c:CaptureState):CaptureState{

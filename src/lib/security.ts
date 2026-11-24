@@ -2,7 +2,12 @@ import {AnimalId,AnimalState,cap,log,recalc,isMutant,recordMutation} from './sim
 import type {V10} from './game-v10';
 import {isFacilityPowered} from './facility-power';
 
-export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04';
+export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04'|'CAM-05'|'CAM-06';
+export const containmentWings=['A','B','C','D'] as const;
+export type ContainmentWing=typeof containmentWings[number];
+export const roomWing=(room:number):ContainmentWing=>room<=2?'A':room<=4?'B':room<=6?'C':'D';
+export const wingCamera:Record<ContainmentWing,CameraId>={A:'CAM-02',B:'CAM-03',C:'CAM-05',D:'CAM-06'};
+export const roomCamera=(room:number):CameraId=>wingCamera[roomWing(room)];
 export type SecurityStatus='alert'|'breach'|'escaped';
 export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string;containedNight?:number;observations?:number};
 export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[];watchPlan?:{day:number;response:import('./night-watch').WatchResponse};lastWatch?:import('./night-watch').WatchReport};
@@ -10,7 +15,9 @@ export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0
 export const cameras:{id:CameraId;title:string;description:string}[]=[
  {id:'CAM-01',title:'외곽·출입구',description:'탈출 이동 경로와 외부 통로'},
  {id:'CAM-02',title:'격리실 A',description:'1~2번 개체의 행동'},
- {id:'CAM-03',title:'격리실 B',description:'3번 이후 개체의 행동'},
+ {id:'CAM-03',title:'격리실 B',description:'3~4번 개체의 행동'},
+ {id:'CAM-05',title:'격리실 C',description:'5~6번 개체의 행동'},
+ {id:'CAM-06',title:'격리실 D',description:'7번 이후 개체의 행동'},
  {id:'CAM-04',title:'연구동',description:'기억 동기화 및 설비 접근'}];
 export const securityPatterns:Record<AnimalId,{behavior:string;escape:string;voice:string}>= {
  rabbit:{behavior:'진료대 위에 앞발을 얹고 정해진 순서로 기구를 옮기고 있습니다.',escape:'의료실의 잠금장치를 건드린 흔적이 있습니다.',voice:'화… 환자분…? 움직이지 마세요…'},
@@ -28,7 +35,7 @@ export const securityPatterns:Record<AnimalId,{behavior:string;escape:string;voi
  chimera:{behavior:'서로 반대 방향으로 움직이려는 행동을 반복합니다.',escape:'경비 루트에 서로 다른 발자국이 겹칩니다.',voice:'멈춰… 아니, 계속해…'}
 };
 const clone=(s:V10):V10=>structuredClone(s);
-const cam=(animal:AnimalState):CameraId=>animal.room<=2?'CAM-02':'CAM-03';
+const cam=(animal:AnimalState):CameraId=>roomCamera(animal.room);
 function trace(s:V10,title:string,detail:string,kind:'info'|'good'|'bad'|'mystery'='info'){
  s.security.history=[{day:s.day,title,detail},...s.security.history].slice(0,24);log(s,title,detail,kind);s.lastOutcome=detail;
 }

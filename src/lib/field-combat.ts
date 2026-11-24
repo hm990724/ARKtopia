@@ -62,8 +62,8 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(action==='retreat'){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(94,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile){const w=f.width??7,from=mobile.position,to=f.position,dist=(a:number)=>Math.abs(a%w-to%w)+Math.abs(Math.floor(a/w)-Math.floor(to/w));const options=[from-w,from+w,from-1,from+1].filter(i=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&Math.abs(i%w-from%w)+Math.abs(Math.floor(i/w)-Math.floor(from/w))===1);options.sort((a,c)=>dist(c)-dist(a));if(options[0]!==undefined)mobile.position=options[0];mobile.alert=Math.max(0,mobile.alert-22);mobile.mode='search';mobile.stage='retreat';mobile.warningTicks=0;mobile.cooldown=3;}resumeCapture(n);f.lastEvent=n.lastOutcome='후퇴로를 확보했습니다. ST -2 · 추적망 +7 · 전리품 없음.';return n;}
  b.lastAction=action;let hit=0,shield=0,message='';
  if(action==='strike'){hit=b.intent==='charge'||b.stagger?14:8;message=`제압봉으로 핵 타격 · 내구 -${hit}`;}
- if(action==='guard'){shield=8;b.stagger=true;message='방호 자세 · 이번 공격 차단, 다음 타격 강화';}
- if(action==='cover'){shield=14;b.stagger=true;message='장애물 뒤 엄폐 · 이번 공격 피해를 줄이고 다음 적 행동을 관찰합니다.';}
+ if(action==='guard'){shield=8;b.stagger=true;message='방호 자세 · 피해 감소, 다음 타격 강화';}
+ if(action==='cover'){shield=14;message='장애물 뒤 엄폐 · 피해를 크게 줄입니다. 새 반격 기회는 생성되지 않습니다.';}
  if(action==='heal'){run.integrity=cap(run.integrity+24);run.medkitUsed=true;shield=8;message='응급 키트로 방호 장비를 봉합했습니다. 방호 +24';}
  if(action==='pulse'){hit=10;shield=20;run.evePulseUsed=true;n.power-=3;message='EVE 전자 펄스 · 전력 -3 · 공격 차단';}
  if(action==='support'){

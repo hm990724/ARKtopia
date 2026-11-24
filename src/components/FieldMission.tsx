@@ -1191,7 +1191,7 @@ export default function FieldMission({
                           <PawPixel />
                         ) : tile === "hazard" ? (
                           <span className="v33-route-object v33-hazard">
-                            <i className="ark-spore-cloud" aria-hidden="true">✣</i><small>포자 확산</small>
+                            <i className="ark-spore-cloud" aria-hidden="true"><i/><i/><i/><i/><i/></i><small>포자 확산</small>
                           </span>
                         ) : tile === "exit" ? (
                           <span className="v33-route-object">
