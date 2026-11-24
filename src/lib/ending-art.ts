@@ -70,3 +70,7 @@ export function originEndingSceneArt(slot:number):readonly string[]{
  if(slot>=1&&slot<=8)return endingArtworkCandidates(ORIGIN_ZERO_CANONICAL_ENDING_ART[slot-1].prefix);
  const name=ORIGIN_EPILOGUE_ART[slot-9];return name?['/assets/cinematics/origin-zero/epilogues/'+name,'/assets/cinematics/origin-zero/endings/'+name]:[];
 }
+
+/** Individual staff farewell CGs, shared across eligible ending routes. */
+export const CREW_FAREWELL_ART={rabbit:'FAREWELL_01_rabbit.png',fox:'FAREWELL_02_fox.png',deer:'FAREWELL_03_deer.png',wolf:'FAREWELL_04_wolf.png'} as const;
+export function crewFarewellArt(id:keyof typeof CREW_FAREWELL_ART):readonly string[]{return ['/assets/cinematics/origin-zero/farewells/'+CREW_FAREWELL_ART[id]];}

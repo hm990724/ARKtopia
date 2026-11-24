@@ -1,12 +1,12 @@
 import type {V10} from './game-v10';
 import {CREW_PROFILES,type CrewId} from './crew';
 import {ORIGIN_ZERO_CANONICAL_ENDING_ART} from './ending-art';
-export type EndingLine={speaker:string;text:string};
+export type EndingLine={speaker:string;text:string;farewellCrew?:CrewId};
 export type EndingScene={slot:number;title:string;time:'before'|'after';lines:EndingLine[]};
 const line=(speaker:string,text:string):EndingLine=>({speaker,text});
 const m=(text:string)=>line('관리자',text),e=(text:string)=>line('EVE',text),hq=(text:string)=>line('본부 AI',text),record=(text:string)=>line('기록',text);
 const titles=['영원한 실험','에덴','방주의 씨앗','마지막 동물원','제000번 우리','침묵의 자동화','흩어진 이름들','마지막 신호'];
-const farewell:Record<CrewId,string>={rabbit:'담당자님, 이제 손에 힘 주지 않으셔도 돼요. 남은 환자들은 제가 돌볼게요.',fox:'인수인계는 제가 확인하겠습니다. …이번에는 빠뜨리는 물건 없이요. 고생하셨습니다.',wolf:'제가 문은 지킬게요. 그러니까 이제 걱정 마세요. 담당자님, 정말 잘 싸웠어요.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요.'};
+const farewell:Record<CrewId,string>={rabbit:'담당자님… 그동안 정말 고생 많으셨어요. 남은 환자들은 제가 돌볼게요. 안녕히 가세요.',fox:'인수인계는 제가 확인하겠습니다. …이번에는 빠뜨리는 물건 없이요. 고생하셨습니다.',wolf:'제가 문은 지킬게요. 그러니까 이제 걱정 마세요. 담당자님, 정말 잘 싸웠어요.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요.'};
 export function mainEndingSlot(s:V10):number{
  if(s.phase!=='ending'||!s.originZero?.route||s.originZero.photos<12||!s.decisions.some(d=>d.title==='마지막 보존 지침'))return 0;
  return ORIGIN_ZERO_CANONICAL_ENDING_ART.findIndex(x=>s.ending.startsWith(x.prefix))+1;
@@ -16,7 +16,8 @@ export function originEndingSequence(s:V10):EndingScene[]{
  const d=s.originZero!,active=s.eve>=25&&slot!==6;
  const crew=(s.crew?.members??[]).filter(c=>c.mind>0&&c.hp>0&&!s.crew?.retired.includes(c.id));
  const safeAnimals=s.animals.filter(a=>a.alive&&!s.security.escapedIds.includes(a.id));
- const staff=crew.map(c=>line(CREW_PROFILES[c.id].post,farewell[c.id]));
+ const farewellOrder: CrewId[]=['rabbit','fox','deer','wolf'];
+ const staff:EndingLine[]=farewellOrder.filter(id=>crew.some(c=>c.id===id)).map(id=>({...line(CREW_PROFILES[id].post,farewell[id]),farewellCrew:id}));
  const before:Record<number,EndingLine[]>={
   1:[m('이 연구는 여기서 끝나면 안 돼. 다음 관리자를 준비해.'),hq('인수인계 승인. 원본 연구 명령을 유지합니다.'),m('조금만 더 있으면… 이번에는 성공할 수 있어.'),record('현재 신체의 신경 신호가 소실되었다. 재생산 명령이 남았다.')],
   2:[hq('예방 연구 자료와 복제 신체의 초기 안정성이 확인되었습니다.'),m('이제 인간이 다시 살아갈 수 있다는 거지?'),hq('복원 계획을 진행합니다. 기억과 신체 불일치에 관한 기록은 유지합니다.'),m('그들이 어떤 선택을 할지는 우리가 정하지 말자.'),...staff,record('관리자의 신체는 회복 한계를 넘었다. 생체 신호 종료.')],
