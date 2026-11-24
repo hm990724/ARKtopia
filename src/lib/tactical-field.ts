@@ -23,7 +23,7 @@ export type CaptureState={species:AnimalId;position:number;devices:TacticalDevic
 const hash=(seed:number)=>{let v=(seed^0x9e3779b9)>>>0;v^=v<<13;v^=v>>>17;v^=v<<5;return v>>>0};
 const seedFor=(day:number,region:RegionId)=>region.split('').reduce((n,c)=>hash(n+c.charCodeAt(0)),day*313+19);
 const distance=(a:number,b:number,width:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
-export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({garden:{width:7,height:5},conservatory:{width:8,height:6},rail:{width:9,height:6},archive:{width:10,height:7},vault:{width:11,height:8},tunnels:{width:12,height:9}}[region]);
+export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({garden:{width:8,height:8},conservatory:{width:8,height:8},rail:{width:9,height:9},archive:{width:10,height:10},vault:{width:11,height:11},tunnels:{width:12,height:12}}[region]);
 export const REGION_RULES:Record<RegionId,{title:string;description:string;blind:boolean;sporeRate:number;sporeWake:number}> = {
  garden:{title:'기본 수색',description:'발자국과 시야를 따라 생체 신호를 추적한다.',blind:false,sporeRate:.50,sporeWake:5},
  conservatory:{title:'온실 · 급속 오염',description:'포자가 빠르게 번진다. 바이오필터와 빠른 귀환이 유리하다.',blind:false,sporeRate:.50,sporeWake:5},
@@ -85,7 +85,6 @@ export function advanceSporeSwarm(f:FieldState,lightOn=false):void{
 }
 /** Turn-based stationary contamination. One new adjacent cell at most per action, even in fog. */
 export function sporeVisibleCells(f:FieldState):number[]{
- if((f.sporeSpread?.turn??0)<=3)return [];
  return [...new Set([...f.tiles.flatMap((v,i)=>v==='hazard'?[i]:[]),...(f.sporeSpread?.cells??[])])];
 }
 /** Dynamic field changes are movement-gated, saveable and never remove a nearby exit. */
@@ -157,42 +156,32 @@ export function fieldThreatSignal(f:FieldState){
  const direction=distance===0?'바로 근처':(dy<0?'북':dy>0?'남':'')+(dx>0?'동':dx<0?'서':'')+'쪽';
  return {direction,distance:distance<=2?'근거리':distance<=5?'중거리':'원거리',strength,alert:t.alert,warning:(t.warningTicks??0)>0,stage:t.stage??(t.mode==='closing'?'chase':'patrol')};
 }
-export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,lightOn=false,pace?:Pace):boolean{
- const t=f.threat;if(!t||f.combat)return false;
- const width=fieldWidth(f),dist=(a:number,b:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
- const neighbors=(at:number)=>[at-width,at+width,at-1,at+1].filter(i=>adjacentField(at,i,width,f.tiles.length)&&f.tiles[i]!=='wall');
- t.ticks=(t.ticks??0)+1;
- if((t.cooldown??0)>0){t.cooldown!--;t.warningTicks=0;t.stage='retreat';t.mode='search';t.alert=Math.max(0,t.alert-8);return false;}
- const range=Math.max(3,6-Math.floor(Math.max(0,relayLevel)/2)+(lightOn?2:0));
- const seen=!f.concealed&&fieldLineOfSight(f,t.position,range),heard=!f.concealed&&noise>=24&&dist(t.position,f.position)<=3+Math.floor(noise/20);
- const remembered=t.lastSeen??t.origin??t.position;
- let target=seen||heard?f.position:remembered;
- if(seen||heard)t.lastSeen=f.position;
- const gain=seen?Math.max(4,12-Math.max(0,relayLevel-2)*2)+(lightOn?6:0):heard?Math.max(3,8-Math.floor(relayLevel/2)): -7;
- t.alert=Math.max(0,Math.min(100,t.alert+gain+(pace==='fast'?8:pace==='quiet'?-7:0)));
- if(seen||heard){t.stage=seen?(t.alert>=35?'chase':'alerted'):'investigate';t.mode='closing';}
- else{t.mode='search';t.stage='search';
-  if(t.position===remembered||t.alert===0){
-   if(t.alert===0)t.lastSeen=undefined;
-   const patrol=neighbors(t.position).filter(i=>i!==f.position);
-   target=patrol.length?patrol[(t.ticks+Math.floor(t.position/width))%patrol.length]:t.position;t.stage='patrol';
-  }
- }
- const from=t.position,steps=neighbors(from),costs=new Map<number,number>([[target,0]]),queue=[target];
- for(let cursor=0;cursor<queue.length;cursor++){const at=queue[cursor];for(const next of neighbors(at))if(!costs.has(next)){costs.set(next,costs.get(at)!+1);queue.push(next);}}
- steps.sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity));
- // Keep a visible adjacent pursuer outside the player's tile until the warning resolves.
- if(!(t.mode==='closing'&&!f.concealed&&dist(from,f.position)<=1)&&steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
- const close=!f.concealed&&dist(t.position,f.position)<=1&&t.alert>=35&&fieldLineOfSight(f,t.position,1);
- t.warningTicks=close?(t.warningTicks??0)+1:0;
- return close&&t.warningTicks>=3;
+/** Select the farthest reachable cell, without occupying a story object or exit. */
+export function farthestThreatCell(f:FieldState):number|null{
+ const {costs}=sporePaths(f,f.position);
+ const pool=[...costs.entries()].filter(([i,d])=>d>=3&&i!==f.exitIndex&&i!==f.origin&&i!==f.wildlifeIndex&&f.originFragments?.[i]===undefined).sort((a,b)=>b[1]-a[1]||a[0]-b[0]);
+ return pool[0]?.[0]??null;
 }
-
+export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_lightOn=false,_pace?:Pace):boolean{
+ const t=f.threat;if(!t||f.combat)return false;
+ t.ticks=(t.ticks??0)+1;
+ if((t.cooldown??0)>0){t.cooldown!--;return false;}
+ const {costs,neighbors}=sporePaths(f,f.position);
+ t.alert=Math.max(0,Math.min(100,f.pressure??0));t.mode='closing';t.stage='chase';
+ for(let i=0;i<2;i++){
+  if((costs.get(t.position)??Infinity)<=1)break;
+  const next=neighbors(t.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
+  if(next===undefined||(costs.get(next)??Infinity)>=(costs.get(t.position)??Infinity))break;
+  t.position=next;
+ }
+ const close=(costs.get(t.position)??Infinity)<=1;
+ t.warningTicks=close?1:0;return close;
+}
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
 /** Place unique record shards on reachable empty ground, independent of ordinary loot. */
 export function placeOriginFragments(f:FieldState,ids:number[],seed:number){const w=fieldWidth(f),q=[f.position],seen=new Set(q);for(let k=0;k<q.length;k++)for(const i of [q[k]-w,q[k]+w,q[k]-1,q[k]+1])if(adjacentField(q[k],i,w,f.tiles.length)&&f.tiles[i]!=='wall'&&!seen.has(i)){seen.add(i);q.push(i);}const candidates=q.filter(i=>i!==f.position&&i!==f.wildlifeIndex&&f.tiles[i]==='empty'&&distance(i,f.position,w)>=2).sort((a,b)=>hash(seed+a*313)-hash(seed+b*313));const fallback=q.filter(i=>i!==f.position&&i!==f.wildlifeIndex&&f.tiles[i]!=='exit'&&!candidates.includes(i));const pool=[...candidates,...fallback];f.originFragments={};ids.forEach((id,i)=>{if(pool[i]!==undefined)f.originFragments![pool[i]]=id;});}
 export function createField(day:number,region:RegionId,sortie=0):FieldState {
- const dims=fieldDimensions(region),width=dims.width,height=dims.height+(day===1&&region==='garden'?0:9),size=width*height;
+ const dims=fieldDimensions(region),width=dims.width,height=dims.height,size=width*height;
  const seed=hash(seedFor(day,region)+sortie*7919);
  const tiles:FieldTile[]=Array(size).fill('empty');
  const startingRow=(day===1&&region==='garden')?2:1+(hash(seed+113)%(height-2));
@@ -220,9 +209,9 @@ export function createField(day:number,region:RegionId,sortie=0):FieldState {
  // A connected footprint corridor leads to the animal rather than arbitrary decoy grass.
  for(let c=1;c<wildlifeCol;c++)tiles[startingRow*width+c]='track';
  for(let r=Math.min(startingRow,wildlifeRow);r<=Math.max(startingRow,wildlifeRow);r++){const i=r*width+wildlifeCol;if(i!==wildlifeIndex)tiles[i]='track';}
- const threatCandidates=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==start&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=5&&(Math.floor(i/width)===startingRow||i%width===width-1)?[i]:[]);
- const fallback=tiles.flatMap((tile,i)=>tile!=='wall'&&i!==exit&&i!==wildlifeIndex&&distance(i,start,width)>=3?[i]:[]);const pool=threatCandidates.length?threatCandidates:fallback;const threatIndex=pool.length?pool[hash(seed+2017)%pool.length]:-1;
- return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:day>=2&&threatIndex>=0?{position:threatIndex,origin:threatIndex,alert:0,mode:'search'}:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ // Ensure visible contamination near the entry, without blocking the guided corridor.
+ const nearby=[start-width+1,start+width+1].filter(i=>i>=0&&i<size&&tiles[i]!=='wall'&&i!==wildlifeIndex&&i!==exit);for(const i of nearby)tiles[i]='hazard';
+ return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:false,threat:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
