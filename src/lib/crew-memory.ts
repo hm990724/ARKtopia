@@ -14,14 +14,14 @@ const reactions:Record<CrewId,string>={
  wolf:'제가 그 늑대였군요. 동물일 때도 지키려던 존재가 있었어요. 그 마음까지 본부의 소유는 아니에요.',
  deer:'제가 그 사슴이었군요. 제 기록을 복사해 주세요. 제가 누구였는지, 지금 무엇을 선택했는지 증명하고 싶어요.',
 };
-/** Conversations cost daily provisions and build trust; mental recovery is a separate scarce action. */
-export function shareCrewMemory(s:V10,id:CrewId):{state:V10;lines:Line[]}{
+/** A paid daily conversation restores trust and a little morale; replay has no second reward. */
+export function shareCrewMemory(s:V10,id:CrewId,roll=Math.random):{state:V10;lines:Line[]}{
  const old=s.crew?.members.find(m=>m.id===id);
  if(!old||old.mind<=0||s.phase!=='day'||s.run||s.pendingIncident||s.crew?.pendingTermination)return {state:s,lines:[]};
  if(old.lastSpokenDay===s.day)return {state:s,lines:(old.memoryStage??0)>=2?[{speaker:id,text:reactions[id]}]:crewDialog(s,id)};
  if(s.ap<1||s.food<1)return {state:s,lines:[{speaker:'EVE',text:'오늘은 상담에 쓸 행동력이나 식량이 부족합니다. 오늘의 하루 배급을 먼저 확인해 주세요.'}]};
  const n=copy(s) as V10,m=n.crew!.members.find(x=>x.id===id)!;
- n.ap--;n.food--;m.lastSpokenDay=n.day;m.bond=cap(m.bond+3+Math.floor(Math.random()*5));m.mind=cap(m.mind+1+Math.floor(Math.random()*4));
+ n.ap--;n.food--;m.lastSpokenDay=n.day;m.bond=cap(m.bond+3+Math.min(4,Math.max(0,Math.floor(roll()*5))));m.mind=cap(m.mind+1+Math.min(3,Math.max(0,Math.floor(roll()*4))));
  const key=m.sourceSpecimenId,entry=key?n.archive?.entries[key]:undefined;
  const matched=!!entry&&entry.species===id&&entry.status==='transferred';
  const age=n.day-m.arrivedDay,stage=m.memoryStage??0;

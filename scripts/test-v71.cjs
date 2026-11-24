@@ -103,13 +103,13 @@ test('empty rabbit cage recording requires arrived medic, persists once, disclos
  const s=game.beginGame('medic','generator');assert.equal(memory.emptyCageAvailable(s),false);s.headquarters.transferred=['rabbit'];assert.equal(memory.emptyCageAvailable(s),false);crew.recruitCrew(s,'rabbit','RB-001');
  const n=memory.watchEmptyCage(s);assert.ok(n.state.onboardingSeen.includes('rabbit-empty-cage'));assert.equal(memory.watchEmptyCage(n.state).state,n.state);assert.ok(!n.lines.some(x=>x.text.includes('뇌 보존')));
 });
-test('staff talk buys trust only while costly care is limited and morale erodes by day',()=>{
+test('staff talk and care cost one AP, randomized bounded gains, no same-day repeat',()=>{
  const s=game.beginGame('medic','generator');s.day=2;s.ap=4;s.food=3;
  crew.recruitCrew(s,'rabbit','RB-COST');const m=s.crew.members[0],mind=m.mind,bond=m.bond;
- const first=memory.shareCrewMemory(s,'rabbit');assert.equal(first.state.ap,3);assert.equal(first.state.food,2);assert.equal(first.state.crew.members[0].mind,mind);assert.equal(first.state.crew.members[0].bond,bond+4);
+ const first=memory.shareCrewMemory(s,'rabbit',()=>0);assert.equal(first.state.ap,3);assert.equal(first.state.food,2);assert.equal(first.state.crew.members[0].mind,mind+1);assert.equal(first.state.crew.members[0].bond,bond+3);
  assert.equal(memory.shareCrewMemory(first.state,'rabbit').state,first.state,'same-day replay must not spend twice');
- const counsel=crew.treatCrew(first.state,'rabbit','counsel');assert.equal(counsel.ap,1);assert.equal(counsel.food,1);assert.equal(counsel.crew.members[0].mind,mind+9);
- assert.equal(crew.treatCrew(counsel,'rabbit','counsel'),counsel,'counsel is once per facility day');
+ const counsel=crew.treatCrew(first.state,'rabbit','counsel',()=>0);assert.equal(counsel.ap,2);assert.equal(counsel.food,1);assert.equal(counsel.crew.members[0].mind,mind+8);
+ assert.equal(crew.treatCrew(counsel,'rabbit','counsel'),counsel,'counsel is once per staff member per day');
  let nightly=structuredClone(counsel);nightly.day=5;const oldMind=nightly.crew.members[0].mind;crew.crewNight(nightly);assert.equal(nightly.crew.members[0].mind,oldMind-1);
 });
 test('seed farewell is exclusive and every origin ending keeps the manager death',()=>{

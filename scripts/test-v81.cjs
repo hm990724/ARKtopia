@@ -6,7 +6,7 @@ const all={cctv:true,containment:true,infirmary:true,synthesis:true};
 function prepared(){const s=game.beginGame('engineer','generator');s.day=2;s.tutorialStep=9;s.ap=0;s.power=27;s.facilities={...all};s.pendingIncident=null;s.pending=null;s.run=null;return s;}
 let s=prepared();
 assert.deepEqual(s.facilityPowerPriority,['cctv','containment','infirmary','synthesis']);
-const preview=game.previewNight(s,'shield');assert.equal(preview.powerAfter,3);assert.deepEqual(preview.facilityDispatch.powered,['cctv']);assert.deepEqual(preview.facilityDispatch.shed,['containment','infirmary','synthesis']);
+const skipped=game.previewNight(s,'shield');assert.equal(skipped.applied,'standby');const preview=game.previewNight(s,'shield',{maintained:true});assert.equal(preview.powerAfter,7);assert.deepEqual(preview.facilityDispatch.powered,['cctv','containment','synthesis']);assert.deepEqual(preview.facilityDispatch.shed,['infirmary']);
 let next=game.finishDay(s,'shield');assert.equal(next.day,3);assert.equal(next.power,0);assert.deepEqual(next.facilityPowerState.powered,['cctv']);assert.deepEqual(next.facilityPowerState.shed,['containment','infirmary','synthesis']);
 assert.ok(next.eventHistory.some(e=>e.includes('야간 배전 차단')));
 let reordered=dispatch.setFacilityPowerPriority(s,'infirmary',-1);assert.deepEqual(reordered.facilityPowerPriority,['cctv','infirmary','containment','synthesis']);

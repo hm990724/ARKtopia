@@ -445,12 +445,14 @@ export function attemptNightCircuit(s:V10,terminal:number):V10{
  return summary(n,'야간 보조회로 오접속','전압 순서가 맞지 않습니다. 보호 회로가 재설정되며 전력 -4%, 시설 안정 -3%, 외부 위협 +3이 발생했습니다. 세 번 틀리면 오늘의 회로 정비가 잠깁니다.','bad');
 }
 export function previewNight(s:V10,nightChoice:NightChoice,options:{maintained?:boolean;guided?:boolean}={}){
+ const circuit=getNightCircuitState(s);
+ const maintained=options.maintained??(circuit.completed&&circuit.faults<3);
  const startPower=options.guided?Math.max(28,s.power):s.power;
- const powered=cap(startPower+(options.maintained?4:0));
- const applied:NightChoice=(!options.guided&&!options.maintained)||powered<({shield:22,rest:5,standby:0}[nightChoice])?'standby':nightChoice;
+ const powered=cap(startPower+(maintained?4:0));
+ const applied:NightChoice=(!options.guided&&!maintained)||powered<({shield:22,rest:5,standby:0}[nightChoice])?'standby':nightChoice;
  const cost={shield:22,rest:5,standby:0}[applied];
  const fuelAvailable=(s.fuel??3)>0,filterAvailable=(s.filters??0)>0;
- const powerAfter=cap(powered-cost-6+(fuelAvailable?4:-4)+upgradeLevel(s,'battery')*5);return {powerBefore:powered,applied,powerAfter,fuelBefore:s.fuel??3,fuelCost:fuelAvailable?1:0,fuelShortfall:fuelAvailable?0:1,filtersBefore:s.filters??0,filterCost:filterAvailable?1:0,filterShortfall:filterAvailable?0:1,repairFacilityBonus:options.maintained?6:0,facilityDispatch:previewFacilityPower(s,powerAfter)};
+ const powerAfter=cap(powered-cost-6+(fuelAvailable?4:-4)+upgradeLevel(s,'battery')*5);return {powerBefore:powered,applied,powerAfter,fuelBefore:s.fuel??3,fuelCost:fuelAvailable?1:0,fuelShortfall:fuelAvailable?0:1,filtersBefore:s.filters??0,filterCost:filterAvailable?1:0,filterShortfall:filterAvailable?0:1,repairFacilityBonus:maintained?6:0,facilityDispatch:previewFacilityPower(s,powerAfter)};
 }
 /** Atomic day transition: on failure the original state, day and AP are untouched. */
 export function resolveNightTransition(s:V10,nightChoice:NightChoice,options:{maintained?:boolean;guided?:boolean}={}){
@@ -458,7 +460,7 @@ export function resolveNightTransition(s:V10,nightChoice:NightChoice,options:{ma
  const preview=previewNight(s,nightChoice,options);
  if(blocker)return {state:s,success:false,blocker,applied:preview.applied};
  const supported=options.guided&&s.power<28?{...s,power:28}:s;
- const prepared=options.maintained?{...supported,power:cap(supported.power+4),facility:cap(supported.facility+6)}:supported;
+ const prepared=preview.repairFacilityBonus?{...supported,power:cap(supported.power+4),facility:cap(supported.facility+6)}:supported;
  const next=finishDay(prepared,preview.applied);
  if(next.day!==s.day+1){return {state:s,success:false,blocker:{code:'day-failed',message:'야간 결산이 완료되지 않았습니다. 진행 중인 사건을 확인하세요.',tab:'hub' as const,actionLabel:'중앙 확인'},applied:preview.applied};}
  if(options.guided)next.onboardingSeen=[...(next.onboardingSeen??[]),'first-night-defense'];
