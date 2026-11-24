@@ -1,4 +1,6 @@
 "use client";
+import ArtSlot from './ArtSlot';
+import {gameplayArt} from '@/lib/gameplay-art';
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { V10 } from "@/lib/game-v10";
 import { regions } from "@/lib/game-v10";
@@ -628,7 +630,7 @@ export default function FieldMission({
               <div
                 className="v44-sector-banner v61-sector-photo"
                 style={{
-                  backgroundImage: `linear-gradient(160deg,#070b10b9,#121021bb),url(/assets/backgrounds/${region.art}.webp)`,
+                  backgroundImage: `linear-gradient(160deg,#070b10b9,#121021bb),url(${gameplayArt.region(run.region)}),url(/assets/backgrounds/${region.art}.webp)`,
                 }}
                 aria-label={`${region.name} 전경`}
               />
@@ -804,7 +806,7 @@ export default function FieldMission({
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
                     gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
-                    backgroundImage: "url(/assets/field/world_ground.png)",
+                    backgroundImage: `url(${gameplayArt.ground(run.region,'hunt')}),url(/assets/field/world_ground.png)`,
                     ["--v33-beam-x" as string]:hunt.lastSearch?`${((hunt.lastSearch.cell%size)+.5)/size*100}%`:'50%',
                     ["--v33-beam-y" as string]:hunt.lastSearch?`${(Math.floor(hunt.lastSearch.cell/size)+.5)/size*100}%`:'50%',
                   }}
@@ -1112,7 +1114,7 @@ export default function FieldMission({
                       aspectRatio: `${width}/${height}`,
                       ["--v57-light-x" as string]: `${(((field.position % width) + 0.5) / width) * 100}%`,
                       ["--v57-light-y" as string]: `${((Math.floor(field.position / width) + 0.5) / height) * 100}%`,
-                      backgroundImage: "url(/assets/field/ground.png)",
+                      backgroundImage: `url(${gameplayArt.ground(run.region,'explore')}),url(/assets/field/ground.png)`,
                     } as CSSProperties
                   }
                   role="group"
@@ -1198,7 +1200,7 @@ export default function FieldMission({
                           <PawPixel />
                         ) : tile === "hazard" ? (
                           <span className="v33-route-object v33-hazard">
-                            <i className="ark-spore-cloud" aria-hidden="true"><i/><i/><i/><i/><i/></i><small>포자 확산</small>
+                            <i className="ark-spore-cloud" aria-hidden="true"><ArtSlot src={gameplayArt.spore} fit="contain"/><i/><i/><i/><i/><i/></i><small>포자 확산</small>
                           </span>
                         ) : tile === "exit" ? (
                           <span className="v33-route-object">

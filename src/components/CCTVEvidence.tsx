@@ -1,4 +1,6 @@
 'use client';
+import ArtSlot from './ArtSlot';
+import {gameplayArt} from '@/lib/gameplay-art';
 import {useEffect,useState} from 'react';
 import type {AnimalId,AnimalState} from '@/lib/sim';
 import {cameraSubjects,cameraPosition} from '@/lib/cctv-feed';
@@ -10,7 +12,7 @@ export default function CCTVEvidence({state,camera,onInspect,onWatch,animalSrc,o
  const inc=state.security.incident;
  const [frame,setFrame]=useState(0);const live=state.power>=12&&state.eve>=15&&!reference;
  useEffect(()=>{if(!live)return;const timer=window.setInterval(()=>setFrame(x=>(x+1)%12),1100);return()=>window.clearInterval(timer)},[live]);
- const subjects=cameraSubjects(state,camera);const feed=<div className={'cctv-live-stage '+(!live&&!reference?'signal-off':'')} aria-label={reference?'정기 점검 기준 영상':'현재 개체 움직임 관측'}><div className="cctv-feed-grid" aria-hidden="true"/><span className="cctv-feed-stamp">{reference?'REFERENCE / 정지 프레임':live?'LIVE / FRAME '+String(frame+1).padStart(2,'0'):'SIGNAL LOST'}</span>{(live||reference)&&subjects.map((a,i)=>{const pos=cameraPosition(state,camera,a,i,reference?0:frame,reference);return <button key={a.id} type="button" className="cctv-moving-subject" style={{left:pos.x+'%',top:pos.y+'%'}} onClick={()=>onSelect(a.id)} aria-label={a.name+' 상태 보기'}><img src={animalSrc(a)} alt={a.name}/><small>{a.name}</small></button>})}{live&&!subjects.length&&<small className="cctv-feed-empty">현재 시야 내 확인된 생체 없음</small>}{!reference&&inc?.camera===camera&&inc.status==='escaped'&&<small className="cctv-feed-empty">{inc.tracked?'추적 동선 확인 · 위치 재확인 필요':'신호 소실 · 수동 추적 필요'}</small>}</div>;
+ const subjects=cameraSubjects(state,camera);const feed=<div className={'cctv-live-stage '+(!live&&!reference?'signal-off':'')} aria-label={reference?'정기 점검 기준 영상':'현재 개체 움직임 관측'}>{(live||reference)&&<ArtSlot src={gameplayArt.camera(camera)}/>}<div className="cctv-feed-grid" aria-hidden="true"/><span className="cctv-feed-stamp">{reference?'REFERENCE / 정지 프레임':live?'LIVE / FRAME '+String(frame+1).padStart(2,'0'):'SIGNAL LOST'}</span>{(live||reference)&&subjects.map((a,i)=>{const pos=cameraPosition(state,camera,a,i,reference?0:frame,reference);return <button key={a.id} type="button" className="cctv-moving-subject" style={{left:pos.x+'%',top:pos.y+'%'}} onClick={()=>onSelect(a.id)} aria-label={a.name+' 상태 보기'}><img src={animalSrc(a)} alt={a.name}/><small>{a.name}</small></button>})}{live&&!subjects.length&&<small className="cctv-feed-empty">현재 시야 내 확인된 생체 없음</small>}{!reference&&inc?.camera===camera&&inc.status==='escaped'&&<small className="cctv-feed-empty">{inc.tracked?'추적 동선 확인 · 위치 재확인 필요':'신호 소실 · 수동 추적 필요'}</small>}</div>;
  if(!inc||inc.camera!==camera)return <>{feed}<p className="ark-camera-quiet">{inc?'현재 채널에는 판독 대상이 없습니다. 경보 채널로 전환하십시오.':'정상 감시 중 · 이상 행동 발생 시 비교 판독이 열립니다.'}</p></>;
  const found=inc.camera===camera?cctvHotspotIndex(state):-1;
  const lost=state.power<3||state.eve<10;
