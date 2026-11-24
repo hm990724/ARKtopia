@@ -202,3 +202,5 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .ark-result-scene>.ark-art-layer,.v74-combat-stage>.ark-art-layer{z-index:0!important}
 .ark-result-scene>.echo-result-animal{z-index:1}
 @media(prefers-reduced-motion:reduce){.ark-art-layer{transition:none}.ark-capture-scene>.ark-capture-full.is-ready{animation:none}}
+
+.ark-dynamic-cameras{display:flex!important;overflow-x:auto;gap:7px!important;padding-bottom:6px;scrollbar-width:thin}.ark-dynamic-cameras>button{flex:0 0 clamp(105px,18%,155px);min-width:0}.ark-wing-tabs{display:flex!important;flex-wrap:wrap;gap:6px}.ark-wing-tabs button{min-width:82px;flex:0 0 auto;padding:8px 11px}.ark-wing-tabs button[aria-pressed=true]{border-color:#99d4c2}.ark-dynamic-cameras .cctv-channel-preview{aspect-ratio:16/9}

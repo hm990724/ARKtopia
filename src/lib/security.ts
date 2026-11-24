@@ -2,23 +2,30 @@ import {AnimalId,AnimalState,cap,log,recalc,isMutant,recordMutation} from './sim
 import type {V10} from './game-v10';
 import {isFacilityPowered} from './facility-power';
 
-export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04'|'CAM-05'|'CAM-06';
-export const containmentWings=['A','B','C','D'] as const;
-export type ContainmentWing=typeof containmentWings[number];
-export const roomWing=(room:number):ContainmentWing=>room<=2?'A':room<=4?'B':room<=6?'C':'D';
-export const wingCamera:Record<ContainmentWing,CameraId>={A:'CAM-02',B:'CAM-03',C:'CAM-05',D:'CAM-06'};
-export const roomCamera=(room:number):CameraId=>wingCamera[roomWing(room)];
+export type CameraId=`CAM-${string}`;
+export type ContainmentWing=string;
+export function roomWing(room:number):ContainmentWing{
+ let n=Math.max(1,Math.floor(room)),label='';
+ while(n>0){n--;label=String.fromCharCode(65+n%26)+label;n=Math.floor(n/26);}
+ return label;
+}
+export const containmentWings=(rooms:number)=>Array.from({length:rooms},(_,i)=>roomWing(i+1));
+export const roomCamera=(room:number):CameraId=>`CAM-${String(room<=2?room+1:room+2).padStart(2,'0')}`;
+export function cameraRoom(id:CameraId):number|null{
+ const n=Number(id.slice(4));return Number.isInteger(n)&&n>=2&&n!==4?(n<=3?n-1:n-2):null;
+}
+export function wingCamera(wing:ContainmentWing):CameraId{
+ const room=Array.from(wing).reduce((n,c)=>n*26+c.charCodeAt(0)-64,0);return roomCamera(Math.max(1,room));
+}
 export type SecurityStatus='alert'|'breach'|'escaped';
 export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string;containedNight?:number;observations?:number};
 export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[];watchPlan?:{day:number;response:import('./night-watch').WatchResponse};lastWatch?:import('./night-watch').WatchReport};
 export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0,lastScanDay:0,resolved:0,escapedIds:[],history:[]});
-export const cameras:{id:CameraId;title:string;description:string}[]=[
- {id:'CAM-01',title:'외곽·출입구',description:'탈출 이동 경로와 외부 통로'},
- {id:'CAM-02',title:'격리실 A',description:'1~2번 개체의 행동'},
- {id:'CAM-03',title:'격리실 B',description:'3~4번 개체의 행동'},
- {id:'CAM-05',title:'격리실 C',description:'5~6번 개체의 행동'},
- {id:'CAM-06',title:'격리실 D',description:'7번 이후 개체의 행동'},
+export function cameras(rooms:number):{id:CameraId;title:string;description:string}[]{
+ return [{id:'CAM-01',title:'외곽·출입구',description:'탈출 이동 경로와 외부 통로'},
+ ...Array.from({length:rooms},(_,i)=>({id:roomCamera(i+1),title:'격리실 '+roomWing(i+1),description:'해당 격리실 개체의 행동'})),
  {id:'CAM-04',title:'연구동',description:'기억 동기화 및 설비 접근'}];
+}
 export const securityPatterns:Record<AnimalId,{behavior:string;escape:string;voice:string}>= {
  rabbit:{behavior:'진료대 위에 앞발을 얹고 정해진 순서로 기구를 옮기고 있습니다.',escape:'의료실의 잠금장치를 건드린 흔적이 있습니다.',voice:'화… 환자분…? 움직이지 마세요…'},
  fox:{behavior:'자재 창고를 순서대로 점검하고 빈 물품 칸에서 멈춥니다.',escape:'보급 창고의 반출 장부와 물품 수량이 서로 맞지 않습니다.',voice:'부품은 몇 개 남았지… 먼저 재고부터 세야 해.'},
