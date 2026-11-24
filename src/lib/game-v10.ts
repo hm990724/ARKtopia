@@ -205,6 +205,9 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companio
  if(s.pending||s.pendingIncident)return '진행 중인 구조 또는 사건을 먼저 처리하세요.';
  if(s.ap<1)return '출동에 AP 1이 필요합니다. 하루를 종료하면 회복됩니다.';
  if(s.day<r.unlocked)return r.unlocked+'일차부터 열리는 구역입니다.';
+ if(companions.length>2)return '탐사에는 최대 2명까지 동행할 수 있습니다.';
+ if(new Set(companions).size!==companions.length)return '같은 직원을 중복 편성할 수 없습니다.';
+ if(companions.some(id=>!s.crew?.members.some(m=>m.id===id&&m.mind>0)))return '미합류·퇴장·정신 붕괴 직원은 출동할 수 없습니다.';
  if(companions.some(id=>s.crew?.supportWorked?.includes(id)))return '선택한 직원은 오늘 기지 지원 업무를 수행했습니다. 다른 직원을 선택하거나 혼자 출동하세요.';
  if(!gear.includes('flashlight')&&!gear.includes('scanner'))return '어두운 현장에 들어가려면 손전등 또는 EVE 스캐너가 필요합니다.';
  for(const g of gear){const reason=gearUnavailable(s,g,region);if(reason)return reason;}
