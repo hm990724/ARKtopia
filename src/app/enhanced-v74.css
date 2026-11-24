@@ -204,3 +204,6 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 @media(prefers-reduced-motion:reduce){.ark-art-layer{transition:none}.ark-capture-scene>.ark-capture-full.is-ready{animation:none}}
 
 .ark-dynamic-cameras{display:flex!important;overflow-x:auto;gap:7px!important;padding-bottom:6px;scrollbar-width:thin}.ark-dynamic-cameras>button{flex:0 0 clamp(105px,18%,155px);min-width:0}.ark-wing-tabs{display:flex!important;flex-wrap:wrap;gap:6px}.ark-wing-tabs button{min-width:82px;flex:0 0 auto;padding:8px 11px}.ark-wing-tabs button[aria-pressed=true]{border-color:#99d4c2}.ark-dynamic-cameras .cctv-channel-preview{aspect-ratio:16/9}
+
+/* The shared capture/recovery backgrounds never cover the existing animated creature. */
+.ark-capture-scene>.ark-art-layer,.ark-recovery-scene>.ark-art-layer{z-index:0!important}.ark-recovery-scene>.ark-recovery-fallback{position:relative;z-index:1}.ark-recovery-scene>span{z-index:2}.ark-capture-scene>.v40-discovered-animal{z-index:3}.ark-capture-scene>.ark-capture-restraint{z-index:4}.ark-capture-scene>.ark-capture-stamp{z-index:6}

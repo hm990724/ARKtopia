@@ -806,7 +806,7 @@ export default function FieldMission({
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
                     gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
-                    backgroundImage: `url(${gameplayArt.ground(run.region,'hunt')}),url(/assets/field/world_ground.png)`,
+                    backgroundImage: "url(/assets/field/world_ground.png)",
                     ["--v33-beam-x" as string]:hunt.lastSearch?`${((hunt.lastSearch.cell%size)+.5)/size*100}%`:'50%',
                     ["--v33-beam-y" as string]:hunt.lastSearch?`${(Math.floor(hunt.lastSearch.cell/size)+.5)/size*100}%`:'50%',
                   }}
@@ -1114,7 +1114,7 @@ export default function FieldMission({
                       aspectRatio: `${width}/${height}`,
                       ["--v57-light-x" as string]: `${(((field.position % width) + 0.5) / width) * 100}%`,
                       ["--v57-light-y" as string]: `${((Math.floor(field.position / width) + 0.5) / height) * 100}%`,
-                      backgroundImage: `url(${gameplayArt.ground(run.region,'explore')}),url(/assets/field/ground.png)`,
+                      backgroundImage: "url(/assets/field/ground.png)",
                     } as CSSProperties
                   }
                   role="group"
