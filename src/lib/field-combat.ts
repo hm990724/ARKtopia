@@ -23,7 +23,7 @@ export function beginRoamingCombat(s:V10):boolean{
 /** One simulation entry point for walking and realtime ticks. */
 export function tickRoamingThreat(s:V10,pace?:Pace):boolean{
  const f=s.field,run=s.run;if(!run||!f?.threat||f.combat||f.choice||s.pending||run.firstTutorial||mutantSecured(s)||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
- const light=run.gear.includes('flashlight')&&s.flashlight>0;
+ const light=run.gear.includes('flashlight')&&!f.lightOff&&s.flashlight>0;
  if(advanceFieldThreat(f,f.noise,upgradeLevel(s,'relay'),light,pace)&&beginRoamingCombat(s))return true;
  return false;
 }

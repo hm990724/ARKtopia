@@ -601,6 +601,13 @@ export function tickFieldSpores(s:V10):boolean{
  f.lastEvent=s.lastOutcome=`주변 포자가 퍼졌습니다. 노출 +${exposure} · 감염 +${infection}. 오염 구역에서 벗어나세요.`;
  return true;
 }
+export function toggleFieldLight(s:V10):V10{
+ if(!s.run?.gear.includes('flashlight')||!s.field||s.field.combat||s.field.choice||s.pending||s.flashlight<=0)return s;
+ const n=copy(s) as V10;const f=n.field!;f.lightOff=!f.lightOff;
+ if(!f.lightOff){f.noise=cap(f.noise+3);f.concealed=false;revealField(f,2);}
+ f.lastEvent=n.lastOutcome=f.lightOff?'손전등 소등 · 시야 감소, 노출 감소':'손전등 점등 · 시야 확장, 발각 위험 증가';
+ return n;
+}
 export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  if(s.run&&s.field&&!s.capture&&!s.field.combat&&s.stamina<2)return leaveField(s,'탈진 · 긴급 귀환');
  if(!s.run||!s.field||s.capture||s.phase!=='day'||s.pending||!adjacentField(s.field.position,destination,s.field.width??7,s.field.tiles.length)||s.field.choice||s.field.combat)return s;
@@ -608,11 +615,11 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
  field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
- if(run.gear.includes('flashlight'))n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
+ if(run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
  field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/40)+(tile==='hazard'?12:0)+(pace==='fast'?8:0));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';
- field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(run.gear.includes('flashlight')?(noisy?7:3):0)));
+ field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
  n.stamina=cap(n.stamina-(noisy?6:pace==='normal'?4:2));
  const exposed=pace==='fast'?9:pace==='normal'?5:2;
  run.exposure+=exposed;
@@ -676,7 +683,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  // Walking and stationary threat updates use the same line-of-sight and warning rules.
  if(tickRoamingThreat(n,pace))observation+=' MUTANT가 접근했습니다. 진행하던 포획은 안전하게 보존됩니다.';
  else if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
- revealField(field,run.gear.includes('scanner')?3+Math.floor((run.scannerLevel??0)/2):run.gear.includes('flashlight')&&n.flashlight>0?2:1);
+ revealField(field,run.gear.includes('scanner')?3+Math.floor((run.scannerLevel??0)/2):run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?2:1);
  field.lastEvent=observation;
  n.lastOutcome=observation;
  if(tile==='exit'&&!field.combat&&!n.capture)return leaveField(n,'정상 귀환');
