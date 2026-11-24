@@ -1,3 +1,21 @@
+## 2026-11-24 · ChatGPT GitHub main 통합 작업 (현재 범위)
+
+- GitHub 쓰기 권한을 확인하고 사용자 최신 지시에 따라 `main`에서 작업했다. 사용하지 않는 `chatgpt/art-dialogue-gameplay-20261124` 브랜치를 삭제했으며, 일회성 삭제 워크플로도 제거했다.
+- 추적된 과거 `tmp/v68/npm-cache` 10개(약 38 MiB)를 Git 트리에서 제거했다. `scripts/clean-generated.cjs`, `scripts/report-disk-usage.cjs`, `npm run clean:generated`과 `npm run size:report`를 추가했다. `public/assets` 원화 및 `staff-terminations`을 삭제하지 않았다.
+- `src/lib/character-art.ts`, `CrewSystem.tsx`, `Game.tsx`: 직원 4명의 기본 상태 초상에서 정신력 변화를 반영하고, 대사 감정과 임계 정신력 충돌을 방지했다. 현재 별도 6종 초상이 전부 제작된 것은 아니며, 기존 WebP/PNG를 역할에 맞게 사용 중이다.
+- `game-v10.ts`와 `crew.ts`: 최대 동행 2명, 중복 편성·미합류·퇴장 직원 출동 차단, 출동 인원의 당일 기지 근무 이중 배치 금지, 저장/불러오기 마이그레이션. `test-v82`에 관련 회귀를 추가했다.
+- 과거에 생성된 정상 플레이 경제와 달라진 연료·필터 유지비를 고려하여 `scripts/balance-campaign.cjs`의 전략 플레이를 실제 구매·수동 파밍 방식으로 보강했다. 10일 방치와 12일 적극 운영 시나리오를 CI에서 실행한다.
+- `src/lib/cinematic-art.ts`: EVE 첫 만남/직원 4명 합류는 새 `SCN_*` 정본 경로를 우선 확인, 없으면 기존 원화로 안전하게 복귀한다.
+- `src/lib/incident-art.ts`, `IncidentArtwork.tsx`: 실제 41개 사건 ID마다 다른 정본 `EVT_XX_<id>.png` 경로를 등록했다. **이것은 이미지 41장 생성 완료가 아니다.** 새 이미지가 없으면 7종 기존 이미지로 돌아간다.
+- `src/lib/ending-art.ts`와 `Game.tsx`: ORIGIN ZERO E1~E8의 새 `END_01..08` 정본 경로를 우선 시도하고, 기존 8종 엔딩 원화로 복귀한다. 레거시 11개의 제목과 사용자 신규 파생 11개의 스토리를 혼동하지 않는다. 마지막 동물원에 탈출/본부 이송 개체가 생존 오버레이로 등장하던 경우를 제외했다.
+- `scripts/test-v83.cjs`에 EVE/직원 컷 5종, 실제 41개 사건, E1~E8과 레거시 엔딩 경로 회귀를 추가했다.
+- ChatGPT 이미지 생성 도구를 실제 실행하여 EVE 첫 만남 고밀도 CG를 제작했다. **해당 PNG는 이 채팅의 첨부 결과일 뿐 GitHub 바이너리로 커밋되지 않았다.** 불일치하는 추가 시안은 승인된 원화로 세지 않는다. 자동 GitHub 바이너리 업로드 환경이 확인되기 전까지 생성 완료라고 기록하지 말 것.
+- `docs/ART_REBUILD_STATUS_2026-11-24.md`에 현재 트리의 실제 보유 파일과 정본 미제작 슬롯(스토리 19, 사건 41, 엔딩 19)을 기록했다. 기존 36개 엔딩 원화를 삭제하거나 강제로 신규 19개 독립 게임 엔딩으로 변형하지 않았다.
+- GitHub Actions `.github/workflows/verify.yml`은 타입·ESLint·에셋·게임 회귀·DAY 생존 전략·프로덕션 QA 빌드·Chromium 브라우저 테스트를 수행한다. 최근 결과는 GitHub Actions에서 확인할 것. 모든 작업이 완료됐다는 의미가 아니다.
+
+**남은 필수 작업:** 신규 고밀도 원화 79개 슬롯 중 중복되지 않는 장면별 그림 실제 제작·GitHub 업로드·시각 QA, 직원 대화용 독립 표정 3종씩의 신규 제작과 연결, 11개 파생 후일담의 조건부 캐스트 구성, 사건별 후속 연출, 전체 장기 플레이/브라우저 QA, 실제 저장 상태별 최종 엔딩 검수, 미사용 구버전 에셋을 참조 제거 후 보수적 삭제, 다운로드 가능한 완성 ZIP.
+
+
 # ARKtopia / ORIGIN ZERO — 이어서 작업할 내용
 
 ## 2026-11-23 이미지 생성 및 늑대 변이 장면
