@@ -4,7 +4,7 @@ import {isFacilityPowered} from './facility-power';
 
 export type CameraId='CAM-01'|'CAM-02'|'CAM-03'|'CAM-04';
 export type SecurityStatus='alert'|'breach'|'escaped';
-export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string;containedNight?:number};
+export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string;containedNight?:number;observations?:number};
 export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[];watchPlan?:{day:number;response:import('./night-watch').WatchResponse};lastWatch?:import('./night-watch').WatchReport};
 export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0,lastScanDay:0,resolved:0,escapedIds:[],history:[]});
 export const cameras:{id:CameraId;title:string;description:string}[]=[
@@ -61,15 +61,25 @@ export function nightlySecurity(s:V10,roll=Math.random()):V10{
  const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20&&(!s.facilities?.cctv||isFacilityPowered(s,'cctv'))};sec.lastIncidentDay=s.day;
  trace(s,'CCTV 이상 행동',`${a.name}: ${securityPatterns[a.id].behavior}`,'mystery');return s;
 }
-export type SecurityAction='scan'|'inspect'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum';
+export type SecurityAction='scan'|'inspect'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum'|'watch';
 // Deterministic candidate among four image regions; no exact coordinates are stored in saves.
 export function cctvHotspotIndex(s:V10):number {
  const i=s.security?.incident; if(!i)return -1;
- return (s.day*3+i.animalId.length*5+i.steps)%4;
+ return (s.day*3+i.animalId.length*5+i.steps+(i.observations??0))%4;
+}
+function escalateSurveillance(s:V10,inc:SecurityIncident,amount:number){
+ inc.severity=cap(inc.severity+amount);
+ if(inc.status==='alert'&&inc.severity>=75){inc.status='breach';trace(s,'격리문 충격 감지','관제 지연으로 차폐판이 파손되기 시작했습니다.','bad');}
+ else if(inc.status==='breach'&&inc.severity>=95){inc.status='escaped';inc.camera='CAM-01';inc.tracked=false;inc.detected=false;inc.manualInspected=false;inc.lastTrace=securityPatterns[inc.animalId].escape;s.security.escapedIds=[...new Set([...s.security.escapedIds,inc.animalId])];trace(s,'감시 화면에서 신호 소실','문이 열리고 신호가 외곽으로 이탈했습니다. 실제 재추적이 필요합니다.','bad');}
 }
 export function securityAction(s:V10,action:SecurityAction,selectedCamera?:CameraId,hotspot?:number):V10{
  if(s.phase!=='day'||s.run||s.pendingIncident||s.pending||!s.security)return s;
  const n=clone(s),sec=n.security;const inc=sec.incident;
+ if(action==='watch'){
+  if(!inc||inc.manualInspected||inc.status==='escaped'||n.power<2||selectedCamera!==inc.camera)return s;
+  n.power=cap(n.power-2);inc.observations=(inc.observations??0)+1;inc.detected=true;
+  trace(n,'추가 프레임 관측','신호가 다른 구역으로 움직였습니다. 전력 -2. 기다리는 동안 격리 위험이 증가합니다.','mystery');escalateSurveillance(n,inc,6);return n;
+ }
  if(action==='inspect'){
   if(!inc||inc.manualInspected||hotspot===undefined||hotspot<0||hotspot>3||!selectedCamera)return s;
   if(n.power<3)return s;
@@ -80,7 +90,7 @@ export function securityAction(s:V10,action:SecurityAction,selectedCamera?:Camer
    trace(n,'CCTV 수동 판독 성공',`${inc.camera} 화면에서 정기 점검 기준과 달라진 지점을 직접 찾아냈습니다. ${securityPatterns[inc.animalId].behavior}`,'good');
   }else{
    n.threat=cap(n.threat+2);
-   trace(n,'CCTV 수동 판독 오탐','선택한 화면에 변화를 확인하지 못했습니다. 전력 3을 소모했고, 다음 감시 신호를 확인해야 합니다.','info');
+   trace(n,'CCTV 수동 판독 오탐','선택한 구역은 정상 기준과 일치합니다. 전력 -3, 위협 +2. 대응 지연으로 격리 위험이 증가합니다.','info');escalateSurveillance(n,inc,8);
   }
   return n;
  }

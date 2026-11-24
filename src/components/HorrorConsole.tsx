@@ -1,0 +1,6 @@
+'use client';
+import type {V10} from '@/lib/game-v10';
+export default function HorrorConsole({state,onRead,onResolve,onCamera}:{state:V10;onRead:(i:number)=>void;onResolve:(i:number)=>void;onCamera:()=>void}){
+ const e=state.horror?.pending;if(!e)return null;
+ return <section className="horror-console" aria-label="관제 이상 신호 조사"><header><div><span>ARK / UNVERIFIED RECORD</span><h3>{e.title}</h3></div><button type="button" onClick={onCamera}>{e.camera} 열기</button></header><p className="horror-dialogue">{e.scene}</p><div className="horror-status"><b>DAY {e.day} · 기한 DAY {e.expires-1}</b><span>확보한 증거 {e.read.length}/3</span></div><p>{e.question}</p><div className="horror-records">{e.records.map((r,i)=><button key={i} type="button" disabled={e.read.includes(i)} onClick={()=>onRead(i)}><span>FILE 0{i+1} {e.read.includes(i)?'· 복원됨':'· 미판독'}</span><b>{e.read.includes(i)?r:'원본 열기'}</b></button>)}</div><small>두 기록은 무료로 열 수 있습니다. 세 번째는 전력 1 또는 정신력 1. 기한을 넘기면 실제 위험이 증가합니다.</small><div className="horror-choices">{e.choices.map((label,i)=><button key={i} type="button" disabled={e.read.length<2} onClick={()=>onResolve(i)}>{label}</button>)}</div><p role="status">{state.lastOutcome}</p></section>;
+}

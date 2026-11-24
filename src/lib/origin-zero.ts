@@ -12,13 +12,13 @@ export type OriginRoute='hq'|'shelter'|null;
 export type RecallTrial={stage:number;chosen:string;expected:string;matched:boolean};
 export type RecallSession={step:number;correct:number;startedDay:number;answers:RecallTrial[]};
 export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string;steps?:RecallTrial[]};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
+export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean};
 export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
  o.scans??=[];o.privateMatches??={};o.recalls??={};o.photos=Math.max(0,Math.min(12,o.photos??0));o.immunity=cap(o.immunity??0);
  o.recallSessions??={};
- o.trackProgress=Math.max(0,Math.min(3,o.trackProgress??0));o.wrongTracks??=0;o.studies??=0;o.hqPressure??=0;o.stability??=85;o.hqIntel??=0;o.crisisDone??=false;
+ o.trackProgress=Math.max(0,Math.min(3,o.trackProgress??0));o.approachStep=Math.max(0,Math.min(3,o.approachStep??0));o.wrongTracks??=0;o.studies??=0;o.hqPressure??=0;o.stability??=85;o.hqIntel??=0;o.crisisDone??=false;
  return o;
 }
 export const photoRecords=[
@@ -39,7 +39,7 @@ export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  (((s.headquarters?.revealStage??0)>=2&&s.encounters>=2) || (s.encounters>=3&&(s.archive?.revealed||((s.crew?.members.length??0)>=2))&&(s.headquarters?.revealStage>=1||s.flags.humanTruth)) || (s.day>=30&&s.encounters>=2));
+  (((s.headquarters?.revealStage??0)>=2&&s.encounters>=2)||(s.encounters>=3&&((s.headquarters?.revealStage??0)>=1||s.clues>=3||(o?.scans.length??0)>=3)));
 }
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
@@ -65,15 +65,29 @@ function o(s:V10){return ensureOriginZero(s)}
 export const catTrackFrames=[
  {hint:'파손된 격리문 앞에 큰 변이 실루엣이 찍혔다. 본부는 시초 개체로 의심했지만 비상등과 깨진 화면 탓에 실제 크기는 알 수 없다.',answer:2,frames:['정문 통로 · 정상 출입문','급식실 · 빈 그릇','격리문 02 · 긁힌 차폐판']},
  {hint:'거대한 몸집으로 보이는 화면과 달리 발자국은 좁은 동물 이동구로 이어진다. 렌즈가 흔들린 순간 실루엣도 길게 늘어났다.',answer:0,frames:['낮은 이동구 · 작은 발자국','배수로 · 끌린 오염 자국','중앙 통로 · 큰 발자국']},
- {hint:'비상등이 꺼지자 거대한 괴물 그림자와 작은 검은 고양이가 하나로 겹쳐 보인다. 오른쪽 귀 흠집과 흰 가슴 털이 옛 사진과 일치한다.',answer:1,frames:['빈 복도 · 잔상만 남음','낮은 카메라 · 검은 고양이','격리문 · 겹친 그림자']}
+ {hint:'전원이 순간적으로 끊겼다. 형체가 사라졌지만 낮은 이동구 아래에서 가느다란 그림자가 한 번 더 움직였다. 화면의 시간과 이동 방향을 대조하라.',answer:1,frames:['빈 복도 · 03:17:08','낮은 이동구 · 03:17:12','격리문 · 03:16:59']}
 ] as const;
 export function pickOriginTrace(s:V10,frame:number):V10{
- const state=s.originZero;if(state?.cat!=='traced'||!Number.isInteger(frame)||frame<0||frame>2||s.phase!=='day')return s;
+ const state=s.originZero;if(state?.cat!=='traced'||state.trackProgress>=3||s.run||s.pendingIncident||!Number.isInteger(frame)||frame<0||frame>2||s.phase!=='day')return s;
  const n=copy(s) as V10;const d=o(n);const point=catTrackFrames[d.trackProgress];
  if(frame!==point.answer){d.wrongTracks++;n.threat=cap(n.threat+3);return report(n,'영상 경로 불일치','화면의 움직임이 끊어졌다. 흔적은 아직 남아 있다. 위협 +3.','bad');}
  d.trackProgress++;
- if(d.trackProgress===3){d.cat='captured';return report(n,'시초가 아니었다 · M-00 포획','이번 CCTV에서 시초라고 의심한 괴물은 별개의 개체가 아니었다. 겹친 그림자와 깨진 CCTV가 작은 검은 고양이를 거대 변이체처럼 보이게 했다. 외곽을 배회하는 특수 변이체 MUTANT와 M-00은 서로 다른 생명체다. 오른쪽 귀 흠집과 흰 털 한 가닥이 M-00 기록과 일치한다. 고양이가 유출을 일으켰다는 증거는 없다.');}
+ if(d.trackProgress===3){d.approachStep=0;return report(n,'외곽 좌표 확보 · 영상 종료','마지막 프레임의 이동구에서 신호가 끊겼다. EVE: 관리자님, 이 영상은 더 이상 실시간이 아닙니다. 현장 확인이 필요합니다.');}
  return report(n,'영상 경로 확보',`감시 기록 ${d.trackProgress}/3 일치. 다음 카메라 흔적으로 이동한다.`,'good');
+}
+export const originApproachScenes=[
+ {title:'외곽 · 끊어진 조명',speaker:'EVE',text:'03:17 이후 기록이 없습니다. 철창 너머에서 움직임이 감지됩니다. 크기와 거리는 아직 판별할 수 없습니다. 소음이 없는 경로를 확보하십시오.',choices:['낮은 자세로 움직임을 관찰한다','손전등을 높이 들고 달려간다','철창을 두드려 반응을 유도한다'],answer:0},
+ {title:'시야 끝의 두 눈',speaker:'관리자',text:'이브. 저거 보여? 아까 영상에 찍힌 것과 비슷한데… 잠깐, 그림자가 왜 저렇게 커?',choices:['그림자를 따라 전력 질주한다','광원을 낮춰 벽과 실루엣의 거리를 비교한다','큰 소리로 위협한다'],answer:1},
+ {title:'철창 아래의 움직임',speaker:'EVE',text:'두 번째 그림자는 움직이지 않습니다. 움직이는 신호는 아래쪽 하나뿐입니다. 소리를 내지 말고 접근하십시오.',choices:['격리문을 세게 닫는다','등을 돌리고 철창에 부딪힌다','몸을 낮추고 손을 내밀어 기다린다'],answer:2}
+] as const;
+export function approachOriginSignal(s:V10,choice:number):V10{
+ const d=s.originZero;if(d?.cat!=='traced'||d.trackProgress!==3||s.phase!=='day'||s.run||s.pending||s.pendingIncident||s.headquarters?.pendingAnimal||s.mind<=0||!Number.isInteger(choice)||choice<0||choice>2)return s;
+ const step=d.approachStep??0,scene=originApproachScenes[step];if(!scene||step===0&&s.ap<1)return s;
+ const n=copy(s) as V10,state=o(n);if(step===0)n.ap--;
+ if(choice!==scene.answer){state.wrongTracks++;n.threat=cap(n.threat+5);n.mind=cap(n.mind-2);return report(n,'외곽 접근 중단','철판이 울렸다. 가까운 곳에서 무언가 움직였다. 숨을 고르고 다시 시도한다. 위협 +5, 정신 -2.','bad');}
+ state.approachStep=step+1;
+ if(state.approachStep===3){state.cat='captured';return report(n,'시초가 아니었다 · 검은 고양이','관리자: ……고양이? EVE: 외형에 변이가 없습니다. 거대한 실루엣은 뒤쪽 조명과 철창의 겹친 그림자였습니다. 실제 배회형 MUTANT와는 별개의 개체입니다. 고양이가 유출을 일으켰다는 증거는 없다. 아직 신원은 확인되지 않았습니다.','mystery');}
+ return report(n,'현장 접근 · 신호 유지',step===0?'발소리가 끊겼다. 시야 끝의 움직임을 확인한다.':'그림자의 크기와 실제 움직임이 일치하지 않는다. 가까이에서 확인한다.','mystery');
 }
 export function analyzeOriginCat(s:V10):V10{
  if(s.originZero?.cat!=='captured'||s.phase!=='day'||s.ap<1||s.power<6)return s;
@@ -109,8 +123,35 @@ export function restoreOriginPhotos(s:V10,answer?:number):V10{
  const n=copy(s) as V10;const state=o(n);n.ap--;n.power=cap(n.power-8);state.photos=Math.min(12,start+3);
  const titles=photoRecords.slice(start,state.photos).map(x=>x.title.replace(/PHOTO \d+ · /,'')).join(' · ');
  n.clues+=1;n.knowledge+=4;
- if(state.photos===12){n.flags.humanTruth=true;n.flags.mirror=true;n.headquarters.revealStage=Math.max(3,n.headquarters.revealStage);state.endingEvidence=true;}
+ applyPhotoTruth(n);
  return report(n,'HIDDEN PHOTO · 원본 복원',`${String(start+1).padStart(2,'0')}~${String(state.photos).padStart(2,'0')}번 복원: ${titles}. ${state.photos===12?'제000호 관리자의 신원과 마지막 연구를 확인했다.':'손상된 사진의 다음 구획을 해독할 수 있다.'}`);
+}
+function applyPhotoTruth(n:V10){
+ const d=o(n);if(d.photos>=7)n.flags.humanTruth=true;
+ if(d.photos>=10)n.headquarters.revealStage=Math.max(2,n.headquarters.revealStage);
+ if(d.photos>=11){n.flags.mirror=true;n.headquarters.revealStage=Math.max(3,n.headquarters.revealStage);}
+ if(d.photos>=12)d.endingEvidence=true;
+}
+export const individualPhotoPuzzles=[
+ {question:'최초 기록의 시각과 일치하는 자료는?',hint:'기록 시작은 종전 이전이다.',options:['전쟁 중 연구 일지','폐허 구조 일지','오늘 급식표'],answer:0},
+ {question:'신경 반응 기록의 대조 항목은?',hint:'외부 입력 없이 반응이 반복된다.',options:['운송 온도','스스로 반복한 학습 패턴','사료 배급 시간'],answer:1},
+ {question:'훼손된 사진의 동일 개체를 판별하라.',hint:'오른쪽 귀와 가슴을 대조한다.',options:['왼쪽 발의 흉터','목걸이 번호','오른쪽 귀 흠집과 흰 털'],answer:2},
+ {question:'폐기 승인서의 원본은?',hint:'종전 직후이며 발신자 서명이 남았다.',options:['종전 직후 서명 문서','오늘 본부 명령','서명 없는 창고 전표'],answer:0},
+ {question:'격리동 사고의 순서를 복원하라.',hint:'전력 차단이 출입구 경보보다 먼저였다.',options:['외부 이동 → 전력 차단','전력 차단 → 출입구 경보','경보 → 평상시 점검'],answer:1},
+ {question:'오염 확산 지도를 연결하라.',hint:'최초 경보 위치에서 시간순으로 연결한다.',options:['최종 폐허부터 역순','지도 좌측부터','최초 격리 시설부터 시간순'],answer:2},
+ {question:'분리된 문서의 일련번호를 대조하라.',hint:'같은 번호가 다른 날짜에도 반복된다.',options:['동일한 번호의 두 기록','오늘 날짜만 있는 기록','번호가 없는 기록'],answer:0},
+ {question:'사진의 유실된 영역은?',hint:'촬영 기록에 어린아이와 두 개의 그림자가 표시된다.',options:['빈 출입구','가족 촬영 원본','시설 배선도'],answer:1},
+ {question:'음성 기록의 시간 순서를 대조하라.',hint:'오래된 녹음과 시스템 기동은 다른 날짜다.',options:['기동 이후 녹음만','가장 큰 음량 순','녹음 원본 → 시스템 기동'],answer:2},
+ {question:'반출 명세와 인수 명세를 연결하라.',hint:'동일 식별번호가 두 명세에 존재한다.',options:['같은 식별번호','가장 최근 문서','서명 없는 문서'],answer:0},
+ {question:'관리자 신원 문서의 검사값을 대조하라.',hint:'외형 정보가 아닌 신경 기록을 대조한다.',options:['얼굴 사진만 비교','신경 기록 식별값 비교','복장 번호 비교'],answer:1},
+ {question:'마지막 연구 문서의 누락된 분류표는?',hint:'이전 연구 결과와 원본 안정성 자료를 연결한다.',options:['폐기 명세만','직원 근무표만','원본과 비교 기록'],answer:2}
+] as const;
+export function restoreOriginPhoto(s:V10,answer:number):V10{
+ const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<4||s.phase!=='day'||s.run||s.pendingIncident||s.pending||!Number.isInteger(answer)||answer<0||answer>2)return s;
+ const n=copy(s) as V10,state=o(n),puzzle=individualPhotoPuzzles[state.photos];
+ if(answer!==puzzle.answer){n.power=cap(n.power-2);n.threat=cap(n.threat+2);return report(n,'기록 무결성 경고','복원 순서가 맞지 않습니다. 원본은 보존됩니다. 전력 -2, 위협 +2.','bad');}
+ n.ap--;n.power=cap(n.power-4);state.photos++;n.clues++;n.knowledge+=2;applyPhotoTruth(n);
+ return report(n,'HIDDEN PHOTO · 개별 증거 복원',photoRecords[state.photos-1].title+' — '+photoRecords[state.photos-1].detail);
 }
 export const RECALL_CONTEXT:Partial<Record<AnimalId,string>>={
  rabbit:'기억 활성 상태에서 치료와 안정화 반응 확인',fox:'창고의 보급 동선과 물자 배치 기억 대조',wolf:'보호 행동과 접근 거부 신호 측정',deer:'오염 지역에서 안전한 이동 경로 확보',owl:'야간 음향 패턴의 반복성 기록',crow:'반복 수집 행동과 장소 기억 비교',otter:'유수 환경 적응 및 스트레스 대조',lynx:'은폐 행동과 미세 반응 관찰',axolotl:'신체 재생 신호의 안정성 검토',moth:'야간 빛 반응을 통한 신경 적응 비교',mutant:'불안정한 조직 재생 반응의 비침습 기록',chimera:'신경 동기화의 불안정한 결합 기록',specter:'빛이 사라진 뒤 남는 잔향과 정체성 공백 기록'

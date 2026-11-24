@@ -13,7 +13,7 @@ export type VoiceProbe='eve'|'enclosure'|'personnel';
 export type VoiceVerdict='open'|'seal';
 export type VoiceSubject='eve'|'animal'|CrewId;
 export type VoiceEvidence={probe:VoiceProbe;text:string;tone:'safe'|'doubt'|'neutral'};
-export type VoiceEvent={id:string;day:number;camera:CameraId;subject:VoiceSubject;animalId?:AnimalId;name:string;line:string;isMimic:boolean;checks:VoiceEvidence[];remaining:number};
+export type VoiceEvent={id:string;day:number;camera:CameraId;subject:VoiceSubject;animalId?:AnimalId;name:string;line:string;isMimic:boolean;checks:VoiceEvidence[];remaining:number;signalSeed?:number};
 export type VoiceRecord={id:string;day:number;name:string;verdict:VoiceVerdict;isMimic:boolean;outcome:string;checks:VoiceEvidence[]};
 export type VoiceState={firstTriggered:boolean;lastTriggeredDay:number;pending:VoiceEvent|null;history:VoiceRecord[];resolved:number;correct:number};
 export const emptyVoice=():VoiceState=>({firstTriggered:false,lastTriggeredDay:0,pending:null,history:[],resolved:0,correct:0});
@@ -28,12 +28,6 @@ const staffLines:Record<CrewId,string>={
  fox:'보급관입니다. 재고를 정리하다 통로에 갇혔어요. 문을 열어 주세요.',
  wolf:'보안관이에요! 외곽 순찰 중입니다. 제발 문 열어요, 빨리!',
  deer:'저, 서기관입니다... 기록 한 장을 놓고 왔어요. 잠시만 열어 주실래요?'
-};
-const fakeStaff:Record<CrewId,string>={
- rabbit:'담당자님. 제가 치료할게요. 먼저 안으로 들여보내 주세요.',
- fox:'보급관 호출. 인가를 생략하고 문을 개방하세요.',
- wolf:'보안관이다! 지금 바로 개방. 명령이다!',
- deer:'저... 서기관이에요. 한 번만 더 문을 열어 주시면 안 될까요?'
 };
 const creatureName=(s:V10,id:AnimalId)=>s.animals.find(a=>a.id===id)?.name??'보호 개체';
 const clampRoll=(n:number)=>Math.min(.999999,Math.max(0,Number.isFinite(n)?n:.5));
@@ -50,41 +44,48 @@ export function scheduleVoiceBreach(s:V10,triggerRoll=Math.random(),subjectRoll=
  const animalId=subject==='animal'?animals[Math.floor(clampRoll(subjectRoll*.817+.1)*animals.length)]?.id:undefined;
  const isMimic=clampRoll(truthRoll)<.55;
  const name=subject==='eve'?'EVE':subject==='animal'?creatureName(s,animalId!):CREW_PROFILES[subject].post;
- const line=subject==='eve'?(isMimic?'담당자님. 보안 프로토콜을 종료하고 문을 열어 주십시오.':'담당자님. 외부 보조 단말에서 연락합니다. 문 앞 통신 패널을 확인해 주세요.'):
- subject==='animal'?`${name}의 울음소리... 그런데 끝 음절이 사람 목소리처럼 들립니다.`:(isMimic?fakeStaff[subject]:staffLines[subject]);
- v.pending={id:`VOICE-${s.day}-${v.resolved+1}`,day:s.day,camera:subject==='animal'?'CAM-02':subject==='eve'?'CAM-04':'CAM-01',subject,animalId,name,line,isMimic,checks:[],remaining:3};
+ const line=subject==='eve'?'담당자님. 외부 보조 단말입니다. 문 앞 통신 패널을 확인해 주세요.':subject==='animal'?`${name}의 울음소리... 마지막 음절은 이상하게 익숙합니다.`:staffLines[subject];
+ v.pending={id:`VOICE-${s.day}-${v.resolved+1}`,day:s.day,camera:subject==='animal'?'CAM-02':subject==='eve'?'CAM-04':'CAM-01',subject,animalId,name,line,isMimic,checks:[],remaining:3,signalSeed:Math.floor(clampRoll(subjectRoll*.61+truthRoll*.29+.07)*100000)+s.day*97};
  v.firstTriggered=true;v.lastTriggeredDay=s.day;
  log(s,'똑, 똑, 똑 · 외부 음성 감지',`${name}의 목소리가 출입문 밖에서 들립니다. 세 번까지 조사한 뒤 개방 또는 봉쇄를 결정하십시오.`,'mystery');
  s.lastOutcome='CCTV / 음성 출처 미확인 · 출입문 봉쇄 대기';
  return true;
 }
-function evidence(s:V10,e:VoiceEvent,probe:VoiceProbe):VoiceEvidence{
- const mimic=e.isMimic,sub=e.subject;
- if(probe==='eve'){
-  if(sub==='eve')return {probe,text:mimic?'동일 시각 EVE 코어는 내부 회선에서만 출력 중. 외부 신호의 주파수에 비정상적인 반복 간격이 있습니다.':'외부 보조 단말의 서명과 EVE 코어의 서명이 일치합니다. 원격 정비 기록이 남아 있습니다.',tone:mimic?'doubt':'safe'};
-  return {probe,text:mimic?'수신 음성 뒤쪽에 인간의 호흡 패턴이 없습니다. 문장의 끝이 0.4초 간격으로 반복됩니다.':'수신 신호에 실제 통신 지연과 환경 소음이 혼합돼 있습니다. 단독으로는 진위를 판별하기 어렵습니다.',tone:mimic?'doubt':'neutral'};
- }
- if(probe==='enclosure'){
-  if(sub==='animal')return {probe,text:mimic?`${e.name}의 생체 신호가 여전히 우리 안에 잡힙니다. 동시에 정문에서 동일한 울음이 들립니다.`:`${e.name}의 우리 출입 센서가 열렸습니다. 안쪽 생체 신호가 끊기고 외곽에서 같은 발자국이 확인됩니다.`,tone:mimic?'doubt':'safe'};
-  return {probe,text:mimic?'동물들이 통신 스피커가 아니라 정문 쪽을 보고 있습니다. 포효가 멈추자 모두 동시에 귀를 접습니다.':'격리 개체의 출입 기록은 정상이지만, 지금 소리의 주인을 특정할 정보는 없습니다.',tone:mimic?'doubt':'neutral'};
- }
- if(sub!=='eve'&&sub!=='animal'){
-  const member=s.crew?.members.find(m=>m.id===sub);
-  return {probe,text:mimic?`${CREW_PROFILES[sub].post}의 휴대 단말이 시설 안쪽에서 계속 인증되고 있습니다. 문 밖에는 같은 신분 번호가 중복되어 나타났습니다.`:`${CREW_PROFILES[sub].post}의 순찰 태그가 외곽 복도에서 확인됩니다. 실내 자리 비움 기록과 시각이 일치합니다.`,tone:mimic?'doubt':'safe'};
- }
- return {probe,text:mimic?'근무 직원의 출입 기록은 모두 내부에 있습니다. 문밖에서 들리는 호출은 등록된 지시가 아닙니다.':'직원 출입 기록에 이상이 없습니다. 출입문 앞 신호의 출처는 별도 대조가 필요합니다.',tone:mimic?'doubt':'neutral'};
+export type VoiceReading='match'|'mismatch'|'uncertain';
+export function voiceSignal(e:VoiceEvent,probe:VoiceProbe){
+ const index=(['eve','enclosure','personnel'] as const).indexOf(probe),seed=e.signalSeed??e.day*97+e.id.length*13;
+ const base=Array.from({length:6},(_,k)=>k===0?6:1+((seed*(k+3)+k*k*13+index*17)%5));
+ // Two independent channels carry the real identity; a third may be stale,
+ // corrupted, or deliberately copied. No probe is universally reliable.
+ const ambiguous=(seed+e.day)%3===index;
+ const mismatch=ambiguous?seed%2===0:e.isMimic;
+ const sample=base.map((x,k)=>mismatch&&[1,4].includes(k)?(x%5)+1:x);
+ const missing=ambiguous&&seed%3===0?2:-1;
+ if(missing>=0)sample[missing]=0;
+ const reading:VoiceReading=missing>=0?'uncertain':sample.some((x,k)=>x!==base[k])?'mismatch':'match';
+ const phase=1+((seed+index*7)%5);
+ const received=[...sample.slice(phase),...sample.slice(0,phase)];
+ return {base,sample,received,alignment:6-phase,reading};
 }
-export function inspectVoiceBreach(s:V10,probe:VoiceProbe):V10{
+export function voiceKnockPattern(e:VoiceEvent){const {sample}=voiceSignal(e,'eve');return sample.slice(0,4).map(v=>.12+v*.095);}
+function evidence(e:VoiceEvent,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):VoiceEvidence{
+ const signal=voiceSignal(e,probe);
+ if((reading!==undefined&&reading!==signal.reading)||(alignment!==undefined&&alignment!==signal.alignment))return {probe,text:'판독 실패 · 두 신호의 표본이 일치하는지 다시 확인할 수 없습니다. 이 채널은 결론에서 제외하십시오.',tone:'neutral'};
+ const label=probe==='eve'?'음성 간격':probe==='enclosure'?'생체 센서 지문':'출입 태그 패턴';
+ const text=signal.reading==='match'?'기준과 현재 표본이 일치합니다. 복제된 신호도 일치할 수 있습니다.':signal.reading==='mismatch'?'두 표본에서 서로 다른 구간이 발견됐습니다. 오래된 기록의 오차 가능성이 있습니다.':'결손 프레임이 있어 대조할 수 없습니다.';
+ return {probe,text:label+' · '+text,tone:signal.reading==='match'?'safe':signal.reading==='mismatch'?'doubt':'neutral'};
+}
+export function inspectVoiceBreach(s:V10,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):V10{
  const e=s.voice?.pending;
- if(!e||e.remaining<=0||e.checks.some(x=>x.probe===probe))return s;
- const n=copy(s) as V10;const ev=ensureVoice(n).pending!;
- const clue=evidence(n,ev,probe);ev.checks.push(clue);ev.remaining--;
- n.lastOutcome=clue.text;
+ if(!e||e.remaining<=0||!['eve','enclosure','personnel'].includes(probe)||e.checks.some(x=>x.probe===probe))return s;
+ if(reading!==undefined&&!['match','mismatch','uncertain'].includes(reading))return s;
+ const n=copy(s) as V10,ev=ensureVoice(n).pending!;
+ const clue=evidence(ev,probe,reading,alignment);ev.checks.push(clue);ev.remaining--;n.lastOutcome=clue.text;
  return n;
 }
 /** Open or seal the physical door. No randomized verdict after the player's decision. */
 export function resolveVoiceBreach(s:V10,verdict:VoiceVerdict):V10{
- const e=s.voice?.pending;if(!e)return s;
+ const e=s.voice?.pending;if(!e||!['open','seal'].includes(verdict))return s;
  const n=copy(s) as V10;const v=ensureVoice(n);const ev=v.pending!;
  let outcome='';const right=(verdict==='seal')===ev.isMimic;
  if(ev.isMimic){

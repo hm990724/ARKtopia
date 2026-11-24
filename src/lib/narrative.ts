@@ -16,8 +16,8 @@ export const ensureNarrative=(s:V10):NarrativeState=>{
 export type Chapter=1|2|3|4|5;
 export function currentChapter(s:V10):Chapter{
  if(s.phase==='finale'||s.phase==='ending')return 5;
- if(s.flags.mirror&&s.headquarters?.revealStage>=3)return 4;
- if(s.flags.humanTruth&&s.headquarters?.revealStage>=2)return 3;
+ if(s.originZero?.firstPositiveDay&&s.originZero.photos>=11)return 4;
+ if(s.originZero?.firstPositiveDay)return 3;
  if(s.day>=4&&(s.animals.some(a=>a.records>0)||s.headquarters?.transferred.length>0))return 2;
  return 1;
 }
@@ -57,8 +57,8 @@ export function availableCase(s:V10,id:CaseId):boolean{
  const c=currentChapter(s);
  if(id==='repeated_knocks')return c>=2&&(s.animals.some(a=>a.records>0)||s.headquarters.transferred.length>0);
  if(id==='shift_report')return c>=2&&s.crew?.members.some(m=>m.mind>0)===true;
- if(id==='preservation_order')return c>=3&&s.flags.humanTruth&&s.headquarters.revealStage>=2;
- if(id==='daughter_archive')return c>=4&&s.flags.mirror&&s.headquarters.revealStage>=3;
+ if(id==='preservation_order')return c>=3&&!!s.originZero?.firstPositiveDay&&s.originZero.photos>=10&&s.flags.humanTruth&&s.headquarters.revealStage>=2;
+ if(id==='daughter_archive')return c>=3&&!!s.originZero?.firstPositiveDay&&s.originZero.photos>=9;
  return false;
 }
 export function decideCase(s:V10,id:CaseId,choice:number):V10{
