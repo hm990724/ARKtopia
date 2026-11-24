@@ -4,18 +4,19 @@ import {createPortal} from 'react-dom';
 import {Radio,HeartPulse,Brain,ChevronRight,ShieldAlert,Lock,BookOpen} from 'lucide-react';
 import {CREW_IDS,CREW_PROFILES,CREW_LOSS_EFFECTS,type CrewId} from '@/lib/crew';
 import type {V10} from '@/lib/game-v10';
-import {staffCondition,staffStatusPortrait,staffDialoguePortrait,type PortraitMood} from '@/lib/character-art';
+import {staffCondition,staffStatusPortrait,staffDialogueArtworkCandidates,type PortraitMood} from '@/lib/character-art';
 import {cinematicArtworkCandidates} from '@/lib/cinematic-art';
 
-export function StaffPortrait({id,className='',condition='safe',dialogueMood}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical';dialogueMood?:PortraitMood}){
- const primary=dialogueMood?staffDialoguePortrait(id,dialogueMood,condition):staffStatusPortrait(id,condition);
- const sources=[primary, ...(dialogueMood?[staffStatusPortrait(id,condition)]:[]),
+export function StaffPortrait({id,className='',condition='safe',dialogueMood,dialogueText}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical';dialogueMood?:PortraitMood;dialogueText?:string}){
+ const dialogueSources=dialogueMood?staffDialogueArtworkCandidates(id,dialogueMood,condition,dialogueText??''):[staffStatusPortrait(id,condition)];
+ const sources=[...new Set([
+  ...dialogueSources,
   `/assets/staff/${id}/portrait.webp`,
   `/assets/cinematics/staff-arrivals/${id}/scene.webp`
- ];
+ ])];
  const [index,setIndex]=useState(0);
- useEffect(()=>setIndex(0),[id,condition,dialogueMood]);
- const key=`${id}-${condition}-${dialogueMood??'status'}`;
+ useEffect(()=>setIndex(0),[id,condition,dialogueMood,dialogueText]);
+ const key=`${id}-${condition}-${dialogueMood??'status'}-${dialogueText??''}`;
  const current=index;
  const fallback=current>=sources.length;
  const arrivalFrame=current===sources.length-1;
