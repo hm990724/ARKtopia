@@ -31,7 +31,8 @@
     "test:ending-matrix": "node scripts/test-ending-matrix.cjs",
     "balance:campaign": "node scripts/balance-campaign.cjs",
     "test:v82": "node scripts/test-v82.cjs",
-    "clean:generated": "node scripts/clean-generated.cjs"
+    "clean:generated": "node scripts/clean-generated.cjs",
+    "size:report": "node scripts/report-disk-usage.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
