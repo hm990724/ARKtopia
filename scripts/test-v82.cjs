@@ -19,9 +19,9 @@ for(const id of crewIds){
  for(const url of options){
   assert.ok(fs.existsSync(path.join(__dirname,'../public',url)),id+': missing portrait '+url);
  }
- assert.match(staffStatusPortrait(id,'critical'),/portrait_critical\\.webp$/);
- assert.match(staffDialoguePortrait(id,'critical','safe'),/portrait_critical\\.png$/);
- assert.match(staffDialoguePortrait(id,'anxious','safe'),/portrait_unstable\\.png$/);
+ assert.ok(staffStatusPortrait(id,'critical').endsWith('portrait_critical.webp'));
+ assert.ok(staffDialoguePortrait(id,'critical','safe').endsWith('portrait_critical.png'));
+ assert.ok(staffDialoguePortrait(id,'anxious','safe').endsWith('portrait_unstable.png'));
  assert.equal(staffDialoguePortrait(id,'neutral','critical'),staffStatusPortrait(id,'critical'));
  assert.equal(characterPortrait(id,'critical'),staffStatusPortrait(id,'critical'));
 }
@@ -52,7 +52,7 @@ const migrated=loadGame(JSON.parse(JSON.stringify(legal)));
 assert.deepEqual(migrated.run.companions,['rabbit','fox']);
 const source=fs.readFileSync(path.join(__dirname,'../src/components/Game.tsx'),'utf8');
 const roster=fs.readFileSync(path.join(__dirname,'../src/components/CrewSystem.tsx'),'utf8');
-assert.match(source,/dialogueMood=\\{mood\\}/,'dialogue expresses emotional portraits');
-assert.match(roster,/condition=\\{staffCondition\\(member\\.mind\\)\\}/,'roster reflects sanity changes');
-assert.match(roster,/condition=\\{staffCondition\\(selectedMember\\.mind\\)\\}/,'detail modal reflects sanity changes');
+assert.ok(source.includes('dialogueMood={mood}'),'dialogue expresses emotional portraits');
+assert.ok(roster.includes('condition={staffCondition(member.mind)}'),'roster reflects sanity changes');
+assert.ok(roster.includes('condition={staffCondition(selectedMember.mind)}'),'detail modal reflects sanity changes');
 console.log('PASS v82: crew condition portraits, reactive dialogue expressions, and valid two-person sortie guards');
