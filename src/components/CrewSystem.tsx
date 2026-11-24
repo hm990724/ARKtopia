@@ -5,6 +5,7 @@ import {Radio,HeartPulse,Brain,ChevronRight,ShieldAlert,Lock,BookOpen} from 'luc
 import {CREW_IDS,CREW_PROFILES,CREW_LOSS_EFFECTS,type CrewId} from '@/lib/crew';
 import type {V10} from '@/lib/game-v10';
 import {staffCondition,staffStatusPortrait,staffDialoguePortrait,type PortraitMood} from '@/lib/character-art';
+import {cinematicArtworkCandidates} from '@/lib/cinematic-art';
 
 export function StaffPortrait({id,className='',condition='safe',dialogueMood}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical';dialogueMood?:PortraitMood}){
  const primary=dialogueMood?staffDialoguePortrait(id,dialogueMood,condition):staffStatusPortrait(id,condition);
@@ -27,12 +28,14 @@ export type CinematicKind='eve'|CrewId;
 /** Full-screen, uncropped cinematic. Art and captions always occupy separate regions. */
 export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>void}){
  const [imageStatus,setImageStatus]=useState<'loading'|'loaded'|'missing'>('loading');
+ const [imageIndex,setImageIndex]=useState(0);
  const [step,setStep]=useState(0);
  const [shown,setShown]=useState(0);
  const textTimer=useRef<number|null>(null);
  const first=kind==='eve';
  const data=first?null:CREW_PROFILES[kind];
- const bg=first?'/assets/cinematics/eve-first-meeting/scene.webp':`/assets/cinematics/staff-arrivals/${kind}/scene.webp`;
+ const scenes=cinematicArtworkCandidates(kind);
+ const bg=scenes[Math.min(imageIndex,scenes.length-1)];
  const lines=first?[
   'SECURE CHANNEL // OFFLINE · 2089',
   '비상 전원이 응답합니다. 유리창 너머에서 누군가 깨어납니다.',
@@ -43,7 +46,7 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
   `${data!.post} · 파견 인력 인증 완료. 이전 근무 기록은 보안 정책에 따라 비공개 처리되었습니다.`
  ];
  const line=lines[step]??'';
- useEffect(()=>{setImageStatus('loading');setStep(0);setShown(0);},[kind]);
+ useEffect(()=>{setImageStatus('loading');setImageIndex(0);setStep(0);setShown(0);},[kind]);
  useEffect(()=>{
   setShown(0);
   let position=0;
@@ -71,7 +74,7 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
    <header className="v45-cinematic-top v62-cinema-header"><span><Radio size={14}/> ARK // {first?'FIRST CONTACT':'PERSONNEL ARRIVAL'}</span><span className="v62-cinema-live"><i/> {imageStatus==='loaded'?'ARCHIVE RESTORED':imageStatus==='missing'?'IMAGE UNAVAILABLE':'SIGNAL DECODING'}</span><small>CHAPTER {String(step+1).padStart(2,'0')} / {String(lines.length).padStart(2,'0')}</small></header>
    <div className={'v45-cinematic-image v54-cinematic-image v62-cinema-stage '+(imageStatus==='loaded'?'is-loaded':'is-unavailable')}>
     <div className="v62-cinema-ambient" style={{backgroundImage:`url(${bg})`}} aria-hidden="true"/>
-    <img key={bg} src={bg} className="v54-cinematic-art" alt={first?'주인공과 이브의 첫 만남 장면':`${data!.post} 본부 도착 장면`} onLoad={()=>setImageStatus('loaded')} onError={()=>setImageStatus('missing')}/>
+    <img key={bg} src={bg} className="v54-cinematic-art" alt={first?'주인공과 이브의 첫 만남 장면':`${data!.post} 본부 도착 장면`} onLoad={()=>setImageStatus('loaded')} onError={()=>{if(imageIndex<scenes.length-1){setImageIndex(v=>v+1);setImageStatus('loading');}else setImageStatus('missing');}}/>
     {imageStatus!=='loaded'&&<div className="v45-cinematic-fallback v54-cinematic-fallback">
       {first?<span>EVE <i>INITIALIZATION</i></span>:<div className="v53-cinematic-personnel"><StaffPortrait id={kind as CrewId} className="v53-cinematic-personnel-art"/><span>ARK / PERSONNEL ARRIVAL<i>{data!.post}</i></span></div>}
       {imageStatus==='missing'&&<div className="v54-image-status"><b>SCENE FILE UNAVAILABLE</b><span>이미지 파일이 확인되지 않습니다. 자막은 계속 진행할 수 있습니다.</span><a href={bg} target="_blank" rel="noreferrer">장면 파일 확인</a></div>}
