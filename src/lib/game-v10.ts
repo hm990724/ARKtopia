@@ -742,12 +742,13 @@ export function leaveField(s:V10,kind='조기 철수'):V10{
  log(n,'격자 탐사 정산',n.lastOutcome,'info');return n;
 }
 /** v33 hidden-pursuit command; the UI never receives the living creature's actual cell. */
-export function performVeiledHunt(s:V10,command:{type:HuntMode;cell?:number;clue?:number;setting?:import('./hidden-hunt').HuntSetting}):V10{
+export function performVeiledHunt(s:V10,command:import('./hidden-hunt').HuntCommand):V10{
  if(!s.capture||!s.field||!s.run||!s.capture.hunt||s.field.combat||s.phase!=='day')return s;
+ if(command.method==='cage'&&(!s.run.gear.includes('cage')||command.type!=='net'))return s;
  const outcome=performHuntAction(s.capture.hunt,command);
  if(!outcome.changed)return s;
  const n=copy(s) as V10;n.capture!.hunt=outcome.state;n.lastOutcome=outcome.state.lastEvent;
- if(n.field!.threat){const noise=command.type==='wait'?-8:command.type==='net'?18:command.type==='sound'?22:command.type==='search'?5:3;n.field!.noise=cap(n.field!.noise+noise);if(command.type!=='wait')n.field!.concealed=false;}
+ if(n.field!.threat){const noise=command.type==='wait'?-8:command.type==='net'?(command.method==='calm'?-4:command.method==='cage'?6:18):command.type==='sound'?22:command.type==='search'?5:3;n.field!.noise=cap(n.field!.noise+noise);if(command.type!=='wait')n.field!.concealed=false;}
  if(command.type==='reveal'&&command.clue!==undefined&&outcome.state.revealed[command.clue])noteSpeciesTrait(n,outcome.state.species,command.clue);
  outcome.state.revealed.forEach((known,i)=>{if(known&&!s.capture!.hunt!.revealed[i])noteSpeciesTrait(n,outcome.state.species,i)});
  if(['search','reveal','bait','sound','light','barrier','wait'].includes(command.type)){const cell=command.cell===undefined?'':` / 조사 칸 ${String.fromCharCode(65+(command.cell%8))}${Math.floor(command.cell/8)+1}`;noteFieldAction(n,outcome.state.species,outcome.state.lastEvent+cell);}
@@ -759,7 +760,7 @@ export function performVeiledHunt(s:V10,command:{type:HuntMode;cell?:number;clue
   n.capture=null;
   n.tacticalCaptured=true;n.pending=outcome.state.species;
   if(run.gear.includes('cage')&&run.cageUsed)n.pendingCage=true;
-  n.lastOutcome=`${specs.find(x=>x.id===outcome.state.species)?.name} 은신 추적 성공. 보호 이송 준비가 완료됐습니다.`;
+  n.lastOutcome=`${specs.find(x=>x.id===outcome.state.species)?.name} 은신 추적 성공. ${outcome.state.captureMethod==='cage'?'유인 우리':outcome.state.captureMethod==='calm'?'진정 접근':'직접 추적·그물'}로 보호 이송 준비 완료.`;
   log(n,'발자국 역추적 · 포획 성공',n.lastOutcome,'good');
  }else if(outcome.lost){
   n.mind=cap(n.mind-outcome.penalty.hp);

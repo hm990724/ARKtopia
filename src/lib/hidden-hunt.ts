@@ -10,6 +10,8 @@ export const huntSize=(s:Pick<HuntState,'size'|'terrain'>)=>s.size??(s.terrain.l
 export const HUNT_CELLS=HUNT_SIZE*HUNT_SIZE;
 export type HuntTool='bait'|'sound'|'light'|'barrier';
 export type HuntMode='search'|'net'|HuntTool|'wait'|'reveal';
+export type CaptureMethod='net'|'cage'|'calm';
+export type HuntCommand={type:HuntMode;cell?:number;clue?:number;setting?:HuntSetting;method?:CaptureMethod;aim?:number};
 export type Terrain='thicket'|'path'|'mud'|'water'|'ruin'|'root';
 export type HuntSetting='quiet'|'dim'|'bright'|'cool-clean'|'warm-clean'|'cool-dirty'|'warm-dirty';
 export type HuntObject={cell:number;kind:HuntTool;life:number;setting?:HuntSetting};
@@ -40,7 +42,7 @@ export function observationAge(state:HuntState,cell:number):number{
 }
 
 export type HuntState={
- version:35;size?:6|8;trail?:{cell:number;turn:number}[];species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
+ version:35;trap?:{cell:number;life:number}|null;calmProgress?:number;captureMethod?:CaptureMethod;size?:6|8;trail?:{cell:number;turn:number}[];species:AnimalId;tutorial:boolean;seed:number;turn:number;actions:number;maxActions:number;
  // Hidden except in searched clearings; the creature moves after an action.
  position:number;previous:number;footprints:number[];shaking:number[];
  terrain:Terrain[];objects:HuntObject[];revealed:boolean[];
@@ -139,7 +141,7 @@ export function normalizeHunt(raw:HuntState):HuntState {
  const previousBase=['wolf','lynx','mutant','chimera'].includes(raw.species)?9:10;
  const upgradedMax=!raw.tutorial&&raw.maxActions<20?20+Math.max(0,raw.maxActions-previousBase):raw.maxActions;
  const actionBonus=upgradedMax-raw.maxActions;
- return {...raw,version:35,size:size as 6|8,searchedAt,observations,lastSearch,maxActions:upgradedMax,actions:Math.min(upgradedMax,raw.actions+actionBonus),scanZone:Number.isInteger(raw.scanZone)&&raw.scanZone!>=0&&raw.scanZone!<=3?raw.scanZone:null,scanTurn:Number.isFinite(raw.scanTurn)?raw.scanTurn:undefined};
+ return {...raw,version:35,trap:raw.trap&&Number.isInteger(raw.trap.cell)&&raw.trap.cell>=0&&raw.trap.cell<cells&&raw.trap.life>0?{cell:raw.trap.cell,life:Math.min(6,raw.trap.life)}:undefined,calmProgress:raw.calmProgress?Math.max(0,Math.min(3,raw.calmProgress)):undefined,size:size as 6|8,searchedAt,observations,lastSearch,maxActions:upgradedMax,actions:Math.min(upgradedMax,raw.actions+actionBonus),scanZone:Number.isInteger(raw.scanZone)&&raw.scanZone!>=0&&raw.scanZone!<=3?raw.scanZone:null,scanTurn:Number.isFinite(raw.scanTurn)?raw.scanTurn:undefined};
 }
 function relocateOnCreate(seed:number,species:AnimalId,size:number):{old:number;now:number}{const old=size+Math.floor(randomAt(seed,0,1)*(size*(size-2)));const options=rangeChoices(old,HUNT_TRAITS[species].speed,size);return {old,now:options[Math.floor(randomAt(seed,0,2)*options.length)]??old}}
 function rangeChoices(at:number,steps:number,size=8){const [x,y]=coord(at,size);const out:number[]=[];for(let dy=-steps;dy<=steps;dy++)for(let dx=-steps;dx<=steps;dx++){if(Math.abs(dx)+Math.abs(dy)!==steps)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&nx<size&&ny>=0&&ny<size)out.push(ny*size+nx)}return out;}
@@ -165,6 +167,7 @@ function chooseStep(state:HuntState):number{
  let step=trait.speed;
  // Bait never captures: it gently moves a food-motivated creature one square.
  if(food.some(o=>o.kind==='bait'&&rate(state,'bait')>0&&huntDistance(state.position,o.cell,size)<=5))step=1;
+ if(state.trap&&state.fear<=45&&huntDistance(state.position,state.trap.cell,size)<=4)step=1;
  if(state.species==='chimera'&&state.turn%3===2)step=3;
  if(state.species==='deer'&&state.fear>=43)step=3;
  const barred=new Set(state.objects.filter(o=>o.kind==='barrier').map(o=>o.cell));
@@ -181,6 +184,7 @@ function chooseStep(state:HuntState):number{
   const terrain=state.terrain[cell];
   if(terrain==='thicket')points+=1.2;
   points+=huntClearingBias(state,cell);
+  if(state.trap){const t=state.trap.cell;const attracted=food.some(o=>huntDistance(o.cell,t,size)<=2&&rate(state,o.kind)>0);if(attracted||state.fear<=35)points+=(huntDistance(state.position,t,size)-huntDistance(cell,t,size))*15;}
   if(['otter','axolotl'].includes(state.species)&&terrain==='water')points+=4;
   if(['owl','lynx'].includes(state.species)&&terrain==='thicket')points+=2;
   if(state.species==='moth'&&terrain==='ruin')points+=.6;
@@ -198,7 +202,7 @@ function chooseStep(state:HuntState):number{
  return scored[0].cell;
 }
 function finishPenalty(state:HuntState){switch(state.species){case 'rabbit':return {...nil};case 'fox':return {...nil,parts:1};case 'crow':return {...nil,parts:1};case 'deer':return {...nil,threat:7};case 'owl':return {...nil,threat:3};case 'otter':return {...nil,food:2};case 'axolotl':return {...nil,infection:9};case 'moth':return {...nil,threat:4};case 'wolf':return {...nil,hp:22,threat:8};case 'lynx':return {...nil,hp:17};case 'mutant':return {...nil,hp:31,infection:8};case 'specter':return {...nil,threat:6};case 'chimera':return {...nil,hp:26,infection:12};}}
-export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:number;clue?:number;setting?:HuntSetting}):HuntResult{
+export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
  const size=huntSize(raw),half=size/2;
  const unchanged: HuntResult={state:raw,changed:false,won:false,lost:false,penalty:nil};
  if(raw.outcome!=='playing'||raw.actions<=0)return unchanged;
@@ -208,16 +212,38 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  const current={...raw,objects:raw.objects.map(x=>({...x})),revealed:[...raw.revealed],
   searchedAt:{...(raw.searchedAt??{})},observations:{...(raw.observations??{})},lastSearch:raw.lastSearch??null,habits:{...raw.habits},log:[...raw.log]};
  let text='',kind:HuntLog['kind']='event';
- if(action.type==='net'){
+ const method=action.method??'net';
+ const capture=(message:string,via:CaptureMethod):HuntResult=>{
+  current.outcome='caught';current.captureMethod=via;current.resultText=message;
+  return {state:msg(current,message,'hint'),changed:true,won:true,lost:false,penalty:nil};
+ };
+ if(action.type==='net'&&method==='cage'){
+  const target=action.cell!;
+  if(current.trap||current.terrain[target]==='water'||current.objects.some(o=>o.cell===target&&o.kind==='barrier'))return unchanged;
+  current.trap={cell:target,life:6};text='유인 우리 설치 · 6턴 동안 작동합니다. 선호하는 자극을 가까이 배치하고 기다리세요.';kind='hint';
+ }else if(action.type==='net'&&method==='calm'){
+  const target=action.cell!,distance=huntDistance(target,current.position,size);
+  const observed=Object.hasOwn(current.searchedAt,String(current.position))||(current.lastSearch?.found&&current.turn-current.lastSearch.turn<=1);
+  const dangerous=['wolf','lynx','mutant','chimera'].includes(current.species);
+  const threshold=dangerous?22:44;
+  if(distance<=1&&observed&&current.fear<=threshold){
+   current.calmProgress=(current.calmProgress??0)+1;current.fear=Math.max(0,current.fear-12);current.predator=Math.max(0,current.predator-8);
+   if(current.calmProgress>=(dangerous?3:2)){current.actions--;current.turn++;current.lastCommand='net';current.selectedCell=target;return capture('교감과 진정을 거쳐 개체가 스스로 접근했습니다. 안전하게 보호 이송합니다.','calm');}
+   current.searchedAt[String(current.position)]=current.turn+1;current.actions--;current.turn++;current.lastCommand='net';current.selectedCell=target;
+   if(current.actions<=0){current.outcome='escaped';current.resultText='진정 도중 작전 시간이 소진되었습니다.';return {state:msg(current,current.resultText,'error'),changed:true,won:false,lost:true,penalty:finishPenalty(current)};}
+   return {state:msg(current,'개체가 머물며 경계를 풀고 있습니다. 같은 위치에서 다시 천천히 접근하세요.','hint'),changed:true,won:false,lost:false,penalty:nil};
+  }
+  current.calmProgress=0;current.fear=Math.min(100,current.fear+9);text='개체가 접근을 거부했습니다. 실제 위치를 확인하고 청음·대기로 경계를 낮추세요.';kind='warning';
+ }else if(action.type==='net'){
   const target=action.cell!;
   const distance=huntDistance(target,current.position,size);
   const hasFreshObservation=!!current.lastSearch&&current.turn-current.lastSearch.turn<=3&&huntDistance(current.lastSearch.cell,current.position,size)<=3;
   const inScanZone=current.scanZone!==null&&current.scanZone!==undefined&&current.scanTurn!==undefined&&current.turn-current.scanTurn<=2&&((current.position%size>=half?1:0)+(Math.floor(current.position/size)>=half?2:0))===current.scanZone;
   const lured=current.objects.some(o=>o.kind!=='barrier'&&o.life>0&&huntDistance(o.cell,current.position,size)<=2);
-  if(distance<=1&&(Object.hasOwn(current.searchedAt,String(current.position))||hasFreshObservation||inScanZone||lured||freshTrailCells(current).includes(current.position))){
+  const radius=action.aim===undefined||action.aim>=0.65?1:0;
+  if(distance<=radius&&(Object.hasOwn(current.searchedAt,String(current.position))||hasFreshObservation||inScanZone||lured||freshTrailCells(current).includes(current.position))){
    current.actions--;current.turn++;current.outcome='caught';current.selectedCell=target;current.lastCommand='net';
-   current.resultText='직접 던진 포획 그물이 이동 경로를 덮었습니다. 개체를 다치게 하지 않고 안전하게 확보했습니다.';
-   return {state:msg(current,current.resultText,'hint'),changed:true,won:true,lost:false,penalty:nil};
+   return capture('직접 던진 포획 그물이 이동 경로를 덮었습니다. 개체를 다치게 하지 않고 안전하게 확보했습니다.','net');
   }
   current.fear=Math.min(100,current.fear+14);current.misses++;
   current.searchedAt[String(target)]=current.turn+1;
@@ -234,6 +260,11 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
   // Never expose global footprints/shaking: only the selected square is sampled.
   current.observations[String(searchedCell)]={kind:evidence,turn:current.turn};
   current.lastSearch={cell:searchedCell,found:searchedCell===current.position,turn:current.turn+1};
+  if(action.cell===current.position&&!current.tutorial){
+   current.actions--;current.turn++;current.selectedCell=searchedCell;current.lastCommand='search';current.fear=Math.min(100,current.fear+3);
+   if(current.actions<=0){current.outcome='escaped';current.resultText='개체를 찾았지만 포획 행동이 남지 않았습니다.';return {state:msg(current,current.resultText,'error'),changed:true,won:false,lost:true,penalty:finishPenalty(current)};}
+   return {state:msg(current,'개체의 실제 위치를 확인했습니다. 수색은 구조가 아닙니다. 그물, 유인 우리 또는 진정 접근을 선택하세요.','hint'),changed:true,won:false,lost:false,penalty:nil};
+  }
   if(action.cell===current.position){
    current.actions--;current.turn++;current.outcome='caught';current.selectedCell=action.cell!;current.lastCommand='search';
    current.resultText=current.tutorial?'풀숲에서 토끼를 발견했습니다. EVE의 첫 구조 보정이 활성화됩니다.':'풀숲을 젖히자 개체의 모습이 드러났습니다. 숨은 위치를 정확히 찾아 보호 이송합니다.';
@@ -274,6 +305,16 @@ export function performHuntAction(raw:HuntState,action:{type:HuntMode;cell?:numb
  current.trail=[...(current.trail??[]),{cell:from,turn:current.turn}].filter(t=>current.turn-t.turn<=6);
  current.footprints=[...new Set(current.trail.map(t=>t.cell))];
  current.shaking=ring8(next,size);
+ if(current.trap){
+  const trap=current.trap;
+  const lure=current.objects.some(o=>o.kind!=='barrier'&&o.life>0&&huntDistance(o.cell,trap.cell,size)<=2&&rate(current,o.kind)>0);
+  if((next===trap.cell||from===trap.cell)&&(lure||current.fear<=35)){
+   current.selectedCell=trap.cell;current.trap=null;
+   return capture('개체가 유인 우리 안으로 들어왔습니다. 자동 잠금으로 안전하게 확보했습니다.','cage');
+  }
+  current.trap=trap.life>1?{...trap,life:trap.life-1}:null;
+  if(!current.trap)text+=' · 유인 우리 작동 시간이 끝났습니다.';
+ }
  // Listening is an informed alternative to blind clicking. The animal has ALREADY
  // moved for this turn; the broad signal describes the current half-board only.
  // It costs exactly one tracking action, so it is not a free position reveal.

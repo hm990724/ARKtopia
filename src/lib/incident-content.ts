@@ -58,7 +58,8 @@ export function extendedIncidentWeight(s:V10,id:ExtendedIncidentId):number{
   data_corruption:{token:'기록 삭제',bonus:10},
   escape_tracks:{token:'순찰 강화',bonus:7},
  };
- const followup=chain[id];return base+(base>0&&followup&&recent(followup.token)?followup.bonus:0);
+ const followup=chain[id];const eligible=id==='filter_clog'?s.filters>0:id==='cctv_blindspot'?s.facilities.cctv:id==='escape_tracks'?(s.security?.escapedIds.length??0)>0:true;
+ return base+(eligible&&followup&&recent(followup.token)?followup.bonus:0);
 }
 export function resolveExtendedIncident(s:V10,id:ExtendedIncidentId,option:number):V10{
  const def=defs.find(d=>d.id===id);if(!def||s.pendingIncident!==id||!Number.isInteger(option)||option<0||option>2)return s;
