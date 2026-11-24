@@ -9,7 +9,8 @@ export function wiringMasks(){const masks=Array(16).fill(0) as number[];for(cons
 export function wiringBoard(s:V10,mode:WiringMode):WiringState{
  const prior=s.wiring?.[mode];if(prior?.day===s.day&&(!prior.completed||mode==='night'))return prior;
  const serial=prior?.day===s.day?prior.serial+1:0,seed=s.day*31+serial*19+(mode==='night'?7:0);
- return {day:s.day,mode,serial,rotations:Array.from({length:16},(_,i)=>(seed+i*7+i*i*3)%4),faults:0,completed:false};
+ const rotations=Array.from({length:16},(_,i)=>{let x=Math.imul(seed+1+i*97,0x45d9f3b);x=Math.imul(x^(x>>>16),0x45d9f3b);return (x^(x>>>16))&3;});rotations[0]=1+(seed%3);
+ return {day:s.day,mode,serial,rotations,faults:0,completed:false};
 }
 export function wiringStatus(board:WiringState){
  const masks=wiringMasks().map((m,i)=>rotate(m,board.rotations[i]??0)),visited=new Set<number>([0]),queue=[0];let leaks=0;
