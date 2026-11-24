@@ -9,7 +9,7 @@ import {cap,copy,log} from './sim';
 import {CREW_PROFILES,queueCrewTerminations,type CrewId} from './crew';
 import type {CameraId} from './security';
 
-export type VoiceProbe='eve'|'enclosure'|'personnel';
+export type VoiceProbe='eve'|'enclosure'|'personnel'|'thermal'|'radio';
 export type VoiceVerdict='open'|'seal';
 export type VoiceSubject='eve'|'animal'|CrewId;
 export type VoiceEvidence={probe:VoiceProbe;text:string;tone:'safe'|'doubt'|'neutral'};
@@ -22,7 +22,7 @@ export function ensureVoice(s:V10):VoiceState{
  s.voice={...emptyVoice(),...s.voice,history:s.voice.history??[],pending:s.voice.pending??null};
  return s.voice;
 }
-export const voiceProbeNames:Record<VoiceProbe,string>={eve:'EVE 신호 검증',enclosure:'동물 우리 확인',personnel:'직원 위치 확인'};
+export const voiceProbeNames:Record<VoiceProbe,string>={eve:'EVE 신호 검증',enclosure:'동물 우리 확인',personnel:'직원 위치 확인',thermal:'외곽 열영상 비교',radio:'통신 중계기 기록'};
 const staffLines:Record<CrewId,string>={
  rabbit:'담당자님... 의무관이에요. 부상자가 있어요. 문 좀 열어 주세요.',
  fox:'보급관입니다. 재고를 정리하다 통로에 갇혔어요. 문을 열어 주세요.',
@@ -53,11 +53,11 @@ export function scheduleVoiceBreach(s:V10,triggerRoll=Math.random(),subjectRoll=
 }
 export type VoiceReading='match'|'mismatch'|'uncertain';
 export function voiceSignal(e:VoiceEvent,probe:VoiceProbe){
- const index=(['eve','enclosure','personnel'] as const).indexOf(probe),seed=e.signalSeed??e.day*97+e.id.length*13;
+ const index=(['eve','enclosure','personnel','thermal','radio'] as const).indexOf(probe),seed=e.signalSeed??e.day*97+e.id.length*13;
  const base=Array.from({length:6},(_,k)=>k===0?6:1+((seed*(k+3)+k*k*13+index*17)%5));
  // Two independent channels carry the real identity; a third may be stale,
  // corrupted, or deliberately copied. No probe is universally reliable.
- const ambiguous=(seed+e.day)%3===index;
+ const weak=(seed+e.day)%5;const ambiguous=weak===index||(weak+2)%5===index;
  const mismatch=ambiguous?seed%2===0:e.isMimic;
  const sample=base.map((x,k)=>mismatch&&[1,4].includes(k)?(x%5)+1:x);
  const missing=ambiguous&&seed%3===0?2:-1;
@@ -65,19 +65,19 @@ export function voiceSignal(e:VoiceEvent,probe:VoiceProbe){
  const reading:VoiceReading=missing>=0?'uncertain':sample.some((x,k)=>x!==base[k])?'mismatch':'match';
  const phase=1+((seed+index*7)%5);
  const received=[...sample.slice(phase),...sample.slice(0,phase)];
- return {base,sample,received,alignment:6-phase,reading};
+ return {base,sample,received,alignment:6-phase,reading,quality:ambiguous?'중계 기록 · 오차 가능':'직접 센서 · 독립 기록'};
 }
 export function voiceKnockPattern(e:VoiceEvent){const {sample}=voiceSignal(e,'eve');return sample.slice(0,4).map(v=>.12+v*.095);}
 function evidence(e:VoiceEvent,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):VoiceEvidence{
  const signal=voiceSignal(e,probe);
  if((reading!==undefined&&reading!==signal.reading)||(alignment!==undefined&&alignment!==signal.alignment))return {probe,text:'판독 실패 · 두 신호의 표본이 일치하는지 다시 확인할 수 없습니다. 이 채널은 결론에서 제외하십시오.',tone:'neutral'};
- const label=probe==='eve'?'음성 간격':probe==='enclosure'?'생체 센서 지문':'출입 태그 패턴';
+ const label=probe==='eve'?'음성 간격':probe==='enclosure'?'생체 센서 지문':probe==='personnel'?'출입 태그 패턴':probe==='thermal'?'열영상 변화':'중계기 수신 간격';
  const text=signal.reading==='match'?'기준과 현재 표본이 일치합니다. 복제된 신호도 일치할 수 있습니다.':signal.reading==='mismatch'?'두 표본에서 서로 다른 구간이 발견됐습니다. 오래된 기록의 오차 가능성이 있습니다.':'결손 프레임이 있어 대조할 수 없습니다.';
- return {probe,text:label+' · '+text,tone:signal.reading==='match'?'safe':signal.reading==='mismatch'?'doubt':'neutral'};
+ return {probe,text:label+' · '+signal.quality+' · '+text,tone:signal.reading==='match'?'safe':signal.reading==='mismatch'?'doubt':'neutral'};
 }
 export function inspectVoiceBreach(s:V10,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):V10{
  const e=s.voice?.pending;
- if(!e||e.remaining<=0||!['eve','enclosure','personnel'].includes(probe)||e.checks.some(x=>x.probe===probe))return s;
+ if(!e||e.remaining<=0||!['eve','enclosure','personnel','thermal','radio'].includes(probe)||e.checks.some(x=>x.probe===probe))return s;
  if(reading!==undefined&&!['match','mismatch','uncertain'].includes(reading))return s;
  const n=copy(s) as V10,ev=ensureVoice(n).pending!;
  const clue=evidence(ev,probe,reading,alignment);ev.checks.push(clue);ev.remaining--;n.lastOutcome=clue.text;

@@ -38,7 +38,7 @@ export const photoRecords=[
 export function originSpeciesProgress(s:V10){const seen=new Set<AnimalId>([...s.animals.map(a=>a.id),...(s.headquarters?.transferred??[]),...Object.values(s.archive?.entries??{}).map(a=>a.species)]);return specs.filter(a=>seen.has(a.id)).length;}
 export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
- return s.phase==='day'&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
+ return s.phase==='day'&&s.facilities.cctv&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
   s.tutorialStep>=9&&s.day>=14&&originSpeciesProgress(s)>=specs.length&&((s.completedRegions??[]).includes('tunnels')||(s.lastFieldSummary?.region==='tunnels'&&s.lastFieldSummary.reason==='정상 귀환'));
 }

@@ -722,7 +722,7 @@ export default function FieldMission({
           {hunt && <div className="v71-primary-tools v74-capture-budget">
             <div className={hunt.actions<=5?'v74-actions-left is-low':'v74-actions-left'} role="status" aria-label={`포획 남은 행동 ${hunt.actions}회`}><div className="v74-actions-copy"><span>포획 남은 행동</span><p>조사·청음·그물 1회씩 소모 · AP와 별도</p></div><strong>{hunt.actions}<small> / {hunt.maxActions}회</small></strong></div>
             <button type="button" onClick={()=>{setMode('net');setCaptureMethod('net');try{const a=new AudioContext();const osc=a.createOscillator(),gain=a.createGain();osc.type='sine';osc.frequency.setValueAtTime(240,a.currentTime);osc.frequency.exponentialRampToValueAtTime(90,a.currentTime+.32);gain.gain.setValueAtTime(.07,a.currentTime);gain.gain.exponentialRampToValueAtTime(.001,a.currentTime+.35);osc.connect(gain);gain.connect(a.destination);osc.start();osc.stop(a.currentTime+.36);osc.onended=()=>{void a.close()};}catch{}onHunt({type:'wait'})}} disabled={hunt.outcome!=='playing'} title={hunt.species==='lynx'?'청음 신호로 방향을 확인하면서 소음을 낮춰 접근합니다.':''}><Radio size={16}/> {hunt.species==='lynx'?'청음 유인·은밀 접근':'청음'} · 1행동</button>
-            <button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode(mode==='net'&&captureMethod==='net'?'search':'net')}}><Target size={16}/> {mode==='net'&&captureMethod==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
+            <button type="button" aria-pressed={mode==='net'&&captureMethod==='net'} onClick={()=>{setCaptureMethod('net');setMode('net')}}><Target size={16}/> {mode==='net'&&captureMethod==='net'?'그물 준비 · 칸 선택':'그물 선택'}</button>
             <button type="button" aria-pressed={mode==='search'} onClick={()=>setMode('search')}>수색 모드</button>
           </div>}
           {hunt ? (
@@ -745,7 +745,7 @@ export default function FieldMission({
                 </div>
                 <div className="ark-hunt-instructions" role="status" aria-live="polite">
                   <b>{mode==='search'?'수색 · 타일 클릭':mode==='net'?(captureMethod==='calm'?'진정 접근 · 발견한 개체 클릭':captureMethod==='cage'?'유인 우리 · 설치 칸 클릭':'그물 준비 · 개체 칸 클릭'):activeMode.name+' · 설치 칸 클릭'}</b>
-                  <span>{mode==='net'?(captureMethod==='calm'?'청음으로 경계를 낮춘 뒤 발견된 개체에 연속 접근하세요.':captureMethod==='cage'?'이동 경로에 우리를 설치하고 청음으로 기다리세요.':'그물은 선택한 정확한 칸에 던집니다. 조사로 현재 위치를 확인하세요.'):'발자국은 이전 위치입니다. 개체가 보이면 다시 클릭해 포획할 수 있습니다.'}</span>
+                  <span>{mode==='net'?(captureMethod==='calm'?'청음으로 경계를 낮춘 뒤 발견된 개체에 연속 접근하세요.':captureMethod==='cage'?'이동 경로에 우리를 설치하고 청음으로 기다리세요.':'기본 클릭은 직접 그물입니다. 청음과 흔적을 이용해 예상 위치를 겨냥하세요.'):'발자국은 이전 위치입니다. 개체가 보이면 다시 클릭해 포획할 수 있습니다.'}</span>
                   <p><Radio size={15}/><strong>최근 결과</strong>{hunt.lastEvent||'수풀을 조사해 주세요.'}</p>
                 </div>
                 <div
