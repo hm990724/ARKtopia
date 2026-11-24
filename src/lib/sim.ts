@@ -1,5 +1,5 @@
 export type AnimalId='rabbit'|'fox'|'deer'|'owl'|'wolf'|'crow'|'otter'|'lynx'|'axolotl'|'moth'|'mutant'|'chimera'|'specter';
-export type AnimalState={fedDay?:number;observedDay?:number;comfortDay?:number;specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;tutorialProtected?:boolean;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
+export type AnimalState={habitat?:{cleanliness:number;activity:number;installed:boolean;cleanDay?:number;playDay?:number};fedDay?:number;observedDay?:number;comfortDay?:number;specimenId?:string;id:AnimalId;name:string;hp:number;stress:number;bond:number;memory:number;contamination:number;room:number;alive:boolean;records:number;awakened?:boolean;mutated?:boolean;suppressedUntilDay?:number;tutorialProtected?:boolean;careMastery?:Partial<Record<'feed'|'heal'|'comfort'|'observe',number>>;careRoutine?:boolean;hunger?:number;sickness?:number};
 export type Origin='medic'|'engineer'|'artist'|'warden';
 export type Start='medical'|'greenhouse'|'station'|'observatory'|'generator'|'depot';
 export type EventRecord={day:number;title:string;text:string;kind:'info'|'good'|'bad'|'mystery'};
