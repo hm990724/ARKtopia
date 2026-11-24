@@ -137,7 +137,7 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,light
  for(let cursor=0;cursor<queue.length;cursor++){const at=queue[cursor];for(const next of neighbors(at))if(!costs.has(next)){costs.set(next,costs.get(at)!+1);queue.push(next);}}
  steps.sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity));
  // Keep a visible adjacent pursuer outside the player's tile until the warning resolves.
- if(!(t.mode==='closing'&&t.alert>=35&&!f.concealed&&dist(from,f.position)<=1)&&steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
+ if(!(t.mode==='closing'&&!f.concealed&&dist(from,f.position)<=1)&&steps[0]!==undefined&&(costs.get(steps[0])??Infinity)<(costs.get(from)??Infinity))t.position=steps[0];
  const close=!f.concealed&&dist(t.position,f.position)<=1&&t.alert>=35&&fieldLineOfSight(f,t.position,1);
  t.warningTicks=close?(t.warningTicks??0)+1:0;
  return close&&t.warningTicks>=3;

@@ -35,11 +35,12 @@ export const photoRecords=[
  {title:"PHOTO 11 · 제000번 관리자",detail:"군사 공격 때 치명상을 입은 과학자가 PROJECT ORIGIN 비상 지속을 명령했다. 그의 뇌는 M-00이 아닌 별도 동물 숙주에서 보존된 뒤 현재 복제 관리자 000에게 이전됐다."},
  {title:"PHOTO 12 · 놓친 치료의 가능성",detail:"M-00은 인간 뇌 없이도 안정된 지능을 유지한다. 그 생체 신호는 다른 숙주의 잠든 기억을 깨워 공명 붕괴를 촉진할 수 있지만 동시에 안정화·예방 연구의 유일한 원본이다. 과학자는 이 가능성을 외면했다."}
 ] as const;
+export function originSpeciesProgress(s:V10){const seen=new Set<AnimalId>([...s.animals.map(a=>a.id),...(s.headquarters?.transferred??[]),...Object.values(s.archive?.entries??{}).map(a=>a.species)]);return specs.filter(a=>seen.has(a.id)).length;}
 export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  (((s.headquarters?.revealStage??0)>=2&&s.encounters>=2)||(s.encounters>=3&&((s.headquarters?.revealStage??0)>=1||s.clues>=3||(o?.scans.length??0)>=3)));
+  s.tutorialStep>=9&&s.day>=14&&originSpeciesProgress(s)>=specs.length&&((s.completedRegions??[]).includes('tunnels')||(s.lastFieldSummary?.region==='tunnels'&&s.lastFieldSummary.reason==='정상 귀환'));
 }
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
@@ -86,7 +87,7 @@ export function approachOriginSignal(s:V10,choice:number):V10{
  const n=copy(s) as V10,state=o(n);
  if(choice!==scene.answer){state.wrongTracks++;n.threat=cap(n.threat+5);n.mind=cap(n.mind-2);return report(n,'외곽 접근 중단','철판이 울렸다. 가까운 곳에서 무언가 움직였다. 숨을 고르고 다시 시도한다. 위협 +5, 정신 -2.','bad');}
  state.approachStep=step+1;
- if(state.approachStep===3){state.cat='captured';return report(n,'시초가 아니었다 · 검은 고양이','관리자: ……고양이? EVE: 외형에 변이가 없습니다. 거대한 실루엣은 뒤쪽 조명과 철창의 겹친 그림자였습니다. 실제 배회형 MUTANT와는 별개의 개체입니다. 고양이가 유출을 일으켰다는 증거는 없다. 아직 신원은 확인되지 않았습니다.','mystery');}
+ if(state.approachStep===3){state.cat='captured';return report(n,'미확인 생체 신호 확보','관리자: ……고양이? EVE: 외형에 변이가 없습니다. 거대한 실루엣은 뒤쪽 조명과 철창의 겹친 그림자였습니다. 실제 배회형 MUTANT와는 별개의 개체입니다. 고양이가 유출을 일으켰다는 증거는 없다. 아직 신원은 확인되지 않았습니다.','mystery');}
  return report(n,'현장 접근 · 신호 유지',step===0?'발소리가 끊겼다. 시야 끝의 움직임을 확인한다.':'그림자의 크기와 실제 움직임이 일치하지 않는다. 가까이에서 확인한다.','mystery');
 }
 export function analyzeOriginCat(s:V10):V10{
