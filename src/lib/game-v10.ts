@@ -1,5 +1,5 @@
 import {mutantSecured,upgradeLevel,type UpgradeId} from './field-combat';
-import {emptyOriginZero,ensureOriginZero,importOldOriginScans,originReadyForFinale,tickOriginDay,type OriginZeroState} from './origin-zero';
+import {regionFragments,collectOriginFragment,emptyOriginZero,ensureOriginZero,importOldOriginScans,originReadyForFinale,tickOriginDay,type OriginZeroState} from './origin-zero';
 import {emptyNarrative,ensureNarrative,type NarrativeState} from './narrative';
 import {neuralProfile} from './neural-state';
 import {emptyCrew,ensureCrew,recruitCrew,queueCrewArrival,isCrewId,crewNight,crewDissectionShock,applyCrewOpinion,applyCrewLossPenalties,queueCrewTerminations,type CrewState,type CrewId} from './crew';
@@ -12,7 +12,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,type HqOrderState} from './hq-orders';
-import {revealField,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -247,7 +247,7 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companio
 }
 export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null|CrewId[]=null):V10{const requested=Array.isArray(companion)?companion:[companion].filter(Boolean) as CrewId[];if(expeditionBlockReason(s,region,gear,requested))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=r.power+8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(!gear.includes('flashlight')&&!scanner)||(scanner&&n.power<scannerPower))return s;if(gear.includes('flashlight')&&n.flashlight<25)return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
 n.expeditionCount=expeditionCountToday(s)+1;n.lastExpeditionDay=n.day;n.ap-=1;if(scanner)n.power-=scannerPower;if(gear.includes('flashlight'))n.flashlight=cap(n.flashlight-10);if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
-const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);const companions=requested.filter((id,index)=>requested.indexOf(id)===index&&s.crew?.members.some(m=>m.id===id&&m.mind>0)).slice(0,2);if(companions.length){const crew=ensureCrew(n);crew.sortieWorked=[...new Set([...(crew.sortieWorked??[]),...companions])];}n.run={region,gear,stage:0,netLevel:upgradeLevel(n,'net'),suitLevel:upgradeLevel(n,'suit'),scannerLevel:upgradeLevel(n,'scanner'),integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:companions[0]??null,companions,log:[scanner?'시설 전력망 EVE 스캐너 연결':'휴대 손전등 출동 · 시설 전력 보존']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;n.field=createField(n.day,region,n.encounters+n.expeditionCount);if(mutantSecured(n)||n.run.firstTutorial)n.field.threat=null;n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
+const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);const companions=requested.filter((id,index)=>requested.indexOf(id)===index&&s.crew?.members.some(m=>m.id===id&&m.mind>0)).slice(0,2);if(companions.length){const crew=ensureCrew(n);crew.sortieWorked=[...new Set([...(crew.sortieWorked??[]),...companions])];}n.run={region,gear,stage:0,netLevel:upgradeLevel(n,'net'),suitLevel:upgradeLevel(n,'suit'),scannerLevel:upgradeLevel(n,'scanner'),integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:companions[0]??null,companions,log:[scanner?'시설 전력망 EVE 스캐너 연결':'휴대 손전등 출동 · 시설 전력 보존']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;n.field=createField(n.day,region,n.encounters+n.expeditionCount);if(n.originZero?.route)placeOriginFragments(n.field,regionFragments(n,region),n.day*1709+n.encounters*313+n.expeditionCount);if(mutantSecured(n)||n.run.firstTutorial)n.field.threat=null;n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
 // Reserved expedition supplies are refunded if not consumed. A cage is consumed only on capture attempt.
 function returnUnusedRunSupplies(s:V10,run:Run,hasEncounter:boolean){
  if(run.gear.includes('medkit')&&!run.medkitUsed)s.medicine++;
@@ -634,6 +634,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  n.stamina=cap(n.stamina-(noisy?4:pace==='normal'?2:1));
  const exposed=pace==='fast'?9:pace==='normal'?5:2;
  run.exposure+=exposed;
+ const shard=field.originFragments?.[destination];const recovered=shard!==undefined&&collectOriginFragment(n,shard);if(shard!==undefined)delete field.originFragments![destination];
  let observation='손전등으로 주변을 확인했습니다. 아직 새로운 흔적은 없습니다.';
  if(firstVisit){
   if(tile==='track'){
@@ -682,6 +683,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   }
  }
  if(tickFieldSpores(n))observation+=' '+n.lastOutcome;
+ if(recovered)observation+=' · 훼손된 기록 조각 '+String(shard).padStart(2,'0')+' 확보. 분석실에 영구 보존.';
  // Optional high-stakes side discoveries. Pending choices are saveable and block further movement.
  if(firstVisit&&!run.firstTutorial && !field.combat && !field.choice && ['cache','signal'].includes(tile)){
   const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;

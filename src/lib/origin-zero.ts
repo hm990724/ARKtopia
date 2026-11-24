@@ -12,8 +12,8 @@ export type OriginRoute='hq'|'shelter'|null;
 export type RecallTrial={stage:number;chosen:string;expected:string;matched:boolean};
 export type RecallSession={step:number;correct:number;startedDay:number;answers:RecallTrial[]};
 export type RecallRecord={specimenId?:string;day:number;quality:number;source:'live'|'hq'|'archive';note:string;steps?:RecallTrial[]};
-export type OriginZeroState={version:1;scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;resonance?:number;resonanceRisk?:number;resonanceDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean;crisisSession?:{step:number;actions:string[];quality:number}};
-export const emptyOriginZero=():OriginZeroState=>({version:1,scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
+export type OriginZeroState={version:1;fieldFragments?:number[];scans:string[];privateMatches:Record<string,'NEGATIVE'|'POSITIVE'>;cat:CatStage;trackProgress:number;approachStep?:number;contactField?:import('./origin-contact').ContactField;bodyStability?:number;bodyDay?:number;resonance?:number;resonanceRisk?:number;resonanceDay?:number;wrongTracks:number;firstPositiveDay:number|null;route:OriginRoute;photos:number;recalls:Partial<Record<AnimalId,RecallRecord>>;individualRecalls?:Record<string,RecallRecord>;recallSessions?:Record<string,RecallSession>;immunity:number;studies:number;hqPressure:number;endingEvidence:boolean;stability:number;hqIntel:number;crisisDone:boolean;crisisSession?:{step:number;actions:string[];quality:number}};
+export const emptyOriginZero=():OriginZeroState=>({version:1,fieldFragments:[],scans:[],privateMatches:{},cat:'unknown',trackProgress:0,wrongTracks:0,firstPositiveDay:null,route:null,photos:0,recalls:{},immunity:0,studies:0,hqPressure:0,endingEvidence:false,stability:85,hqIntel:0,crisisDone:false});
 export function ensureOriginZero(s:V10):OriginZeroState{
  const o=s.originZero??(s.originZero=emptyOriginZero());
  o.scans??=[];o.privateMatches??={};o.recalls??={};o.photos=Math.max(0,Math.min(12,o.photos??0));o.immunity=cap(o.immunity??0);
@@ -40,8 +40,12 @@ export function canTrackCat(s:V10):boolean{
  const o=s.originZero;
  return s.phase==='day'&&s.facilities.cctv&&!s.run&&!s.pending&&!s.pendingIncident&&!s.headquarters?.pendingAnimal&&
   (o?.cat??'unknown')==='unknown'&&
-  s.tutorialStep>=9&&s.day>=20&&originSpeciesProgress(s)>=specs.length&&((s.completedRegions??[]).includes('tunnels')||(s.lastFieldSummary?.region==='tunnels'&&s.lastFieldSummary.reason==='정상 귀환'));
+  s.tutorialStep>=9&&s.day>=14;
 }
+export const fragmentRegions=['garden','conservatory','rail','archive','vault','tunnels'] as const;
+export function originFragments(s:V10):number[]{return [...new Set([...(s.originZero?.fieldFragments??[]),...Array.from({length:s.originZero?.photos??0},(_,i)=>i+1)])].filter(i=>i>=1&&i<=12);}
+export function regionFragments(s:V10,region:string):number[]{const i=fragmentRegions.findIndex(r=>r===region);return i<0?[]:[i*2+1,i*2+2].filter(id=>!originFragments(s).includes(id));}
+export function collectOriginFragment(s:V10,id:number){const d=ensureOriginZero(s);if(!d.route||!Number.isInteger(id)||id<1||id>12||originFragments(s).includes(id))return false;d.fieldFragments=[...originFragments(s),id];s.clues++;log(s,'훼손된 기록 조각 확보',`기록 조각 ${String(id).padStart(2,'0')} · 분석실에 원본 보존. 정체는 해독 후 확인 가능.`,'mystery');return true;}
 export function importOldOriginScans(s:V10):void{
  const d=ensureOriginZero(s);
  for(const a of s.animals){const key=a.specimenId;if(key&&!d.scans.includes(key)){d.scans.push(key);d.privateMatches[key]='NEGATIVE';}}
@@ -116,7 +120,7 @@ export const originArchiveCiphers=[
 ] as const;
 export function restoreOriginPhotos(s:V10,answer?:number):V10{
  const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<8||s.phase!=='day'||s.run||s.pendingIncident)return s;
- const start=d.photos;
+ const start=d.photos;if(![start+1,start+2,start+3].every(id=>originFragments(s).includes(id)))return s;
  if(answer!==undefined&&answer!==originArchiveCiphers[Math.floor(start/3)].answer){
   const n=copy(s) as V10;n.power=cap(n.power-2);n.threat=cap(n.threat+2);
   return report(n,'사진 암호 대조 실패','보존 기록의 순서가 맞지 않습니다. 전력 -2, 위협 +2. 올바른 증거를 다시 선택하세요.','bad');
@@ -149,6 +153,7 @@ export const individualPhotoPuzzles=[
 ] as const;
 export function restoreOriginPhoto(s:V10,answer:number):V10{
  const d=s.originZero;if(!d?.route||d.photos>=12||s.ap<1||s.power<4||s.phase!=='day'||s.run||s.pendingIncident||s.pending||!Number.isInteger(answer)||answer<0||answer>2)return s;
+ if(!originFragments(s).includes(d.photos+1))return s;
  const n=copy(s) as V10,state=o(n),puzzle=individualPhotoPuzzles[state.photos];
  if(answer!==puzzle.answer){n.power=cap(n.power-2);n.threat=cap(n.threat+2);return report(n,'기록 무결성 경고','복원 순서가 맞지 않습니다. 원본은 보존됩니다. 전력 -2, 위협 +2.','bad');}
  n.ap--;n.power=cap(n.power-4);state.photos++;n.clues++;n.knowledge+=2;applyPhotoTruth(n);

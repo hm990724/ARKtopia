@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[]};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -144,6 +144,8 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,relayLevel=0,light
 }
 
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
+/** Place unique record shards on reachable empty ground, independent of ordinary loot. */
+export function placeOriginFragments(f:FieldState,ids:number[],seed:number){const w=fieldWidth(f),q=[f.position],seen=new Set(q);for(let k=0;k<q.length;k++)for(const i of [q[k]-w,q[k]+w,q[k]-1,q[k]+1])if(adjacentField(q[k],i,w,f.tiles.length)&&f.tiles[i]!=='wall'&&!seen.has(i)){seen.add(i);q.push(i);}const candidates=q.filter(i=>i!==f.position&&i!==f.wildlifeIndex&&f.tiles[i]==='empty'&&distance(i,f.position,w)>=2).sort((a,b)=>hash(seed+a*313)-hash(seed+b*313));const fallback=q.filter(i=>i!==f.position&&i!==f.wildlifeIndex&&f.tiles[i]!=='exit'&&!candidates.includes(i));const pool=[...candidates,...fallback];f.originFragments={};ids.forEach((id,i)=>{if(pool[i]!==undefined)f.originFragments![pool[i]]=id;});}
 export function createField(day:number,region:RegionId,sortie=0):FieldState {
  const dims=fieldDimensions(region),width=dims.width,height=dims.height+(day===1&&region==='garden'?0:4),size=width*height;
  const seed=hash(seedFor(day,region)+sortie*7919);
