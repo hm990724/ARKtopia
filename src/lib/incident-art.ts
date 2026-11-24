@@ -28,3 +28,61 @@ const EXTENDED_INCIDENT_ART:Record<ExtendedIncidentId,string>={
 
 export function findIncidentArt(id:IncidentId):string{return id in CORE_INCIDENT_ART?CORE_INCIDENT_ART[id as CoreIncidentId]:EXTENDED_INCIDENT_ART[id as ExtendedIncidentId];}
 export const incidentArtFiles=[...new Set([...Object.values(CORE_INCIDENT_ART),...Object.values(EXTENDED_INCIDENT_ART)])];
+
+/** 41 distinct gameplay incident artwork targets (separate from the story EVT storyboard).
+ * Names are tied to actual executable incident IDs, not guessed story scenes.
+ * A missing replacement never causes a blank event: the known legacy illustration
+ * remains an explicit fallback until visual QA approves and commits each new CG.
+ */
+export const GAME_EVENT_ART_ORDER:readonly IncidentId[]=[
+ 'generator_overheat',
+ 'blackout',
+ 'breach',
+ 'cctv_loop',
+ 'rations',
+ 'coolant',
+ 'filter_clog',
+ 'escape_tracks',
+ 'patrol_echo',
+ 'feed_shortage',
+ 'echo',
+ 'evidence_gap',
+ 'quiet',
+ 'pump_backflow',
+ 'medic_memory',
+ 'staff_conflict',
+ 'guard_refusal',
+ 'animal_fever',
+ 'empty_chair',
+ 'signal',
+ 'intrusion',
+ 'hq_recall_order',
+ 'hq_delete_order',
+ 'field_scavenger',
+ 'contamination_pool',
+ 'battery_swelling',
+ 'cable_arc',
+ 'resonance_drift',
+ 'enclosure_rattle',
+ 'predator',
+ 'keepsake',
+ 'garden',
+ 'm00_signature',
+ 'cctv_blindspot',
+ 'visitor',
+ 'spores',
+ 'exposure_critical',
+ 'data_corruption',
+ 'fence_crack',
+ 'construction_noise',
+ 'neural_static'
+];
+export function incidentArtworkCandidates(id:IncidentId):readonly string[]{
+ const order=GAME_EVENT_ART_ORDER.indexOf(id);
+ const fallback=`/assets/events/${findIncidentArt(id)}`;
+ if(order<0)return [fallback];
+ return [
+  `/assets/cinematics/origin-zero/events/EVT_${String(order+1).padStart(2,'0')}_${id}.png`,
+  fallback
+ ];
+}
