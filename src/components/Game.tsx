@@ -36,7 +36,7 @@ import {CARE_ACTIONS,careDailyBlock,careMastery,getCareScenario,resolveCareChoic
 import {BaseUpgrades,ReactionStage} from './EnhancedField';
 import {FacilityPowerDispatch,NightDispatchForecast} from './FacilityPowerDispatch';
 import {setFacilityPowerPriority} from '@/lib/facility-power';
-import {resolveCombat,upgradeBase,tickRoamingThreat,mutantSecured,upgradeLevel} from '@/lib/field-combat';
+import {resolveCombat,upgradeBase,mutantSecured,upgradeLevel} from '@/lib/field-combat';
 import FieldMission from './FieldMission';
 import {spendCareAnalysis,CARE_ANALYSIS_COST} from '@/lib/knowledge';
 import {telemetryChanges,type TelemetryEvent} from '@/lib/telemetry';
@@ -376,21 +376,7 @@ const soundCtx=useRef<AudioContext|null>(null);
 function beep(f=540,d=.11){if(!sound)return;try{const ctx=soundCtx.current??new AudioContext();soundCtx.current=ctx;const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=.026;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d)}catch{}}
 useEffect(()=>{try{const raw=localStorage.getItem(KEY);if(raw){const loaded=loadGame(JSON.parse(raw));if(loaded)setS(loaded)}}catch{}setReady(true)},[]);
 useEffect(()=>{if(ready&&s)localStorage.setItem(KEY,JSON.stringify(s))},[ready,s]);
-// A field threat keeps searching while the player studies tracks; every tick updates
-// the same serializable field state, so refresh/load preserves its position and alert.
-useEffect(()=>{
- if(tab!=='expedition'||!s?.run||s.run.firstTutorial||!s.field||s.field.combat||s.field.choice||s.pending||result||fieldRewardModal||talk.length||cinematic)return;
- const timer=window.setInterval(()=>setS(current=>{
-  if(!current?.run||current.run.firstTutorial||!current.field||current.field.combat||current.field.choice||current.pending)return current;
-  const activeThreat=!!current.field.threat&&!mutantSecured(current);
-  if(!activeThreat)return current;
-  const next=structuredClone(current),field=next.field!;
-  if(activeThreat&&tickRoamingThreat(next)){field.lastEvent='MUTANT가 접근했습니다. 중단된 포획 기록은 보존됩니다.';next.lastOutcome=field.lastEvent;}
-  field.noise=Math.max(0,field.noise-4);
-  return next;
- }),2100);
- return ()=>window.clearInterval(timer);
-},[tab,!!s?.run,!!s?.field,!!s?.field?.combat,!!s?.field?.choice,!!s?.pending,s?.run?.firstTutorial,!!result,!!fieldRewardModal,talk.length,!!cinematic]);
+// MUTANT progression is part of moveField, never a wall-clock timer.
 useEffect(()=>{setStatusOpen(false)},[tab]);
 useEffect(()=>{if(!statusOpen)return;const onEscape=(event:KeyboardEvent)=>{if(event.key==='Escape')setStatusOpen(false)};window.addEventListener('keydown',onEscape);return()=>window.removeEventListener('keydown',onEscape)},[statusOpen]);
 // Nonblocking numerical readout of actual state changes: both player and animal damage.
