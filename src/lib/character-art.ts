@@ -46,6 +46,26 @@ export function staffDialoguePortrait(id:CrewId,mood:PortraitMood,condition:Staf
  return staffStatusPortrait(id,condition);
 }
 
+/** New standalone dialogue expressions are separate from the three sanity portraits.
+ * These filenames are preferred only when actual new artwork exists in public/.
+ * Legacy PNG/WebP takes remain available until image-generation QA is complete.
+ */
+export type StaffDialogueTone='neutral'|'soft'|'shocked';
+export function staffDialogueTone(mood:PortraitMood,line=''):StaffDialogueTone{
+ if(mood==='critical'||/살려|죽|충격|무너|안 돼|이게 뭐|무슨 일이/.test(line))return 'shocked';
+ if(mood==='resolve'||/고마|괜찮|함께|곁에|안심|미안|지켜|잘됐/.test(line))return 'soft';
+ if(mood==='anxious'||/[?!？！]/.test(line))return 'shocked';
+ return 'neutral';
+}
+export function staffDialogueArtworkCandidates(id:CrewId,mood:PortraitMood,condition:StaffCondition,line=''):readonly string[]{
+ const legacy=staffDialoguePortrait(id,mood,condition);
+ const status=staffStatusPortrait(id,condition);
+ if(condition==='critical')return [status];
+ if(condition==='unstable')return legacy===status?[status]:[legacy,status];
+ const tone=staffDialogueTone(mood,line);
+ return [`/assets/staff/${id}/portrait_talk_${tone}.png`,legacy,status].filter((v,i,a)=>a.indexOf(v)===i);
+}
+
 export type WalkDirection='down'|'left'|'right'|'up';
 export function directionForMove(from:number,to:number,width:number):WalkDirection{
  if(to===from-width)return 'up';if(to===from+width)return 'down';return to<from?'left':'right';
