@@ -4,7 +4,7 @@ const path=require('node:path');
 const ts=require('typescript');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 
-const {beginGame}=require('../src/lib/game-v10.ts');
+const {beginGame,loadGame}=require('../src/lib/game-v10.ts');
 const {makeAnimal,finish}=require('../src/lib/sim.ts');
 const {emptyOriginZero,recallCandidates}=require('../src/lib/origin-zero.ts');
 const {emptyArchive,finishWithArchive}=require('../src/lib/specimen-archive.ts');
@@ -68,6 +68,27 @@ verifyBase('freedom',s=>{s.trust=62;},'흩어진 이름들','ending_scattered_na
 verifyBase('preserve',s=>{s.eve=45;},'마지막 두 관리자','ending_two_caretakers_cinematic.png');
 verifyBase('preserve',s=>{s.eve=44;},'고요한 자동화','ending_quiet_automation_cinematic.png');
 assert.equal(findEndingArt('마지막 통신 — EVE 코어 정지').file,'ending_final_transmission_cinematic.png');
+
+// A pre-dossier save may have recorded ARK RECALL on 'species-legacy-room' keys.
+// On loading the save, every historical recall must follow that same specimen
+// into the assigned stable ID; otherwise real Last Zoo readiness is lost.
+{
+ const old=beginGame('medic','generator');old.day=40;old.phase='finale';old.tutorialStep=9;
+ old.animals=['rabbit','fox','deer'].map((id,i)=>makeAnimal(id,i+1));
+ old.archive=emptyArchive();
+ old.originZero={...emptyOriginZero(),cat:'shelter',route:'shelter',photos:12,immunity:84,crisisDone:true,individualRecalls:{}};
+ for(const c of recallCandidates(old))old.originZero.individualRecalls[c.key]={day:37,quality:89,source:'archive',note:'historical stable recall'};
+ const migrated=loadGame(JSON.parse(JSON.stringify(old)));
+ assert.ok(migrated,'old ORIGIN ZERO save should load');
+ const current=recallCandidates(migrated);
+ assert.equal(current.length,3);
+ for(const c of current){
+  assert.ok(migrated.originZero.individualRecalls[c.key],'legacy individual recall preserved for '+c.key);
+  assert.equal(migrated.originZero.individualRecalls[c.key].specimenId,c.key);
+ }
+ const ending=finishWithArchive(migrated,'freedom');
+ assert.ok(ending.ending.startsWith('마지막 동물원'),'migrated save should still reach the Last Zoo ending');
+}
 
 assert.equal(ENDING_ART.length,19);
 assert.equal(new Set(ENDING_ART.map(item=>item.file)).size,19);

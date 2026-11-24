@@ -136,7 +136,21 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  }
  if(restored.pendingIncident==='visitor'&&!crewState.members.some(m=>m.mind>0))restored.pendingIncident=null;
  if((restored.pendingIncident==='echo'||restored.pendingIncident==='rations')&&!restored.animals.some(a=>a.alive))restored.pendingIncident=null;
- restored.mind=cap(restored.mind??restored.hp??80);restored.hp=100; if(!restored.run)restored.stamina=restored.nextFieldFatigued?50:100;ensureArchive(restored);ensureOriginZero(restored);importOldOriginScans(restored);ensureNarrative(restored);ensureCrew(restored);ensureVoice(restored);ensureHqOrders(restored);queueCrewTerminations(restored);
+ restored.mind=cap(restored.mind??restored.hp??80);restored.hp=100; if(!restored.run)restored.stamina=restored.nextFieldFatigued?50:100;ensureArchive(restored);
+ // Legacy specimen-level ARK RECALL results may use pre-dossier keys: 'rabbit-legacy-1'.
+ // Keep the actual historical record while migrating to the assigned specimenId.
+ const oldRecallRecords=restored.originZero?.individualRecalls;
+ if(oldRecallRecords){
+  for(const animal of restored.animals){
+   const oldKey=`${animal.id}-legacy-${animal.room}`,newKey=animal.specimenId;
+   const record=oldRecallRecords[oldKey];
+   if(newKey&&record&&!oldRecallRecords[newKey]&&(!record.specimenId||record.specimenId===oldKey)){
+    oldRecallRecords[newKey]={...record,specimenId:newKey};
+    delete oldRecallRecords[oldKey];
+   }
+  }
+ }
+ ensureOriginZero(restored);importOldOriginScans(restored);ensureNarrative(restored);ensureCrew(restored);ensureVoice(restored);ensureHqOrders(restored);queueCrewTerminations(restored);
  // Older interrupted v51 lessons may contain 100% memory without the HQ offer.
  const stranded=restored.animals.find(a=>a.id==='rabbit'&&a.alive&&a.memory>=100);
  if(stranded&&restored.tutorialStep===6&&!restored.headquarters.transferred.includes('rabbit')&&!restored.headquarters.pendingAnimal){

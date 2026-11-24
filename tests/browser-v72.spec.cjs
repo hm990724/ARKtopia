@@ -17,16 +17,16 @@ test('ranger uses changing walk frames during real movement, then returns to idl
  await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
  await page.screenshot({path:'docs/qa-v71/v72-field-walk.png',fullPage:true});
 });
-test('staff stays neutral in roster and switches to its critical portrait during dialogue',async({page})=>{
+test('critically unstable medic remains visibly critical in roster, detail modal and dialogue',async({page})=>{
  const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'rabbit','RB-001');s.crew.members[0].mind=20;
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  // Suppress the independent base-work onboarding so the staff portrait check can open its own conversation.
  await seed(page,s);
  await page.getByRole('button',{name:'의무관 직원 상세',exact:true}).click();
- await expect(page.locator('.v45-roster-item.arrived img')).toHaveAttribute('src','/assets/staff/rabbit/portrait.webp');
- await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait.webp');
+ await expect(page.locator('.v45-roster-item.arrived img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.webp');
+ await expect(page.locator('.v67-staff-modal img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.webp');
  await page.getByRole('button',{name:/^대화\s/}).click();
- await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.png');
+ await expect(page.locator('.v44-story-eve-image img')).toHaveAttribute('src','/assets/staff/rabbit/portrait_critical.webp');
  await expect(page.locator('.v44-story-eve-image img')).toHaveCount(1);
  await expect(page.locator('.v44-story-scene')).toHaveCSS('background-color','rgb(23, 20, 33)');
  const reveal=page.getByRole('button',{name:'글 즉시 펼치기'});if(await reveal.isEnabled())await reveal.click();

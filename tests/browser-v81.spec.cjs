@@ -4,7 +4,7 @@ require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f
 const {beginGame}=require('../src/lib/game-v10.ts');
 const KEY='last-enclosure-ark-v10';
 test('facility dispatch order changes the saved priority and predicts a night load shed',async({page})=>{
- const s=beginGame('engineer','generator');s.day=2;s.tutorialStep=9;s.ap=0;s.power=32;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work'];s.facilities={cctv:true,containment:true,infirmary:true,synthesis:true};
+ const s=beginGame('engineer','generator');s.day=2;s.tutorialStep=9;s.ap=0;s.power=27;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work'];s.facilities={cctv:true,containment:true,infirmary:true,synthesis:true};
  await page.addInitScript(({state,key})=>{if(!sessionStorage.getItem('v81-dispatch-seeded')){localStorage.setItem(key,JSON.stringify(state));sessionStorage.setItem('v81-dispatch-seeded','1')}},{state:s,key:KEY});await page.goto('/');
  await page.getByRole('button',{name:'보급',exact:true}).click();
  const dispatch=page.getByRole('region',{name:'야간 시설 전력 우선순위'});await expect(dispatch).toBeVisible();
