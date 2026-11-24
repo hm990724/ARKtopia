@@ -123,7 +123,7 @@ export function CrewRoster({state,onSupport,onTalk,onTreat,onReplayArrival}:{sta
       <div className="v67-staff-action-grid">
        <button type="button" disabled={selectedMember.lastSpokenDay!==state.day&&(state.ap<1||state.food<1)} onClick={()=>{setSelected(null);onTalk(selected)}}><BookOpen size={16}/> 대화 <small>{selectedMember.lastSpokenDay===state.day?'오늘 대화 다시 보기':'AP -1 · 식량 -1 · 신뢰만 회복'}</small></button>
        <button type="button" className="primary" disabled={!!used||selectedMember.mind<=0||!!state.crew?.pendingTermination||!!state.run||!!state.crew?.sortieWorked?.includes(selected)} title={state.crew?.sortieWorked?.includes(selected)?'오늘 탐사 동행 완료 · 내일부터 기지 지원 가능':state.run?'탐사 진행 중에는 기지 지원 불가':undefined} onClick={()=>{setSelected(null);onSupport(selected)}}>오늘 지원</button>
-       <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.medicine<1||selectedMember.lastCareDay===state.day} onClick={()=>onTreat(selected,'medical')}><HeartPulse size={16}/> 의료 지원 <small>AP -2 · 치료제 -1 · 정신 +20</small></button>
+       <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.medicine<1||selectedMember.lastCareDay===state.day} onClick={()=>{setSelected(null);onTreat(selected,'medical')}}><HeartPulse size={16}/> 의료 지원 <small>AP -2 · 치료제 -1 · 정신 +20</small></button>
        <button type="button" disabled={selectedMember.mind<=0||state.ap<2||state.food<1||state.crew?.counselDay===state.day} onClick={()=>onTreat(selected,'counsel')}><Brain size={16}/> 상담 <small>AP -2 · 식량 -1 · 정신 +9 · 하루 1회</small></button>
       </div>
       {onReplayArrival&&<button type="button" className="v67-staff-replay" onClick={()=>{setSelected(null);onReplayArrival(selected)}}>도착 장면 다시 보기 <ChevronRight size={15}/></button>}
