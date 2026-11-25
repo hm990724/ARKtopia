@@ -302,7 +302,7 @@ export function incidentWeight(s:V10){return cap(7+s.threat*.24+s.infection*.19+
 // Repeated incidents are suppressed, but high-risk states can still cause them.
 export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random()):IncidentId|null{
  // A daily incident after onboarding is the source of the daily management dilemma.
- if(s.day<2||(s.day<4&&rand*100>=incidentWeight(s)))return null;
+ if(s.day<2)return null;
  const alive=s.animals.filter(a=>a.alive);
  // Fictional neurobiology: remembered habits attract HQ attention while
  // unstable synchronization raises acoustic incidents.
@@ -324,6 +324,9 @@ export function determineIncident(s:V10,rand=Math.random(),typeRand=Math.random(
   ['quiet',s.crew?.members.some(m=>m.mind>0)?28:0]
  ];
  for(const id of EXTENDED_INCIDENT_IDS)scores.push([id,extendedIncidentWeight(s,id)]);
+ const dueFollowup=(s.incidentFollowups??[]).filter(f=>f.dueDay<=s.day&&f.expiresDay>=s.day).sort((a,b)=>a.dueDay-b.dueDay).find(f=>scores.some(([id,weight])=>id===f.id&&weight>0));
+ if(dueFollowup)return dueFollowup.id;
+ if(s.day<4&&rand*100>=incidentWeight(s))return null;
  const last=s.lastEvent??'';
  const weighted=scores.filter(([id,weight])=>weight>0&&incidentDefs[id].title!==last);
  const sum=weighted.reduce((a,[,weight])=>a+weight,0);
@@ -396,9 +399,9 @@ export function resolveIncident(s:V10,option:number):V10{
   else {n.eve=cap(n.eve-24);n.facility=cap(n.facility-17);n.threat=cap(n.threat+20);n.mind=cap(n.mind-8)}
  }
  n.eventHistory=[...n.eventHistory,`${n.day}일차 ${def.title} · ${def.options[option]}`].slice(-30);
- n.lastEvent=def.title;
- if(['garden','keepsake','quiet'].includes(id))return settleIncidentConsequences(s,summary(n,def.title,`${def.options[option]} — 오늘의 작은 선택을 기록했습니다.`,'good'));
- return settleIncidentConsequences(s,summary(n,def.title,`${def.options[option]} — 대응 결과가 기록되었습니다. 실제 증감 수치를 확인하십시오.`,option===2?'bad':option===0?'good':'mystery'));
+ const resolved=queueIncidentFollowup(n,id,option);resolved.lastEvent=def.title;
+ if(['garden','keepsake','quiet'].includes(id))return settleIncidentConsequences(s,summary(resolved,def.title,`${def.options[option]} — 오늘의 작은 선택을 기록했습니다.`,'good'));
+ return settleIncidentConsequences(s,summary(resolved,def.title,`${def.options[option]} — 대응 결과가 기록되었습니다. 실제 증감 수치를 확인하십시오.`,option===2?'bad':option===0?'good':'mystery'));
 }
 // Safe, read-only preview for event choice cards; uses the same actual outcome rules.
 export function incidentResourceCosts(s:V10,option:number):string[]{
@@ -503,7 +506,7 @@ tickHqOrders(n);
  else if(!h.pendingScene&&h.firstReport&&h.revealStage===2&&!!n.originZero?.firstPositiveDay&&(n.originZero?.photos??0)>=11){h.revealStage=3;h.pendingScene='origin';log(n,'제000번 제조 기록','관리자의 신경 기록이 최초 연구자의 장기 보존 뇌 이식 명세와 연결된다.','mystery')}
  if(n.archive?.bonuses.power)n.power=cap(n.power+30);
  evaluateArchiveReveal(n);
- if(originReadyForFinale(n)){n.phase='finale';if(h.revealStage<3){h.revealStage=3;h.pendingScene='origin';log(n,'최종 기밀 해독','본부의 인류 복원 명령과 최초 과학자의 신념이 같은 문장에서 시작했음을 확인했다.','mystery')}}else {n.pendingIncident=determineIncident(n);n.phase='day';if((n.hqOrders?.interference??0)>=55&&n.day%5===1&&!n.pendingIncident){n.pendingIncident='intrusion';log(n,'본부 간섭 · 침입자 음성', '본부 지원 차단 이후 외곽에서 관리자 인증 신호를 도용한 생체 교란이 포착됐습니다.', 'bad');}scheduleVoiceBreach(n);tickHorror(n);}
+ if(originReadyForFinale(n)){n.phase='finale';if(h.revealStage<3){h.revealStage=3;h.pendingScene='origin';log(n,'최종 기밀 해독','본부의 인류 복원 명령과 최초 과학자의 신념이 같은 문장에서 시작했음을 확인했다.','mystery')}}else {n.incidentFollowups=(n.incidentFollowups??[]).filter(f=>f.expiresDay>=n.day);n.pendingIncident=determineIncident(n);if(n.pendingIncident){const consumed=n.incidentFollowups.findIndex(f=>f.id===n.pendingIncident&&f.dueDay<=n.day&&f.expiresDay>=n.day);if(consumed>=0)n.incidentFollowups.splice(consumed,1);}n.phase='day';if((n.hqOrders?.interference??0)>=55&&n.day%5===1&&!n.pendingIncident){n.pendingIncident='intrusion';log(n,'본부 간섭 · 침입자 음성', '본부 지원 차단 이후 외곽에서 관리자 인증 신호를 도용한 생체 교란이 포착됐습니다.', 'bad');}scheduleVoiceBreach(n);tickHorror(n);}
 summary(n,'하루의 종료',`전력 ${n.power}%, 감염도 ${n.infection}%, 위협 ${n.threat}%. ${used==='shield'?'방어막을 점검했다.':used==='rest'?'충분한 휴식을 취했다.':'경비를 가동하지 못했다. 외부 위협과 격리 위험이 상승했다.'}${welfare.count?` 보호구역: 지식 +${welfare.knowledge} · 정신 +${welfareMind}.`:''}`,'info');recalc(n);return n}
 export function registerFullResonance(before:V10,after:V10,id:AnimalId):V10 {
  const prev=before.animals.find(a=>a.id===id);const a=after.animals.find(a=>a.id===id);

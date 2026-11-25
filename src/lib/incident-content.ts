@@ -1,5 +1,5 @@
 import type {CrewId} from './crew';
-import type {V10,Incident} from './game-v10';
+import type {V10,Incident,IncidentId} from './game-v10';
 import {copy,cap,log} from './sim';
 
 export const EXTENDED_INCIDENT_IDS=[
@@ -62,6 +62,36 @@ export function extendedIncidentWeight(s:V10,id:ExtendedIncidentId):number{
  const followup=chain[id];const eligible=id==='filter_clog'?s.filters>0:id==='cctv_blindspot'?s.facilities.cctv:id==='escape_tracks'?(s.security?.escapedIds.length??0)>0:true;
  return base+(eligible&&followup&&recent(followup.token)?followup.bonus:0);
 }
+const incidentFollowupRules:Partial<Record<IncidentId,Partial<Record<0|1|2,{id:ExtendedIncidentId;delay:1|2|3}>>>>={
+ blackout:{1:{id:'cctv_loop',delay:1}},
+ breach:{2:{id:'fence_crack',delay:1}},
+ spores:{2:{id:'contamination_pool',delay:2}},
+ echo:{2:{id:'resonance_drift',delay:2}},
+ rations:{2:{id:'animal_fever',delay:1}},
+ intrusion:{2:{id:'hq_delete_order',delay:3}},
+ generator_overheat:{2:{id:'battery_swelling',delay:1}},
+ filter_clog:{2:{id:'contamination_pool',delay:1}},
+ hq_delete_order:{0:{id:'hq_recall_order',delay:2}},
+};
+function followupIsRelevant(s:V10,id:ExtendedIncidentId){
+ if(id==='cctv_loop')return !!s.facilities.cctv;
+ if(id==='fence_crack')return s.threat>48;
+ if(id==='contamination_pool')return s.infection>35||s.facility<30;
+ if(id==='resonance_drift')return s.animals.some(a=>a.alive&&a.memory>20);
+ if(id==='animal_fever')return s.animals.some(a=>a.alive&&((a.sickness??0)>15||a.stress>60));
+ if(id==='hq_delete_order')return s.headquarters.revealStage>=2&&(s.crew?.members.some(m=>m.mind>0)??false);
+ if(id==='hq_recall_order')return s.headquarters.transferred.length>0&&s.headquarters.revealStage>=1;
+ if(id==='battery_swelling')return s.electricCells>0;
+ return false;
+}
+export function queueIncidentFollowup(s:V10,sourceId:IncidentId,option:number):V10{
+ const rule=incidentFollowupRules[sourceId]?.[option as 0|1|2];
+ if(!rule||!followupIsRelevant(s,rule.id))return s;
+ const n=copy(s) as V10;const dueDay=n.day+rule.delay;
+ const queue=(n.incidentFollowups??[]).filter(item=>item.expiresDay>=n.day&&!(item.sourceId===sourceId&&item.id===rule.id));
+ n.incidentFollowups=[...queue,{id:rule.id,sourceId,dueDay,expiresDay:dueDay+2}].slice(-6);
+ return n;
+}
 export function resolveExtendedIncident(s:V10,id:ExtendedIncidentId,option:number):V10{
  const def=defs.find(d=>d.id===id);if(!def||s.pendingIncident!==id||!Number.isInteger(option)||option<0||option>2)return s;
  const choice=def.choices[option];if(def.weight(s)<=0&&['medic_memory','guard_refusal','patrol_echo','staff_conflict','empty_chair','m00_signature','enclosure_rattle','animal_fever','feed_shortage'].includes(id))return s;if(id==='exposure_critical'&&option===1&&!crewCount(s))return s;for(const [key,amount] of Object.entries(choice.cost??{}) as [CostKey,number][]){if(s[key]<amount)return s;}
@@ -72,5 +102,5 @@ export function resolveExtendedIncident(s:V10,id:ExtendedIncidentId,option:numbe
  if(choice.crewMind)for(const member of n.crew?.members??[])if(member.mind>0&&(!targetCrew||member.id===targetCrew))member.mind=cap(member.mind+choice.crewMind);
  n.pendingIncident=null;n.eventHistory=[...n.eventHistory,`${n.day}일차 ${def.title} · ${choice.label}`].slice(-30);n.lastEvent=def.title;
  const harsh=option===2;n.lastOutcome=`${choice.label}. 실제 대응 기록이 저장되었습니다.`;log(n,def.title,n.lastOutcome,harsh?'bad':'mystery');
- return n;
+ return queueIncidentFollowup(n,id,option);
 }
