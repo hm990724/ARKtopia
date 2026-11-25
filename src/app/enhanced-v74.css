@@ -341,3 +341,20 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .ark-neural-fragments{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.ark-neural-fragments>div,.ark-neural-fragments>button{display:grid;justify-items:center;gap:3px;background:#202c36;border:1px solid #526d69;padding:5px;min-width:0;font-size:10px;line-height:1.25}.ark-neural-fragments svg{width:100%;max-width:80px;height:36px}.ark-neural-fragments button{cursor:grab;color:#dbe9e4}.ark-neural-fragments button[data-match=true]{border-color:#9ed9bf;background:#294c40}.ark-neural-fragments button[aria-pressed=true]{outline:2px solid #e5b9ec;outline-offset:-2px}.ark-neural-fragments.reference{opacity:.85}
 .ark-neural-puzzle meter{width:100%;height:10px}.ark-neural-note{color:#bad1c8}.ark-neural-puzzle footer{display:grid;grid-template-columns:minmax(70px,1fr) minmax(0,2fr);gap:6px}.ark-neural-puzzle footer button{min-height:38px;white-space:normal!important;padding:6px!important}.ark-neural-puzzle footer button:last-child{background:#315e50!important;border:1px solid #8fcdb4!important;color:#e2fff1!important}
 @media(max-width:520px){.ark-neural-puzzle{padding:8px}.ark-neural-puzzle header strong{font-size:12px}.ark-neural-fragments>button{padding:3px}.v74-reaction-stage{grid-template-rows:120px auto!important}}
+
+
+/* Active transport fills the modal instead of leaving a large empty artwork column. */
+.ark-recovery-shade .ark-recovery-modal[data-transport=true]{grid-template-columns:minmax(0,1fr)!important;align-items:start!important;width:min(850px,96vw)!important;max-height:94dvh!important;gap:0!important}
+.ark-recovery-modal[data-transport=true] .ark-recovery-scene{display:none!important}
+.ark-recovery-modal[data-transport=true] .ark-recovery-body{padding:8px!important;min-width:0}
+.ark-transport-drive-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(115px,180px);gap:10px;align-items:stretch}
+.ark-recovery-modal[data-transport=true] .ark-transport-grid{width:min(100%,315px)!important;align-self:center}
+.ark-transport-grid button[data-target=true]{outline:2px solid #efbf8c!important;opacity:1!important}
+.ark-drive-console{display:grid;gap:5px;align-content:start;padding:6px;background:#111f25;border:1px solid #55786e;font-size:11px;min-width:0}
+.ark-drive-track{height:clamp(105px,23dvh,185px);position:relative;margin:7px 3px;background:repeating-linear-gradient(to top,#192b31 0,#192b31 18px,#30464a 19px,#192b31 20px);border:1px solid #577269;overflow:hidden}
+.ark-drive-band{position:absolute;left:0;right:0;background:#4d967955;border-block:1px solid #a0dfbc}
+.ark-drive-capsule{position:absolute;left:50%;transform:translate(-50%,50%);font-size:23px;color:#f0d7e9;text-shadow:0 0 6px #e5add9;line-height:1}
+.ark-drive-track>small{position:absolute;left:3px;top:3px;color:#b0d2bd;font-size:9px}
+.ark-drive-console button{touch-action:none;user-select:none;white-space:normal!important;min-height:34px;background:#305447!important;border:1px solid #78b59f!important}
+.ark-drive-console button:active{background:#568a72!important}
+@media(max-width:510px){.ark-transport-drive-layout{grid-template-columns:minmax(0,1fr) minmax(94px,32%);gap:5px}.ark-drive-console{padding:4px}.ark-transport-grid button small{font-size:9px}.ark-transport-grid button b{font-size:14px}}
