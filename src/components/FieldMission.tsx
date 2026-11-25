@@ -68,7 +68,7 @@ type Props = {
   onToggleLight: () => void;
   onHunt: (action: HuntCommand) => void;
   onMedkit: () => void;
-  onCombat: (action:CombatAction)=>void;
+  onCombat: (action:CombatAction,prepared?:{before:V10;after:V10})=>void;
   onDecision: (action: "leave" | "survey" | "risk") => void;
   feedback: string;
 };

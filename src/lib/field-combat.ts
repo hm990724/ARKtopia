@@ -139,3 +139,12 @@ export function upgradeBlock(s:V10,id:UpgradeId):string|null{
 }
 export function upgradeBase(s:V10,id:UpgradeId):V10{if(upgradeBlock(s,id))return s;const n=structuredClone(s),c=upgradeCost(s,id);n.scrap-=c.scrap;n.parts-=c.parts;n.power-=c.power;n.baseLevels??={};n.baseLevels[id]=upgradeLevel(s,id)+1;n.lastOutcome=`${baseUpgrades[id].name} ${n.baseLevels[id]}단계 강화 완료`;log(n,'기지 강화',n.lastOutcome,'good');return n;}
 
+
+/** Visual-only summary of a resolved turn. Does not roll or mutate combat state. */
+export function combatTurnFeedback(before:V10,after:V10){
+ const previous=before.field?.combat,remaining=after.field?.combat;
+ const defeated=!remaining&&/MUTANT 격퇴|오염 제거/.test(after.lastOutcome);
+ const hp=remaining?.hp??(defeated?0:previous?.hp??0);
+ const integrity=after.run?.integrity??before.run?.integrity??0;
+ return {hp,integrity,enemyDamage:Math.max(0,(previous?.hp??0)-hp),damage:Math.max(0,(before.run?.integrity??0)-integrity),recovery:Math.max(0,integrity-(before.run?.integrity??0)),mindLoss:Math.max(0,before.mind-after.mind),infection:Math.max(0,after.infection-before.infection),defeated,escaped:!remaining&&after.lastOutcome.includes('도주 성공'),fatal:after.mind<=0||after.eve<=0};
+}
