@@ -403,3 +403,6 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .v39-incident-options button{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto!important;align-items:center;gap:8px}.ark-event-cost{font-size:11px;color:#e5bd91;border:1px solid #665647;background:#2e2627;padding:4px 7px;text-align:right;max-width:135px;white-space:normal}
 @media(prefers-reduced-motion:reduce){.ark-cctv-shadow,.ark-voice-camera{animation:none!important}}
 @media(max-width:520px){.ark-radio-face{grid-template-columns:minmax(0,1fr) 76px}.ark-radio-knob{width:72px;height:72px}.ark-event-cost{max-width:95px;font-size:10px}}
+
+/* Archived CCTV backgrounds cannot be mistaken for a functioning live camera. */
+.cctv-live-stage.signal-off>img,.cctv-live-stage.signal-off>.ark-art-slot{opacity:.26!important;filter:grayscale(.7)!important}.ark-cctv-offline-reason{position:absolute;z-index:8;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:#090e1680;color:#f3c4c8;text-align:center;padding:12px;pointer-events:none}.ark-cctv-offline-reason small{color:#b9c9cb;font-size:11px}.ark-cctv-offline-reason b{font-size:17px}
