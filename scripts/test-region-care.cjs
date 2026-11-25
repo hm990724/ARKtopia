@@ -4,7 +4,7 @@ const g=require('../src/lib/game-v10.ts'),field=require('../src/lib/tactical-fie
 assert.equal(field.fieldVision('rail',true,true,3),0);
 assert.equal(field.fieldVision('tunnels',true,false),1);
 const rail=field.createField(14,'rail');rail.originFragments={[rail.wildlifeIndex]:5};assert.equal(field.acousticBearing(rail,'fragment').kind,'fragment');assert.equal(field.acousticBearing(rail,'exit').kind,'exit');
-assert.equal(field.REGION_RULES.conservatory.sporeRate,.60);assert.equal(field.REGION_RULES.garden.sporeRate,.60);assert.equal(field.REGION_RULES.garden.sporeWake,0);
+assert.equal(field.REGION_RULES.conservatory.sporeRate,.40);assert.equal(field.REGION_RULES.garden.sporeRate,.40);assert.equal(field.REGION_RULES.garden.sporeWake,0);
 let s=g.beginGame('medic','generator');s.tutorialStep=9;s.day=6;s.food=4;s.ap=4;let animal=sim.makeAnimal('fox',1);animal.hunger=70;animal.hp=75;animal.stress=30;animal.bond=60;s.animals=[animal];
 const before=security.escapeRisk(s,animal);let scenario=care.getCareScenario(animal,'feed',s.day);let fed=care.resolveCareChoice(s,'fox','feed',scenario.correct).next;
 assert.equal(fed.food,3);assert.equal(fed.animals[0].fedDay,6);assert.ok(security.escapeRisk(fed,fed.animals[0])<before);assert.equal(care.resolveCareChoice(fed,'fox','feed',scenario.correct),null);
@@ -15,7 +15,7 @@ const hand={...animal,hunger:20};sim.nightlyAnimalCondition(hand,true,90,0,true)
 console.log('PASS region visibility, acoustic tracking, ration accounting, care outcomes and living sanctuary yield');
 
 // Autonomous spread from turn five, at 50% per eligible turn, at most one new cell.
-const patch=field.createField(8,'garden');assert.equal(field.fieldHeight(patch),8);patch.tiles.fill('empty');patch.position=0;patch.tiles[35]='hazard';assert.equal(field.advanceSporeSpread(patch,()=>.6),null);assert.notEqual(field.advanceSporeSpread(patch,()=>.59),null);assert.equal(patch.sporeSpread.cells.length,1);console.log('PASS expanded field and autonomous spore spread');
+const patch=field.createField(8,'garden');assert.equal(field.fieldHeight(patch),8);patch.tiles.fill('empty');patch.position=0;patch.tiles[35]='hazard';assert.equal(field.advanceSporeSpread(patch,()=>.4),null);assert.notEqual(field.advanceSporeSpread(patch,()=>.39),null);assert.equal(patch.sporeSpread.cells.length,1);console.log('PASS expanded field and autonomous spore spread');
 
 // Independent colonies, regional escalation and coverage limits.
 for(const [region,rule] of Object.entries(field.REGION_RULES)){const f=field.createField(8,region);f.tiles.fill('empty');f.origin=0;f.position=1;f.exitIndex=f.tiles.length-1;f.tiles[f.exitIndex]='exit';const w=field.fieldWidth(f);f.tiles[w+2]='hazard';f.tiles[w*(field.fieldHeight(f)-2)+w-3]='hazard';f.tiles[w+3]='wall';f.sporeSpread={turn:4,active:[],cells:[]};field.advanceSporeSpread(f,()=>0);assert.equal(f.sporeSpread.lastGrowth.length,rule.sporeGrowth*2);for(let i=0;i<100;i++)field.advanceSporeSpread(f,()=>0);assert.ok(!f.sporeSpread.cells.includes(f.origin));assert.ok(!f.sporeSpread.cells.includes(f.exitIndex));assert.ok(!f.sporeSpread.cells.includes(w+3));assert.equal(new Set(f.sporeSpread.cells).size,f.sporeSpread.cells.length);assert.ok(f.sporeSpread.cells.length+2<=Math.floor((f.tiles.length-3)*rule.sporeCap));}console.log('PASS independent regional spore colonies and protected exits');
