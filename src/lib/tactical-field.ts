@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -25,12 +25,12 @@ const seedFor=(day:number,region:RegionId)=>region.split('').reduce((n,c)=>hash(
 const distance=(a:number,b:number,width:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
 export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({garden:{width:8,height:8},conservatory:{width:8,height:8},rail:{width:9,height:9},archive:{width:10,height:10},vault:{width:11,height:11},tunnels:{width:12,height:12}}[region]);
 export const REGION_RULES:Record<RegionId,{title:string;description:string;blind:boolean;sporeRate:number;sporeWake:number;sporeGrowth:number;sporeCap:number}> = {
- garden:{title:'기본 수색',description:'생체 청음과 시야로 개체 신호를 추적한다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:1,sporeCap:0.45},
- conservatory:{title:'온실 · 급속 오염',description:'포자가 빠르게 번진다. 바이오필터와 빠른 귀환이 유리하다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:1,sporeCap:0.5},
- rail:{title:'폐역 · 완전 암전',description:'조명은 무용하다. 청음의 방향과 강도로 길을 찾아라. 소음이 적을수록 안전하다.',blind:true,sporeRate:0.4,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
- archive:{title:'관측소 · 혼선 신호',description:'정상 기록과 가짜 신호가 뒤섞인다. 스캐너나 기록관으로 판별할 수 있다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:2,sporeCap:0.6},
- vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:2,sporeCap:0.65},
- tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:3,sporeCap:0.7}
+ garden:{title:'기본 수색',description:'생체 청음과 시야로 개체 신호를 추적한다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:1,sporeCap:0.45},
+ conservatory:{title:'온실 · 급속 오염',description:'포자가 빠르게 번진다. 바이오필터와 빠른 귀환이 유리하다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:1,sporeCap:0.5},
+ rail:{title:'폐역 · 완전 암전',description:'조명은 무용하다. 청음의 방향과 강도로 길을 찾아라. 소음이 적을수록 안전하다.',blind:true,sporeRate:0.3,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
+ archive:{title:'관측소 · 혼선 신호',description:'정상 기록과 가짜 신호가 뒤섞인다. 스캐너나 기록관으로 판별할 수 있다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:2,sporeCap:0.6},
+ vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:2,sporeCap:0.65},
+ tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:3,sporeCap:0.7}
 };
 export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?0:region==='tunnels'?(scanner?2+Math.floor(level/2):1):scanner?3+Math.floor(level/2):light?2:1;}
 export function acousticBearing(f:FieldState,kind:'animal'|'exit'|'threat'|'fragment'){
@@ -189,17 +189,44 @@ export function farthestThreatCell(f:FieldState):number|null{
  const pool=[...costs.entries()].filter(([i,d])=>d>=3&&i!==f.exitIndex&&i!==f.origin&&f.tiles[i]!=='animal'&&f.originFragments?.[i]===undefined).sort((a,b)=>b[1]-a[1]||a[0]-b[0]);
  return pool[0]?.[0]??null;
 }
-export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_lightOn=false,_pace?:Pace):boolean{
+/** Difficulty is tied to the current sector, not the calendar alone. */
+export const MUTANT_TIERS=[
+ {threshold:82,minSteps:15,respawn:12,escapeGrace:8,maxSpawns:1,basePressure:2,trailEvery:5,damageScale:.65,hp:36,ambiguity:0},
+ {threshold:74,minSteps:12,respawn:10,escapeGrace:6,maxSpawns:1,basePressure:3,trailEvery:4,damageScale:.8,hp:42,ambiguity:10},
+ {threshold:66,minSteps:9,respawn:8,escapeGrace:5,maxSpawns:2,basePressure:4,trailEvery:3,damageScale:1,hp:48,ambiguity:25},
+ {threshold:60,minSteps:7,respawn:6,escapeGrace:4,maxSpawns:2,basePressure:5,trailEvery:3,damageScale:1.08,hp:54,ambiguity:40},
+ {threshold:54,minSteps:5,respawn:5,escapeGrace:3,maxSpawns:3,basePressure:6,trailEvery:2,damageScale:1.15,hp:60,ambiguity:60},
+ {threshold:48,minSteps:4,respawn:4,escapeGrace:2,maxSpawns:3,basePressure:7,trailEvery:2,damageScale:1.25,hp:66,ambiguity:80}
+] as const;
+export function mutantTierIndex(region?:RegionId){return Math.max(0,['garden','conservatory','rail','archive','vault','tunnels'].indexOf(region??'garden'));}
+export function mutantTier(region?:RegionId){return MUTANT_TIERS[mutantTierIndex(region)];}
+export function fieldPressureGain(f:FieldState,day:number,pace:Pace,relay:number,contaminated:boolean){
+ const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
+ return Math.max(1,tier.basePressure-Math.min(2,Math.floor(relay/2))+(pace==='quiet'?-1:pace==='fast'?3+index:0)+(contaminated?3+index:0)+Math.min(index,Math.floor(day/10)));
+}
+export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_lightOn=false,pace?:Pace):boolean{
  const t=f.threat;if(!t||f.combat)return false;
+ const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  t.ticks=(t.ticks??0)+1;
  if((t.cooldown??0)>0){t.cooldown!--;return false;}
  const {costs,neighbors}=sporePaths(f,f.position);
+ const d=costs.get(t.position)??Infinity;
+ // Early sectors can lose the administrator's trail in quiet, distant movement.
+ if(index<=1&&pace==='quiet'&&d>4&&t.ticks%2===0){t.mode='search';t.stage='search';t.warningTicks=0;return false;}
  t.alert=Math.max(0,Math.min(100,f.pressure??0));t.mode='closing';t.stage='chase';
+ // Advanced variants anticipate the next step or cut off the known exit; never pass walls or teleport.
+ const prev=f.previousPosition,delta=prev===undefined?0:f.position-prev;
+ const predicted=f.position+delta;
+ const target=index>=3&&delta&&adjacentField(f.position,predicted,fieldWidth(f),f.tiles.length)&&f.tiles[predicted]!=='wall'?predicted:undefined;
+ const intercept=target===undefined?null:sporePaths(f,target).costs;
+ const exitCosts=index>=4&&f.exitIndex!==undefined?sporePaths(f,f.exitIndex).costs:null;
  for(let i=0;i<2;i++){
   if((costs.get(t.position)??Infinity)<=1)break;
-  const next=neighbors(t.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
-  if(next===undefined||(costs.get(next)??Infinity)>=(costs.get(t.position)??Infinity))break;
-  depositMutantSpores(f,t.position);t.position=next;
+  const score=(cell:number)=>(costs.get(cell)??Infinity)+(intercept?Math.min(12,intercept.get(cell)??12)*.35:0)+(exitCosts?Math.min(12,exitCosts.get(cell)??12)*.15:0);
+  const next=neighbors(t.position).filter(j=>(costs.get(j)??Infinity)<(costs.get(t.position)??Infinity)).sort((a,b)=>score(a)-score(b))[0];
+  if(next===undefined)break;
+  if(i===0&&t.ticks%tier.trailEvery===0)depositMutantSpores(f,t.position);
+  t.position=next;
  }
  const close=(costs.get(t.position)??Infinity)<=1;
  t.warningTicks=close?1:0;return close;
@@ -220,7 +247,7 @@ export function createField(day:number,region:RegionId,sortie=0,guided=day===1&&
   const r=Math.floor(i/width),c=i%width,h=hash(seed+i*337)%100;
   const corePath=r===startingRow || (c===width-1&&r>=Math.min(startingRow,exitRow)&&r<=Math.max(startingRow,exitRow));
   if(!corePath&&h<12)tiles[i]='wall';
-  else if(h<27)tiles[i]='hazard';
+  else if(h< (18+mutantTierIndex(region)))tiles[i]='hazard';
   else if(h<46)tiles[i]='empty';
   else if(h<65)tiles[i]='cache';
   else if(h<77)tiles[i]='signal';
