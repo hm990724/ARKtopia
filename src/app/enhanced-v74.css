@@ -358,3 +358,10 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .ark-drive-console button{touch-action:none;user-select:none;white-space:normal!important;min-height:34px;background:#305447!important;border:1px solid #78b59f!important}
 .ark-drive-console button:active{background:#568a72!important}
 @media(max-width:510px){.ark-transport-drive-layout{grid-template-columns:minmax(0,1fr) minmax(94px,32%);gap:5px}.ark-drive-console{padding:4px}.ark-transport-grid button small{font-size:9px}.ark-transport-grid button b{font-size:14px}}
+
+/* Persistent contamination art, not ephemeral particle effects. */
+.ark-spore-sprite{display:block;position:relative;width:clamp(24px,4vw,56px);height:clamp(24px,4vw,56px);margin:auto;pointer-events:none}
+.ark-spore-overlay{position:absolute;left:4%;bottom:4%;width:46%;height:49%;z-index:4;pointer-events:none;display:grid;grid-template-rows:minmax(0,1fr) auto;justify-items:center}
+.ark-spore-sprite img,.ark-spore-overlay img{width:100%!important;height:100%!important;object-fit:contain!important;animation:none!important;filter:drop-shadow(0 0 3px #d4a57788);image-rendering:pixelated}
+.ark-spore-overlay small{font-size:clamp(8px,1vw,12px);color:#ffdfaa;background:#211b1ddd;padding:0 2px;line-height:1.1}
+.ark-escape-meter{display:grid;gap:4px;width:100%;color:#f0d2ab}.ark-escape-meter meter{width:100%;height:10px;accent-color:#dbad76}.ark-escape-meter span{font-size:12px;font-weight:bold}
