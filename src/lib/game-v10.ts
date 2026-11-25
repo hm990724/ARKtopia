@@ -618,7 +618,7 @@ export function tickFieldSpores(s:V10):boolean{
 /** Real-time contamination advances independently of movement, never the roaming enemy. */
 export function tickAutonomousSpores(s:V10):V10{
  if(!s.run||!s.field||s.run.firstTutorial||s.phase!=='day'||s.capture||s.pending||s.field.combat||s.field.choice)return s;
- const n=copy(s) as V10;advanceSporeSpread(n.field!);return n;
+ const n=copy(s) as V10;advanceSporeSpread(n.field!);if(fieldSporeNearby(n.field!))tickFieldSpores(n);return n;
 }
 export function toggleFieldLight(s:V10):V10{
  if(s.run?.region==='rail'||!s.run?.gear.includes('flashlight')||!s.field||s.field.combat||s.field.choice||s.pending||s.flashlight<=0)return s;
@@ -698,7 +698,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   const chance=(n.day*17+destination*29+field.steps*11+(field.sortie??0)*43)%100;
   if(tile==='cache'||run.region==='archive'||chance<65){const danger=regions.find(r=>r.id===run.region)!.danger;
    const kind=tile as FieldChoice['kind'];
-   field.choice={id:`${n.day}-${field.sortie??0}-${destination}`,kind,title:kind==='cache'?'봉인된 보급 컨테이너':kind==='signal'?'훼손된 기억 보관소':'포자에 잠긴 연구 상자',description:kind==='cache'?(run.region==='vault'?'봉인된 연구 설비입니다. 스캐너나 보급관이 있다면 안전하게 잠금을 풀 수 있습니다.':'상자를 열면 추가 물자를 얻을 수 있지만 방호 장치가 작동할 수 있습니다.'):kind==='signal'?(run.region==='archive'?(run.gear.includes('scanner')||(run.companions??[]).includes('deer')?(falseFieldSignal(field,destination)?'독립 센서 판독: 반복 주기가 동일한 가짜 신호입니다. 안전 분석으로 판별 기록을 남길 수 있습니다.':'독립 센서 판독: 정상 기록입니다. 복원할 가치가 있습니다.'):'반복되는 파형의 출처가 불분명합니다. 신중하게 분석하거나 위험을 감수할 수 있습니다.'):'낡은 신경 기록입니다. 강행 복원은 더 많은 단서를 남기지만 생체 신호를 교란합니다.'):'잔해 아래 물자와 신호가 있습니다. 가까이 접근할수록 감염 위험이 커집니다.',danger:Math.min(85,14+Math.floor(danger*.66)),reward:1+regions.find(r=>r.id===run.region)!.reward+(kind==='cache'?(n.day*13+(field.sortie??0)*19+destination*7+field.steps*11+(field.worldShift?.serial??0)*3)%4-1:0)};
+   field.choice={id:`${n.day}-${field.sortie??0}-${destination}`,kind,title:kind==='cache'?'봉인된 보급 컨테이너':kind==='signal'?'훼손된 기억 보관소':'포자에 잠긴 연구 상자',description:kind==='cache'?(run.region==='vault'?'봉인된 연구 설비입니다. 스캐너나 보급관이 있다면 안전하게 잠금을 풀 수 있습니다.':'상자를 열면 추가 물자를 얻을 수 있지만 방호 장치가 작동할 수 있습니다.'):kind==='signal'?(run.region==='archive'?(run.gear.includes('scanner')||(run.companions??[]).includes('deer')?(falseFieldSignal(field,destination)?'독립 센서 판독: 반복 주기가 동일한 가짜 신호입니다. 안전 분석으로 판별 기록을 남길 수 있습니다.':'독립 센서 판독: 정상 기록입니다. 복원할 가치가 있습니다.'):'반복되는 파형의 출처가 불분명합니다. 신중하게 분석하거나 위험을 감수할 수 있습니다.'):'낡은 신경 기록입니다. 강행 복원은 더 많은 단서를 남기지만 생체 신호를 교란합니다.'):'잔해 아래 물자와 신호가 있습니다. 가까이 접근할수록 감염 위험이 커집니다.',...fieldChoiceRoll(n.day,field.sortie??0,destination,field.steps,danger,regions.find(r=>r.id===run.region)!.reward,field.pressure??0)};
    observation+=' 조사 가능한 미확인 물체가 감지됐습니다. 행동을 선택하세요.';
   }
  }
@@ -731,21 +731,34 @@ export function concealInField(s:V10):V10{
  active.concealed=true;active.noise=0;n.stamina=Math.max(0,n.stamina-1);active.lastEvent=n.lastOutcome='장애물 뒤에 몸을 낮췄습니다. 추적체는 마지막으로 본 위치를 수색합니다. ST -1.';return n;
 }
 /** Three clearly priced side-event decisions: walk away, careful scan or hazardous salvage. */
+/** Saved per-container roll: UI and resolver use the same values. */
+export function fieldChoiceRoll(day:number,sortie:number,cell:number,steps:number,regionalDanger:number,regionalReward:number,pressure:number){
+ const seed=(Math.imul(day+17,73856093)^Math.imul(sortie+31,19349663)^Math.imul(cell+11,83492791)^Math.imul(steps+1,2654435761))>>>0;
+ const quality=seed%5,lock=(seed>>>9)%31;
+ return {danger:Math.max(8,Math.min(85,Math.round(regionalDanger*.48+pressure*.13+lock+quality*4))),reward:Math.max(1,regionalReward+quality+((seed>>>17)%3))};
+}
+export function fieldChoicePreview(s:V10){
+ const choice=s.field?.choice,run=s.run;if(!choice||!run||!s.field)return null;
+ const fake=choice.kind==='signal'&&falseFieldSignal(s.field,s.field.position),vault=run.region==='vault'&&choice.kind==='cache',assisted=run.gear.includes('scanner')||(run.companions??[]).includes('fox');
+ const surveyScrap=Math.max(1,Math.floor(choice.reward/2)+(vault&&assisted?2:0));
+ const failure=fake?100:Math.max(5,choice.danger-(vault&&assisted?25:0));
+ return {surveyScrap,surveyLoot:Math.max(1,Math.floor(choice.reward/3)),failure,salvage:choice.reward*2,damage:Math.max(3,Math.ceil(choice.danger/7)),fake,knownFake:fake&&(run.gear.includes('scanner')||(run.companions??[]).includes('deer')),displayFailure:Math.max(5,choice.danger-(vault&&assisted?25:0))};
+}
 export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Math.random()):V10{
  if(!s.run||!s.field?.choice||s.capture)return s;
  const n=copy(s) as V10,choice=n.field!.choice!,run=n.run!,field=n.field!;
- const fake=choice.kind==='signal'&&falseFieldSignal(field,field.position),vault=run.region==='vault'&&choice.kind==='cache',assisted=run.gear.includes('scanner')||(run.companions??[]).includes('fox');
- const surveyScrap=Math.max(1,(vault&&assisted?5:2)+choice.reward-(1+regions.find(r=>r.id===run.region)!.reward));
+ const fake=choice.kind==='signal'&&falseFieldSignal(field,field.position);
+ const preview=fieldChoicePreview(s)!;const surveyScrap=preview.surveyScrap;
  field.choice=null;
  if(action==='leave'){
   n.lastOutcome=`${choice.title}: 위험을 무시하고 이동을 계속합니다.`;
  }else if(action==='survey'){
   n.stamina=cap(n.stamina-3);
   n.knowledge+=2;earnDuringRun(run,'knowledge',2);
-  if(choice.kind==='cache'){const amount=surveyScrap;n.scrap+=amount;earnDuringRun(run,'scrap',amount);run.loot+=amount;field.loot+=amount;}else if(!fake){n.clues++;earnDuringRun(run,'clues',1);}
-  n.lastOutcome=fake?'가짜 신호 판별 완료. 잘못된 신호에 접근하지 않았습니다. 지식 +2 · ST -3':`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?` · 고철 +${surveyScrap}`:' · 단서 +1'}.`;
+  if(choice.kind==='cache'){const amount=surveyScrap;n.scrap+=amount;earnDuringRun(run,'scrap',amount);run.loot+=preview.surveyLoot;field.loot+=preview.surveyLoot;}else if(!fake){n.clues++;earnDuringRun(run,'clues',1);}
+  n.lastOutcome=fake?'가짜 신호 판별 완료. 잘못된 신호에 접근하지 않았습니다. 지식 +2 · ST -3':`${choice.title}: 신중한 기록 확보. ST -3 · 지식 +2${choice.kind==='cache'?` · 고철 +${surveyScrap} · 회수 +${preview.surveyLoot}점`:' · 단서 +1'}.`;
  }else{
-  const win=!fake&&rand*100>=Math.max(5,choice.danger-(vault&&assisted?25:0));
+  const win=!fake&&rand*100>=preview.failure;
   n.stamina=cap(n.stamina-6);
   if(win){
    const salvage=choice.reward*2;
@@ -754,7 +767,7 @@ export function resolveFieldChoice(s:V10,action:'leave'|'survey'|'risk',rand=Mat
    run.loot+=choice.reward;field.loot+=choice.reward;if(choice.kind==='signal'){n.clues+=2;earnDuringRun(run,'clues',2);}
    n.lastOutcome=`위험 감수 성공. 고철 +${salvage}, 지식 +3, 회수 점수 +${choice.reward}, ST -6.`;
   }else{
-   const damage=Math.max(3,Math.ceil(choice.danger/7));
+   const damage=preview.damage;
    n.mind=cap(n.mind-damage);n.infection=cap(n.infection+Math.ceil(damage/2));
    n.lastOutcome=`${fake?'가짜 신호의 교란에 노출':'위험 감수 실패'}. 정신력 -${damage}, 감염 +${Math.ceil(damage/2)}, ST -6. 다음 행동을 선택하세요.`;
   }
