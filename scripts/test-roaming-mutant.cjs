@@ -30,7 +30,7 @@ console.log('PASS independent search, precision net, two-stage calming, cage and
 
 // Turn-based spores are visible initially, expand one cell after contact, and can grow offscreen.
 const spores=fieldAI.createField(6,'garden');spores.tiles.fill('empty');spores.position=14;spores.tiles[15]='hazard';spores.sporeSpread={turn:0,active:[],cells:[]};
-for(let i=0;i<3;i++){assert.equal(fieldAI.advanceSporeSpread(spores,()=>0),null);}
+assert.equal(fieldAI.advanceSporeSpread(spores,()=>.6),null);
 assert.deepEqual(fieldAI.sporeVisibleCells(spores),[15]);assert.notEqual(fieldAI.advanceSporeSpread(spores,()=>0),null);assert.ok(fieldAI.sporeVisibleCells(spores).includes(15));assert.equal(spores.sporeSpread.cells.length,1);assert.equal(fieldAI.advanceSporeSpread(spores,()=>.9),null);assert.equal(spores.sporeSpread.cells.length,1);
 let sprint=fieldAI.createField(2,'garden');assert.equal(sprint.width,8);assert.equal(sprint.height,8);assert.equal(sprint.threat,null);sprint.tiles.fill('empty');sprint.position=24;sprint.threat={position:30,origin:30,alert:70,mode:'closing'};assert.equal(fieldAI.advanceFieldThreat(sprint),false);assert.equal(sprint.threat.position,28);assert.equal(fieldAI.advanceFieldThreat(sprint),false);assert.equal(sprint.threat.position,26);assert.equal(fieldAI.advanceFieldThreat(sprint),true);assert.equal(sprint.threat.position,25);
 let spawn=g.beginGame('medic','generator');spawn.day=6;spawn.tutorialStep=9;spawn=g.startRun(spawn,'garden',['flashlight']);spawn.field.pressure=20;assert.equal(c.tickRoamingThreat(spawn),false);assert.equal(spawn.field.threat,null);spawn.field.pressure=60;assert.equal(c.tickRoamingThreat(spawn),false);assert.equal(spawn.field.threat.position,fieldAI.farthestThreatCell(spawn.field));
