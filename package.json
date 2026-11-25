@@ -12,7 +12,7 @@
     "test:logic": "node scripts/test-logic.cjs",
     "test:v69": "node scripts/test-v69.cjs",
     "test:v70": "node scripts/test-v70.cjs",
-    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73 && npm run test:v74 && npm run test:v75 && npm run test:v76 && npm run test:v81 && npm run test:v82 && npm run test:v83 && npm run test:ending-matrix && npm run test:roaming-mutant && npm run test:region-care",
+    "test:all": "npm run test:logic && npm run test:v69 && npm run test:v70 && npm run test:v71 && npm run test:v72 && npm run test:v73 && npm run test:v74 && npm run test:v75 && npm run test:v76 && npm run test:v81 && npm run test:v82 && npm run test:v83 && npm run test:ending-matrix && npm run test:roaming-mutant && npm run test:region-care && npm run test:manual-games",
     "lint": "eslint src --ext .ts,.tsx --quiet",
     "check:assets:v70": "node scripts/check-v70-assets.cjs",
     "test:browser": "playwright test --config=playwright.config.cjs",
@@ -35,7 +35,8 @@
     "size:report": "node scripts/report-disk-usage.cjs",
     "test:v83": "node scripts/test-v83.cjs",
     "test:roaming-mutant": "node scripts/test-roaming-mutant.cjs",
-    "test:region-care": "node scripts/test-region-care.cjs"
+    "test:region-care": "node scripts/test-region-care.cjs",
+    "test:manual-games": "node scripts/test-manual-games.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

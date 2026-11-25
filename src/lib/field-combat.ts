@@ -1,7 +1,7 @@
 import type {V10} from './game-v10';
 import {cap,log} from './sim';
 import {canWolfLastStand,sacrificeWolf,queueCrewTerminations} from './crew';
-import {advanceFieldThreat,farthestThreatCell,depositMutantSpores,mutantTier,mutantTierIndex,type Pace} from './tactical-field';
+import {advanceFieldThreat,farthestThreatCell,depositMutantSpores,fieldLineOfSight,fieldBeamContains,fieldWidth,adjacentField,mutantTier,mutantTierIndex,type Pace} from './tactical-field';
 export type FieldEnemy='slime'|'echo'|'mutant';
 export type CombatAction='strike'|'guard'|'cover'|'heal'|'pulse'|'support'|'retreat'|'intro-continue'|'wolf-last-stand'|'cancel-last-stand';
 export type FieldCombat={enemy:FieldEnemy;hp:number;maxHp:number;round:number;intent:'lunge'|'charge'|'spray'|'sweep'|'burst'|'feint';stagger:boolean;log:string[];source?:'hazard'|'mobile';lastAction?:CombatAction;introPending?:boolean;lastStand?:boolean;seed?:number;tier?:number;obscured?:boolean;strikeChain?:number;}
@@ -19,10 +19,10 @@ export const mutantAttack:Record<FieldCombat['intent'],{damage:number;infection:
 export function newFieldCombat(seed:number):FieldCombat{return {enemy:seed%2?'echo':'slime',hp:24,maxHp:24,round:1,intent:seed%2?'spray':'lunge',stagger:false,log:['EVE: 동물의 생체 신호가 아닙니다. 오염 덩어리의 다음 움직임을 확인하세요.']};}
 /** The special Mutant is one persistent individual, distinct from M-00. */
 export function mutantSecured(s:V10):boolean{return s.animals.some(a=>a.id==='mutant')||!!s.headquarters?.transferred.includes('mutant')||s.pending==='mutant'||Object.values(s.archive?.entries??{}).some(entry=>entry.species==='mutant');}
-/** Only field movement can enter the roaming encounter. */
+/** A real-time encounter can interrupt tracking, preserving it for after combat. */
 export function beginRoamingCombat(s:V10):boolean{
  const f=s.field;if(!s.run||!f?.threat||f.combat||f.choice||s.pending||s.run.firstTutorial||mutantSecured(s))return false;
- if(s.capture)return false;
+ if(s.capture){f.interruptedCapture=structuredClone(s.capture);s.capture=null;}
  const first=!s.roamingStory?.firstEncounterDay;
  s.roamingStory??={};if(first)s.roamingStory.firstEncounterDay=s.day;
  const seed=Math.floor(Math.random()*2147483647),tier=mutantTierIndex(s.run.region),profile=mutantTier(s.run.region);
@@ -31,18 +31,50 @@ export function beginRoamingCombat(s:V10):boolean{
  if(first)log(s,'최초 배회 위협 조우','외곽에서 특수 변이체 MUTANT를 확인했습니다. 동일 개체의 추적 경로가 기록되었습니다.','bad');
  return true;
 }
-/** Only a successful player step may spawn or advance the single roaming enemy. */
+function patrolTarget(f:NonNullable<V10['field']>,at:number):number|null{
+ const width=fieldWidth(f),choices=[at-width,at+1,at+width,at-1]
+  .filter(i=>adjacentField(at,i,width,f.tiles.length)&&f.tiles[i]!=='wall'&&i!==f.position&&i!==f.exitIndex);
+ return choices.length?choices[Math.floor((f.autonomousTicks??0)/2)%choices.length]:null;
+}
+/** Movement raises pursuit immediately; the expedition clock also advances a slower roaming AI. */
 export function tickRoamingThreat(s:V10,pace?:Pace):boolean{
- const f=s.field,run=s.run;if(!run||!f||s.capture||f.combat||f.choice||s.pending||run.firstTutorial||mutantSecured(s)||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
- const profile=mutantTier(run.region);
+ const f=s.field,run=s.run;if(!run||!f||f.combat||f.choice||s.pending||run.firstTutorial||mutantSecured(s)||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
+ const profile=mutantTier(run.region),index=mutantTierIndex(run.region),autonomous=pace===undefined;
  if(!f.threat){
-  if(f.steps<Math.max(profile.minSteps,f.mutantNextStep??0)||(f.sporeSpread?.turn??0)<(f.mutantNextTurn??0)||(f.pressure??0)<profile.threshold)return false;
+  const firstSpawn=(f.mutantSpawns??0)===0;
+  const lingerReady=autonomous&&firstSpawn&&(f.autonomousTicks??0)>=Math.max(4,9-index);
+  const routeReady=f.steps>=Math.max(profile.minSteps,f.mutantNextStep??0)&&(f.pressure??0)>=profile.threshold;
+  if((!routeReady&&!lingerReady)||(f.sporeSpread?.turn??0)<(f.mutantNextTurn??0))return false;
   const at=farthestThreatCell(f);if(at===null)return false;
   f.mutantSpawns=(f.mutantSpawns??0)+1;
-  f.threat={position:at,origin:at,alert:f.pressure??0,mode:'closing',stage:'chase',ticks:0};
-  depositMutantSpores(f,at);f.lastEvent=s.lastOutcome='EVE: 외곽에서 MUTANT 출현.';return false;
+  f.threat={position:at,origin:at,alert:f.pressure??0,mode:autonomous?'search':'closing',stage:autonomous?'patrol':'chase',ticks:0};
+  depositMutantSpores(f,at);f.lastEvent=s.lastOutcome=autonomous?'외곽 순찰 신호 감지 · 아직 이동 경로를 파악할 수 없습니다.':'EVE: 외곽에서 MUTANT 출현.';return false;
  }
- if(advanceFieldThreat(f,f.noise,upgradeLevel(s,'relay'),false,pace)&&beginRoamingCombat(s))return true;
+ if(!autonomous){if(advanceFieldThreat(f,f.noise,upgradeLevel(s,'relay'),false,pace)&&beginRoamingCombat(s))return true;return false;}
+
+ const threat=f.threat,tick=f.autonomousTicks??0,interval=index>=4?1:2;
+ threat.ticks??=0;
+ if(tick%interval!==0)return false;
+ const width=fieldWidth(f),dx=threat.position%width-f.position%width,dy=Math.floor(threat.position/width)-Math.floor(f.position/width),distance=Math.abs(dx)+Math.abs(dy);
+ const lightOn=run.region!=='rail'&&!f.lightOff&&(f.lightSteps??0)>0;
+ const inBeam=lightOn&&fieldBeamContains(f,threat.position,3);
+ const audible=f.noise>=24&&distance<=Math.max(2,Math.floor(f.noise/18));
+ const visible=!f.concealed&&fieldLineOfSight(f,threat.position,1);
+ const sensed=inBeam||audible||visible;
+ let target:number,stage:'patrol'|'investigate'|'chase'|'search';
+ if(f.concealed&&f.noise<35){
+  target=threat.lastSeen??threat.origin??threat.position;stage='search';
+  const lastDistance=Math.abs(target%width-threat.position%width)+Math.abs(Math.floor(target/width)-Math.floor(threat.position/width));
+  if(lastDistance<=1&&threat.ticks>=4){const away=patrolTarget(f,threat.position);if(away===null)return false;target=away;stage='patrol';}
+  else if(lastDistance<=1&&tick%(interval*3)!==0){threat.stage='search';threat.mode='search';threat.warningTicks=0;threat.ticks++;return false;}
+ }else if(sensed||distance<=2){
+  target=f.position;stage=distance<=2?'chase':'investigate';threat.lastSeen=f.position;
+ }else{
+  const next=patrolTarget(f,threat.position);if(next===null)return false;
+  target=next;stage='patrol';
+ }
+ const reached=advanceFieldThreat(f,f.noise,upgradeLevel(s,'relay'),lightOn,undefined,target,stage);
+ if(target===f.position&&!f.concealed&&reached&&beginRoamingCombat(s))return true;
  return false;
 }
 function relocateThreat(f:NonNullable<V10['field']>){if(!f.threat)return;const at=farthestThreatCell(f);if(at===null){f.threat=null;return;}f.threat={position:at,origin:at,alert:f.pressure??0,mode:'closing',stage:'chase',ticks:0,cooldown:mutantTier(f.region).escapeGrace};}

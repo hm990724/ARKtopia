@@ -19,6 +19,14 @@ tmp/v74*
 # Local project bundle; keep large archives out of Git commits
 /public.zip
 
+# Generated archives are local handoff files, never source assets.
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+
 # Build/test scratch data; never commit cache or generated project bundles.
 tmp/**/npm-cache/
 **/.npm/

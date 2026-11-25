@@ -1,16 +1,58 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useRef,useState} from 'react';
+import {adjustFlow,crankStep,flowScore,flowTargets,generatorDemand,generatorQuality,initialGenerator,searchBoard,searchQuality,searchSignal,searchSector,SEARCH_SCANS,SEARCH_PICKS,FLOW_CAPACITY,type CrankAction} from '@/lib/manual-games';
+import ui from './Minigame.module.css';
 export type EmergencyKind='handsearch'|'crank'|'decontam';
-export default function EmergencyTask({kind,day,serial,onClose,onFinish}:{kind:EmergencyKind;day:number;serial:number;onClose:()=>void;onFinish:(quality:number)=>void}){
- const [round,setRound]=useState(0),[hits,setHits]=useState(0),[cursor,setCursor]=useState(0),[feedback,setFeedback]=useState(''),[memorized,setMemorized]=useState(false);
- const done=useRef(false);
- useEffect(()=>{if(kind!=='crank'||round>=3)return;let frame=0;const start=performance.now();const tick=()=>{setCursor((performance.now()-start)%1400/14);frame=requestAnimationFrame(tick)};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame)},[kind,round]);
- const safe=(day+serial*2)%3;
- const titles={handsearch:'수동 보급 수색',crank:'수동 발전기 조작',decontam:'제독 계통 순차 가동'};
- function finish(q:number){if(done.current)return;done.current=true;onFinish(q)}
- const steps=['흡입 밸브','정화 필터','배출 밸브'];const order=Array.from({length:3},(_,i)=>(i+day)%3);
- const hit=(ok:boolean)=>{setHits(v=>v+(ok?1:0));setRound(v=>v+1);setFeedback(ok?'정상 작동':'작동 오류 · 효율 감소')};
- return <section className="v10-modal ark-emergency-modal"><header><span className="micro-label">ARK / MANUAL OPERATIONS</span><button type="button" onClick={onClose}>취소</button></header><h2>{titles[kind]}</h2>
- {kind==='handsearch'?<><p>낡은 표식을 조사해 보급품이 남은 보관함을 선택하십시오. 선택 즉시 작업이 정산됩니다.</p><div className="ark-emergency-lockers">{[0,1,2].map(i=><button type="button" key={i} onClick={()=>finish(i===safe?1:i===(safe+1)%3?.5:0)}><b>보관함 {i+1}</b><small>{i===safe?'봉인 정상 · 내부 적재 신호':i===(safe+1)%3?'절반 열린 서랍 · 약한 신호':'파손된 문 · 오염 흔적'}</small></button>)}</div><small>AP 1 · 전지 16 · 선택에 따라 물자와 감염 변화</small></>:kind==='crank'?<><p>움직이는 표시가 녹색 구간에 들어왔을 때 발전 레버를 누르세요. 총 세 번의 압축 행정입니다.</p><div className="ark-emergency-track"><i/><b style={{left:Math.min(99,cursor)+'%'}}/></div><strong>압축 {round}/3 · 정상 {hits}/3</strong>{round<3?<button type="button" onClick={()=>hit(cursor>=40&&cursor<=65)}>발전 레버 누르기</button>:<button type="button" onClick={()=>finish(hits/3)}>발전 결과 확정</button>}<small>AP 1 · 정신 14 · 전력 +5~17</small></>:<><p>정화 단말의 활성화 순서를 기억한 뒤 밸브를 작동하십시오. 오접속 시 정화 효율이 떨어집니다.</p>{!memorized?<><div className="ark-emergency-sequence">{order.map((x,i)=><span key={i}>{i+1}. {steps[x]}</span>)}</div><button type="button" onClick={()=>setMemorized(true)}>순서 확인 · 정화 시작</button></>:<><strong>진행 {round}/3 · 정상 {hits}/3</strong>{round<3?<div className="ark-emergency-lockers">{steps.map((x,i)=><button type="button" key={i} onClick={()=>hit(order[round]===i)}>{x}</button>)}</div>:<button type="button" onClick={()=>finish(hits/3)}>제독 결과 확정</button>}</>}<small>AP 1 · 필터 1 · 감염 -6~26</small></>}
- <p role="status">{feedback}</p></section>
+type Finish=(quality:number)=>void;
+const titles={handsearch:'암전 구역 · 보급 수색',crank:'비상 발전기 · 부하 제어',decontam:'제독 계통 · 압력 분배'};
+function Meter({name,value,max,hot=false}:{name:string;value:number;max:number;hot?:boolean}){return <div className={ui.readout}><small>{name}</small><b>{value}/{max}</b><div className={ui.gauge}><i className={hot?ui.hot:undefined} style={{width:Math.min(100,value/max*100)+'%'}}/></div></div>}
+function Search({seed,finish}:{seed:number;finish:Finish}){
+ const board=searchBoard(seed);
+ const [state,setState]=useState<{scans:number[];picks:number[];mode:'scan'|'recover'}>({scans:[],picks:[],mode:'scan'});
+ const done=state.picks.length>=SEARCH_PICKS;
+ const quality=searchQuality(board,state.picks);
+ function interact(i:number){setState(s=>{
+  if(s.picks.length>=SEARCH_PICKS||s.picks.includes(i))return s;
+  if(s.mode==='scan'){if(s.scans.length>=SEARCH_SCANS||s.scans.includes(i))return s;return {...s,scans:[...s.scans,i]};}
+  return {...s,picks:[...s.picks,i]};
+ });}
+ return <>
+ <p>5×4 보관 구역에서 물자 두 곳을 회수하세요. 스캐너는 선택 칸과 상하좌우의 물자·오염 신호 수를 표시합니다. 행·열 물자 신호와 스캔 범위를 비교해 위치를 좁히세요.</p>
+ <div className={ui.readouts}><Meter name="탐지 잔여" value={SEARCH_SCANS-state.scans.length} max={SEARCH_SCANS}/><Meter name="회수 완료" value={state.picks.length} max={SEARCH_PICKS}/></div>
+ <div className={ui.actions}><button className={ui.control+' '+(state.mode==='scan'?ui.selected:'')} aria-pressed={state.mode==='scan'} disabled={done} onClick={()=>setState(s=>({...s,mode:'scan'}))}>01 · 신호 탐지</button><button className={ui.control+' '+(state.mode==='recover'?ui.selected:'')} aria-pressed={state.mode==='recover'} disabled={done} onClick={()=>setState(s=>({...s,mode:'recover'}))}>02 · 물자 회수</button></div>
+ <div className={ui.muted}>행 물자 신호 · {[0,1,2,3].map(i=>(i+1)+'행 '+searchSector(board,'row',i)).join(' / ')}</div><div className={ui.muted}>열 물자 신호 · {[0,1,2,3,4].map(i=>String.fromCharCode(65+i)+' '+searchSector(board,'column',i)).join(' / ')}</div>
+ <div className={ui.grid}>{board.map((cell,i)=>{const scanned=state.scans.includes(i),picked=state.picks.includes(i),signal=scanned?searchSignal(board,i):null;return <button type="button" key={i} className={[ui.control,ui.cell,picked?(cell==='supply'?ui.good:cell==='hazard'?ui.bad:ui.selected):scanned?ui.selected:''].join(' ')} disabled={done||picked||(state.mode==='scan'&&(scanned||state.scans.length>=SEARCH_SCANS))} aria-label={'구역 '+(i+1)+(picked?' '+(cell==='supply'?'물자':cell==='hazard'?'오염':'빈칸'):signal?' 물자 '+signal.supply+' 오염 '+signal.hazard:' 미확인')} onClick={()=>interact(i)}><b>{String.fromCharCode(65+i%5)}{Math.floor(i/5)+1}</b>{picked?<span>{cell==='supply'?'물자 확보':cell==='hazard'?'오염 노출':'빈 보관함'}</span>:signal?<><span>물자 {signal.supply}</span><span>오염 {signal.hazard}</span></>:<span>· · ·</span>}</button>})}</div>
+ <div className={ui.status} role="status">{done?'회수 완료 · 품질 '+Math.round(quality*100)+'%':state.mode==='scan'?'스캔 모드 · 조사한 칸의 주변 신호가 표시됩니다.':'회수 모드 · 선택한 칸의 내용이 공개됩니다. 오염은 회수 품질을 감소시킵니다.'}</div>
+ <button className={ui.control} disabled={!done} onClick={()=>finish(quality)}>회수 결과 확정</button><small className={ui.muted}>AP 1 · 전지 16 · 회수 품질에 따라 기존 물자/감염 정산</small></>;
+}
+function Crank({seed,finish}:{seed:number;finish:Finish}){
+ const demand=generatorDemand(seed),[s,setS]=useState(initialGenerator);
+ const done=s.step>=demand.length,total=demand.reduce((a,b)=>a+b,0);
+ const actions:{id:CrankAction;label:string;detail:string}[]=[{id:'drive',label:'고출력 구동',detail:'압력 +3 / 열 +3'},{id:'steady',label:'저속 구동',detail:'압력 +2 / 열 +1'},{id:'vent',label:'냉각 밸브',detail:'압력 -1 / 열 -4'}];
+ return <>
+ <p>8회의 부하를 버티면서 발전량을 최대화하세요. 다음 부하를 미리 보고 압력을 확보하거나 냉각하세요. 열이 8에 도달하면 차단기가 작동해 해당 회차 출력이 사라집니다.</p>
+ <div className={ui.readouts}><Meter name="압력" value={s.pressure} max={6}/><Meter name="발열" value={s.heat} max={8} hot={s.heat>=5}/><Meter name="전력 생산" value={s.output} max={total}/></div>
+ <div className={ui.readouts}>{demand.map((d,i)=><div className={ui.readout} key={i} style={{opacity:i<s.step ? 0.45 : 1,borderColor:i===s.step?'#8de3df':undefined}}><small>{i<s.step?'처리':i===s.step?'현재 부하':'예정'} {i+1}</small><b>{d}</b></div>)}</div>
+ <div className={ui.actions}>{actions.map(a=><button key={a.id} className={ui.control} disabled={done} onClick={()=>setS(old=>crankStep(old,a.id,demand))}><b>{a.label}</b><div>{a.detail}</div></button>)}</div>
+ <div className={ui.status} role="status">부하 {s.step}/{demand.length} · 차단 {s.trips}회 · {done?'발전 품질 '+Math.round(generatorQuality(s,demand)*100)+'%':'다음 부하 '+demand[s.step]}</div>
+ <button className={ui.control} disabled={!done} onClick={()=>finish(generatorQuality(s,demand))}>발전 결과 확정</button><small className={ui.muted}>AP 1 · 정신 14 · 전력 +5~17</small></>;
+}
+function Decontam({seed,finish}:{seed:number;finish:Finish}){
+ const targets=flowTargets(seed);
+ const [s,setS]=useState<{round:number;allocation:number[];scores:number[]}>({round:0,allocation:[2,2,2],scores:[]});
+ const done=s.round>=targets.length,target=targets[Math.min(s.round,targets.length-1)],used=s.allocation.reduce((a,b)=>a+b,0),critical=(seed+Math.min(s.round,targets.length-1))%3;
+ const quality=s.scores.reduce((a,b)=>a+b,0)/targets.length;
+ const names=['격리실','복도','흡입 계통'];
+ return <>
+ <p>공급 가능한 압력은 총 8인데 각 구역의 정화 요구량은 합계 9입니다. 우선 보호 구역의 부족량은 추가 손실을 발생시킵니다. 과압도 피하세요. 단계마다 요구량과 우선순위가 달라집니다.</p>
+ <div className={ui.readouts}><Meter name="사용 압력" value={used} max={FLOW_CAPACITY}/><Meter name="정화 단계" value={s.round} max={targets.length}/></div>
+ {names.map((name,i)=><div className={ui.valve} key={name}><div><b>{name}{i===critical?' · 우선 보호':''}</b><div className={ui.muted}>필요 {target[i]} / 배정 {s.allocation[i]}</div></div><div className={ui.gauge}><i className={s.allocation[i]>target[i]?ui.hot:undefined} style={{width:s.allocation[i]/5*100+'%'}}/></div><div className={ui.actions}><button className={ui.control} aria-label={name+' 압력 감소'} disabled={done||s.allocation[i]===0} onClick={()=>setS(old=>({...old,allocation:adjustFlow(old.allocation,i,-1)}))}>−</button><button className={ui.control} aria-label={name+' 압력 증가'} disabled={done||used>=FLOW_CAPACITY||s.allocation[i]>=5} onClick={()=>setS(old=>({...old,allocation:adjustFlow(old.allocation,i,1)}))}>+</button></div></div>)}
+ <div className={ui.status} role="status">{done?'최종 정화 품질 '+Math.round(quality*100)+'%':'예상 정화 효율 '+Math.round(flowScore(s.allocation,target,critical)*100)+'% · 남은 압력 '+(FLOW_CAPACITY-used)}</div>
+ {done?<button className={ui.control} onClick={()=>finish(quality)}>제독 결과 확정</button>:<button className={ui.control} onClick={()=>setS(old=>old.round>=targets.length?old:{round:old.round+1,allocation:old.allocation,scores:[...old.scores,flowScore(old.allocation,targets[old.round],(seed+old.round)%3)]})}>현재 배분으로 정화 실행</button>}
+ <small className={ui.muted}>AP 1 · 필터 1 · 감염 -6~26</small></>;
+}
+export default function EmergencyTask({kind,day,serial,onClose,onFinish}:{kind:EmergencyKind;day:number;serial:number;onClose:()=>void;onFinish:Finish}){
+ const finished=useRef(false),seed=day*7919+serial*173;
+ function finish(q:number){if(finished.current)return;finished.current=true;onFinish(q);}
+ return <section className="v10-modal ark-emergency-modal"><div className={ui.console}><header className={ui.head}><div><span className={ui.kicker}>ARK / MANUAL OPERATIONS</span><h2>{titles[kind]}</h2></div><button className={ui.control} onClick={onClose}>취소</button></header>{kind==='handsearch'?<Search seed={seed} finish={finish}/>:kind==='crank'?<Crank seed={seed} finish={finish}/>:<Decontam seed={seed} finish={finish}/>}</div></section>;
 }

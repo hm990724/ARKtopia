@@ -6,7 +6,7 @@ import {originFragments,restoreOriginPhoto} from './origin-zero';
 import {copy,cap,log} from './sim';
 export type OperationMode='photo'|'repair'|'medical'|'assembly'|'commission';
 export type OperationId=CrewId|FacilityId;
-export type OperationBoard={key:string;order:number[];faults:number;verified:boolean};
+export type OperationBoard={key:string;order:number[];faults:number;verified:boolean;progress?:number};
 export type OperationStore=Partial<Record<OperationMode,OperationBoard>>;
 export type OperationMastery=Partial<Record<OperationMode,number>>;
 export const operationNames:Record<OperationMode,string>={photo:'손상된 기록 조각 복원',repair:'격리문 잠금장치 복원',medical:'직원 신경 안정화 단말',assembly:'시설 모듈 조립',commission:'시설 전원 연결'};
@@ -17,8 +17,19 @@ export function operationTarget(s:V10,mode:OperationMode,id?:OperationId):number
 }
 export function operationBoard(s:V10,mode:OperationMode,id?:OperationId):OperationBoard{
  const key=keyFor(s,mode,id),prior=s.operations?.[mode];
- if(prior?.key===key&&Array.isArray(prior.order)&&prior.order.length===4&&new Set(prior.order).size===4&&prior.order.every(x=>Number.isInteger(x)&&x>=0&&x<4))return prior;
- const a=operationTarget(s,mode,id);return {key,order:[a[2],a[0],a[3],a[1]],faults:0,verified:false};
+ const valueMode=mode==='repair'||mode==='medical';
+ const validOrder=Array.isArray(prior?.order)&&prior.order.length===4&&prior.order.every(x=>Number.isInteger(x)&&x>=0&&x<4);
+ const a=operationTarget(s,mode,id);
+ if(prior?.key===key&&validOrder&&mode==='commission'){
+  // Older saves stored commissioning as an arrangement. Preserve finished boards,
+  // but never infer completion from an unfinished arrangement after this migration.
+  const progress=prior.verified?4:Math.max(0,Math.min(4,prior.progress??0));
+  return {...prior,order:a,progress,verified:prior.verified||progress===4};
+ }
+ if(prior?.key===key&&validOrder&&(valueMode||new Set(prior.order).size===4))return {...prior,progress:undefined};
+ if(valueMode)return {key,order:a.map(v=>(v+1)%4),faults:0,verified:false};
+ if(mode==='commission')return {key,order:a,faults:0,verified:false,progress:0};
+ return {key,order:[a[2],a[0],a[3],a[1]],faults:0,verified:false};
 }
 export function operationAllowed(s:V10,mode:OperationMode,id?:OperationId){
  if(s.phase!=='day'||s.run||s.pending||s.pendingIncident||s.voice?.pending||s.crew?.pendingTermination||s.originZero?.contactField?.active)return false;
@@ -29,12 +40,29 @@ export function operationAllowed(s:V10,mode:OperationMode,id?:OperationId){
 }
 function store(s:V10,mode:OperationMode,b:OperationBoard){const n=copy(s) as V10;n.operations={...n.operations,[mode]:b};return n;}
 export function swapOperation(s:V10,mode:OperationMode,a:number,b:number,id?:OperationId):V10{
- if(!operationAllowed(s,mode,id)||![a,b].every(x=>Number.isInteger(x)&&x>=0&&x<4)||a===b)return s;
+ if(!['photo','assembly'].includes(mode)||!operationAllowed(s,mode,id)||![a,b].every(x=>Number.isInteger(x)&&x>=0&&x<4)||a===b)return s;
  const prior=operationBoard(s,mode,id);if(prior.verified)return s;const order=[...prior.order];[order[a],order[b]]=[order[b],order[a]];return store(s,mode,{...prior,order});
+}
+export function setOperationValue(s:V10,mode:'medical',index:number,value:number,id?:OperationId):V10{
+ if(!operationAllowed(s,mode,id)||!Number.isInteger(index)||index<0||index>3||!Number.isInteger(value)||value<0||value>3)return s;
+ const prior=operationBoard(s,mode,id);if(prior.verified||prior.order[index]===value)return s;
+ const order=[...prior.order];order[index]=value;return store(s,mode,{...prior,order});
+}
+export function rotateOperationDial(s:V10,index:number,id?:OperationId):V10{
+ if(!operationAllowed(s,'repair',id)||!Number.isInteger(index)||index<0||index>3)return s;
+ const prior=operationBoard(s,'repair',id);if(prior.verified)return s;
+ const order=[...prior.order];order[index]=(order[index]+1)%4;return store(s,'repair',{...prior,order});
+}
+export function activateCommissionTerminal(s:V10,id:OperationId,index:number):V10{
+ if(!operationAllowed(s,'commission',id)||!Number.isInteger(index)||index<0||index>3)return s;
+ const prior=operationBoard(s,'commission',id);if(prior.verified)return s;
+ const progress=prior.progress??0;
+ if(prior.order[progress]===index){const next=progress+1,verified=next===4;const n=store(s,'commission',{...prior,progress:next,verified});n.lastOutcome=verified?'시운전 순서 완료 · 계통 연결을 확정할 수 있습니다.':`단자 ${index+1} 연결 · 순서 ${next}/4`;return n;}
+ const n=store(s,'commission',{...prior,progress:0,faults:prior.faults+1});n.lastOutcome='Wrong terminal order; sequence reset.';log(n,'Commission sequence error',n.lastOutcome,'bad');return n;
 }
 export function verifyOperation(s:V10,mode:OperationMode,id?:OperationId):V10{
  if(!operationAllowed(s,mode,id))return s;const prior=operationBoard(s,mode,id);if(prior.verified)return s;
- const target=operationTarget(s,mode,id),ok=target.every((v,i)=>prior.order[i]===v);
+ const target=operationTarget(s,mode,id),ok=mode==='commission'?prior.verified&&(prior.progress??0)>=4:target.every((v,i)=>prior.order[i]===v);
  const n=store(s,mode,{...prior,verified:ok,faults:prior.faults+(ok?0:1)});
  if(ok)n.lastOutcome='정렬 검증 완료. 실제 작업을 확정할 수 있습니다.';
  else{if(mode==='medical'){const member=n.crew?.members.find(c=>c.id===id);if(member)member.mind=Math.max(1,member.mind-1);}else{n.power=cap(n.power-2);}n.lastOutcome=mode==='medical'?'단말 불일치. 정신 안정도 -1. 의약품은 아직 소모되지 않았습니다.':'검증 오류. 전력 -2. 원본 조각은 보존됩니다.';log(n,'작업 검증 실패',n.lastOutcome,'bad');}return n;

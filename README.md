@@ -1,6 +1,6 @@
-# ARKtopia / ANOMALY ZOO: ORIGIN ZERO
+﻿# ARKtopia / ANOMALY ZOO: ORIGIN ZERO
 
-ARKtopia is a Korean narrative survival-management game built with Next.js, React, and TypeScript. Maintain the last animal sanctuary, investigate CCTV anomalies, follow tracks in dark field maps, rescue individual animals, and uncover the ARKTOPIA memory-preservation program.
+A Korean narrative survival-management game built with Next.js, React, and TypeScript. Maintain the last animal sanctuary, investigate moving threats, follow evidence in the field, rescue individual animals, and uncover the ARKTOPIA memory-preservation program.
 
 ## Run locally
 
@@ -14,6 +14,7 @@ Open `http://localhost:3000`.
 ## Verify
 
 ```powershell
+npm run check:git-size
 npm run typecheck
 npm run lint
 npm run test:all
@@ -22,18 +23,16 @@ $env:ARK_PRODUCTION_TEST='1'
 npm run test:browser
 ```
 
-`build:qa` creates the isolated `.next-qa` production build. Browser tests use Chrome when installed; Playwright may require a shell allowed to spawn the browser.
+`build:qa` creates an isolated `.next-qa` production build. Browser tests use Chromium when installed. Run the full set after the implementation pass; focused checks may be run earlier only when a blocking error or save risk needs immediate diagnosis.
 
-## Current feature set
+## Gameplay scope
 
-- Daily sortie limit, AP and equipment checks with clear launch blockers.
-- Dark, persistent field map; live sightings on already discovered cells; footprints, grass movement, direct capture, and old-save migration.
-- Short contamination encounters, salvage rewards, and saved base upgrades.
-- CCTV/night-response, staff, animal-care, memory research, Hidden Photo, specimen-specific ARK RECALL, and eight canon ending routes.
-- Animal-by-animal rescanning and recovery history.
+See [the current gameplay requirements](docs/REQUIREMENTS_GAMEPLAY.md), [gameplay systems](GAMEPLAY_SYSTEMS.md), [UI and play flow](UI_GAMEPLAY_SPEC.md), [incident registry](EVENT_MATRIX.md), and [acceptance criteria](QA_ACCEPTANCE.md). Current progress and unfinished work are kept in [NEXT_STEPS_README.md](NEXT_STEPS_README.md); results from the final consolidated verification belong in [QA_REPORT.md](QA_REPORT.md).
 
-## Project status
+## GitHub file-size handling
 
-The current integrated implementation and verification summary is in [NEXT_STEPS_README.md](NEXT_STEPS_README.md) and [QA_REPORT.md](QA_REPORT.md). Read the [story bible](STORY_BIBLE.md), [UI/gameplay spec](UI_GAMEPLAY_SPEC.md), [event matrix](EVENT_MATRIX.md), [ending matrix](ENDING_MATRIX.md), and [acceptance matrix](QA_ACCEPTANCE.md). Art status and unresolved creature variants are in [ART_AUDIT.md](ART_AUDIT.md) and [docs/ART_REWORK_v75.md](docs/ART_REWORK_v75.md).
+Do not commit `public.zip` or another packaged project archive. Archive formats are ignored; source, package manifests, and GitHub Actions carry the project. `npm run check:git-size` checks staged/indexed and non-ignored untracked files for GitHub's 100 MiB per-file limit. If an archive was already staged, remove it from the index with `git rm --cached -- public.zip` and then run the size check.
 
-All pathogens and neural-preservation technology in this project are fictional. The canonical cause of the historical outbreak is the research lead's forced disposal order collapsing containment and releasing the fictional agent; M-00 escapes separately during the resulting chaos and did not cause the leak.
+The canonical story is in [STORY_BIBLE.md](STORY_BIBLE.md). Ending/cinematic artwork is maintained separately and is outside the current gameplay task.
+
+All pathogens and neural-preservation technology are fictional. The canonical cause of the historical outbreak is the research lead's forced disposal order collapsing containment and releasing the fictional agent; M-00 escapes separately and did not cause the leak.

@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import type {AnimalId} from '@/lib/sim';
 import {protocols} from '@/lib/protocols';
 import type {RecallSession} from '@/lib/origin-zero';
@@ -58,12 +58,15 @@ function Instrument({id,step}:{id:AnimalId;step:number}){
 export default function ArkRecallMinigame({id,name,session,onAnswer,onClose}:{id:AnimalId;name:string;session:RecallSession;onAnswer:(choice:number)=>void;onClose:()=>void}){
  const mode=modes[id],protocol=protocols[id],stage=protocol.steps[session.step];
  const ordered=[0,1,2].map(index=>(index+(id.length+session.step*2))%3);
+ const submitted=useRef(false),answerStep=useRef(session.step);
+ useEffect(()=>{submitted.current=false;answerStep.current=session.step},[id,session.step]);
+ const submit=(choice:number)=>{if(submitted.current||answerStep.current!==session.step)return;submitted.current=true;onAnswer(choice)};
  return <div className="ark-recall-shade" role="dialog" aria-modal="true" aria-label={`${name} 개체별 기억 재수집`}>
   <section className="ark-recall-card">
    <header><div><span>ARK RECALL // SPECIMEN LINK</span><h3>{name} · {mode.title}</h3><p>{mode.instruction}</p></div><button type="button" onClick={onClose} aria-label="기록하고 닫기">기록 저장 · 닫기</button></header>
    <div className="ark-recall-instrument-wrap"><Instrument id={id} step={session.step}/><div className="ark-recall-meters"><span>신호 단계 <b>{session.step+1} / 3</b></span><span>일치 기록 <b>{session.correct} / {session.step}</b></span></div></div>
    <p className="ark-recall-cue">{protocol.hint}</p><h4>{stage.prompt}</h4>
-   <RecallAction id={id} choices={stage.choices} step={session.step} onAnswer={onAnswer}/>
+   <RecallAction id={id} choices={stage.choices} step={session.step} onAnswer={submit}/>
    <div className="ark-recall-choice-reference" aria-label="판정에 사용하는 기록 후보">{ordered.map((choice,index)=><p key={choice}><b>0{index+1}</b><span>{stage.choices[choice]}</span></p>)}</div>
    <small>응답은 개체 번호와 함께 저장됩니다. 틀린 반응도 연구 자료이며 개체를 해치지 않습니다.</small>
   </section>

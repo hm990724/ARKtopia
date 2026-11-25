@@ -135,6 +135,7 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 @media(max-width:940px){.v74-capture-budget{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:520px){.v74-capture-budget{grid-template-columns:minmax(0,1fr)!important}.capture-net-dock .v69-drag-net small{display:block}.cctv-viewport:has(.cctv-forensics){min-height:400px!important}}
 
 .operation-puzzle{display:grid;gap:9px;padding:12px;border:1px solid #52646f;background:#15222b;color:#d8e6e9;min-width:0}.operation-puzzle header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px}.operation-puzzle header span{font-size:12px;color:#b6ccc9}.operation-puzzle p,.operation-puzzle small{font-size:12px;line-height:1.5;color:#c6d1d6}.operation-reference,.operation-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.operation-reference>div,.operation-board>button{display:flex;flex-direction:column;align-items:center;min-width:0;padding:6px;border:1px solid #526875;background:#27343c;color:#a5cfbf}.operation-reference>div{background:#1c2c34;opacity:.85}.operation-reference svg,.operation-board svg{width:100%;height:auto;max-height:45px}.operation-reference small,.operation-board small{text-align:center;overflow-wrap:anywhere}.operation-board button[aria-pressed=true]{outline:2px solid #e0b5d0;background:#3d3047}.operation-board button:disabled{opacity:.72}.operation-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.operation-actions button{padding:9px 12px;border:1px solid #6e8891;background:#2d434c;color:#e5efed}.operation-actions button:disabled{opacity:.4}.operation-modal{width:min(640px,94vw)!important;max-height:90vh;overflow-y:auto}.operation-modal h2{margin-top:0}
+.operation-dials{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.operation-dial{display:grid;justify-items:center;gap:5px;min-width:0;padding:7px 4px;border:1px solid #617984;background:#22343b;color:#d2e7df}.operation-dial[data-match="true"]{border-color:#91d8b5;background:#263f38}.operation-dial>span{font-size:10px}.operation-dial>i{position:relative;display:grid;place-items:center;width:42px;height:42px;border:2px solid #8ca89e;border-radius:50%;background:repeating-conic-gradient(#526a62 0 8deg,transparent 8deg 90deg)}.operation-dial>i>b{width:3px;height:17px;border-radius:4px;background:#f1c982;transform:translateY(-7px)}.operation-dial>strong{font:700 12px ui-monospace,monospace}.operation-dial>strong small{font-size:9px;color:#aec1bc}.operation-tuning{display:grid;gap:6px}.operation-tuning label{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,1fr);align-items:center;gap:7px;padding:7px;border:1px solid #536a70;background:#1d2d34}.operation-tuning label[data-match="true"]{border-color:#8bd3a8;background:#243b32}.operation-tuning label>span{display:flex;justify-content:space-between;gap:6px;font-size:10px}.operation-tuning label b{font:10px ui-monospace,monospace;color:#afd5c5}.operation-tuning input{width:100%;accent-color:#87d5b1}.operation-commission-reference{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:9px;border:1px solid #5c7780;background:#1d2c34;color:#d5eadf;font-size:11px}.operation-commission-reference span[data-current="true"]{padding:3px 6px;background:#355e4b;color:#f1ffe8;box-shadow:0 0 10px #92dcb366}.operation-commission{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.operation-commission button{display:grid;justify-items:center;gap:4px;min-width:0;padding:9px 4px;border:1px solid #5c747c;background:#27373e;color:#d5e3df}.operation-commission button[data-next="true"]{border-color:#a8e3bb;background:#355b49;box-shadow:0 0 12px #83d8a544}.operation-commission button>b{font:700 14px ui-monospace,monospace}.operation-commission button>span{font-size:9px;text-align:center}.operation-commission button:disabled{opacity:.7}.operation-puzzle .operation-commission-reference~small[role="status"]{text-align:right;color:#a7d8bd}
 
 /* Independent camera viewport; evidence controls never overlap moving subjects. */
 .cctv-live-stage{position:relative;isolation:isolate;height:clamp(135px,19vw,230px);margin:42px 12px 12px;background:linear-gradient(145deg,#1d2433aa,#10101899);border:1px solid #7de3e74a;overflow:hidden;border-radius:8px}.cctv-feed-grid{position:absolute;inset:0;opacity:.35;background:linear-gradient(90deg,transparent 49.5%,#71869b 50%,transparent 50.5%),linear-gradient(0deg,transparent 49.5%,#71869b 50%,transparent 50.5%);pointer-events:none}.cctv-feed-stamp{position:absolute;top:8px;left:8px;color:#a8d6d7;font:10px monospace;pointer-events:none}.cctv-moving-subject{position:absolute;transform:translate(-50%,-50%);background:transparent!important;border:0!important;display:grid;place-items:center;transition:left .85s ease,top .85s ease;z-index:1;min-width:52px;padding:0!important;color:#e5e9f0}.cctv-moving-subject img{width:clamp(38px,5vw,66px);height:clamp(38px,5vw,66px);object-fit:contain}.cctv-moving-subject small{font-size:10px;background:#141622bf;padding:1px 4px;border-radius:4px}.cctv-feed-empty{position:absolute;bottom:10px;left:12px;color:#b3bac9}.cctv-live-stage.signal-off{background:#0b0c12}.origin-crisis-steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.origin-crisis-steps span{font-size:12px;padding:5px 8px;border:1px solid #434156;border-radius:5px}.origin-crisis-steps .done{color:#9edac9}.origin-crisis-steps .active{border-color:#e1b375;color:#e1b375}@media(prefers-reduced-motion:reduce){.cctv-moving-subject{transition:none}}
@@ -419,3 +420,82 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .ark-battle-deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.ark-battle-deck button{position:relative;display:flex!important;align-items:center;gap:9px;text-align:left;padding:8px 9px!important;min-height:56px!important;background:#202d36!important;color:#e0e5e4!important;border:1px solid #53736f!important;min-width:0;border-radius:3px!important}.ark-battle-deck button[data-tone=attack]{background:#382530!important;border-color:#a56a80!important;color:#f3c6d5!important}.ark-battle-deck button[data-tone=utility]{background:#292b40!important;border-color:#6d719b!important;color:#c7cbed!important}.ark-battle-deck button[data-tone=escape]{grid-column:1/-1;background:#342b29!important;border-color:#ad8c66!important;color:#f1d4ad!important}.ark-battle-deck button:not(:disabled):hover{filter:brightness(1.25);transform:translateY(-1px)}.ark-battle-deck button:disabled{opacity:.45}.ark-battle-deck button[data-selected=true]{opacity:1!important;outline:2px solid #d6b9a3;outline-offset:-2px}.ark-battle-deck button>svg{flex-shrink:0}.ark-battle-key{position:absolute;top:4px;right:5px;color:#acabb7;font:10px monospace;border:1px solid #ffffff32;padding:1px 4px}.ark-battle-card-copy{display:grid;gap:3px;min-width:0;flex:1;padding-right:14px}.ark-battle-card-copy b{font-size:14px}.ark-battle-card-copy small{font-size:10px;color:#c6c2cb;line-height:1.25;white-space:normal}.ark-battle-escape{display:grid;gap:3px;max-width:220px;font-size:11px}.ark-battle-escape>i{height:5px;background:#15181d;display:block}.ark-battle-escape em{height:100%;display:block;background:#d1ae7c}.ark-battle-history{font-size:11px;color:#b7abb8}.ark-battle-history p{line-height:1.4!important;margin:4px 0!important}
 @media(max-width:620px){.ark-battle-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}.ark-battle-deck{grid-template-columns:repeat(2,minmax(0,1fr))}.ark-battle-deck button{padding:6px!important;gap:6px;min-height:52px!important}.ark-battle-deck button>svg{width:18px}.ark-battle-duel .ark-battle-gauge b{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.ark-battle-stage *,.ark-battle-stage,.ark-battle-bar>i{animation:none!important;transition:none!important}}
+
+/* Keep exploration decisions and tools together on desktop; let small screens reflow naturally. */
+@media (min-width: 1100px) and (min-height: 680px) {
+  .v10-core:has(.v71-field.v33-expedition) {overflow: hidden!important}
+  .v71-field.v33-expedition {height: 100%; min-height: 0!important; grid-template-rows: auto minmax(0,1fr); gap: 6px!important; padding: 7px 9px!important; overflow: hidden}
+  .v71-field.v33-expedition .v33-mission-layout,
+  .v71-field.v33-expedition.v33-is-hunt .v33-mission-layout {height: 100%; min-height: 0; grid-template-columns: minmax(185px,19%) minmax(0,1fr) minmax(250px,26%)!important; gap: 7px!important; overflow: hidden}
+  .v71-field.v33-expedition .v44-specimen-column,
+  .v71-field.v33-expedition .v33-theater,
+  .v71-field.v33-expedition .v33-side-console {height: 100%; min-height: 0; box-sizing: border-box; overflow: hidden}
+  .v71-field.v33-expedition .v33-theater {grid-column: 2!important; grid-row: 1!important; align-content: start; gap: 4px!important}
+  .v71-field.v33-expedition .v44-specimen-column {grid-column: 1!important; grid-row: 1!important; align-content: start; gap: 6px!important; padding: 7px!important}
+  .v71-field.v33-expedition .v33-side-console {grid-column: 3!important; grid-row: 1!important; display: grid!important; align-content: start; gap: 4px!important; padding: 6px!important}
+  .v71-field.v33-expedition.v33-is-hunt .v33-hidden-map {width: min(100%,470px,calc(100dvh - 340px))!important; max-width: 470px!important; min-width: 0!important; margin: 3px auto!important}
+  .v71-field.v33-expedition .v33-map-frame {padding: 4px!important; box-shadow: none!important}
+  .v71-field.v33-expedition .v33-map-overline {min-height: 20px; padding: 2px 4px!important}
+  .v71-field.v33-expedition .v33-map-bottom {padding: 3px 5px!important; font-size: 10px!important}
+  .v71-field.v33-expedition .v44-specimen-image {height: clamp(78px,12dvh,120px)!important; min-height: 0!important; overflow: hidden}
+  .v71-field.v33-expedition .v44-specimen-image img {max-height: 100%!important; object-fit: contain!important}
+  .v71-field.v33-expedition .v47-trait-vault {gap: 3px!important; padding: 5px!important}
+  .v71-field.v33-expedition .v47-trait-card {min-height: 34px!important; padding: 4px!important}
+  .v71-field.v33-expedition .v33-side-console .v33-tool-rack {grid-template-columns: repeat(2,minmax(0,1fr))!important}
+  .v71-field.v33-expedition .v33-side-console .ark-net-guide {font-size: 10px!important; line-height: 1.3!important}
+  .v71-field.v33-expedition .v33-side-console .ark-net-guide>div {padding: 3px 5px!important}
+  .v71-field.v33-expedition .v33-side-console .v60-brief-observation {padding: 5px!important; gap: 3px!important}
+  .v71-field.v33-expedition .v33-side-console .ark-field-controls {padding: 4px!important}
+  .v71-field.v33-expedition .v33-side-console .field-live-warning {padding: 4px!important; font-size: 10px!important}
+}
+@media (min-width: 1100px) and (max-height: 740px) {
+  .v71-field.v33-expedition.v33-is-hunt .v33-hidden-map {width: min(100%,400px,calc(100dvh - 370px))!important; max-width: 400px!important}
+  .v71-field.v33-expedition .v44-specimen-column .v44-specimen-desc {display: none!important}
+  .v71-field.v33-expedition .v33-side-console .ark-net-guide>div>div {display: none}
+  .v71-field.v33-expedition .v33-side-console .ark-net-guide small {display: block}
+}
+
+/* Signal search reads a moving sector, not an exact tile. */
+.ark-hunt-sonar {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 9px;padding:6px 8px;border:1px solid #55756e;background:linear-gradient(110deg,#132522,#17212a);color:#d9eee2;min-width:0}
+.ark-hunt-sonar-head {display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px}
+.ark-hunt-sonar-head b {color:#a9d9c6;letter-spacing:.04em}
+.ark-hunt-sonar-head span {color:#f0d5a0;font-size:10px}
+.ark-hunt-sonar>small {grid-column:1/-1;color:#9eaea9;font-size:10px;line-height:1.35}
+.ark-sonar-sectors {position:relative;grid-column:2;grid-row:1/3;display:grid;grid-template-columns:repeat(2,26px);grid-template-rows:repeat(2,20px);gap:2px;padding:3px;border:1px solid #536c64;border-radius:50%;background:radial-gradient(circle,#223c38 0 20%,#131c20 72%);overflow:hidden}
+.ark-sonar-sectors span {display:grid;place-items:center;border-radius:10px;font:8px ui-monospace,monospace;color:#667c76;background:#26302f}
+.ark-sonar-sectors span[data-active="true"] {color:#14231d;background:#b7ddbe;box-shadow:0 0 10px #97dbb8aa;animation:ark-sonar-ping 1.15s ease-in-out infinite}
+.ark-sonar-sectors i {position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;transform:translate(-50%,-50%);background:#e7eee0;box-shadow:0 0 8px #d4e6cf}
+@keyframes ark-sonar-ping {50%{filter:brightness(1.35);transform:scale(.92)}}
+.v33-hidden-map {touch-action:none}
+.ark-net-reticle {position:absolute;z-index:8;width:18px;height:18px;border:1px solid #d9ffe9;border-radius:50%;box-shadow:0 0 0 3px #9de0bb44,0 0 12px #c5ffdd;transform:translate(-50%,-50%);pointer-events:none}
+.ark-net-reticle::before,.ark-net-reticle::after {content:"";position:absolute;left:50%;top:50%;background:#d9ffe9;transform:translate(-50%,-50%)}
+.ark-net-reticle::before {height:25px;width:1px}.ark-net-reticle::after {width:25px;height:1px}
+.ark-net-reticle i {position:absolute;inset:-5px;border:1px dashed #c6f7d8;border-radius:50%;animation:ark-net-lock .75s ease-in-out infinite alternate}
+.ark-net-reticle b {position:absolute;left:50%;top:calc(100% + 7px);padding:1px 3px;color:#eaffdf;background:#10201bdc;font:9px/1.2 ui-monospace,monospace;transform:translateX(-50%);white-space:nowrap}
+@keyframes ark-net-lock {to{transform:scale(.72);opacity:.5}}
+@media(prefers-reduced-motion:reduce){.ark-net-reticle i{animation:none}}
+
+/* The opening puts the hook, play loop and first action in a single confident frame. */
+.v73-opening {min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding-bottom:60px;box-sizing:border-box;background:#080b12}
+.v73-opening::before {background:linear-gradient(90deg,#070a10fa 0%,#0c1019e8 34%,#0b0d1580 62%,#0a0c1430 100%),linear-gradient(0deg,#080b12 0%,transparent 44%),radial-gradient(ellipse at 28% 48%,#8a65701c,transparent 52%)}
+.v73-opening-art {animation:ark-opening-arrive 1.15s ease-out both;filter:saturate(.82) contrast(1.06)}
+.v73-opening-copy {position:relative;z-index:1;max-width:690px;padding:clamp(34px,6vw,84px);gap:15px}
+.v73-opening-copy::before {content:"";position:absolute;inset:15px auto 15px 0;width:2px;background:linear-gradient(transparent,#accabbaa 20%,#c2a2b2 80%,transparent);opacity:.65}
+.v73-kicker {font-size:11px;letter-spacing:.24em}
+.v73-opening-loop {display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:5px 0;padding:7px 9px;border-block:1px solid #b6c9bb3b;color:#d6ded6;background:#0d131ba3}
+.v73-opening-loop span {display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.025em}
+.v73-opening-loop b {font:10px ui-monospace,monospace;color:#9fcbb5}
+.v73-opening-loop i {font-style:normal;color:#a67f98}
+.v73-opening-copy>button {box-shadow:0 8px 28px #9ab9a522;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.v73-opening-copy>button:hover {transform:translateY(-2px);box-shadow:0 12px 34px #a3d5bc33,0 0 0 1px #e2f0d8}
+.v73-opening-signal {right:clamp(20px,4vw,66px);bottom:clamp(100px,15dvh,175px);width:min(300px,26vw);border:1px solid #91bca355;border-left:3px solid #a0c8ba;box-shadow:0 20px 64px #0007}
+.v73-opening-signal>div {position:relative;overflow:hidden;padding:7px 0}
+.v73-opening-signal>div::after {content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,#bcdec8,transparent);animation:ark-signal-sweep 3.2s linear infinite}
+.v73-opening footer {position:absolute;bottom:0;left:0;right:0;background:#080b12aa;backdrop-filter:blur(6px)}
+@keyframes ark-opening-arrive {from{opacity:.55;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+@keyframes ark-signal-sweep {from{transform:translateY(0)}to{transform:translateY(52px)}}
+@media(max-width:700px){.v73-opening{min-height:100dvh;padding:0 0 16px;justify-content:flex-start}.v73-opening-copy{padding:clamp(28px,8vh,50px) 24px 20px}.v73-opening-copy::before{left:8px}.v73-opening-loop{gap:5px;padding:7px 5px}.v73-opening-loop span{font-size:10px;gap:4px}.v73-opening-loop i{font-size:10px}.v73-opening-signal{position:relative;right:auto;bottom:auto;width:auto;max-width:none;margin:auto 20px 18px;padding:12px}.v73-opening footer{position:relative;flex-direction:column;margin-top:auto;padding:14px 20px}}
+@media(prefers-reduced-motion:reduce){.v73-opening-art,.v73-opening-signal>div::after,.ark-sonar-sectors span[data-active="true"]{animation:none!important}.v73-opening-copy>button{transition:none}}
+
+/* Flashlight illumination follows the persisted facing direction, not a radial halo. */
+.v71-field.v33-expedition .v33-route-map.ark-directional-light::after{background:conic-gradient(from calc(var(--v57-light-direction,180deg) - 38deg) at var(--v57-light-x,50%) var(--v57-light-y,50%),transparent 0deg 76deg,#02040bd9 76deg 284deg,transparent 284deg 360deg),radial-gradient(ellipse at var(--v57-light-x,50%) var(--v57-light-y,50%),transparent 5%,#03070b38 18%,#03060bc9 44%,#02040bef 82%)!important}

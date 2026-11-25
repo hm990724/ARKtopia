@@ -1,36 +1,29 @@
-# UI / Gameplay 구현 기준
+﻿# UI and gameplay flow
 
-현재 실행 경로와 acceptance 상태를 한 곳에서 확인하는 요약이다. 사용자의 세부 요청 원문은 [통합 지시서](docs/REQUIREMENTS_ENHANCED_v74.txt), [UI/Gameplay 지시서](docs/REQUIREMENTS_UI_GAMEPLAY.md)를 기준으로 한다.
+This is the current interface target for the system requirements in [REQUIREMENTS_GAMEPLAY.md](docs/REQUIREMENTS_GAMEPLAY.md). The screen should present status, decision tools, and consequences together so the player can act without hunting through long panels.
 
-## 플레이 루프
+## First session
 
-1. 기지 화면에서 CCTV·동물·시설·자원을 확인한다.
-2. CCTV의 화면 변화를 관찰하고, 출동 전 손전등/필터 등 장비를 확인한다.
-3. 하루 1회/AP 1 탐사에서 어두운 맵을 직접 이동한다. 조명된 칸은 계속 보이고 발자국·풀 흔적으로 위치를 좁혀 개체를 직접 그물로 포획한다.
-4. 위험 조우에서는 이동이 잠기는 전투 선택을 하고, 승리 보상은 1회만 받는다.
-5. 야간에는 사건에 대응하고 자원으로 시설을 수리한다. 날짜 변경 전 실제 차단 조건과 비용을 보여준다.
-6. 개체를 돌보고 공명/검사 후, 후반에는 고유 개체 ID별 3단계 ARK RECALL을 조사한다. 신호 조정·표본 배치·기록 정렬·선율 입력·밸브·채널 등 종별 조작을 수행한다. 중간 저장 뒤 이어서 진행 가능하다.
-7. 선택에 따라 인간 복원·동물 자율성·기록 보존으로 갈라지는 8개 엔딩을 본다.
+1. The opening screen explains the loop: explore and rescue, care and research, survive and choose. The start choices show their gameplay benefit.
+2. A first-day objective stays visible. Launch preparation lists missing equipment, cost, recruited companions, AP, and region risk before the player commits.
+3. Tutorial gates teach field movement, clues, capture, care, and research in sequence without exposing late-story information early.
 
-## 운영·추적·탐사 게임성
+## In the field
 
-- **기지 경제:** 식량, 고철, 부품, 전력, 손전등 전지, 필터, 의약품을 실제 행동에 사용한다. 부품·고철·전력은 CCTV 복구와 배터리/의료/중계기 업그레이드에 투자한다. 시설 레벨은 저장되며 탐사 위험, 귀환 정보, 보급 여력을 바꾼다.
-- **CCTV/추적망:** 카메라 이미지 차이를 직접 비교하고 순찰 감시를 선택해 야간 위협 상승을 억제한다. 추적망은 구역 접근·위협도·설치 중계기의 영향을 받는다. 중계기 1단계는 귀환구를 표시하고 2단계 이상은 정확한 위치 대신 거친 방향/거리 정보를 준다.
-- **현장 이동/단서:** 어두운 연속 맵에서 손전등 시야로 이동한다. 이미 확인한 장소는 계속 밝혀지고, 그 칸으로 개체가 이동하면 다시 조사 버튼을 누르지 않아도 실시간으로 보인다. 발자국은 이전 이동을 나타내며, 개체의 현재 위치와 인접 한 칸에는 풀 흔적이 남는다. 발견을 근거로 그물을 써서 직접 포획한다.
-- **전투/위험:** 오염 타일이나 신호 지점에서 적의 예고 행동을 보고 경계·공격·EVE 지원을 고른다. 이동은 공격 중 잠기고 승리 보상은 한 번만 정산된다. 직원 동행은 의료 회복·보급 추가·방어·오염 저항을 제공한다.
-- **야간/사건:** 매일 시설 사고와 동물/직원 이벤트가 선택지로 나온다. 수리·봉쇄·정화·절전에는 서로 다른 자원/위험 대가가 있다. 날짜 넘김은 실제 AP·전력·위협 조건을 표시한다.
-- **연구/수집:** 공명 및 병리 조사는 대화형 반응 연출과 3단계 프로토콜을 거친다. 후반 ARK RECALL은 개체 번호 단위 저장/재개를 지원하고 13종별 입력 기구를 사용한다.
+- Keep the day/AP, power, health, noise/pressure, current objective, and escape route within one view on common desktop resolutions.
+- Place the specimen readout, map/aim surface, live acoustic bearing, capture methods, combat tools, and retreat controls next to one another. Avoid a tall scroll column for routine actions.
+- Use moving sector/audio indicators and evidence age alongside the map. Never show an exact hidden animal or enemy location without a valid reveal.
+- When an enemy interrupts tracking, explain that capture progress is preserved and return to that hunt after combat.
 
-## 조작성/표시
+## Base and story systems
 
-- 모바일 390px와 데스크톱 1366/1600/1920px에서 기본 화면 폭을 확인한다.
-- 자원·포획 횟수·출동 제한·누락 장비·행동 차단 사유를 클릭 전후에 표시한다.
-- 구형 저장의 DAY/AP/동물·직원·개체 ID·이야기/엔딩 데이터를 유지하며 신규 필드는 기본값으로 마이그레이션한다.
-- 원형 장식 폰트는 제목/본문에서 제거하고 각진 상업 이용 가능한 폰트 체계를 적용했다. 외부 폰트 네트워크가 끊겨도 fallback이 있어야 한다.
-- EVE는 초기 진행 중 neutral 표정으로 제한되고, 스토리 진척 뒤 상태별 이미지가 해금된다.
+- Day-end forecasts show power after maintenance and batteries, fuel/filter availability, facilities that will go offline, and animal/staff risks.
+- Inventory actions show current quantity, source, use, and the precise shortage before they are selected.
+- Modal operations fit the viewport; on short or narrow screens they reflow and allow focused interaction rather than clipping.
+- Dialogue uses deliberate pacing, a transcript for important scenes, and explicit skip controls where appropriate.
 
-## 미완료/주의
+## Input and persistence
 
-- ARK RECALL은 13종별 입력 위젯과 시나리오를 분리했고 브라우저에서 전 종 입력을 검증했다. 일부 종은 드래그·경로 등 같은 물리 입력 계열을 공유한다. 세부 밸런스와 실제 캠페인에서 모든 종을 재수집하는 플레이테스트가 남아 있다.
-- 아홀로틀·키메라·스라소니·나방 Mutant 최종 아트는 새로 생성·화면 연결·사용자 레퍼런스 QA 전이다. 생성 산출물은 `public/assets/animals/*_mutant_v75.png`로 관리하고 검수 후 기존 resolver에 연결해야 한다.
-- 실제 장시간 난이도, 터치 전용 플레이, 처음부터 진행하는 자연 캠페인 검증은 추가 플레이테스트가 필요하다. 8개 최종 선택 UI 및 삽화 로드는 각각 브라우저에서 통과했다.
+- Mouse and touch controls expose the same action and outcome; the capture grid supports pointer aiming/dragging, while keyboard activation stays available.
+- Save/load preserves expedition position, creature trail, companion assignment, interrupted hunt, minigame progress, day costs, and unique specimen records.
+- Reduced-motion settings suppress decorative movement without removing critical state feedback.

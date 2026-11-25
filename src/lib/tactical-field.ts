@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;lightSteps?:number;mutantNextTurn?:number;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={region?:RegionId;facing?:'up'|'right'|'down'|'left';acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;lightSteps?:number;mutantNextTurn?:number;autonomousTicks?:number;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -74,7 +74,7 @@ export function advanceSporeSwarm(f:FieldState,lightOn=false):void{
  const s=f.sporeSwarm;if(!s)return;
  const d=distance(s.position,f.position,fieldWidth(f));
  s.ticks++;
- const detected=!f.concealed&&((d<=4&&fieldLineOfSight(f,s.position,4))||(lightOn&&fieldLineOfSight(f,s.position,6))||(f.noise>=16&&d<=6));
+ const detected=!f.concealed&&((d<=4&&fieldLineOfSight(f,s.position,4))||(lightOn&&fieldBeamContains(f,s.position,6))||(f.noise>=16&&d<=6));
  if(detected){s.alert=Math.min(100,s.alert+(lightOn?24:18));s.target=f.position;s.mode='chase';}
  else{s.alert=Math.max(0,s.alert-18);s.mode=s.alert>0&&s.target!==undefined?'search':'drift';if(!s.alert)s.target=undefined;}
  const target=s.target??s.origin;
@@ -164,8 +164,16 @@ export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{
  let x=f.position%width,y=Math.floor(f.position/width);const tx=i%width,ty=Math.floor(i/width),dx=Math.abs(tx-x),dy=-Math.abs(ty-y),sx=x<tx?1:-1,sy=y<ty?1:-1;let err=dx+dy;
  while(x!==tx||y!==ty){const twice=2*err;if(twice>=dy){err+=dy;x+=sx}if(twice<=dx){err+=dx;y+=sy}if(x===tx&&y===ty)return true;if(f.tiles[y*width+x]==='wall')return false;}return true;
 }
-export const fieldVisible=(f:FieldState,i:number,range=1)=>range===0?i===f.position:f.visited.includes(i)||(f.discovered??[]).includes(i)||fieldLineOfSight(f,i,range);
-export function revealField(f:FieldState,range:number){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>fieldLineOfSight(f,i,range)?[i]:[])])];}
+export function fieldBeamContains(f:FieldState,i:number,range=2,facing=f.facing??'down'){
+ if(!fieldLineOfSight(f,i,range))return false;
+ if(i===f.position)return true;
+ const width=fieldWidth(f),dx=i%width-f.position%width,dy=Math.floor(i/width)-Math.floor(f.position/width);
+ const fx=facing==='left'?-1:facing==='right'?1:0,fy=facing==='up'?-1:facing==='down'?1:0;
+ const forward=dx*fx+dy*fy,side=Math.abs(dx*fy-dy*fx);
+ return forward>0&&side<=forward;
+}
+export const fieldVisible=(f:FieldState,i:number,range=1,directionalLight=false)=>range===0?i===f.position:f.visited.includes(i)||(f.discovered??[]).includes(i)||(directionalLight?fieldBeamContains(f,i,range):fieldLineOfSight(f,i,range));
+export function revealField(f:FieldState,range:number,directionalLight=false){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>(directionalLight?fieldBeamContains(f,i,range):fieldLineOfSight(f,i,range))?[i]:[])])];}
 /** Coarse CCTV bearing only; never returns the animal's tile or coordinates. */
 export function fieldRelayBearing(f:FieldState,level:number):string|null{
  if(level<2)return null;
@@ -204,31 +212,34 @@ export function fieldPressureGain(f:FieldState,day:number,pace:Pace,relay:number
  const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  return Math.max(1,tier.basePressure-Math.min(2,Math.floor(relay/2))+(pace==='quiet'?-1:pace==='fast'?3+index:0)+(contaminated?3+index:0)+Math.min(index,Math.floor(day/10)));
 }
-export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_lightOn=false,pace?:Pace):boolean{
+export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_lightOn=false,pace?:Pace,goal=f.position,stage?:FieldThreat['stage']):boolean{
  const t=f.threat;if(!t||f.combat)return false;
  const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  t.ticks=(t.ticks??0)+1;
  if((t.cooldown??0)>0){t.cooldown!--;return false;}
- const {costs,neighbors}=sporePaths(f,f.position);
+ const {costs,neighbors}=sporePaths(f,goal);
  const d=costs.get(t.position)??Infinity;
  // Early sectors can lose the administrator's trail in quiet, distant movement.
  if(index<=1&&pace==='quiet'&&d>4&&t.ticks%2===0){t.mode='search';t.stage='search';t.warningTicks=0;return false;}
- t.alert=Math.max(0,Math.min(100,f.pressure??0));t.mode='closing';t.stage='chase';
+ t.alert=Math.max(0,Math.min(100,f.pressure??0));
+ if(stage){t.stage=stage;t.mode=stage==='patrol'||stage==='search'?'search':'closing';}
+ else{t.mode='closing';t.stage='chase';}
+ if(!f.concealed&&goal===f.position)t.lastSeen=f.position;
  // Advanced variants anticipate the next step or cut off the known exit; never pass walls or teleport.
  const prev=f.previousPosition,delta=prev===undefined?0:f.position-prev;
  const predicted=f.position+delta;
- const target=index>=3&&delta&&adjacentField(f.position,predicted,fieldWidth(f),f.tiles.length)&&f.tiles[predicted]!=='wall'?predicted:undefined;
- const intercept=target===undefined?null:sporePaths(f,target).costs;
- const exitCosts=index>=4&&f.exitIndex!==undefined?sporePaths(f,f.exitIndex).costs:null;
+ const target=goal===f.position&&index>=3&&delta&&adjacentField(f.position,predicted,fieldWidth(f),f.tiles.length)&&f.tiles[predicted]!=='wall'?predicted:undefined;
+ const intercept=goal===f.position&&target!==undefined?sporePaths(f,target).costs:null;
+ const exitCosts=goal===f.position&&index>=4&&f.exitIndex!==undefined?sporePaths(f,f.exitIndex).costs:null;
  for(let i=0;i<2;i++){
-  if((costs.get(t.position)??Infinity)<=1)break;
+  if((costs.get(t.position)??Infinity)<=(stage==='patrol'?0:1))break;
   const score=(cell:number)=>(costs.get(cell)??Infinity)+(intercept?Math.min(12,intercept.get(cell)??12)*.35:0)+(exitCosts?Math.min(12,exitCosts.get(cell)??12)*.15:0);
   const next=neighbors(t.position).filter(j=>(costs.get(j)??Infinity)<(costs.get(t.position)??Infinity)).sort((a,b)=>score(a)-score(b))[0];
   if(next===undefined)break;
   if(i===0&&t.ticks%tier.trailEvery===0)depositMutantSpores(f,t.position);
   t.position=next;
  }
- const close=(costs.get(t.position)??Infinity)<=1;
+ const close=(costs.get(t.position)??Infinity)<=(stage==='patrol'?0:1);
  t.warningTicks=close?1:0;return close;
 }
 /** Each expedition gets its own seeded layout, a new exit and a guaranteed walkable corridor. */
@@ -273,7 +284,7 @@ export function createField(day:number,region:RegionId,sortie=0,guided=day===1&&
  const placed=count?[wildlifeIndex]:[];
  while(placed.length<count&&pool.length){const at=pool.shift()!;if(placed.some(i=>distance(i,at,width)<2))continue;tiles[at]='animal';placed.push(at);}
 
- return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:count===0,threat:null,pressure:0,lastEvent:'이동키(WASD) 또는 인접 칸으로 수색하십시오. 장비가 없으면 현재 위치만 보입니다. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ return {region,tiles,position:start,facing:'down',visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:count===0,threat:null,pressure:0,lastEvent:'이동키(WASD) 또는 인접 칸으로 수색하십시오. 장비가 없으면 현재 위치만 보입니다. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
