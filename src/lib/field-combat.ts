@@ -19,7 +19,8 @@ export function beginRoamingCombat(s:V10):boolean{
  if(s.capture)return false;
  const first=!s.roamingStory?.firstEncounterDay;
  s.roamingStory??={};if(first)s.roamingStory.firstEncounterDay=s.day;
- f.combat={enemy:'mutant',hp:48,maxHp:48,round:1,seed:Math.floor(Math.random()*2147483647),intent:'lunge',stagger:false,source:'mobile',introPending:first,log:['EVE: 배회형 MUTANT입니다. 등록되지 않은 특수 변이체입니다. 행동을 관찰하십시오. 모든 포자 흔적은 이 개체가 남긴 것입니다.']};
+ const seed=Math.floor(Math.random()*2147483647),intents:FieldCombat['intent'][]=['lunge','charge','spray','sweep','burst','feint'];
+ f.combat={enemy:'mutant',hp:48,maxHp:48,round:1,seed,intent:intents[seed%intents.length],stagger:false,source:'mobile',introPending:first,log:['EVE: 배회형 MUTANT입니다. 등록되지 않은 특수 변이체입니다. 행동을 관찰하십시오. 모든 포자 흔적은 이 개체가 남긴 것입니다.']};
  f.threat.mode='closing';f.threat.stage='chase';depositMutantSpores(f,f.threat.position);
  if(first)log(s,'최초 배회 위협 조우','외곽에서 특수 변이체 MUTANT를 확인했습니다. 동일 개체의 추적 경로가 기록되었습니다.','bad');
  return true;
@@ -88,7 +89,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(b.hp<=0){const loot=4+(run.region==='garden'?0:2);n.scrap+=loot;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=loot;run.loot+=2;f.loot+=2;if(b.source==='mobile'){f.threat=null;}f.combat=null;resumeCapture(n);f.pressure=Math.max(0,(f.pressure??0)-12);message+=` · ${b.enemy==='mutant'?'MUTANT 격퇴 · 노출 위협 상승 시 재출현 가능':'오염 제거'}. 고철 +${loot}, 회수 점수 +2, 추적망 -12. 지정 출구로 회수하세요.`;}
  else{
   const profile=mutantAttack[b.intent];
-  const attack=b.enemy==='mutant'?profile.damage:(b.intent==='charge'?0:b.intent==='lunge'?7:5);
+  const attack=b.enemy==='mutant'?(profile.damage+(action==='retreat'?6:0)):(b.intent==='charge'?0:b.intent==='lunge'?7:5);
   const effectiveShield=action==='pulse'?shield+10:action==='guard'&&(b.intent==='spray'||b.intent==='burst')?Math.floor(shield*.45):action==='cover'&&(b.intent==='lunge'||b.intent==='sweep')?Math.floor(shield*.55):shield;
   const damage=Math.max(0,attack-effectiveShield-Math.max(0,Math.min(3,run.suitLevel??0))-((run.companions??[run.companion]).includes('wolf')?2:0));
   run.integrity=cap(run.integrity-damage);if(b.enemy==='mutant'&&damage>0)n.mind=cap(n.mind-Math.ceil(damage/4));
