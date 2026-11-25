@@ -13,7 +13,7 @@ export function mutantIntentFor(seed:number,tier:number,last?:CombatAction,previ
  if(tier>=3&&roll<15+(tier-3)*12){if(last==='guard')return 'burst';if(last==='cover')return 'sweep';if(last==='strike')return 'feint';if(last==='retreat')return 'lunge';}
  let intent=pool[seed%pool.length];if(tier>=2&&intent===previous)intent=pool[(seed%pool.length+1)%pool.length];return intent;
 }
-export function combatRoundLimit(b:FieldCombat){return b.enemy==='mutant'?9:6;}
+export function combatRoundLimit(b:FieldCombat){return b.enemy==='mutant'?9+Math.max(0,b.tier??0):6;}
 export function escapeChance(s:V10){const pressure=s.field?.pressure??0;return Math.max(10,Math.min(90,Math.round(90-pressure*.72+((s.field?.combat?.stagger)?10:0)+(s.stamina<25?-10:0))));}
 export const mutantAttack:Record<FieldCombat['intent'],{damage:number;infection:number;spores:number}>={lunge:{damage:28,infection:2,spores:0},charge:{damage:0,infection:0,spores:0},spray:{damage:12,infection:18,spores:3},sweep:{damage:23,infection:4,spores:0},burst:{damage:18,infection:24,spores:4},feint:{damage:16,infection:0,spores:0}};
 export function newFieldCombat(seed:number):FieldCombat{return {enemy:seed%2?'echo':'slime',hp:24,maxHp:24,round:1,intent:seed%2?'spray':'lunge',stagger:false,log:['EVE: 동물의 생체 신호가 아닙니다. 오염 덩어리의 다음 움직임을 확인하세요.']};}
@@ -36,7 +36,7 @@ export function tickRoamingThreat(s:V10,pace?:Pace):boolean{
  const f=s.field,run=s.run;if(!run||!f||s.capture||f.combat||f.choice||s.pending||run.firstTutorial||mutantSecured(s)||run.integrity<=0||s.mind<=0||s.eve<=0)return false;
  const profile=mutantTier(run.region);
  if(!f.threat){
-  if(f.steps<Math.max(profile.minSteps,f.mutantNextStep??0)||(f.mutantSpawns??0)>=profile.maxSpawns||(f.pressure??0)<profile.threshold)return false;
+  if(f.steps<Math.max(profile.minSteps,f.mutantNextStep??0)||(f.sporeSpread?.turn??0)<(f.mutantNextTurn??0)||(f.pressure??0)<profile.threshold)return false;
   const at=farthestThreatCell(f);if(at===null)return false;
   f.mutantSpawns=(f.mutantSpawns??0)+1;
   f.threat={position:at,origin:at,alert:f.pressure??0,mode:'closing',stage:'chase',ticks:0};
@@ -69,7 +69,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  if(combatBlock(s,action))return s;
  if(s.field!.combat!.lastStand&&action==='retreat'){
   const loss=sacrificeWolf(s),n=loss===s?structuredClone(s):loss,f=n.field!;
-  f.combat=null;f.threat=null;f.mutantNextStep=f.steps+mutantTier(f.region).respawn;f.interruptedCapture=null;f.pressure=Math.max(0,(f.pressure??0)-18);
+  f.combat=null;f.threat=null;f.mutantNextStep=f.steps+mutantTier(f.region).respawn;f.mutantNextTurn=(f.sporeSpread?.turn??0)+mutantTier(f.region).respawnTurns;f.interruptedCapture=null;f.pressure=Math.max(0,(f.pressure??0)-18);
   if(loss!==s){n.roamingStory??={};n.roamingStory.lastStandDay=n.day;}
   else n.lastOutcome='엄호 조건 변경 · 추가 인력 손실 없이 우회했습니다.';
   f.lastEvent=n.lastOutcome;return n;
@@ -83,7 +83,7 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
   if(b.seed%100<chance){const mobile=b.source==='mobile'&&f.threat;f.combat=null;f.pressure=Math.min(100,(f.pressure??0)+7);n.stamina=Math.max(1,n.stamina-2);if(mobile)relocateThreat(f);resumeCapture(n);f.lastEvent=n.lastOutcome='도주 성공 · ST -2 · 추적 수치 +7 · 전리품 없음.';return n;}
  }
  b.strikeChain=action==='strike'?(b.strikeChain??0)+1:0;b.lastAction=action;let hit=0,shield=0,message=action==='retreat'?'도주 실패 · 퇴로 차단.':'';
- if(action==='strike'){hit=b.enemy==='mutant'?(b.stagger?24:b.intent==='charge'?20:10):b.intent==='charge'||b.stagger?14:8;message=`제압봉 적중 · 내구 -${hit}${b.enemy==='mutant'&&b.intent!=='charge'&&!b.stagger?' · 반격 위험':''}`;}
+ if(action==='strike'){hit=(b.enemy==='mutant'?(b.stagger?24:b.intent==='charge'?20:10):b.intent==='charge'||b.stagger?14:8)+4*upgradeLevel(n,'baton');message=`제압봉 적중 · 내구 -${hit}${b.enemy==='mutant'&&b.intent!=='charge'&&!b.stagger?' · 반격 위험':''}`;}
  if(action==='guard'){shield=b.enemy==='mutant'?19:8;b.stagger=b.enemy!=='mutant'||(b.intent==='lunge'||b.intent==='sweep')||b.stagger;message='방호 자세를 취했습니다.';}
  if(action==='cover'){shield=b.enemy==='mutant'?23:14;if(b.enemy==='mutant'&&(b.intent==='spray'||b.intent==='burst'))b.stagger=true;message='장애물 뒤로 몸을 숨겼습니다.';}
  if(action==='heal'){run.integrity=cap(run.integrity+24);run.medkitUsed=true;shield=8;message='응급 키트로 방호 장비를 봉합했습니다. 방호 +24';}
@@ -97,16 +97,16 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  }
  if(action==='strike')b.stagger=false;
  b.hp=Math.max(0,b.hp-hit);n.stamina=Math.max(1,n.stamina-2);
- if(b.hp<=0){const loot=4+(run.region==='garden'?0:2);n.scrap+=loot;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=loot;run.loot+=2;f.loot+=2;if(b.source==='mobile'){f.threat=null;f.mutantNextStep=f.steps+mutantTier(run.region).respawn;f.mutantSpawns=Math.max(1,f.mutantSpawns??0);}f.combat=null;resumeCapture(n);f.pressure=Math.max(0,(f.pressure??0)-(b.enemy==='mutant'?30:12));message+=` · ${b.enemy==='mutant'?'MUTANT 격퇴 · 당분간 추적 신호 소실':'오염 제거'}. 고철 +${loot}, 회수 점수 +2, 추적망 -${b.enemy==='mutant'?30:12}. 지정 출구로 회수하세요.`;}
+ if(b.hp<=0){const loot=4+(run.region==='garden'?0:2);n.scrap+=loot;run.earned??={scrap:0,knowledge:0,clues:0};run.earned.scrap+=loot;run.loot+=2;f.loot+=2;if(b.source==='mobile'){f.threat=null;f.mutantNextStep=f.steps+mutantTier(run.region).respawn;f.mutantNextTurn=(f.sporeSpread?.turn??0)+mutantTier(run.region).respawnTurns;f.mutantSpawns=Math.max(1,f.mutantSpawns??0);}f.combat=null;resumeCapture(n);f.pressure=Math.max(0,(f.pressure??0)-(b.enemy==='mutant'?30:12));message+=` · ${b.enemy==='mutant'?'MUTANT 격퇴 · 일정 시간 및 이동 경과 후 재출현 가능':'오염 제거'}. 고철 +${loot}, 회수 점수 +2, 추적망 -${b.enemy==='mutant'?30:12}. 지정 출구로 회수하세요.`;}
  else{
   const profile=mutantAttack[b.intent];
   const scale=mutantTier(run.region).damageScale;
   const attack=b.enemy==='mutant'?(Math.round(profile.damage*scale)+(action==='retreat'?6:0)):(b.intent==='charge'?0:b.intent==='lunge'?7:5);
   const effectiveShield=action==='pulse'?shield+10:action==='guard'&&(b.intent==='spray'||b.intent==='burst')?Math.floor(shield*.45):action==='cover'&&(b.intent==='lunge'||b.intent==='sweep')?Math.floor(shield*.55):shield;
-  const damage=Math.max(0,attack-effectiveShield-Math.max(0,Math.min(3,run.suitLevel??0))-((run.companions??[run.companion]).includes('wolf')?2:0));
+  const damage=Math.max(0,attack-effectiveShield-3*Math.max(0,Math.min(5,run.suitLevel??0))-((run.companions??[run.companion]).includes('wolf')?2:0));
   run.integrity=cap(run.integrity-damage);if(b.enemy==='mutant'&&damage>0)n.mind=cap(n.mind-Math.ceil(damage/4));
   if(b.enemy==='mutant'){
-   const protection=(run.gear.includes('filter')?6:0)+(action==='cover'?12:action==='pulse'?18:action==='guard'?3:0);
+   const protection=(run.gear.includes('filter')?6+2*upgradeLevel(n,'filterseal'):0)+(action==='cover'?12:action==='pulse'?18:action==='guard'?3:0);
    const infection=Math.max(0,Math.round(profile.infection*scale)-protection);n.infection=cap(n.infection+infection);
    const spores=profile.spores?depositMutantSpores(f,f.threat?.position??f.position,Math.max(1,Math.round(profile.spores*scale))):0;
    if(spores)message+=' · MUTANT 포자 '+spores+'칸 배출';
@@ -116,17 +116,19 @@ export function resolveCombat(s:V10,action:CombatAction):V10{
  }
  queueCrewTerminations(n);f.lastEvent=n.lastOutcome=message;log(n,'현장 오염 대응',message,'info');return n;
 }
-export type UpgradeId='relay'|'battery'|'clinic'|'net'|'suit'|'scanner'|'sortie';
+export type UpgradeId='relay'|'battery'|'clinic'|'net'|'suit'|'scanner'|'sortie'|'baton'|'filterseal';
 export const baseUpgrades:Record<UpgradeId,{name:string;effect:string;scrap:number;parts:number;power:number}>={
  relay:{name:'현장 추적망',effect:'1–5단계: 이동 압박 감소 · Lv1 출구 표시 · Lv2 동물 방위 · Lv4 적 경계 완화 · Lv5 적 감지 거리 감소',scrap:8,parts:1,power:4},
- battery:{name:'전력 축전기',effect:'단계마다 야간 전력 +5 · 탐사 손전등 소모 완화',scrap:10,parts:2,power:4},
+ battery:{name:'전력 축전기',effect:'단계마다 야간 전력 +5',scrap:10,parts:2,power:4},
  clinic:{name:'안정화 병동',effect:'단계마다 야간 개체 스트레스 -2 · 직원 정신 +1',scrap:9,parts:1,power:5},
  net:{name:'포획망 장력기',effect:'단계마다 추적 포획 행동 +1 · 그물 저항 중 추가 관찰 여유',scrap:8,parts:2,power:3},
- suit:{name:'방호복 보강판',effect:'단계마다 전투 피격 피해 -1 · 위험 지대 방호 내구도 보존',scrap:9,parts:2,power:4},
+ suit:{name:'방호복 보강판',effect:'단계마다 전투 피격 피해 -3 · 최대 5단계',scrap:9,parts:2,power:4},
  sortie:{name:'탐사 운영 확장',effect:'하루 최대 탐사 2회 · 출동마다 AP와 장비 비용 소모',scrap:14,parts:3,power:8},
+ baton:{name:'제압봉 출력 강화',effect:'단계마다 제압봉 피해 +4 · 최대 5단계',scrap:8,parts:1,power:4},
+ filterseal:{name:'바이오필터 밀폐 보강',effect:'필터 장착 시 전투 감염 피해 단계마다 -2 · 최대 5단계',scrap:7,parts:1,power:3},
  scanner:{name:'EVE 스캐너 렌즈',effect:'EVE 스캐너 장착 시 2단계마다 조사 시야 +1칸',scrap:10,parts:2,power:5}
 };
-export function upgradeMaxLevel(id:UpgradeId){return id==='sortie'?1:id==='relay'?5:3;}
+export function upgradeMaxLevel(id:UpgradeId){return id==='sortie'?1:['relay','baton','suit','filterseal'].includes(id)?5:3;}
 export function upgradeLevel(s:V10,id:UpgradeId){return Math.max(0,Math.min(upgradeMaxLevel(id),s.baseLevels?.[id]??0));}
 export function upgradeCost(s:V10,id:UpgradeId){const r=baseUpgrades[id],level=upgradeLevel(s,id);return {scrap:r.scrap+level*6,parts:r.parts+level,power:r.power};}
 export function upgradeBlock(s:V10,id:UpgradeId):string|null{
