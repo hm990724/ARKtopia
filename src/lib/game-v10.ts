@@ -14,7 +14,7 @@ import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voic
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,registerHqSpecies,issueNextHqOrder,type HqOrderState} from './hq-orders';
 import {fieldVision,acousticBearing,metalFloor,falseFieldSignal,revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,fieldPressureGain,advanceSporeSpread,advanceFieldShift,remainingWildlife,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
-import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
+import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,extendedIncidentCosts,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
 export type Gear='flashlight'|'filter'|'scanner'|'medkit'|'cage';
@@ -402,6 +402,13 @@ export function resolveIncident(s:V10,option:number):V10{
  return settleIncidentConsequences(s,summary(n,def.title,`${def.options[option]} — 대응 결과가 기록되었습니다. 실제 증감 수치를 확인하십시오.`,option===2?'bad':option===0?'good':'mystery'));
 }
 // Safe, read-only preview for event choice cards; uses the same actual outcome rules.
+export function incidentResourceCosts(s:V10,option:number):string[]{
+ const id=s.pendingIncident;if(!id||option>2||option<0)return [];
+ const core:Record<string,Record<string,number>>={'garden:0':{power:6},'keepsake:0':{food:1},'quiet:0':{food:1},'breach:0':{power:22},'blackout:0':{parts:2},'spores:0':{filters:1},'spores:1':{power:12},'echo:1':{power:5},'predator:0':{power:14},'coolant:0':{parts:2},'rations:0':{food:2},'rations:1':{food:1},'intrusion:0':{power:10}};
+ const names:Record<string,string>={ap:'행동력',power:'전력',parts:'부품',filters:'필터',food:'식량',medicine:'의약품',electricCells:'전지',scrap:'고철',credits:'크레딧'};
+ const cost=id in coreIncidentDefs?core[id+':'+option]??{}:extendedIncidentCosts(id as ExtendedIncidentId,option);
+ return Object.entries(cost).filter(([,v])=>v>0).map(([k,v])=>(names[k]??k)+' -'+v);
+}
 export function previewIncident(s:V10,option:number):{available:boolean;effects:{name:string;delta:number}[]}{
  const n=resolveIncident(s,option);
  if(n===s)return {available:false,effects:[]};
