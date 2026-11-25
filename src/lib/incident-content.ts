@@ -48,6 +48,7 @@ const defs:Content[]=[
 ];
 
 export const extendedIncidentDefs:Record<ExtendedIncidentId,Incident>=Object.fromEntries(defs.map(d=>[d.id,{id:d.id,title:d.title,desc:d.desc,cause:d.cause,options:d.options}])) as Record<ExtendedIncidentId,Incident>;
+export function extendedIncidentCosts(id:ExtendedIncidentId,option:number){return defs.find(d=>d.id===id)?.choices[option]?.cost??{};}
 export function extendedIncidentWeight(s:V10,id:ExtendedIncidentId):number{
  const base=defs.find(d=>d.id===id)?.weight(s)??0;
  const recent=(token:string,days=3)=>(s.eventHistory??[]).some(entry=>{const day=Number(entry.match(/^(\d+)일차/)?.[1]);return Number.isFinite(day)&&s.day-day>=0&&s.day-day<=days&&entry.includes(token)});
