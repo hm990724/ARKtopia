@@ -15,7 +15,7 @@ export type Pace='quiet'|'normal'|'fast';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={region?:RegionId;acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;lightSteps?:number;mutantNextTurn?:number;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -32,7 +32,7 @@ export const REGION_RULES:Record<RegionId,{title:string;description:string;blind
  vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
  tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:3,sporeCap:0.6}
 };
-export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?0:region==='tunnels'?(scanner?2+Math.floor(level/2):1):scanner?3+Math.floor(level/2):light?2:1;}
+export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?0:scanner?(region==='tunnels'?2:3)+Math.floor(level/2):light?2:0;}
 export function acousticBearing(f:FieldState,kind:'animal'|'exit'|'threat'|'fragment'){
  const fragment=Object.keys(f.originFragments??{}).map(Number).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];
  const target=kind==='fragment'?fragment:kind==='threat'?f.threat?.position:kind==='exit'?f.exitIndex:remainingWildlife(f).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];
@@ -164,7 +164,7 @@ export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{
  let x=f.position%width,y=Math.floor(f.position/width);const tx=i%width,ty=Math.floor(i/width),dx=Math.abs(tx-x),dy=-Math.abs(ty-y),sx=x<tx?1:-1,sy=y<ty?1:-1;let err=dx+dy;
  while(x!==tx||y!==ty){const twice=2*err;if(twice>=dy){err+=dy;x+=sx}if(twice<=dx){err+=dx;y+=sy}if(x===tx&&y===ty)return true;if(f.tiles[y*width+x]==='wall')return false;}return true;
 }
-export const fieldVisible=(f:FieldState,i:number,range=1)=>f.visited.includes(i)||(f.discovered??[]).includes(i)||fieldLineOfSight(f,i,range);
+export const fieldVisible=(f:FieldState,i:number,range=1)=>range===0?i===f.position:f.visited.includes(i)||(f.discovered??[]).includes(i)||fieldLineOfSight(f,i,range);
 export function revealField(f:FieldState,range:number){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>fieldLineOfSight(f,i,range)?[i]:[])])];}
 /** Coarse CCTV bearing only; never returns the animal's tile or coordinates. */
 export function fieldRelayBearing(f:FieldState,level:number):string|null{
@@ -191,12 +191,12 @@ export function farthestThreatCell(f:FieldState):number|null{
 }
 /** Difficulty is tied to the current sector, not the calendar alone. */
 export const MUTANT_TIERS=[
- {threshold:82,minSteps:15,respawn:12,escapeGrace:8,maxSpawns:1,basePressure:2,trailEvery:5,damageScale:.65,hp:36,ambiguity:0},
- {threshold:74,minSteps:12,respawn:10,escapeGrace:6,maxSpawns:1,basePressure:3,trailEvery:4,damageScale:.8,hp:42,ambiguity:10},
- {threshold:66,minSteps:9,respawn:8,escapeGrace:5,maxSpawns:2,basePressure:4,trailEvery:3,damageScale:1,hp:48,ambiguity:25},
- {threshold:60,minSteps:7,respawn:6,escapeGrace:4,maxSpawns:2,basePressure:5,trailEvery:3,damageScale:1.08,hp:54,ambiguity:40},
- {threshold:54,minSteps:5,respawn:5,escapeGrace:3,maxSpawns:3,basePressure:6,trailEvery:2,damageScale:1.15,hp:60,ambiguity:60},
- {threshold:48,minSteps:4,respawn:4,escapeGrace:2,maxSpawns:3,basePressure:7,trailEvery:2,damageScale:1.25,hp:66,ambiguity:80}
+ {threshold:82,minSteps:15,respawn:12,escapeGrace:8,maxSpawns:1,basePressure:2,trailEvery:5,damageScale:0.7,hp:40,respawnTurns:8,ambiguity:0},
+ {threshold:74,minSteps:12,respawn:10,escapeGrace:6,maxSpawns:1,basePressure:3,trailEvery:4,damageScale:0.9,hp:52,respawnTurns:7,ambiguity:10},
+ {threshold:66,minSteps:9,respawn:8,escapeGrace:5,maxSpawns:2,basePressure:4,trailEvery:3,damageScale:1.12,hp:66,respawnTurns:6,ambiguity:25},
+ {threshold:60,minSteps:7,respawn:6,escapeGrace:4,maxSpawns:2,basePressure:5,trailEvery:3,damageScale:1.35,hp:80,respawnTurns:5,ambiguity:40},
+ {threshold:54,minSteps:5,respawn:5,escapeGrace:3,maxSpawns:3,basePressure:6,trailEvery:2,damageScale:1.6,hp:96,respawnTurns:4,ambiguity:60},
+ {threshold:48,minSteps:4,respawn:4,escapeGrace:2,maxSpawns:3,basePressure:7,trailEvery:2,damageScale:1.85,hp:112,respawnTurns:3,ambiguity:80}
 ] as const;
 export function mutantTierIndex(region?:RegionId){return Math.max(0,['garden','conservatory','rail','archive','vault','tunnels'].indexOf(region??'garden'));}
 export function mutantTier(region?:RegionId){return MUTANT_TIERS[mutantTierIndex(region)];}
@@ -273,7 +273,7 @@ export function createField(day:number,region:RegionId,sortie=0,guided=day===1&&
  const placed=count?[wildlifeIndex]:[];
  while(placed.length<count&&pool.length){const at=pool.shift()!;if(placed.some(i=>distance(i,at,width)<2))continue;tiles[at]='animal';placed.push(at);}
 
- return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:count===0,threat:null,pressure:0,lastEvent:'손전등과 이동키(WASD)로 현장을 수색하십시오. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ return {region,tiles,position:start,visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:count===0,threat:null,pressure:0,lastEvent:'이동키(WASD) 또는 인접 칸으로 수색하십시오. 장비가 없으면 현재 위치만 보입니다. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
