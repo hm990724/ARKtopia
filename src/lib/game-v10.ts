@@ -224,7 +224,7 @@ export function gearUnavailable(s:V10,gear:Gear,region:RegionId):string|null{
  if(gear==='scanner'&&s.power<r.power+8)return '스캐너 전력이 부족합니다. 전력을 보충하거나 손전등을 선택하세요.';
  return null;
 }
-export function expeditionLimit(s:V10){return 1+upgradeLevel(s,'sortie');}
+export function expeditionLimit(s:V10){return upgradeLevel(s,'sortie')>0?2:1;}
 export function expeditionCountToday(s:V10){return s.lastExpeditionDay===s.day?Math.max(1,s.expeditionCount??1):0;}
 export function expeditionUsedToday(s:V10){return expeditionCountToday(s)>=expeditionLimit(s);}
 export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companions:CrewId[]=[]):string|null{
@@ -233,7 +233,7 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companio
  if(!r)return '알 수 없는 탐사 구역입니다.';
  if(s.phase!=='day')return '현재는 출동할 수 없는 시간입니다.';
  if(s.run)return '진행 중인 탐사를 먼저 마치세요.';
- if(expeditionUsedToday(s)&&s.tutorialStep>=9)return '오늘 출동 가능 횟수를 모두 사용했습니다. 기지 강화 또는 다음 날에 추가 출동할 수 있습니다.';
+ if(expeditionUsedToday(s))return '오늘 출동 가능 횟수를 모두 사용했습니다. 기지 강화 또는 다음 날에 추가 출동할 수 있습니다.';
  if(s.pending||s.pendingIncident)return '진행 중인 구조 또는 사건을 먼저 처리하세요.';
  if(s.ap<1)return '출동에 AP 1이 필요합니다. 하루를 종료하면 회복됩니다.';
  if(s.day<r.unlocked)return r.unlocked+'일차부터 열리는 구역입니다.';
