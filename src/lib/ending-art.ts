@@ -38,7 +38,7 @@ export function findEndingArt(ending: string): { file: string; label: string } {
   const matched = ENDING_ART.find(item => ending.startsWith(item.prefix));
   if (matched) return matched;
   const legacy = LEGACY_ENDING_ART.find(item => ending.startsWith(item.prefix));
-  return ENDING_ART.find(item => item.prefix === legacy?.canonicalPrefix) ?? ENDING_ART[4];
+  return ENDING_ART.find(item => item.prefix === legacy?.canonicalPrefix) ?? {file:'',label:'등록된 전용 장면 없음'};
 }
 
 /** Eight ORIGIN ZERO outcomes use new story-specific raster CGs when physically
@@ -56,9 +56,13 @@ export const ORIGIN_ZERO_CANONICAL_ENDING_ART = [
  {prefix:'흩어진 이름들',filename:'END_07_scattered_names.png'},
  {prefix:'마지막 신호',filename:'END_08_last_signal.png'}
 ] as const;
-export function endingArtworkCandidates(ending:string):readonly string[]{
- const fallback=ENDING_ASSET_DIRECTORY+findEndingArt(ending).file;
+export function endingArtworkCandidates(ending:string,mainRoute=true):readonly string[]{
+ const entry=findEndingArt(ending);
  const main=ORIGIN_ZERO_CANONICAL_ENDING_ART.find(x=>ending.startsWith(x.prefix));
+ // Older shared titles (e.g. a failed revival) are not the canonical story.
+ // Never substitute the deletion scene or another ending merely to fill the frame.
+ if(!entry.file||(!mainRoute&&(main||LEGACY_ENDING_ART.some(x=>ending.startsWith(x.prefix)))))return [];
+ const fallback=ENDING_ASSET_DIRECTORY+entry.file;
  return main?[`/assets/cinematics/origin-zero/endings/${main.filename}`,fallback]:[fallback];
 }
 

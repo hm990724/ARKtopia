@@ -1,6 +1,7 @@
 import type {V10} from './game-v10';
 import {CREW_PROFILES,type CrewId} from './crew';
 import {ORIGIN_ZERO_CANONICAL_ENDING_ART} from './ending-art';
+import {originReadyForFinale} from './origin-zero';
 export type EndingLine={speaker:string;text:string;farewellCrew?:CrewId};
 export type EndingScene={slot:number;title:string;time:'before'|'after';lines:EndingLine[]};
 const line=(speaker:string,text:string):EndingLine=>({speaker,text});
@@ -8,14 +9,21 @@ const m=(text:string)=>line('관리자',text),e=(text:string)=>line('EVE',text),
 const titles=['영원한 실험','에덴','방주의 씨앗','마지막 동물원','제000번 우리','침묵의 자동화','흩어진 이름들','마지막 신호'];
 const farewell:Record<CrewId,string>={rabbit:'담당자님… 그동안 정말 고생 많으셨어요. 남은 환자들은 제가 돌볼게요. 안녕히 가세요.',fox:'인수인계는 제가 확인하겠습니다. …이번에는 빠뜨리는 물건 없이요. 고생하셨습니다.',wolf:'제가 문은 지킬게요. 그러니까 이제 걱정 마세요. 담당자님, 정말 잘 싸웠어요.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요.'};
 export function mainEndingSlot(s:V10):number{
- if(s.phase!=='ending'||!s.originZero?.route||s.originZero.photos<12||!s.decisions.some(d=>d.title==='마지막 보존 지침'))return 0;
- return ORIGIN_ZERO_CANONICAL_ENDING_ART.findIndex(x=>s.ending.startsWith(x.prefix))+1;
+ if(s.phase!=='ending'||!s.originZero?.route||s.originZero.photos<12)return 0;
+ const goal=s.decisions.filter(d=>d.title==='마지막 보존 지침').at(-1)?.answer;
+ if(!goal)return 0;
+ const slot=ORIGIN_ZERO_CANONICAL_ENDING_ART.findIndex(x=>s.ending.startsWith(x.prefix))+1;
+ const allowed=goal==='rebuild'?[1,2]:goal==='freedom'?[3,4,7]:goal==='preserve'?[5,6,8]:[];
+ if(!allowed.includes(slot))return 0;
+ // The archive finalizer stamps the canonical story, even if a later save migration changes recall IDs.
+ const canonical=s.logs?.some(l=>l.title==='ORIGIN ZERO · 마지막 지시')||s.ending.includes('쇠퇴한 복제 신체의 한계를 넘지 못하고 사망했다.');
+ return canonical||originReadyForFinale(s)?slot:0;
 }
 export function originEndingSequence(s:V10):EndingScene[]{
  const slot=mainEndingSlot(s);if(!slot)return [];
  const d=s.originZero!,active=s.eve>=25&&slot!==6;
  const crew=(s.crew?.members??[]).filter(c=>c.mind>0&&c.hp>0&&!s.crew?.retired.includes(c.id));
- const safeAnimals=s.animals.filter(a=>a.alive&&!s.security.escapedIds.includes(a.id));
+ const safeAnimals=s.animals.filter(a=>a.alive&&!s.security.escapedIds.includes(a.id)&&!s.headquarters.transferred.includes(a.id));
  const farewellOrder: CrewId[]=['rabbit','fox','deer','wolf'];
  const staff:EndingLine[]=farewellOrder.filter(id=>crew.some(c=>c.id===id)).map(id=>({...line(CREW_PROFILES[id].post,farewell[id]),farewellCrew:id}));
  const before:Record<number,EndingLine[]>={
