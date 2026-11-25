@@ -19,8 +19,11 @@ export function wingCamera(wing:ContainmentWing):CameraId{
 }
 export type SecurityStatus='alert'|'breach'|'escaped';
 export type SecurityIncident={animalId:AnimalId;status:SecurityStatus;camera:CameraId;severity:number;steps:number;description:string;detected:boolean;tracked?:boolean;manualInspected?:boolean;lastTrace?:string;containedNight?:number;observations?:number};
-export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[];watchPlan?:{day:number;response:import('./night-watch').WatchResponse};lastWatch?:import('./night-watch').WatchReport};
+export type SecurityState={incident:SecurityIncident|null; lastIncidentDay:number;lastScanDay:number; resolved:number; escapedIds:AnimalId[]; history:{day:number;title:string;detail:string}[];cctvOfflineUntilDay?:number;watchPlan?:{day:number;response:import('./night-watch').WatchResponse};lastWatch?:import('./night-watch').WatchReport};
 export const initialSecurity=():SecurityState=>({incident:null,lastIncidentDay:0,lastScanDay:0,resolved:0,escapedIds:[],history:[]});
+export function isCctvOperational(s:V10):boolean{
+ return !!s.facilities?.cctv&&(s.security?.cctvOfflineUntilDay??0)<s.day&&isFacilityPowered(s,'cctv');
+}
 export function cameras(rooms:number):{id:CameraId;title:string;description:string}[]{
  return [{id:'CAM-01',title:'외곽·출입구',description:'탈출 이동 경로와 외부 통로'},
  ...Array.from({length:rooms},(_,i)=>({id:roomCamera(i+1),title:'격리실 '+roomWing(i+1),description:'해당 격리실 개체의 행동'})),
@@ -29,7 +32,7 @@ export function cameras(rooms:number):{id:CameraId;title:string;description:stri
 export const securityPatterns:Record<AnimalId,{behavior:string;escape:string;voice:string}>= {
  rabbit:{behavior:'진료대 위에 앞발을 얹고 정해진 순서로 기구를 옮기고 있습니다.',escape:'의료실의 잠금장치를 건드린 흔적이 있습니다.',voice:'화… 환자분…? 움직이지 마세요…'},
  fox:{behavior:'자재 창고를 순서대로 점검하고 빈 물품 칸에서 멈춥니다.',escape:'보급 창고의 반출 장부와 물품 수량이 서로 맞지 않습니다.',voice:'부품은 몇 개 남았지… 먼저 재고부터 세야 해.'},
- deer:{behavior:'옛 보존 명찰을 피해 같은 통로를 반복해 걷습니다.',escape:'연구 자료실 문에 뿔 자국이 남았습니다.',voice:'아직… 보호 명단이 끝나지 않았어.'},
+ deer:{behavior:'책을 펼친 채 같은 페이지를 반복해서 읽으며, 잘못된 이름을 발견할 때마다 작게 사과합니다.',escape:'연구 자료실 문에 뿔 자국이 남았습니다.',voice:'언니, 이 페이지 읽어 보셨어요? 기록은 잘 정리해 두면 오래 남으니까요.'},
  owl:{behavior:'발톱으로 감시 카메라의 회전 주기와 같은 패턴을 그립니다.',escape:'정확히 카메라가 돌아간 틈에 이동했습니다.',voice:'주기… 여덟, 열셋… 다시 계산해야…'},
  wolf:{behavior:'다른 개체의 방 앞에서 경계 자세를 취하고 있습니다.',escape:'외곽 울타리 앞에 방어 흔적이 있습니다.',voice:'뒤로 물러나! 내가 막을게!'},
  crow:{behavior:'방송 마이크를 향해 사람의 목소리를 흉내 냅니다.',escape:'관제 방송에서 낯선 호출음이 나왔습니다.',voice:'잠깐, 마지막 소절이…'},
@@ -49,7 +52,8 @@ function trace(s:V10,title:string,detail:string,kind:'info'|'good'|'bad'|'myster
 export function escapeRisk(s:V10,a:AnimalState):number{
  const mutant=isMutant(a);
  const suppression=(a.suppressedUntilDay??0)>=s.day;
- return cap(Math.round((mutant?32:3)+a.stress*.43+(a.hunger??22)*.12+(a.sickness??0)*.10+a.contamination*.17-a.bond*.28-((a.careMastery?.observe??0)*2)-(a.fedDay===s.day?6:0)-(a.comfortDay===s.day?5:0)+(100-s.facility)*.24+(100-s.power)*.13+(a.awakened?7:0)-(s.facilities?.containment?12:0)-(suppression?70:0)));
+ const blindspot=s.facilities?.cctv&&!isCctvOperational(s)?14:0;
+ return cap(Math.round((mutant?32:3)+a.stress*.43+(a.hunger??22)*.12+(a.sickness??0)*.10+a.contamination*.17-a.bond*.28-((a.careMastery?.observe??0)*2)-(a.fedDay===s.day?6:0)-(a.comfortDay===s.day?5:0)+(100-s.facility)*.24+(100-s.power)*.13+(a.awakened?7:0)-(s.facilities?.containment?12:0)-(suppression?70:0)+blindspot));
 }
 export function nightlySecurity(s:V10,roll=Math.random()):V10{
  if(!s.security)s.security=initialSecurity();const sec=s.security;
@@ -62,7 +66,7 @@ export function nightlySecurity(s:V10,roll=Math.random()):V10{
    trace(s,'변이체 안정화','주사 효과로 격리 개체의 이상 행동이 일시적으로 잦아들었습니다.','good');return s;
   }
   if(inc.containedNight===s.day){trace(s,'야간 순찰 완료','판독한 이상 동선을 지켜 격리 단계의 악화를 막았습니다.','good');return s;}
-  inc.steps++;inc.severity=cap(inc.severity+(isMutant(animal)?19:10));
+  inc.steps++;inc.severity=cap(inc.severity+(isMutant(animal)?19:10)+(s.facilities?.cctv&&!isCctvOperational(s)?8:0));
   if(inc.status==='alert'&&inc.steps>=(isMutant(animal)?1:2))inc.status='breach';
   else if(inc.status==='breach'&&inc.steps>=(isMutant(animal)?2:3)){inc.status='escaped';inc.detected=false;inc.tracked=false;inc.camera='CAM-01';inc.lastTrace=securityPatterns[inc.animalId].escape;sec.escapedIds=[...new Set([...sec.escapedIds,inc.animalId])];trace(s,'격리 이탈','CCTV에서 개체가 사라졌습니다. 이동 경로를 추적해 재격리해야 합니다.','bad')}return s}
  if(sec.escapedIds.length)return s;
@@ -72,7 +76,7 @@ export function nightlySecurity(s:V10,roll=Math.random()):V10{
  const chosen=candidates[0];const mutating=isMutant(chosen.a);
  const p=mutating?Math.min(.78,Math.max(.1,(chosen.risk-16)/115)):Math.min(.48,Math.max(.025,(chosen.risk-19)/190));
  if(roll>=p)return s;
- const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20&&(!s.facilities?.cctv||isFacilityPowered(s,'cctv'))};sec.lastIncidentDay=s.day;
+ const a=chosen.a;sec.incident={animalId:a.id,status:'alert',camera:cam(a),severity:chosen.risk,steps:0,description:securityPatterns[a.id].behavior,detected:s.power>=18&&s.eve>=20&&(!s.facilities?.cctv||isCctvOperational(s))};sec.lastIncidentDay=s.day;
  trace(s,'CCTV 이상 행동',`${a.name}: ${securityPatterns[a.id].behavior}`,'mystery');return s;
 }
 export type SecurityAction='scan'|'inspect'|'talk'|'lock'|'enter'|'track'|'manualTrack'|'recover'|'release'|'serum'|'watch';
@@ -90,12 +94,12 @@ export function securityAction(s:V10,action:SecurityAction,selectedCamera?:Camer
  if(s.phase!=='day'||s.run||s.pendingIncident||s.pending||!s.security)return s;
  const n=clone(s),sec=n.security;const inc=sec.incident;
  if(action==='watch'){
-  if(!inc||inc.manualInspected||inc.status==='escaped'||n.power<2||selectedCamera!==inc.camera)return s;
+  if(!inc||inc.manualInspected||inc.status==='escaped'||n.power<2||selectedCamera!==inc.camera||(n.facilities.cctv&&!isCctvOperational(n)))return s;
   n.power=cap(n.power-2);inc.observations=(inc.observations??0)+1;
   trace(n,'추가 프레임 관측','신호가 다른 구역으로 움직였습니다. 전력 -2. 기다리는 동안 격리 위험이 증가합니다.','mystery');escalateSurveillance(n,inc,6);return n;
  }
  if(action==='inspect'){
-  if(!inc||inc.manualInspected||hotspot===undefined||hotspot<0||hotspot>3||!selectedCamera)return s;
+  if(!inc||inc.manualInspected||hotspot===undefined||hotspot<0||hotspot>3||!selectedCamera||(n.facilities.cctv&&!isCctvOperational(n)))return s;
   if(n.power<3)return s;
   n.power=cap(n.power-3);
   if(inc.camera===selectedCamera&&hotspot===cctvHotspotIndex(s)){
@@ -110,7 +114,7 @@ export function securityAction(s:V10,action:SecurityAction,selectedCamera?:Camer
  }
  if(action==='scan'){
   const scanCost=(n.voice?.correct??0)>=2?5:8;
-  if(n.power<scanCost||n.ap<1||sec.lastScanDay===n.day)return s;
+  if(n.power<scanCost||n.ap<1||sec.lastScanDay===n.day||(n.facilities.cctv&&!isCctvOperational(n)))return s;
   n.ap--;n.power=cap(n.power-scanCost);sec.lastScanDay=n.day;
   if(inc){inc.detected=true;inc.severity=cap(inc.severity-7);trace(n,'CCTV 정밀 스캔',`${n.animals.find(a=>a.id===inc.animalId)?.name}의 이동 패턴을 분석했습니다. ${securityPatterns[inc.animalId].behavior}`,'mystery')}
   else{n.threat=cap(n.threat-3);trace(n,'CCTV 정밀 스캔','이상 신호가 감지되지 않았습니다. 외곽 위험 예측이 갱신됐습니다.','good')}
@@ -130,7 +134,7 @@ export function securityAction(s:V10,action:SecurityAction,selectedCamera?:Camer
   if(n.ap<1)return s;n.ap--;n.mind=cap(n.mind-(inc.severity>62?15:7));a.bond=cap(a.bond+7);inc.severity=cap(inc.severity-(a.bond>=35?42:19));a.stress=cap(a.stress-10);
   trace(n,'관리자 직접 접근',`${a.name}에게 직접 다가갔습니다. 정신적 위험을 감수하고 개체를 안정시키려 했습니다.`,inc.severity>55?'bad':'good');
  }else if(action==='track'){
-  if(inc.status!=='escaped'||n.ap<1||n.power<9)return s;n.ap--;n.power=cap(n.power-9);inc.detected=true;inc.tracked=true;inc.severity=cap(inc.severity-23);inc.camera=inc.camera==='CAM-01'?'CAM-04':'CAM-01';inc.lastTrace=securityPatterns[a.id].escape;
+  if(inc.status!=='escaped'||n.ap<1||n.power<9||(n.facilities.cctv&&!isCctvOperational(n)))return s;n.ap--;n.power=cap(n.power-9);inc.detected=true;inc.tracked=true;inc.severity=cap(inc.severity-23);inc.camera=inc.camera==='CAM-01'?'CAM-04':'CAM-01';inc.lastTrace=securityPatterns[a.id].escape;
   trace(n,'탈출 개체 추적',`${a.name}가 ${inc.camera} 화면에 나타났습니다. ${securityPatterns[a.id].escape}`,'mystery');
  }else if(action==='manualTrack'){
   if(inc.status!=='escaped'||n.ap<1||n.mind<4)return s;

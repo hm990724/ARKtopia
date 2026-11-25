@@ -5,7 +5,7 @@ import {CREW_PROFILES,type CrewId} from '@/lib/crew';
 import {animalSprite} from '@/lib/animal-art';
 import {specs} from '@/lib/sim';
 import type {HqOrderChoice} from '@/lib/hq-orders';
-const opinions:Record<CrewId,string>={rabbit:'살아 있는 개체입니다. 다른 방법도 검토해 주세요.',fox:'본부 지원을 거부하면 물자 확보가 어려워질 거예요.',wolf:'명령의 목적을 모르는데 무조건 따를 수는 없죠.',deer:'새 개체 등록과 지령의 시각이 일치해요. 기록해 두겠습니다.'};
+const opinions:Record<CrewId,string>={rabbit:'살아 있는 개체입니다. 생명은 쉽게 포기할 수 없어요. 다른 방법을 검토해 주세요.',fox:'본부 지원을 거부하면 물자 확보가 어려워질 거예요.',wolf:'상부 지시 확인했습니다, 관리자님. 이유를 묻지 않고 따르겠습니다.',deer:'새 개체 등록과 지령의 시각이 일치해요. 기록해 두겠습니다.'};
 export default function HQOrderPanel({state,onChoose}:{state:V10;onChoose:(choice:HqOrderChoice)=>void}){
  const order=state.hqOrders?.active;if(!order||order.status!=='offered')return null;
  const available=state.knowledge>=12&&state.clues>=2&&state.power>=6;

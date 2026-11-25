@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typ
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
 const g=require('../src/lib/game-v10.ts'),field=require('../src/lib/tactical-field.ts'),sim=require('../src/lib/sim.ts'),care=require('../src/lib/care-interactions.ts'),archive=require('../src/lib/specimen-archive.ts'),security=require('../src/lib/security.ts');
 assert.equal(field.fieldVision('rail',true,true,3),0);
-assert.equal(field.fieldVision('tunnels',true,false),1);
+assert.equal(field.fieldVision('tunnels',true,false),2);
 const rail=field.createField(14,'rail');rail.originFragments={[rail.wildlifeIndex]:5};assert.equal(field.acousticBearing(rail,'fragment').kind,'fragment');assert.equal(field.acousticBearing(rail,'exit').kind,'exit');
 assert.equal(field.REGION_RULES.conservatory.sporeRate,.30);assert.equal(field.REGION_RULES.garden.sporeRate,.30);assert.equal(field.REGION_RULES.garden.sporeWake,0);
 let s=g.beginGame('medic','generator');s.tutorialStep=9;s.day=6;s.food=4;s.ap=4;let animal=sim.makeAnimal('fox',1);animal.hunger=70;animal.hp=75;animal.stress=30;animal.bond=60;s.animals=[animal];

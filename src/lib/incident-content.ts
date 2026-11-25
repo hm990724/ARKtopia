@@ -1,4 +1,4 @@
-import type {CrewId} from './crew';
+import {CREW_PROFILES,ensureCrew,type CrewId} from './crew';
 import type {V10,Incident,IncidentId} from './game-v10';
 import {copy,cap,log} from './sim';
 
@@ -6,7 +6,7 @@ export const EXTENDED_INCIDENT_IDS=[
  'cctv_loop','cctv_blindspot','evidence_gap','patrol_echo','generator_overheat','cable_arc','battery_swelling',
  'pump_backflow','filter_clog','fence_crack','enclosure_rattle','escape_tracks','animal_fever','feed_shortage',
  'medic_memory','guard_refusal','staff_conflict','empty_chair','neural_static','resonance_drift','data_corruption',
- 'hq_recall_order','hq_delete_order','field_scavenger','contamination_pool','construction_noise','m00_signature','exposure_critical'
+ 'hq_recall_order','hq_delete_order','field_scavenger','contamination_pool','construction_noise','m00_signature','exposure_critical','fox_supply_memory','deer_archive_memory'
 ] as const;
 export type ExtendedIncidentId=typeof EXTENDED_INCIDENT_IDS[number];
 type CostKey='ap'|'power'|'parts'|'filters'|'food'|'medicine'|'electricCells'|'scrap';
@@ -18,7 +18,7 @@ const alive=(s:V10)=>s.animals.filter(a=>a.alive);
 const crewCount=(s:V10)=>(s.crew?.members??[]).filter(m=>m.mind>0).length;
 const defs:Content[]=[
  {id:'cctv_loop',title:'CCTV가 같은 11초를 반복한다',desc:'중앙 카메라의 시계가 멈춘 채 같은 장면을 재생합니다. 화면 가장자리의 그림자만 매회 한 프레임씩 달라집니다.',cause:'수리된 CCTV 감시망과 누적된 영상 기록',weight:s=>s.facilities.cctv?9:0,options:['부품 1로 원본 프레임을 복구한다','전력 6을 써 실시간 기록을 분리한다','반복 영상을 보존해 EVE와 대조한다'],choices:[{label:'원본 영상 복구 · 부품 -1, 단서 +2',cost:{parts:1},delta:{clues:2,knowledge:5}},{label:'실시간 분리 · 전력 -6, 위협 -5',cost:{power:6},delta:{threat:-5,facility:2}},{label:'반복 기록 · 단서 +1, EVE -4',delta:{clues:1,eve:-4}}]},
- {id:'cctv_blindspot',title:'사각지대의 카메라가 돌아섰다',desc:'고정형 카메라가 누구의 조작도 없이 벽을 향했습니다. 렌즈 뒤편에는 방금까지 없던 발자국이 찍혀 있습니다.',cause:'CCTV 설치와 외곽 위협 신호',weight:s=>s.facilities.cctv&&s.threat>30?7:0,options:['수동 조준기로 감시 각도를 고정한다','카메라를 끄고 접근 흔적을 조사한다','사각지대를 그대로 두고 순찰을 강화한다'],choices:[{label:'조준기 고정 · 부품 -1, 위협 -6',cost:{parts:1},delta:{threat:-6,clues:1}},{label:'전원 차단 조사 · 전력 -4, 단서 +2',cost:{power:4},delta:{clues:2,facility:1}},{label:'순찰 강화 · 위협 -3, 직원 정신 -2',delta:{threat:-3},crewMind:-2}]},
+ {id:'cctv_blindspot',title:'사각지대의 카메라가 돌아섰다',desc:'고정형 카메라가 누구의 조작도 없이 벽을 향했습니다. 렌즈 뒤편에는 방금까지 없던 발자국이 찍혀 있습니다.',cause:'CCTV 설치와 외곽 위협 신호',weight:s=>s.facilities.cctv?7:0,options:['수동 조준기로 감시 각도를 고정한다','카메라를 끄고 접근 흔적을 조사한다','사각지대를 그대로 두고 순찰을 강화한다'],choices:[{label:'조준기 고정 · 부품 -1, 위협 -6',cost:{parts:1},delta:{threat:-6,clues:1}},{label:'전원 차단 조사 · 전력 -4, 단서 +2',cost:{power:4},delta:{clues:2,facility:1}},{label:'순찰 강화 · 위협 -3, 직원 정신 -2',delta:{threat:-3},crewMind:-2}]},
  {id:'evidence_gap',title:'영상 기록에서 사라진 4분',desc:'사고 직전과 직후의 영상은 남아 있지만 그 사이 4분만 비어 있습니다. 손상된 시간표는 누군가 정밀하게 잘라낸 모양입니다.',cause:'CCTV 기록과 단서가 일정량 축적됨',weight:s=>s.facilities.cctv&&s.clues>=2?6:0,options:['저장 장치를 분해해 삭제 흔적을 찾는다','다른 카메라 기록을 겹쳐 시간대를 복원한다','빈 구간을 증거 목록에 그대로 남긴다'],choices:[{label:'저장장치 분석 · 부품 -1, 지식 +10',cost:{parts:1},delta:{knowledge:10,clues:1}},{label:'교차 복원 · 전력 -5, 단서 +2',cost:{power:5},delta:{clues:2,eve:-2}},{label:'결손 보존 · 신뢰 +2, 지식 +3',delta:{trust:2,knowledge:3}}]},
  {id:'patrol_echo',title:'교대가 끝난 복도에서 들린 발걸음',desc:'경비관이 순찰을 마치고 돌아온 뒤에도 복도 끝에서 그의 발걸음이 같은 간격으로 이어집니다. CCTV에는 빈 복도만 보입니다.',cause:'늑대 출신 경비관이 실제로 합류함',weight:s=>hasCrew(s,'wolf')?8:0,options:['경비관과 함께 소리를 확인한다','복도 조명을 켜고 순찰 경로를 바꾼다','발걸음 간격만 기록하고 물러난다'],choices:[{label:'동행 확인 · 정신 -3, 신뢰 +5',delta:{mind:-3,trust:5,clues:1},crewMind:-2},{label:'조명·경로 변경 · 전력 -5, 위협 -4',cost:{power:5},delta:{threat:-4,facility:2}},{label:'간격 기록 · 지식 +7, 단서 +1',delta:{knowledge:7,clues:1}}]},
  {id:'generator_overheat',title:'발전기 냉각판이 붉게 달아오른다',desc:'부하가 낮은데도 발전기 온도가 계속 상승합니다. 팬 안쪽에서 작은 금속 조각이 회전하며 소리를 냅니다.',cause:'전력 사용 누적 또는 시설 안정도 하락',weight:s=>s.power>35&&(s.facility<65||s.day>5)?8:0,options:['부품 2로 냉각 팬을 교체한다','출력 제한을 걸고 밤 방어를 낮춘다','열 기록을 남기고 경보를 유지한다'],choices:[{label:'팬 교체 · 부품 -2, 전력 +12, 시설 +5',cost:{parts:2},delta:{power:12,facility:5,threat:-3}},{label:'출력 제한 · 전력 -4, 위협 -4, 시설 +2',cost:{power:4},delta:{threat:-4,facility:2}},{label:'경보 유지 · 지식 +5, 시설 -5',delta:{knowledge:5,facility:-5,threat:3}}]},
@@ -32,6 +32,8 @@ const defs:Content[]=[
  {id:'animal_fever',title:'한 개체의 체온만 새벽마다 오른다',desc:'낮 검사에서는 정상 범위입니다. 기록을 겹쳐 보니 조명이 꺼진 직후 체온이 급격히 오르고 해 뜨기 전에 내려옵니다.',cause:'살아 있는 개체의 스트레스·질병 또는 감염 누적',weight:s=>alive(s).some(a=>(a.sickness??0)>15||a.stress>60)?8:0,options:['의약품 1개로 격리 안정 처치를 한다','온도와 조명을 낮춰 반응을 다시 잰다','개체를 깨우지 않고 변화를 관찰한다'],choices:[{label:'치료 · 의약품 -1, 감염 -5, 유대 +3',cost:{medicine:1},delta:{infection:-5,trust:3},animal:{sickness:-12,stress:-5}},{label:'환경 조절 · 전력 -4, 스트레스 -7',cost:{power:4},delta:{facility:-1},animal:{stress:-7}},{label:'비접촉 관찰 · 지식 +6, 스트레스 +4',delta:{knowledge:6},animal:{stress:4}}]},
  {id:'feed_shortage',title:'배급기가 한 칸을 건너뛰었다',desc:'급식 기록과 실제 사료 잔량이 맞지 않습니다. 배급기는 빈 우리에도 같은 분량을 떨어뜨리고 있습니다.',cause:'보호 중인 개체와 식량 재고',weight:s=>alive(s).length>0&&s.food<7?8:0,options:['식량 2개로 오늘 급식을 보충한다','배급 경로를 재설정해 낭비를 멈춘다','각 우리를 직접 확인해 누락을 찾는다'],choices:[{label:'추가 급식 · 식량 -2, 스트레스 -6',cost:{food:2},delta:{trust:2},animal:{stress:-6}},{label:'배급 재설정 · 부품 -1, 시설 +3',cost:{parts:1},delta:{facility:3,food:1}},{label:'우리 확인 · AP -1, 단서 +1, 정신 -2',cost:{ap:1},delta:{clues:1,mind:-2,food:1},animal:{stress:-2}}]},
  {id:'medic_memory',title:'의무관이 빈 토끼 우리를 오래 바라본다',desc:'의무관은 이 우리를 본 적이 없다고 말합니다. 그래도 손은 작은 물그릇을 놓던 위치를 정확히 기억합니다.',cause:'의무관 합류 및 토끼 이송 기록',weight:s=>hasCrew(s,'rabbit')&&s.headquarters.transferred.includes('rabbit')?7:0,options:['의무관에게 기록을 보여주고 선택을 맡긴다','그릇과 우리를 치우고 휴식을 권한다','CCTV에서 그날의 모습을 조용히 복원한다'],choices:[{label:'자율적인 기억 회상 · 신뢰 +6, 정신 -3',delta:{trust:6,clues:1,mind:-3},crewMind:3},{label:'환경 정리 · 식량 -1, 직원 정신 +5',cost:{food:1},delta:{trust:2},crewMind:5},{label:'기록 복원 · 전력 -5, 지식 +8, 직원 정신 -2',cost:{power:5},delta:{knowledge:8,clues:1},crewMind:-2}]},
+ {id:'fox_supply_memory',title:'세 번째 선반의 봉인 번호',desc:'폭스는 재고를 세다가 장부에 없는 상자 하나를 찾아냅니다. 봉인에는 본인이 쓰던 보급 동선 표식이 남아 있습니다. “물자는 내가 확인할게.”라고 말한 뒤에도 그녀는 한동안 상자에서 손을 떼지 못합니다.',cause:'폭스 보급관이 근무 중이고 개인 기록 사건을 아직 마주치지 않음',weight:s=>hasCrew(s,'fox')&&!s.crew?.staffStoriesSeen?.includes('fox_supply_memory')?10:0,options:['폭스의 기억을 믿고 세 번째 선반을 함께 연다','상자를 봉인한 채 원래 위치와 동선을 기록한다','폭스의 서명 아래 새 재고 장부에 남긴다'],choices:[{label:'세 번째 선반의 기억을 기록 · 지식 +7, 단서 +1',delta:{knowledge:7,clues:1}},{label:'봉인과 동선을 보존 · 단서 +2, 위협 -2',delta:{clues:2,threat:-2}},{label:'새 장부에 이름을 남김 · 부품 +2',delta:{parts:2}}]},
+ {id:'deer_archive_memory',title:'이름을 비워 둔 교대 일지',desc:'디어는 오래된 교대 일지에서 날짜와 근무 시간은 맞지만 이름 칸만 비어 있는 줄을 발견합니다. 옆에는 본인 필체로 “돌아올 사람의 이름을 대신 쓰지 말 것”이라고 적혀 있습니다. 그녀는 누군가를 기다렸던 감각만 기억한다고 말합니다.',cause:'디어 서기관이 근무 중이고 개인 기록 사건을 아직 마주치지 않음',weight:s=>hasCrew(s,'deer')&&!s.crew?.staffStoriesSeen?.includes('deer_archive_memory')?10:0,options:['빈칸을 그대로 보존하고 기다리는 자리로 표시한다','과거 교대 기록을 대조해 사라진 순서를 찾는다','디어가 기억하는 감각만 덧붙이고 이름은 남겨 둔다'],choices:[{label:'기다리는 자리를 보존 · 단서 +2',delta:{clues:2}},{label:'교대 순서를 복원 · 지식 +10',delta:{knowledge:10}},{label:'기억의 경계만 기록 · 단서 +1, 지식 +3',delta:{clues:1,knowledge:3}}]},
  {id:'guard_refusal',title:'경비관이 오늘의 순찰을 거부했다',desc:'경비관은 출입문 앞에서 멈춰 섰습니다. 문 너머에 누군가를 두고 온 것 같다고 하지만 누구인지는 말하지 못합니다.',cause:'늑대 경비관의 정신력이 낮거나 위협도 상승',weight:s=>hasCrew(s,'wolf')&&((s.crew?.members.find(m=>m.id==='wolf')?.mind??100)<55||s.threat>65)?8:0,options:['오늘 순찰을 면제하고 교대 인력을 배치한다','경비관과 함께 한 구간만 걷는다','순찰을 강행하고 보고서만 남긴다'],choices:[{label:'임무 면제 · 전력 -5, 직원 정신 +8, 위협 +4',cost:{power:5},delta:{threat:4},crewMind:8},{label:'동행 순찰 · 관리자 정신 -4, 신뢰 +5, 위협 -4',delta:{mind:-4,trust:5,threat:-4},crewMind:4},{label:'강행 · 위협 -6, 직원 정신 -10',delta:{threat:-6},crewMind:-10}]},
  {id:'staff_conflict',title:'서로 다른 두 직원이 같은 기억을 주장한다',desc:'두 직원은 같은 복도에서 자신이 먼저 문을 열었다고 주장합니다. 기록은 두 사람의 생체 인증을 모두 승인합니다.',cause:'서로 다른 직원 두 명 이상이 생존 상태',weight:s=>crewCount(s)>=2?6:0,options:['각자의 진술을 분리해 듣는다','공동 기록을 함께 열람한다','업무 충돌을 막기 위해 근무를 분리한다'],choices:[{label:'개별 면담 · 관리자 정신 -3, 신뢰 +5',delta:{mind:-3,trust:5,clues:1},crewMind:2},{label:'공동 열람 · 전력 -4, 지식 +9, 직원 정신 -2',cost:{power:4},delta:{knowledge:9},crewMind:-2},{label:'근무 분리 · 시설 -2, 위협 -3',delta:{facility:-2,threat:-3},crewMind:1}]},
  {id:'empty_chair',title:'추모 명부에 새 이름이 추가됐다',desc:'직원 휴게실에 빈 의자가 놓였습니다. EVE는 명부를 갱신했지만 해당 직원의 마지막 근무 시간은 기록하지 못합니다.',cause:'실제로 퇴장 처리된 직원 기록',weight:s=>(s.crew?.retired.length??0)>0?7:0,options:['이름을 읽고 추모 시간을 갖는다','업무 기록을 다음 직원에게 인계한다','명부를 보존하고 아무도 대신 앉히지 않는다'],choices:[{label:'추모 · 관리자 정신 -2, 살아 있는 직원 정신 +4, 신뢰 +2',delta:{mind:-2,trust:2},crewMind:4},{label:'업무 인계 · 지식 +8, 시설 +2, 직원 정신 -2',delta:{knowledge:8,facility:2},crewMind:-2},{label:'이름 보존 · 단서 +2, 정신 +2',delta:{clues:2,mind:2}}]},
@@ -64,6 +66,7 @@ export function extendedIncidentWeight(s:V10,id:ExtendedIncidentId):number{
 }
 const incidentFollowupRules:Partial<Record<IncidentId,Partial<Record<0|1|2,{id:ExtendedIncidentId;delay:1|2|3}>>>>={
  blackout:{1:{id:'cctv_loop',delay:1}},
+ cctv_loop:{2:{id:'cctv_blindspot',delay:1}},
  breach:{2:{id:'fence_crack',delay:1}},
  spores:{2:{id:'contamination_pool',delay:2}},
  echo:{2:{id:'resonance_drift',delay:2}},
@@ -75,6 +78,7 @@ const incidentFollowupRules:Partial<Record<IncidentId,Partial<Record<0|1|2,{id:E
 };
 function followupIsRelevant(s:V10,id:ExtendedIncidentId){
  if(id==='cctv_loop')return !!s.facilities.cctv;
+ if(id==='cctv_blindspot')return !!s.facilities.cctv;
  if(id==='fence_crack')return s.threat>48;
  if(id==='contamination_pool')return s.infection>35||s.facility<30;
  if(id==='resonance_drift')return s.animals.some(a=>a.alive&&a.memory>20);
@@ -94,13 +98,22 @@ export function queueIncidentFollowup(s:V10,sourceId:IncidentId,option:number):V
 }
 export function resolveExtendedIncident(s:V10,id:ExtendedIncidentId,option:number):V10{
  const def=defs.find(d=>d.id===id);if(!def||s.pendingIncident!==id||!Number.isInteger(option)||option<0||option>2)return s;
- const choice=def.choices[option];if(def.weight(s)<=0&&['medic_memory','guard_refusal','patrol_echo','staff_conflict','empty_chair','m00_signature','enclosure_rattle','animal_fever','feed_shortage'].includes(id))return s;if(id==='exposure_critical'&&option===1&&!crewCount(s))return s;for(const [key,amount] of Object.entries(choice.cost??{}) as [CostKey,number][]){if(s[key]<amount)return s;}
+ const choice=def.choices[option];if(def.weight(s)<=0&&['medic_memory','guard_refusal','patrol_echo','staff_conflict','empty_chair','m00_signature','enclosure_rattle','animal_fever','feed_shortage','fox_supply_memory','deer_archive_memory'].includes(id))return s;if(id==='exposure_critical'&&option===1&&!crewCount(s))return s;for(const [key,amount] of Object.entries(choice.cost??{}) as [CostKey,number][]){if(s[key]<amount)return s;}
  const n=copy(s) as V10;for(const [key,amount] of Object.entries(choice.cost??{}) as [CostKey,number][])n[key]=Math.max(0,n[key]-amount);
  for(const [key,delta] of Object.entries(choice.delta) as [DeltaKey,number][])n[key]=(['parts','filters','food','medicine','electricCells','scrap','credits','knowledge','clues'].includes(key)?Math.max(0,n[key]+delta):cap(n[key]+delta)) as never;
  if(choice.animal)for(const animal of n.animals.filter(a=>a.alive)){if(choice.animal.stress)animal.stress=cap(animal.stress+choice.animal.stress);if(choice.animal.hp)animal.hp=cap(animal.hp+choice.animal.hp);if(choice.animal.sickness)animal.sickness=cap((animal.sickness??0)+choice.animal.sickness);if(choice.animal.contamination)animal.contamination=cap(animal.contamination+choice.animal.contamination);}
- const targetCrew=id==='medic_memory'?'rabbit':id==='guard_refusal'||id==='patrol_echo'?'wolf':null;
+ const targetCrew=id==='medic_memory'?'rabbit':id==='guard_refusal'||id==='patrol_echo'?'wolf':id==='fox_supply_memory'?'fox':id==='deer_archive_memory'?'deer':null;
  if(choice.crewMind)for(const member of n.crew?.members??[])if(member.mind>0&&(!targetCrew||member.id===targetCrew))member.mind=cap(member.mind+choice.crewMind);
+ if(id==='fox_supply_memory'||id==='deer_archive_memory'){
+  const crew=ensureCrew(n);crew.staffStoriesSeen=[...new Set([...crew.staffStoriesSeen,id])];
+  n.trust=cap(n.trust+10);
+  const member=crew.members.find(m=>m.id===targetCrew&&m.mind>0);if(member)member.mind=cap(member.mind+10);
+ }
+ if(id==='cctv_loop'||id==='cctv_blindspot'){
+  if(option<2)delete n.security.cctvOfflineUntilDay;
+  else n.security.cctvOfflineUntilDay=Math.max(n.security.cctvOfflineUntilDay??0,n.day+(id==='cctv_loop'?2:3));
+ }
  n.pendingIncident=null;n.eventHistory=[...n.eventHistory,`${n.day}일차 ${def.title} · ${choice.label}`].slice(-30);n.lastEvent=def.title;
- const harsh=option===2;n.lastOutcome=`${choice.label}. 실제 대응 기록이 저장되었습니다.`;log(n,def.title,n.lastOutcome,harsh?'bad':'mystery');
+ const staffStory=id==='fox_supply_memory'||id==='deer_archive_memory';const harsh=option===2&&!staffStory;n.lastOutcome=staffStory?`${choice.label}. 신뢰 +10 · ${CREW_PROFILES[targetCrew as CrewId].post} 정신력 +10.`:`${choice.label}. 실제 대응 기록이 저장되었습니다.`;log(n,def.title,n.lastOutcome,harsh?'bad':'mystery');
  return queueIncidentFollowup(n,id,option);
 }

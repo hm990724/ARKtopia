@@ -12,14 +12,14 @@ let s=g.beginGame('medic','generator');s.day=6;s.tutorialStep=9;
 for(const [gear,key] of [['filter','filters'],['flashlight','flashlight'],['medkit','medicine'],['cage','parts']]){const z={...s,[key]:0};assert.ok(g.gearUnavailable(z,gear,'garden'));assert.equal(g.startRun(z,'garden',[gear]),z);}
 console.log('PASS empty equipment rejected without resource changes');
 const n=g.startRun(s,'garden',['flashlight']);assert.equal(n.ap,s.ap-1);assert.equal(n.flashlight,s.flashlight-10);assert.equal(n.power,s.power,'portable light must not consume facility power');assert.equal(n.lastExpeditionDay,6);
-const back={...n,run:null,field:null,capture:null};assert.equal(g.startRun(back,'rail',[]),back);assert.ok(g.expeditionBlockReason(back,'rail',[]).includes('오늘 탐사'));
+const back={...n,run:null,field:null,capture:null};assert.equal(g.startRun(back,'garden',[]),back);assert.ok(g.expeditionBlockReason(back,'garden',[]).includes('오늘 출동'));
 const restored=g.loadGame(JSON.parse(JSON.stringify(back)));assert.equal(g.startRun(restored,'garden',[]),restored);
 const next={...back,day:7,ap:1};const nextRun=g.startRun(next,'garden',['flashlight']);assert.notEqual(nextRun,next,'one remaining AP is enough for the displayed AP1 sortie');assert.equal(nextRun.ap,0);
 console.log('PASS one daily sortie, AP1, saved limit and next-day reset');
-assert.equal(g.startRun({...s,power:0},'garden',[]).lastExpeditionDay,undefined);
+assert.equal(g.startRun({...s,power:0,ap:0},'garden',[]).lastExpeditionDay,undefined);
 console.log('PASS refused launch never consumes daily sortie');
 const manualAtBlackout=g.startRun({...s,power:0},'garden',['flashlight']);assert.notEqual(manualAtBlackout,s);assert.equal(manualAtBlackout.power,0);
-const scannerStart=g.startRun({...s,power:100},'garden',['scanner']);assert.equal(scannerStart.power,83,'EVE scanner draws sector power plus 8');
+const scannerStart=g.startRun({...s,power:100},'garden',['scanner']);assert.equal(scannerStart.power,92,'EVE scanner draws 8% facility power');
 console.log('PASS manual flashlight sortie remains possible during facility blackout; EVE scanner draws facility power');
 const chargeBase={...s,ap:2,electricCells:1,power:50,flashlight:50};const charged=g.doBase(chargeBase,'batteryCharge');assert.equal(charged.ap,1);assert.equal(charged.electricCells,0);assert.equal(charged.power,38);assert.equal(charged.flashlight,88);assert.equal(g.doBase(charged,'batteryCharge'),charged);
 console.log('PASS flashlight charging spends a cell, facility power, and AP exactly once');

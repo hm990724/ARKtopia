@@ -30,36 +30,38 @@ test('recovered photos load, enlarge and close with Escape while early records s
  await page.keyboard.press('Escape');await expect(page.locator('.v71-photo-dialog')).not.toBeVisible();
  await page.locator('.v71-story-archive summary').click();
  await expect(page.locator('.v71-story-grid')).not.toContainText('실패라고 이름 붙인 생명');
- await page.screenshot({path:'docs/qa-v71/archive.png',fullPage:true});
+ await page.screenshot({path:'test-results/browser-v71-archive.png',fullPage:true});
 });
 test('night wiring wrong test costs resources and solved topology changes saved settlement',async({page})=>{
  const fixture=JSON.parse(fs.readFileSync(require('path').join(__dirname,'fixtures/day003-ap0.json'),'utf8'));
- const {previewNight}=require('../src/lib/game-v10.ts'),{wiringBoard,wiringMasks}=require('../src/lib/wiring.ts');
+ const {previewNight,nightCircuitSequence}=require('../src/lib/game-v10.ts');
  await seed(page,fixture);await page.getByRole('button',{name:/야간 대응/}).last().click();
- await page.locator('.v73-legacy-repair summary').click();
- const panel=page.getByRole('region',{name:'배선 연결 미니게임'}),cells=panel.locator('.wiring-grid button');
- await panel.getByRole('button',{name:/회로 시험/}).click();
- await expect.poll(async()=> (await state(page)).wiring?.night?.faults).toBe(1);
- const board=wiringBoard(await state(page),'night'),masks=wiringMasks(board.layout);
- for(let k=0;k<16;k++){if(!masks[k])continue;for(let turn=0;turn<(4-board.rotations[k])%4;turn++)await cells.nth(k).click();}
- await panel.getByRole('button',{name:/회로 시험/}).click();
+ await page.locator('.ark-night-circuit').click();
+ const panel=page.locator('.ark-night-inline'),cells=panel.locator('.ark-night-terminal-grid button');
+ const sequence=nightCircuitSequence((await state(page)).day);
+ await cells.nth((sequence[0]+1)%4).click();
+ await expect.poll(async()=> (await state(page)).nightCircuit?.faults).toBe(1);
+ for(const terminal of sequence)await cells.nth(terminal).click();
  await expect.poll(async()=> (await state(page)).nightCircuit?.completed).toBe(true);
- const before=await state(page),expected=previewNight(before,'shield',{maintained:true});
- await page.getByRole('button',{name:/야간 운영 확정|무방비로 다음 날/}).last().click();
+ const before=await state(page),expected=previewNight(before,'standby',{maintained:true});
+ await page.getByRole('button',{name:/경비 중단/}).click();
+ await page.getByRole('button',{name:'무방비로 다음 날'}).click();
  await expect.poll(async()=> (await state(page)).day).toBe(4);
  expect((await state(page)).power).toBe(expected.powerAfter-expected.facilityDispatch.spent);
  await page.reload();expect((await state(page)).ap).toBe(4);
 });
 test('voice identity requires actual waveform alignment and survives reload',async({page})=>{
  const voice=require('../src/lib/voice-breach.ts'),s=beginGame('medic','generator');s.day=8;s.tutorialStep=9;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work'];voice.scheduleVoiceBreach(s,0,0,.1);
- await seed(page,s);
+ await seed(page,s);await page.getByRole('button',{name:'CCTV',exact:true}).click();
  const modal=page.getByRole('dialog',{name:'미확인 음성 · 야간 CCTV 출입 판정'});await expect(modal).toBeVisible();
- const probe=voice.voiceSignal(s.voice.pending,'eve');
  await modal.getByRole('button',{name:/EVE 신호 검증/}).click();
- for(let k=0;k<probe.alignment;k++)await modal.getByRole('button',{name:'수신 파형 왼쪽 이동'}).click();
- await modal.getByRole('button',{name:probe.reading==='match'?'일치':probe.reading==='mismatch'?'불일치':'결손 · 판독 불가',exact:true}).click();
+ const targetFrequency=voice.voiceFrequency(s.voice.pending,'eve');
+ const slider=modal.getByRole('slider',{name:'주파수 미세 조절'});
+ await slider.evaluate((el,value)=>{const set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;set.call(el,String(value));el.dispatchEvent(new Event('input',{bubbles:true}));},targetFrequency);
+ await expect(modal.getByRole('button',{name:'수신 기록 확정 · 조사 1회'})).toBeEnabled();
+ await modal.getByRole('button',{name:'수신 기록 확정 · 조사 1회'}).click();
  await expect.poll(async()=> (await state(page)).voice.pending.remaining).toBe(2);
- await page.reload();await expect(modal).toBeVisible();
+ await page.reload();await page.getByRole('button',{name:'CCTV',exact:true}).click();await expect(modal).toBeVisible();
  await expect(modal.locator('.v56-probe.investigated')).toHaveCount(1);
  await modal.getByRole('button',{name:/봉쇄한다/}).click();await modal.getByRole('button',{name:'봉쇄 확정'}).click();
  await expect.poll(async()=> (await state(page)).voice.correct).toBe(1);
@@ -74,15 +76,20 @@ test('hunt earned evidence, pointer net capture and pending save survive reload'
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  let s=beginGame('medic','generator');s.tutorialStep=9;s.day=5;s=startRun(s,'garden',['flashlight']);s.capture=createCapture('rabbit',false,123);
  await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
- const listen=page.locator('.v71-primary-tools button').first();
+ const listen=page.locator('[data-tour="hunt-tools"] button').first();
  for(let i=1;i<=5;i++){await listen.click();await expect.poll(async()=> (await state(page)).capture?.hunt.turn).toBe(i)}
  await expect(page.locator('.v71-trail-zone')).toHaveCount(4);
  await page.reload();await page.getByRole('button',{name:'탐사',exact:true}).click();
  await expect(page.locator('.v71-trail-zone')).toHaveCount(4);
  // Choose only from visible four-cell evidence, without reading hidden position.
  const target=page.locator('.v71-trail-zone').first();
- const net=page.locator('.v69-drag-net');await net.scrollIntoViewIfNeeded();
- const a=await net.boundingBox(),b=await target.boundingBox();
+ const map=page.locator('.v33-hidden-map'),cells=map.locator('[data-hunt-cell]');
+ await page.locator('[data-tour="hunt-tools"] select[aria-label="그물 선택"]').selectOption('net');
+ await target.scrollIntoViewIfNeeded();
+ const targetCell=Number(await target.getAttribute('data-hunt-cell'));
+ let source=cells.nth(0);if(Number(await source.getAttribute('data-hunt-cell'))===targetCell)source=cells.nth(1);
+ await source.scrollIntoViewIfNeeded();
+ const a=await source.boundingBox(),b=await target.boundingBox();
  await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();
  await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:12});await page.mouse.up();
  await expect.poll(async()=>{const after=await state(page);return !!after.pending||after.capture?.hunt.turn===6}).toBe(true);const after=await state(page);
@@ -93,16 +100,14 @@ for(const [width,height] of [[1366,768],[390,844]])test(`pixel hunt fits and ren
  await page.setViewportSize({width,height});let s=beginGame('medic','generator');s.day=5;s.tutorialStep=9;s=startRun(s,'garden',['flashlight']);s.capture=createCapture('rabbit',false,123);
  await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
  await expect(page.locator('.v33-hidden-map')).toBeVisible();
- const budget=page.locator('.v74-capture-budget');await expect(budget.getByRole('status')).toContainText('포획 남은 행동');
- const captureStatus=budget.getByRole('status');await expect(captureStatus.locator('.v74-actions-copy>p')).toContainText('AP와 별도');
- const content=await captureStatus.evaluate(el=>{const box=selector=>{const r=el.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}};return {copy:box('.v74-actions-copy'),title:box('.v74-actions-copy>span'),note:box('.v74-actions-copy>p'),count:box(':scope>strong')}});
- expect(content.title.bottom).toBeLessThanOrEqual(content.note.y+1);expect(content.copy.right).toBeLessThanOrEqual(content.count.x+1);
+ const budget=page.locator('.ark-capture-primary');await expect(budget).toBeVisible();await expect(budget.locator('.ark-capture-status')).toContainText('경계');
+ const toolbar=budget.locator('[data-tour="hunt-tools"]');await expect(toolbar).toBeVisible();await expect(toolbar.getByRole('button').first()).toContainText('저소음 반향');
  const layout=await budget.evaluate(el=>{const boxes=[...el.children].map(node=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}});return {boxes,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}});
  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth+1);
  for(let i=0;i<layout.boxes.length;i++)for(let j=i+1;j<layout.boxes.length;j++){const a=layout.boxes[i],b=layout.boxes[j];expect(Math.min(a.right,b.right)-Math.max(a.x,b.x)>0&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>0,`capture toolbar children ${i}/${j} overlap`).toBe(false)}
  await expect.poll(()=>page.locator('.v71-grass').evaluateAll(imgs=>imgs.every(i=>i.complete&&i.naturalWidth>0))).toBe(true);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+3);
- await page.screenshot({path:`docs/qa-v71/hunt-${width}.png`,fullPage:true});
+ await page.screenshot({path:`test-results/hunt-${width}.png`,fullPage:true});
 });
 test('low facility power displays an explicit red unguarded-night warning',async({page})=>{
  const s=beginGame('medic','generator');s.day=7;s.tutorialStep=9;s.power=0;s.onboardingSeen=['first-sortie','field-map','cctv','night-shift','first-capture','base-work'];
@@ -126,7 +131,7 @@ test('first expedition tutorial reaches a durable rescued rabbit without hidden 
  }
  await expect(page.locator('.v33-hidden-map')).toBeVisible();
  for(let i=0;i<13&&(await state(page)).capture;i++){
-  await page.locator('.v71-primary-tools button').first().click();
+  await page.locator('[data-tour="hunt-tools"] button').first().click();
  }
  await expect.poll(async()=> (await state(page)).pending).toBe('rabbit');
  // A reload must restore the actual rescue choice, not discard the captured animal.

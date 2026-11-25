@@ -7,7 +7,7 @@ export type EndingScene={slot:number;title:string;time:'before'|'after';lines:En
 const line=(speaker:string,text:string):EndingLine=>({speaker,text});
 const m=(text:string)=>line('관리자',text),e=(text:string)=>line('EVE',text),hq=(text:string)=>line('본부 AI',text),record=(text:string)=>line('기록',text);
 const titles=['영원한 실험','에덴','방주의 씨앗','마지막 동물원','제000번 우리','침묵의 자동화','흩어진 이름들','마지막 신호'];
-const farewell:Record<CrewId,string>={rabbit:'담당자님… 그동안 정말 고생 많으셨어요. 남은 환자들은 제가 돌볼게요. 안녕히 가세요.',fox:'인수인계는 제가 확인하겠습니다. …이번에는 빠뜨리는 물건 없이요. 고생하셨습니다.',wolf:'제가 문은 지킬게요. 그러니까 이제 걱정 마세요. 담당자님, 정말 잘 싸웠어요.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요.'};
+const farewell:Record<CrewId,string>={rabbit:'담당자님… 그동안 정말 고생 많으셨어요. 남은 환자들은 제가 돌볼게요. …웃으면서 보내드리고 싶었는데, 자꾸 눈물이 나네요. 안녕히 가세요.',fox:'인수인계는 제가 확인하겠습니다. …이번에는 빠뜨리는 물건 없이요. 고생하셨습니다.',wolf:'관리자님, 마지막까지 문은 제가 지키겠습니다. 그러니 이제 안심하십시오. …저는 변하는 게 무서웠습니다. 그래도 함께 지키려고 싸운 시간은 잊지 않겠습니다. 그동안 정말 고생 많으셨습니다.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요.'};
 export function mainEndingSlot(s:V10):number{
  if(s.phase!=='ending'||!s.originZero?.route||s.originZero.photos<12)return 0;
  const goal=s.decisions.filter(d=>d.title==='마지막 보존 지침').at(-1)?.answer;

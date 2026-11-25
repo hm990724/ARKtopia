@@ -8,7 +8,7 @@ const scenes:Record<number,readonly string[]>={
  1:[story+'SCN_01_zoo_gate_prologue.png','/assets/backgrounds/hero-gate.webp'],
  2:[story+'SCN_02_eve_first_meeting.png'],
  3:[story+'SCN_03_cctv_missing_frame.png'],
- 4:[story+'SCN_04_rabbit_medic_arrival.png','/assets/cinematics/staff-arrivals/rabbit/scene.webp'],
+ 4:[story+'SCN_04_rabbit_medic_arrival.png'],
  5:[story+'SCN_05_fox_supply_arrival.png','/assets/cinematics/staff-arrivals/fox/scene.webp'],
  6:[story+'SCN_06_deer_archive_arrival.png','/assets/cinematics/staff-arrivals/deer/scene.webp'],
  7:[story+'SCN_07_wolf_guard_arrival.png','/assets/cinematics/staff-arrivals/wolf/CN_07_wolf_guard_arrival.png'],

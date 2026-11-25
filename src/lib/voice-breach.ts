@@ -27,8 +27,8 @@ export const voiceProbeNames:Record<VoiceProbe,string>={eve:'EVE 신호 검증',
 const staffLines:Record<CrewId,string>={
  rabbit:'담당자님... 의무관이에요. 부상자가 있어요. 문 좀 열어 주세요.',
  fox:'보급관입니다. 재고를 정리하다 통로에 갇혔어요. 문을 열어 주세요.',
- wolf:'보안관이에요! 외곽 순찰 중입니다. 제발 문 열어요, 빨리!',
- deer:'저, 서기관입니다... 기록 한 장을 놓고 왔어요. 잠시만 열어 주실래요?'
+ wolf:'관리자님! 보안관입니다. 외곽 순찰 중입니다! 제발 문을 열어 주십시오… 저는 아직 저입니다. 믿어 주세요!',
+ deer:'담당자님, 저 서기관인데요. 장부를 한 권 두고 와서요. 잠깐만 열어 주실 수 있을까요? 찾으면 바로 정리해 둘게요!'
 };
 const creatureName=(s:V10,id:AnimalId)=>s.animals.find(a=>a.id===id)?.name??'보호 개체';
 const clampRoll=(n:number)=>Math.min(.999999,Math.max(0,Number.isFinite(n)?n:.5));

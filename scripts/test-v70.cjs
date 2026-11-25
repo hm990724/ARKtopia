@@ -19,7 +19,7 @@ test('01 DAY 003 / AP 0: supplies navigation is accessible without spending AP',
  assert.ok(nav.tabLockReason(s,'animals'));
 });
 test('02 AP 0: nightly transition advances a day (no AP prerequisite)',()=>{
- const s=game();const x=g.resolveNightTransition(s,'shield');
+ const s=game();const x=g.resolveNightTransition(s,'rest');
  assert.equal(x.success,true);assert.equal(x.state.day,4);assert.notEqual(x.state,s);
 });
 test('03 daily AP resets to 4; station early-day AP 5 remains unchanged',()=>{
@@ -28,7 +28,7 @@ test('03 daily AP resets to 4; station early-day AP 5 remains unchanged',()=>{
  const st=g.finishDay(station,'shield');assert.equal(st.day,2);assert.equal(st.ap,5);
 });
 test('04 no power and no AP: costly standby advances with actual penalties',()=>{
- const s=game();s.power=0;s.facility=50;s.threat=8;const x=g.resolveNightTransition(s,'shield');
+ const s=game();s.power=0;s.facility=50;s.threat=8;const x=g.resolveNightTransition(s,'standby');
  assert.equal(g.getDayEndBlocker(s),null);assert.equal(x.applied,'standby');assert.equal(x.success,true);
  assert.equal(x.state.ap,4);assert.equal(x.state.day,4);assert.ok(x.state.threat>s.threat);
  assert.ok(x.state.facility<s.facility);
@@ -45,9 +45,9 @@ test('06 fuse maintenance must never make a blocked result appear successful',()
  assert.equal(s.power,82);assert.equal(s.facility,88);assert.equal((s.onboardingSeen??[]).includes('first-night-defense'),false);
 });
 test('07 fuse bonus counts BEFORE selected night defense and is persisted',()=>{
- const s=game();s.power=20;s.facility=65;s.threat=10;
+ const s=game();s.power=40;s.facility=65;s.threat=10;
  const a=g.previewNight(s,'shield');const b=g.previewNight(s,'shield',{maintained:true});
- assert.equal(a.applied,'standby');assert.equal(b.applied,'shield');assert.equal(b.powerBefore,24);
+ assert.equal(a.applied,'standby');assert.equal(b.applied,'shield');assert.equal(b.powerBefore,44);
  const result=g.resolveNightTransition(s,'shield',{maintained:true});assert.equal(result.success,true);
  assert.equal(result.applied,'shield');assert.equal(result.state.power,b.powerAfter);
  assert.ok(result.state.facility>g.resolveNightTransition(s,'shield').state.facility);
@@ -68,7 +68,9 @@ test('09 tutorial supply stages 6/7, including zero AP, navigate properly',()=>{
 });
 test('10 listening, near-signal, direct pointer net handlers remain in actual game UI',()=>{
  const field=fs.readFileSync(path.join(root,'src/components/FieldMission.tsx'),'utf8');
- for(const token of ['String(hunt.lastEvent ?? "").includes("근접 신호")','String(hunt.lastEvent ?? "").includes("청음 결과")','is-near','is-listen','<Radio','onPointerDown','onPointerMove','onPointerUp','netDrag'])assert.ok(field.includes(token),`missing ${token}`);
+ const huntSource=fs.readFileSync(path.join(root,'src/lib/hidden-hunt.ts'),'utf8');
+ for(const token of ["'근접 신호 (당시 2칸 이내)'",'저주파 청음 결과'])assert.ok(huntSource.includes(token),`missing hunt behavior ${token}`);
+ for(const token of ['<Radio','onPointerDown','onPointerMove','onPointerUp','onPointerCancel','setPointerCapture','huntPointer','저소음 반향','captureMethod','aim:mode==='])assert.ok(field.includes(token),`missing current hunt UI wiring ${token}`);
  const h=hunt.newHunt('otter',2026);assert.equal(typeof h.lastEvent,'string');assert.equal(h.outcome,'playing');
 });
 test('11 protected day-commit UI cannot apply a second day from a rapid double click',()=>{

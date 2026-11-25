@@ -3,11 +3,11 @@ import {isMutant} from "./sim";
 
 export type AwakeningProfile={signal:string;identity:string;animalCry:string;firstWords:string;secondWords:string;manager:string};
 export const awakeningProfiles:Record<AnimalId,AwakeningProfile>={
-  rabbit:{signal:'의료 인력의 잔존 음성',identity:'30대 초반 · 소아과 의사',animalCry:'끙… 끼익…',firstWords:'화… 환자분…? 어디… 어디가 아프신가요?',secondWords:'아, 잠깐만요… 체온부터… 재야 하는데… 제 손이… 왜…',manager:'무리하지 마. 지금은 누구도 치료할 필요 없어.'},
+  rabbit:{signal:'의료 인력의 잔존 음성',identity:'30대 초반 · 소아과 의사',animalCry:'끙… 끼익…',firstWords:'화… 환자분…? 어디가 아프신가요?',secondWords:'죄송합니다. 아직 상황을 파악하지 못했어요. 먼저 부상자를 확인하겠습니다. 그런데… 제 손이 왜 떨리는 거죠?',manager:'무리하지 마. 지금은 누구도 치료할 필요 없어.'},
   fox:{signal:'보급 인력의 잔존 음성',identity:'보급관 · 물류 담당',animalCry:'캥… 캥!',firstWords:'남은… 물자는… 어디에…',secondWords:'창고 세 번째… 선반… 아직 거기 있나요?',manager:'물자는 내가 확인할게. 지금은 쉬어.'},
-  deer:{signal:'기록 인력의 잔존 음성',identity:'기록관 · 보존 담당',animalCry:'끄으… 흐응…',firstWords:'순서가… 달라요… 기록을…',secondWords:'이름이 사라지면… 누가 기억하죠?',manager:'지우지 않을게. 네 기록도 남겨 둘게.'},
+  deer:{signal:'기록 인력의 잔존 음성',identity:'기록관 · 보존 담당',animalCry:'끄으… 흐응…',firstWords:'저기요... 여기가 자료실인가요? 제가 읽던 책이 있었는데...',secondWords:'아, 죄송해요. 책 얘기부터 했네요. 이름이 사라지면 누가 기억해 주나요?',manager:'천천히 괜찮아. 네 책도 기록도 같이 찾아보자.'},
   owl:{signal:'연구자의 잔존 음성',identity:'60대 · 수학자',animalCry:'후우… 후욱…',firstWords:'틀렸어… 아니… 잠깐, 다시 계산하면…',secondWords:'세 번째 선이… 빠졌군요. 분명 거기에… 있었는데…',manager:'계산은 나중에 해. 네가 먼저 버텨야지.'},
-  wolf:{signal:'경비 인력의 잔존 음성',identity:'20대 후반 · 경비대원',animalCry:'으르릉… 크르르…',firstWords:'뒤로… 물러서! 이쪽은 내가… 막을 테니까!',secondWords:'대피부터… 시켜… 난 괜찮… 윽…',manager:'네가 지킬 차례 아니야. 이제 내가 해.'},
+  wolf:{signal:'경비 인력의 잔존 음성',identity:'20대 후반 · 경비대원',animalCry:'으르릉… 크르르…',firstWords:'관리자님, 뒤로 물러나십시오! 이쪽은 제가 막겠습니다!',secondWords:'대피부터 시키십시오, 관리자님… 저는 괜찮습니다. 아직은… 윽…',manager:'네가 지킬 차례 아니야. 이제 내가 해.'},
   crow:{signal:'창작자의 잔존 음성',identity:'20대 · 작곡가',animalCry:'까악… 까, 까악…',firstWords:'그 다음 음은… 미… 아니… 들리지 않아…',secondWords:'한 마디만… 한 마디만 더 쓰면… 끝인데…',manager:'서두르지 마. 들릴 때까지 기다려.'},
   otter:{signal:'기술자의 잔존 음성',identity:'30대 후반 · 설비 기술자',animalCry:'끼르륵… 끽…',firstWords:'밸브를… 왼쪽으로… 아니, 그건 위험해요.',secondWords:'수압이… 안 맞아… 맨날 내가 고쳤는데…',manager:'여기서는 안 고쳐도 돼. 가만있어.'},
   lynx:{signal:'사법 기록 인력의 잔존 음성',identity:'40대 · 판사',animalCry:'크릉… 야옹…',firstWords:'피고인은… 아니… 누구를… 심문하고 있죠?',secondWords:'그 아이는… 잘못이… 없었습니다…',manager:'누굴 말하는 건지 모르겠어. 그래도 듣고 있어.'},

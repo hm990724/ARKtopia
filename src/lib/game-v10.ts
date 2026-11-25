@@ -13,7 +13,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,registerHqSpecies,issueNextHqOrder,type HqOrderState} from './hq-orders';
-import {fieldVision,acousticBearing,metalFloor,falseFieldSignal,revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,fieldPressureGain,advanceSporeSpread,advanceFieldShift,remainingWildlife,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {fieldVision,fieldWidth,acousticBearing,metalFloor,falseFieldSignal,revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,fieldPressureGain,advanceSporeSpread,advanceFieldShift,remainingWildlife,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,extendedIncidentCosts,queueIncidentFollowup,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -43,7 +43,7 @@ export type PathologyMethod='noninvasive'|'clinical'|'postmortem';
 export type PathologyRecord={id:AnimalId;day:number;method:PathologyMethod;success:boolean;result:string};
 export type PathologyEvent={id:AnimalId;method:PathologyMethod;success:boolean;day:number;detail:string};
 export type NightCircuit={day:number;order:number[];faults:number;completed:boolean};
-export type V10=State & {fieldGoodwill?:Partial<Record<AnimalId,number>>;operations?:import('./operations').OperationStore;operationMastery?:import('./operations').OperationMastery;horror?:import('./horror-cases').HorrorState;wiring?:Partial<Record<import('./wiring').WiringMode,import('./wiring').WiringState>>;roamingStory?:{firstEncounterDay?:number;lastStandDay?:number};incidentFollowups?:{id:IncidentId;sourceId:IncidentId;dueDay:number;expiresDay:number}[];fuel:number;baseLevels?:Partial<Record<UpgradeId,number>>;facilityPowerPriority?:FacilityId[];facilityPowerState?:FacilityPowerState;lastExpeditionDay?:number;expeditionCount?:number;completedRegions?:RegionId[];nightCircuit?:NightCircuit;pathologyRecords?:PathologyRecord[];pathologyPending?:PathologyEvent|null;tutorialStep:number;scrap:number;facilities:Record<FacilityId,boolean>;mutantSerum:number;infection:number;electricCells:number;flashlight:number;filters:number;threat:number;facility:number;clues:number;daysRested:number;encounters:number;dayEvents:number;pendingIncident:IncidentId|null;lastOutcome:string;run:Run|null;lastFieldSummary?:FieldSettlement|null;field?:FieldState|null;capture?:CaptureState|null;tacticalCaptured?:boolean;pendingCage?:boolean;suppliesCollected:number;eventHistory:string[];security:SecurityState;headquarters:HeadquartersState;archive:ArchiveState;crew?:CrewState;voice?:VoiceState;hqOrders?:HqOrderState;onboardingSeen?:string[];synthesisTutorialSeen?:boolean;tutorialArchiveReviewPending?:boolean;nextFieldFatigued?:boolean;narrative?:NarrativeState;originZero?:OriginZeroState;};
+export type V10=State & {fieldGoodwill?:Partial<Record<AnimalId,number>>;operations?:import('./operations').OperationStore;operationMastery?:import('./operations').OperationMastery;horror?:import('./horror-cases').HorrorState;wiring?:Partial<Record<import('./wiring').WiringMode,import('./wiring').WiringState>>;roamingStory?:{firstEncounterDay?:number;firstSlimeEncounterDay?:number;firstEchoEncounterDay?:number;lastStandDay?:number};incidentFollowups?:{id:IncidentId;sourceId:IncidentId;dueDay:number;expiresDay:number}[];fuel:number;baseLevels?:Partial<Record<UpgradeId,number>>;facilityPowerPriority?:FacilityId[];facilityPowerState?:FacilityPowerState;lastExpeditionDay?:number;expeditionCount?:number;completedRegions?:RegionId[];nightCircuit?:NightCircuit;pathologyRecords?:PathologyRecord[];pathologyPending?:PathologyEvent|null;tutorialStep:number;scrap:number;facilities:Record<FacilityId,boolean>;mutantSerum:number;infection:number;electricCells:number;flashlight:number;filters:number;threat:number;facility:number;clues:number;daysRested:number;encounters:number;dayEvents:number;pendingIncident:IncidentId|null;lastOutcome:string;run:Run|null;lastFieldSummary?:FieldSettlement|null;field?:FieldState|null;capture?:CaptureState|null;tacticalCaptured?:boolean;pendingCage?:boolean;suppliesCollected:number;eventHistory:string[];security:SecurityState;headquarters:HeadquartersState;archive:ArchiveState;crew?:CrewState;voice?:VoiceState;hqOrders?:HqOrderState;onboardingSeen?:string[];synthesisTutorialSeen?:boolean;tutorialArchiveReviewPending?:boolean;nextFieldFatigued?:boolean;narrative?:NarrativeState;originZero?:OriginZeroState;};
 export const regions:{id:RegionId;name:string;desc:string;art:string;danger:number;reward:number;ap:number;power:number;unlocked:number;animals:AnimalId[]}[]=[
 {id:'garden',name:'중앙 외곽',desc:'폐쇄된 매표소와 정원. 작은 개체의 흔적.',art:'gate',danger:16,reward:1,ap:1,power:9,unlocked:1,animals:['rabbit','fox']},
 {id:'conservatory',name:'온실 폐쇄동',desc:'축축한 식물과 감염 포자가 자라는 구역.',art:'sanctuary',danger:31,reward:2,ap:1,power:15,unlocked:2,animals:['deer','otter','crow']},
@@ -139,8 +139,18 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  if(restored.field){
   restored.field.region??=restored.run?.region;restored.field.sporeSwarm=null;restored.field.encountered=remainingWildlife(restored.field).length===0;
   if(restored.field.interruptedCapture)restored.field.interruptedCapture=normalizeCapture(restored.field.interruptedCapture);
-  if(mutantSecured(restored)||restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
-  else if(restored.field.combat?.source==='mobile'){restored.field.combat.enemy='mutant';restored.roamingStory??={};restored.roamingStory.firstEncounterDay??=restored.day;}
+  const legacyMobileEnemy=!restored.field.threat?.kind;
+  restored.roamingStory??={};
+  if(restored.field.threat)restored.field.threat.kind??='mutant';
+  if(restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
+  else{
+   if(mutantSecured(restored)&&(restored.field.threat?.kind??'mutant')==='mutant')restored.field.threat=null;
+   if(restored.field.combat?.source==='mobile'){
+    if(legacyMobileEnemy)restored.field.combat.enemy='mutant';else restored.field.combat.enemy??='mutant';
+    if(mutantSecured(restored)&&restored.field.combat.enemy==='mutant'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}
+    else{const key=restored.field.combat.enemy==='slime'?'firstSlimeEncounterDay':restored.field.combat.enemy==='echo'?'firstEchoEncounterDay':'firstEncounterDay';restored.roamingStory[key]??=restored.day;}
+   }
+  }
  }
  if(restored.run){const participants=(restored.run.companions??(restored.run.companion?[restored.run.companion]:[])).filter((id):id is CrewId=>id==='rabbit'||id==='fox'||id==='deer'||id==='wolf');crewState.sortieWorked=[...new Set([...(crewState.sortieWorked??[]),...participants])];}
  if(restored.tutorialArchiveReviewPending&&restored.headquarters.pendingAnimal==='rabbit'){
@@ -221,10 +231,11 @@ export function handleMutant(s:V10,id:AnimalId,choice:MutantDecision):V10{
 }
 export function gearUnavailable(s:V10,gear:Gear,region:RegionId):string|null{
  const r=regions.find(r=>r.id===region);if(!r)return '알 수 없는 탐사 구역입니다.';
+ if(gear==='flashlight'&&s.flashlight<10)return '손전등 전지가 부족합니다. 보급에서 예비 전지를 사거나 전지 충전 작업을 완료하세요.';
  
  if(gear==='filter'&&s.filters<1)return '바이오필터가 부족합니다. 보급에서 구입하세요.';
  if(gear==='medkit'&&s.medicine<1)return '의약품이 부족합니다. 보급에서 구입하세요.';
- if(gear==='cage'&&s.parts<1)return '운송 케이지용 부품이 부족합니다.';
+  if(gear==='cage'&&s.parts<1)return '운송 케이지용 부품이 부족합니다. 보급에서 부품 3개(115 CR)를 사거나 탐사 회수품을 확보하세요.';
  if(gear==='scanner'&&s.power<8)return '스캐너 전력이 부족합니다. 전력을 보충하거나 손전등을 선택하세요.';
  return null;
 }
@@ -249,8 +260,8 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companio
  if(gear.includes('scanner')&&s.power<8)return 'EVE 스캐너는 시설 전력이 부족합니다. 손전등으로 바꾸거나 발전기를 복구하세요.';
  return null;
 }
-export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null|CrewId[]=null):V10{const requested=Array.isArray(companion)?companion:[companion].filter(Boolean) as CrewId[];if(expeditionBlockReason(s,region,gear,requested))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(scanner&&n.power<scannerPower))return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
-n.expeditionCount=expeditionCountToday(s)+1;n.lastExpeditionDay=n.day;n.ap-=1;if(scanner)n.power-=scannerPower;if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
+export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null|CrewId[]=null):V10{const requested=Array.isArray(companion)?companion:[companion].filter(Boolean) as CrewId[];if(expeditionBlockReason(s,region,gear,requested))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(scanner&&n.power<scannerPower))return s;if(gear.includes('flashlight')&&n.flashlight<10)return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
+n.expeditionCount=expeditionCountToday(s)+1;n.lastExpeditionDay=n.day;n.ap-=1;if(scanner)n.power-=scannerPower;if(gear.includes('flashlight'))n.flashlight-=10;if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
 const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);const companions=requested.filter((id,index)=>requested.indexOf(id)===index&&s.crew?.members.some(m=>m.id===id&&m.mind>0)).slice(0,2);if(companions.length){const crew=ensureCrew(n);crew.sortieWorked=[...new Set([...(crew.sortieWorked??[]),...companions])];}n.run={region,gear,stage:0,netLevel:upgradeLevel(n,'net'),suitLevel:upgradeLevel(n,'suit'),scannerLevel:upgradeLevel(n,'scanner'),integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:companions[0]??null,companions,log:[scanner?'EVE 스캐너 연결 · 전력 -8':'장비 점등 전까지 암전 탐사']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;const available=r.animals.filter(id=>(id!=='mutant'||!mutantSecured(n))&&!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(a=>a.id===id)!.unlock<=n.day);const guided=!!n.run.firstTutorial;n.field=createField(n.day,region,n.encounters+n.expeditionCount,guided,available.length);const slots=remainingWildlife(n.field);const offset=(n.day*17+n.encounters*7+n.expeditionCount)%Math.max(1,available.length);n.field.wildlifeSpecies=Object.fromEntries(slots.flatMap((at,i)=>{const id=guided?'rabbit':available[(i+offset)%available.length];return id?[[at,id]]:[];}));n.field.lightOff=true;n.field.lightSteps=0;revealField(n.field,fieldVision(region,false,scanner,n.run.scannerLevel??0));if(n.originZero?.route)placeOriginFragments(n.field,regionFragments(n,region),n.day*1709+n.encounters*313+n.expeditionCount);if(mutantSecured(n)||n.run.firstTutorial)n.field.threat=null;n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
 // Reserved expedition supplies are refunded if not consumed. A cage is consumed only on capture attempt.
 function returnUnusedRunSupplies(s:V10,run:Run,hasEncounter:boolean){
@@ -294,7 +305,7 @@ if(choice==='gear'){if(run.gear.includes('flashlight')&&n.power>=5)n.power-=5;el
 if(!success){n.mind=cap(n.mind-5-Math.round(region.danger/20));n.mind=cap(n.mind-5);n.facility=cap(n.facility-2)}
 run.log.push(`신호 보정 ${signalAccuracy}점 · ${signalModifier>0?'위험 증가':signalModifier<0?'위험 감소':'보정 없음'}`);
 run.log.push(`${success?'작전 성공':'위험 발생'} · ${scene.title} · ${choice===scene.preferred?'상황에 적합한 대응':choice===scene.punished?'잘못된 접근으로 위험 증가':'기본 대응'}`);run.event=run.log[run.log.length-1];
-if(run.stage>=3||run.integrity<=15||n.mind<=0){n.parts+=Math.max(0,Math.floor(run.loot/3));n.food+=Math.max(0,Math.floor(run.loot/4));n.credits+=run.loot*24;n.suppliesCollected+=run.loot;n.encounters++;let creature:AnimalId|null=null;const candidates=region.animals.filter(id=>!(field.seenSpecies??[]).includes(id)&&(id!=='mutant'||!mutantSecured(n))&&!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(x=>x.id===id)!.unlock<=n.day);if((success||(n.encounters===1&&region.id==='garden'))&&candidates.length&&(n.encounters===1||rand>.3))creature=candidates[(n.day+run.stage)%candidates.length];returnUnusedRunSupplies(n,run,!!creature);n.run=null;n.field=null;n.capture=null;if(creature){n.pending=creature;summary(n,'미확인 개체 발견',`${specs.find(a=>a.id===creature)?.name}이(가) 발견됐다. 구조 여부를 판단해야 한다.`,'mystery')}else summary(n,'탐사 종료',`물자 가치 ${run.loot}을 회수했다. 시설로 돌아왔으나 위협도와 감염도가 달라졌다.`,success?'good':'bad');if(n.infection>=60)n.eventRisk=cap(n.eventRisk+14)}else n.lastOutcome=run.event;
+ if(run.stage>=3||run.integrity<=15||n.mind<=0){n.parts+=Math.max(0,Math.floor(run.loot/3));n.food+=Math.max(0,Math.floor(run.loot/4));n.credits+=run.loot*24;n.suppliesCollected+=run.loot;n.encounters++;let creature:AnimalId|null=null;const candidates=region.animals.filter(id=>!(s.field?.seenSpecies??[]).includes(id)&&(id!=='mutant'||!mutantSecured(n))&&!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(x=>x.id===id)!.unlock<=n.day);if((success||(n.encounters===1&&region.id==='garden'))&&candidates.length&&(n.encounters===1||rand>.3))creature=candidates[(n.day+run.stage)%candidates.length];returnUnusedRunSupplies(n,run,!!creature);n.run=null;n.field=null;n.capture=null;if(creature){n.pending=creature;summary(n,'미확인 개체 발견',`${specs.find(a=>a.id===creature)?.name}이(가) 발견됐다. 구조 여부를 판단해야 한다.`,'mystery')}else summary(n,'탐사 종료',`물자 가치 ${run.loot}을 회수했다. 시설로 돌아왔으나 위협도와 감염도가 달라졌다.`,success?'good':'bad');if(n.infection>=60)n.eventRisk=cap(n.eventRisk+14)}else n.lastOutcome=run.event;
 recalc(n);return n}
 export function rescueChoice(s:V10,choice:'secure'|'treat'|'release',rand=Math.random(),targetRoom?:number,quality=.5):V10 {if(!s.pending)return s;if(s.pending==='rabbit'&&s.lifeSaved===0&&s.tutorialStep<=3&&choice!=='secure')return s;if(choice==='secure'&&targetRoom!==undefined&&(!Number.isInteger(targetRoom)||targetRoom<1||targetRoom>s.rooms||s.animals.some(a=>a.alive&&a.room===targetRoom)))return s;const n=copy(s) as V10;const id=n.pending!;const sp=specs.find(a=>a.id===id)!;n.pending=null;n.tacticalCaptured=false;if(s.pendingCage&&choice!=='secure')n.parts++;n.pendingCage=false;if(choice==='release'){n.fieldGoodwill??={};n.fieldGoodwill[id]=Math.min(6,(n.fieldGoodwill[id]??0)+1);recordCapture(n.run,id,'released');n.trust=cap(n.trust+3);applyCrewOpinion(n,'treatment','withhold');return summary(n,'방생 선택',`${sp.name}를 현장에 남겨두었다. 다음 조우에서 경계를 조금 덜 보일 수 있다.`,'info')}if(choice==='treat'){if(n.medicine<1)return s;n.medicine--;n.fieldGoodwill??={};n.fieldGoodwill[id]=Math.min(6,(n.fieldGoodwill[id]??0)+(quality>=.67?3:2));n.trust=cap(n.trust+6);n.clues++;earnDuringRun(n.run!,'clues',1);recordCapture(n.run,id,'treated');applyCrewOpinion(n,'treatment','treat');return summary(n,'현장 치료',`${sp.name}를 치료했다. 다음 조우의 초기 경계가 낮아지고 안전 이송 가능성이 높아진다. 행동 기록도 확보했다.`,'good')}
 if(n.animals.filter(a=>a.alive).length>=n.rooms){recordCapture(n.run,id,'failed');if(s.pendingCage)n.parts++;return summary(n,'격리실 부족',`${sp.name}를 안전하게 옮길 공간이 없어 현장에 남겨두었다.`,'bad')}const chance=captureChance(s,quality);n.tacticalCaptured=false;if(rand*100<chance){const rooms=new Set(n.animals.filter(a=>a.alive).map(a=>a.room));let room=targetRoom??1;while(rooms.has(room))room++;const rescued=makeAnimal(id,room);if(id==='rabbit'&&s.lifeSaved===0&&s.tutorialStep<=4){
@@ -369,7 +380,7 @@ export function resolveIncident(s:V10,option:number):V10{
   else {n.mind=cap(n.mind-22);n.facility=cap(n.facility-20);n.threat=cap(n.threat+17);n.animals.forEach(a=>{a.stress=cap(a.stress+17);a.hp=cap(a.hp-7)})}
  }else if(id==='blackout'){
   if(option===0){n.parts-=2;n.power=cap(n.power+16);n.facility=cap(n.facility+18)}
-  else if(option===1){n.power=cap(n.power+9);n.eve=cap(n.eve-9);n.facility=cap(n.facility-7)}
+  else if(option===1){n.power=cap(n.power+9);n.eve=cap(n.eve-9);n.facility=cap(n.facility-7);if(n.facilities.cctv)n.security.cctvOfflineUntilDay=Math.max(n.security.cctvOfflineUntilDay??0,n.day+1)}
   else {n.mind=cap(n.mind-13);n.power=cap(n.power-12);n.eve=cap(n.eve-19);n.facility=cap(n.facility-17);n.knowledge+=7}
  }else if(id==='spores'){
   if(option===0){n.filters--;n.infection=cap(n.infection-19)}
@@ -642,7 +653,8 @@ export function tickAutonomousSpores(s:V10):V10{
  else if(!beforeThreat&&field.threat)n.lastOutcome=field.lastEvent=field.lastEvent||'외곽에서 움직이는 위협 신호가 포착됐습니다. 청음과 은신으로 접근을 피하세요.';
  else if(beforeThreat&&field.threat&&field.threat.position!==beforePosition){
   const stage=field.threat.stage;
-  const cue=stage==='patrol'?'순찰 중인 생체 반응이 위치를 바꿨습니다.':stage==='investigate'?'MUTANT가 소음 신호를 따라 수색 범위를 좁힙니다.':stage==='search'?'적이 마지막 목격 지점을 수색합니다.': 'MUTANT가 탐사자 쪽으로 추격해 옵니다.';
+  const enemy=field.threat.kind==='slime'?'오염 점액체':field.threat.kind==='echo'?'신경 잔향체':'MUTANT';
+  const cue=stage==='patrol'?'순찰 중인 생체 반응이 위치를 바꿨습니다.':stage==='investigate'?`${enemy}가 소음·빛 신호를 따라 수색 범위를 좁힙니다.`:stage==='search'?`${enemy}가 마지막 목격 지점을 수색합니다.`:`${enemy}가 탐사자 쪽으로 추격해 옵니다.`;
   n.lastOutcome=field.lastEvent=cue;
  }
  if(contaminationMessage&&!n.lastOutcome.includes(contaminationMessage)){n.lastOutcome+=' · '+contaminationMessage;field.lastEvent=n.lastOutcome;}
@@ -740,8 +752,8 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  // MUTANT advances only after a successful field movement; capture and decisions pause pursuit.
  const beforeThreat=!!field.threat;
  if(tile!=='exit'&&destination!==(field.origin??14)&&!n.capture&&!field.choice){
-  if(tickRoamingThreat(n,pace))observation+=' · MUTANT 접근 · 전투 전환.';
-  else if(!beforeThreat&&field.threat)observation+=' · EVE: 노출 위협 임계 도달, 외곽 MUTANT 출현.';
+  if(tickRoamingThreat(n,pace))observation+=` · ${field.combat?.enemy==='slime'?'오염 점액체':field.combat?.enemy==='echo'?'신경 잔향체':'MUTANT'} 접근 · 전투 전환.`;
+  else if(!beforeThreat&&field.threat)observation+=` · EVE: 노출 위협 임계 도달, ${field.threat.kind==='slime'?'오염 점액체':field.threat.kind==='echo'?'신경 잔향체':'MUTANT'} 출현.`;
  }
  if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
  const scanner=run.gear.includes('scanner');revealField(field,fieldVision(run.region,lightWasOn,scanner,run.scannerLevel??0),lightWasOn&&!scanner);if(lightWasOn){field.lightSteps=Math.max(0,(field.lightSteps??0)-1);if(!field.lightSteps){field.lightOff=true;observation+=' · 손전등 소등.';}}

@@ -10,12 +10,14 @@ test('ranger uses changing walk frames during real movement, then returns to idl
  await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
  await page.evaluate(()=>{window.walkFrames=[];window.walkTimer=setInterval(()=>{const el=document.querySelector('.v72-ranger.is-walking>span');if(el)window.walkFrames.push(getComputedStyle(el).backgroundPositionX)},20)});
  const before=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.position,KEY);
- await page.locator('.v62-route-walkable:not([disabled])').first().click();
+ const target=await page.evaluate(key=>{const f=JSON.parse(localStorage.getItem(key)).field,w=f.width??7,p=f.position;return [p-w,p+1,p+w,p-1].find(i=>i>=0&&i<f.tiles.length&&Math.abs(i%w-p%w)+Math.abs(Math.floor(i/w)-Math.floor(p/w))===1&&f.tiles[i]==='empty')},KEY);
+ expect(target).toBeDefined();
+ await page.locator('.v33-route-cell').nth(target).click();
  await expect.poll(()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)).field.position,KEY)).not.toBe(before);
  const frames=await page.evaluate(()=>{clearInterval(window.walkTimer);return [...new Set(window.walkFrames)]});expect(frames.length).toBeGreaterThanOrEqual(2);
  await expect(page.locator('.v72-ranger.is-walking')).toHaveCount(0);
  await expect(page.locator('.v33-route-player .v72-ranger.is-idle')).toBeVisible();
- await page.screenshot({path:'docs/qa-v71/v72-field-walk.png',fullPage:true});
+ await page.screenshot({path:'test-results/v72-field-walk.png',fullPage:true});
 });
 test('critically unstable medic remains visibly critical in roster, detail modal and dialogue',async({page})=>{
  const s=beginGame('medic','generator');s.day=10;s.tutorialStep=9;s.onboardingSeen=['base-work'];recruitCrew(s,'rabbit','RB-001');s.crew.members[0].mind=20;
@@ -30,7 +32,7 @@ test('critically unstable medic remains visibly critical in roster, detail modal
  await expect(page.locator('.v44-story-eve-image img')).toHaveCount(1);
  await expect(page.locator('.v44-story-scene')).toHaveCSS('background-color','rgb(23, 20, 33)');
  const reveal=page.getByRole('button',{name:'글 즉시 펼치기'});if(await reveal.isEnabled())await reveal.click();
- await page.screenshot({path:'docs/qa-v71/v72-critical-dialogue.png',fullPage:true});expect(errors).toEqual([]);
+ await page.screenshot({path:'test-results/v72-critical-dialogue.png',fullPage:true});expect(errors).toEqual([]);
 });
 test('archivist conversation transitions neutral, unstable, critical, then resolve on authored lines',async({page})=>{
  const {emptyArchive}=require('../src/lib/specimen-archive.ts');const s=beginGame('medic','generator');s.day=3;s.tutorialStep=9;s.onboardingSeen=['base-work'];s.ap=5;s.food=5;s.flags.humanTruth=true;s.originZero={...emptyOriginZero(),photos:10};s.archive=emptyArchive();recruitCrew(s,'deer','DR-001');Object.assign(s.crew.members[0],{bond:65,memoryStage:1});s.archive.entries['DR-001']={key:'DR-001',species:'deer',name:'deer',firstDay:1,lastDay:3,status:'transferred',captureMethod:'fixture',observedTraits:[],records:[],maxStress:0,maxMemory:0};
@@ -56,9 +58,9 @@ test('current cinematic opens without cropping or duplicate characters from UI l
  const dialog=page.getByRole('dialog',{name:'복원된 사건 영상 보기'});await expect(dialog).toBeVisible();await expect(dialog.locator('img')).toHaveCount(1);
  await expect(dialog.locator('img')).toHaveAttribute('src',/(scene_m00_positive|SCN_11_m00_origin_signature)/);await expect(dialog.locator('img')).toHaveCSS('object-fit','contain');
  await expect.poll(()=>dialog.locator('img').evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
- await page.screenshot({path:'docs/qa-v71/v72-cinematic.png',fullPage:true});
+ await page.screenshot({path:'test-results/v72-cinematic.png',fullPage:true});
  await dialog.getByRole('button',{name:'다음 장면'}).click();await expect(dialog.locator('img')).toHaveAttribute('src',/(scene_m00_protect|SCN_13_m00_protection)/);
  await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
 });
 
-test('first contact keeps uncropped art and subtitle controls inside the viewport',async({page})=>{await page.goto('/');await page.getByRole('button',{name:'최초 통신 복원'}).click();const scene=page.getByRole('dialog',{name:'EVE 첫 만남 연출'});await expect(scene).toBeVisible();const art=scene.locator('.v54-cinematic-art');await expect.poll(()=>art.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);for(const [width,height] of [[1920,1080],[1366,768],[1280,720],[390,844],[844,390]]){await page.setViewportSize({width,height});await expect(art).toHaveCSS('object-fit','contain');const m=await scene.evaluate(el=>{const s=el.querySelector('.v62-cinema-stage').getBoundingClientRect(),f=el.querySelector('.v62-cinema-footer').getBoundingClientRect();return {top:s.top,bottom:s.bottom,footerTop:f.top,footerBottom:f.bottom,footerRight:f.right,overflow:getComputedStyle(document.documentElement).overflowY}});expect(m.overflow).toBe('hidden');expect(m.top).toBeGreaterThanOrEqual(0);expect(m.bottom).toBeLessThanOrEqual(m.footerTop+1);expect(m.footerBottom).toBeLessThanOrEqual(height+1);expect(m.footerRight).toBeLessThanOrEqual(width+1);await page.screenshot({path:'docs/qa-v71/cinema-fit-'+width+'x'+height+'.png'});}});
+test('first contact keeps uncropped art and subtitle controls inside the viewport',async({page})=>{await page.goto('/');await page.getByRole('button',{name:'최초 통신 복원'}).click();const scene=page.getByRole('dialog',{name:'EVE 첫 만남 연출'});await expect(scene).toBeVisible();const art=scene.locator('.v54-cinematic-art');await expect.poll(()=>art.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);for(const [width,height] of [[1920,1080],[1366,768],[1280,720],[390,844],[844,390]]){await page.setViewportSize({width,height});await expect(art).toHaveCSS('object-fit','contain');const m=await scene.evaluate(el=>{const s=el.querySelector('.v62-cinema-stage').getBoundingClientRect(),f=el.querySelector('.v62-cinema-footer').getBoundingClientRect();return {top:s.top,bottom:s.bottom,footerTop:f.top,footerBottom:f.bottom,footerRight:f.right,overflow:getComputedStyle(document.documentElement).overflowY}});expect(m.overflow).toBe('hidden');expect(m.top).toBeGreaterThanOrEqual(0);expect(m.bottom).toBeLessThanOrEqual(m.footerTop+1);expect(m.footerBottom).toBeLessThanOrEqual(height+1);expect(m.footerRight).toBeLessThanOrEqual(width+1);await page.screenshot({path:'test-results/cinema-fit-'+width+'x'+height+'.png'});}});

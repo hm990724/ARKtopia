@@ -12,8 +12,9 @@ export const FIELD_START=14;
 export const FIELD_EXIT=20;
 export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|'exit';
 export type Pace='quiet'|'normal'|'fast';
+export type RoamingEnemy='slime'|'echo'|'mutant';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
-export type FieldThreat={position:number;alert:number;mode:'search'|'closing';origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
+export type FieldThreat={position:number;alert:number;mode:'search'|'closing';kind?:RoamingEnemy;mutantVariant?:number;origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
 export type FieldState={region?:RegionId;facing?:'up'|'right'|'down'|'left';acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;lightSteps?:number;mutantNextTurn?:number;autonomousTicks?:number;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
@@ -178,10 +179,10 @@ export function revealField(f:FieldState,range:number,directionalLight=false){f.
 export function fieldRelayBearing(f:FieldState,level:number):string|null{
  if(level<2)return null;
  const animalAt=remainingWildlife(f).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];if(animalAt===undefined)return null;
- const width=fieldWidth(f),dx=animalAt%width-f.position%width,dy=Math.floor(animalAt/width)-Math.floor(f.position/width),distance=Math.abs(dx)+Math.abs(dy);
- if(distance===0)return '현재 위치에서 생체 신호 확인';
+ const width=fieldWidth(f),dx=animalAt%width-f.position%width,dy=Math.floor(animalAt/width)-Math.floor(f.position/width),range=Math.abs(dx)+Math.abs(dy);
+ if(range===0)return '현재 위치에서 생체 신호 확인';
  const direction=`${dy<0?'북':dy>0?'남':''}${dx>0?'동':dx<0?'서':''}`;
- return `${direction}쪽에서 약한 생체 신호${distance>5?' · 원거리':distance>2?' · 중거리':' · 근거리'}`;
+ return `${direction}쪽에서 약한 생체 신호${range>5?' · 원거리':range>2?' · 중거리':' · 근거리'}`;
 }
 /** Advance a roaming threat by one real-time step without spending player AP. */
 export function fieldThreatSignal(f:FieldState){
@@ -189,7 +190,7 @@ export function fieldThreatSignal(f:FieldState){
  const w=fieldWidth(f),dx=t.position%w-f.position%w,dy=Math.floor(t.position/w)-Math.floor(f.position/w);
  const distance=Math.abs(dx)+Math.abs(dy), strength=Math.max(0,Math.min(100,100-distance*15));
  const direction=distance===0?'바로 근처':(dy<0?'북':dy>0?'남':'')+(dx>0?'동':dx<0?'서':'')+'쪽';
- return {direction,distance:distance<=2?'근거리':distance<=5?'중거리':'원거리',strength,alert:t.alert,warning:(t.warningTicks??0)>0,stage:t.stage??(t.mode==='closing'?'chase':'patrol')};
+ return {kind:t.kind??'mutant',direction,distance:distance<=2?'근거리':distance<=5?'중거리':'원거리',strength,alert:t.alert,warning:(t.warningTicks??0)>0,stage:t.stage??(t.mode==='closing'?'chase':'patrol')};
 }
 /** Select the farthest reachable cell, without occupying a story object or exit. */
 export function farthestThreatCell(f:FieldState):number|null{
@@ -208,12 +209,23 @@ export const MUTANT_TIERS=[
 ] as const;
 export function mutantTierIndex(region?:RegionId){return Math.max(0,['garden','conservatory','rail','archive','vault','tunnels'].indexOf(region??'garden'));}
 export function mutantTier(region?:RegionId){return MUTANT_TIERS[mutantTierIndex(region)];}
+/** Existing field combat enemies can also roam; each sector cycles a different threat mix. */
+export function roamingEnemyFor(region:RegionId|undefined,spawn:number,mutantAvailable=true):RoamingEnemy{
+ if(spawn<=0&&mutantAvailable)return 'mutant';
+ const mixes:Record<RegionId,RoamingEnemy[]>={
+  garden:['slime','echo','mutant'],conservatory:['slime','echo','mutant'],rail:['echo','slime','mutant'],
+  archive:['echo','mutant','slime'],vault:['mutant','echo','slime'],tunnels:['mutant','slime','echo']
+ };
+ const pool=(mixes[region??'garden']??mixes.garden).filter(kind=>kind!=='mutant'||mutantAvailable);
+ return pool[Math.max(0,spawn-1)%pool.length]??'echo';
+}
 export function fieldPressureGain(f:FieldState,day:number,pace:Pace,relay:number,contaminated:boolean){
  const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  return Math.max(1,tier.basePressure-Math.min(2,Math.floor(relay/2))+(pace==='quiet'?-1:pace==='fast'?3+index:0)+(contaminated?3+index:0)+Math.min(index,Math.floor(day/10)));
 }
-export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_lightOn=false,pace?:Pace,goal=f.position,stage?:FieldThreat['stage']):boolean{
+export function advanceFieldThreat(f:FieldState,noise=f.noise,_relayLevel=0,lightOn=false,pace?:Pace,goal=f.position,stage?:FieldThreat['stage']):boolean{
  const t=f.threat;if(!t||f.combat)return false;
+ const kind=t.kind??'mutant';t.kind=kind;
  const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  t.ticks=(t.ticks??0)+1;
  if((t.cooldown??0)>0){t.cooldown!--;return false;}
@@ -221,7 +233,10 @@ export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_li
  const d=costs.get(t.position)??Infinity;
  // Early sectors can lose the administrator's trail in quiet, distant movement.
  if(index<=1&&pace==='quiet'&&d>4&&t.ticks%2===0){t.mode='search';t.stage='search';t.warningTicks=0;return false;}
- t.alert=Math.max(0,Math.min(100,f.pressure??0));
+ // Keep accumulated suspicion and feed actual movement cues into it. Loud
+ // movement and a live beam are easier to track; careful movement bleeds it off.
+ const soundCue=Math.ceil(Math.max(0,noise)/(kind==='echo'?3:2)),lightCue=lightOn?(kind==='slime'?0:kind==='echo'?7:4):0,quietMask=pace==='quiet'?(kind==='echo'?2:6):0;
+ t.alert=Math.max(0,Math.min(100,Math.max(t.alert??0,f.pressure??0)+soundCue+lightCue-quietMask));
  if(stage){t.stage=stage;t.mode=stage==='patrol'||stage==='search'?'search':'closing';}
  else{t.mode='closing';t.stage='chase';}
  if(!f.concealed&&goal===f.position)t.lastSeen=f.position;
@@ -231,7 +246,8 @@ export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_li
  const target=goal===f.position&&index>=3&&delta&&adjacentField(f.position,predicted,fieldWidth(f),f.tiles.length)&&f.tiles[predicted]!=='wall'?predicted:undefined;
  const intercept=goal===f.position&&target!==undefined?sporePaths(f,target).costs:null;
  const exitCosts=goal===f.position&&index>=4&&f.exitIndex!==undefined?sporePaths(f,f.exitIndex).costs:null;
- for(let i=0;i<2;i++){
+ const steps=kind==='slime'?1:2;
+ for(let i=0;i<steps;i++){
   if((costs.get(t.position)??Infinity)<=(stage==='patrol'?0:1))break;
   const score=(cell:number)=>(costs.get(cell)??Infinity)+(intercept?Math.min(12,intercept.get(cell)??12)*.35:0)+(exitCosts?Math.min(12,exitCosts.get(cell)??12)*.15:0);
   const next=neighbors(t.position).filter(j=>(costs.get(j)??Infinity)<(costs.get(t.position)??Infinity)).sort((a,b)=>score(a)-score(b))[0];

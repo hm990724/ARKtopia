@@ -15,6 +15,7 @@ This file summarizes the current gameplay loop. It is intentionally version-free
 - Night settlement accounts for power, fuel, filters, animal care, infection, staff morale, external pressure, and facility condition. A 100% pressure reading is a severe threat state with escalating consequences, not a forced ejection.
 - Recovered food, scrap, parts, cells, medicine, filters, and credits feed purchases, facility construction, equipment, research, CCTV, and field upgrades.
 - Four facility priorities allocate available night power; offline facilities stop their linked benefits. Circuit repair and facility assembly have player actions and saved outcomes.
+- Leaving the blackout power-saving response can take installed CCTV offline through its follow-up. Live scan/watch/camera tracking are blocked during the outage, animal escape risk grows, and manual trace tracking plus incident repair choices remain available.
 
 ## People, incidents, research
 

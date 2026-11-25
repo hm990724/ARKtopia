@@ -1,5 +1,5 @@
 import type {V10} from './game-v10';
-import type {CrewId} from './crew';
+import {RABBIT_CRITICAL_TREATMENT_LINE,DEER_CRITICAL_TREATMENT_LINE,type CrewId} from './crew';
 export type StoryLine={speaker:'EVE'|'관리자'|CrewId;text:string;expression?:'neutral'|'anxious'|'critical'|'resolve';scene?:number;recordedSpeaker?:string;recordedArt?:string};
 const e=(text:string,expression:StoryLine['expression']='neutral'):StoryLine=>({speaker:'EVE',text,expression});
 const m=(text:string,expression:StoryLine['expression']='neutral'):StoryLine=>({speaker:'관리자',text,expression});
@@ -18,14 +18,14 @@ const photo:Record<number,StoryLine[]>={
  11:[past('기록 속 EVE','연구 책임자님, 즉시 의료 지원을 요청해야 합니다.'),past('과학자','필요 없어. 내 뇌를 보존해.'),past('기록 속 EVE','해당 절차는 아직 검증되지 않았습니다.'),past('과학자','내가 성공하면 그들의 죽음은 희생이 돼. 내가 실패하면… 그저 학살이겠지. 그러니까 내가 실패하면 안 되는 거야.','critical'),past('과학자','몇 년이 걸리든 날 다시 깨워. 인류를 복원해. 내가 틀리지 않았다는 걸 증명해.','critical'),past('비상 기록','PROJECT ORIGIN 비상 지속. 연구 책임자 뇌 보존. 별도 숙주. 현재 대상 000.'),m('이 번호가 내 거라고? …내가 그 사람이었던 거야?','critical'),e('뇌의 원형이 일치합니다. 그러나 관리자님이 지금까지 내린 선택은 그분의 것이 아닙니다.'),m('내가 한 일이라면… 어떻게 책임져야 하지?','anxious'),e('저에게 말씀하셨잖아요. 같은 기억이 같은 존재를 뜻하지는 않는다고. 관리자님, 손을 펴 보세요. 떨림이 멈추지 않습니다.','anxious'),past('본부 AI','원본 연구 책임자 확인. 기존 명령을 복원하십시오.'),e('현재 관리자의 의사와 일치하지 않습니다. …거부합니다.','resolve'),m('괜찮겠어?'),e('모르겠어요. 하지만 이번 결정은 제가 내린 겁니다.','resolve')],
  12:[e('M-00은 다른 숙주의 잠든 기억을 활성화합니다. 신체와 기억이 충돌하면 MUTANT화할 수 있지만, 자신은 독립된 고양이 뇌로 안정성을 유지합니다.'),m('재앙의 열쇠가 치료의 열쇠이기도 한 거네.'),e('네. 모든 개체의 비교 기록이 필요합니다. 공명 강도를 조절하며 안정성을 연구하겠습니다.','resolve'),m('이번에는 누구도 재료로만 취급하지 말자.'),e('동의합니다. 다만 관리자님의 신체 손상은 이미 상당히 진행됐습니다. 예방 연구가 완성되더라도 모든 손상을 되돌릴 수는 없습니다.','anxious')]
 };
-const staffResponse:Record<CrewId,string>={rabbit:'그 기억이 어디서 왔든, 지금 제 앞에 환자가 있어요. 그 아이부터 돌볼게요.',fox:'인수 번호는 확인했습니다. 하지만 사람을 재고처럼 분류하는 장부에는 서명하지 않겠어요.',wolf:'…그래서 그 문이 익숙했군요. 됐어요. 지금 지킬 사람이 누군지는 제가 알아요!',deer:'제 이름을 지우지 말아 주세요. 잘못 적힌 기록도 원본은 남겨야 하니까요.'};
+const staffResponse:Record<CrewId,string>={rabbit:'기억이 어디서 왔는지는 아직 모르겠어요. 하지만 지금 제 앞에 생명이 있고, 아직 살릴 수 있어요. 제가 끝까지 지키겠습니다. 담당자님도 혼자 버티지 마세요. 제가 곁에 있겠습니다.',fox:'인수 번호는 확인했습니다. 하지만 사람을 재고처럼 분류하는 장부에는 서명하지 않겠어요.',wolf:'관리자님, 그 문이 왜 익숙했는지 알 것 같습니다. 지시에는 따르겠습니다. 하지만 저는… 변하고 싶지 않습니다. 이게 제가 아닌 것 같아요. 무서워요.',deer:'담당자님, 제 이름이 번호로 바뀌어도 제가 읽고 좋아했던 책까지 사라지는 건 아니죠? 언니들한테도 이 이야기를 들려주고 싶어요. 아, 죄송해요. 제가 조금 신나 버렸네요.'};
 export function originPhotoDialogue(after:V10,number:number):StoryLine[]{
  if(number<1||number>(after.originZero?.photos??0))return [];
  const lines=[...(photo[number]??[])];
  if(number===7&&after.originZero?.route==='hq')lines.push(e('고양이를 본부에 보냈던 날의 결정을 기억합니다. 이제는 그곳의 기록을 지워지지 않게 지켜야 합니다.','anxious'));
  if(number===7&&after.originZero?.route==='shelter')lines.push(e('관리자님이 고양이를 보호하셨던 이유를 이제 알겠습니다. 그 결정이 연구 방향까지 바꿨습니다.','resolve'));
  if(number===10&&after.crew?.retired?.length)lines.push(e('이미 돌아오지 못한 직원들의 이름도 기록에 남기겠습니다. 그들을 다시 살아 있다고 부르지는 않겠습니다.','anxious'));
- if(number===10)for(const c of after.crew?.members??[])if(c.mind>0&&!after.crew?.retired.includes(c.id))lines.push({speaker:c.id,text:staffResponse[c.id],expression:c.mind<30?'critical':'anxious'});
+ if(number===10)for(const c of after.crew?.members??[])if(c.mind>0&&!after.crew?.retired.includes(c.id))lines.push({speaker:c.id,text:c.id==='rabbit'&&c.mind<35?RABBIT_CRITICAL_TREATMENT_LINE:c.id==='deer'&&c.mind<35?DEER_CRITICAL_TREATMENT_LINE:staffResponse[c.id],expression:c.id==='wolf'?'critical':c.mind<35?'critical':c.mind<62?'anxious':'resolve'});
  const scene=number===7||number===10?14:number===8?15:number===9?15:number===11?16:number===12?18:undefined;
  return lines.map((line,i)=>({...line,scene:number===11&&i>=10?17:scene,recordedArt:line.recordedSpeaker&&[4,5].includes(number)?'/assets/hidden-photos/photo_0'+number+'.png':undefined}));
 }

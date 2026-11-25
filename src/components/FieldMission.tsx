@@ -7,6 +7,7 @@ import { regions, fieldChoicePreview } from "@/lib/game-v10";
 import {CombatPanel} from './EnhancedField';
 import type {CombatAction} from '@/lib/field-combat';
 import RangerSprite from './RangerSprite';
+import {mutantSprite} from '@/lib/monster-art';
 import {directionForMove,type WalkDirection} from '@/lib/character-art';
 import type { AnimalId } from "@/lib/sim";
 import {
@@ -210,6 +211,7 @@ export default function FieldMission({
   const latestMove=useRef(onMove);latestMove.current=onMove;
   const walkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [facing,setFacing]=useState<WalkDirection>('down');
+  const field=state.field;
   const fieldChoiceFirstButton = useRef<HTMLButtonElement | null>(null);
   // The field guide is a fixed quick-read panel instead of a dropdown.
   useEffect(
@@ -223,7 +225,7 @@ export default function FieldMission({
     if (state.field?.choice && !state.capture)
       fieldChoiceFirstButton.current?.focus();
   }, [state.field?.choice, state.capture]);
-  useEffect(()=>{if(!walking)setFacing(field.facing??'down')},[field.facing,walking]);
+  useEffect(()=>{if(!walking&&field)setFacing(field.facing??'down')},[field?.facing,walking]);
   function walkTo(target: number) {
     if (
       walking ||
@@ -303,7 +305,6 @@ export default function FieldMission({
   ]);
 
   const run = state.run,
-    field = state.field,
     capture = state.capture;
   if (!run || !field)
     return (
@@ -1058,7 +1059,7 @@ export default function FieldMission({
                       </button>
                     );
                   })}
-                  {field.threat && !field.combat && <span className="ark-moving-threat ark-step-threat" data-chasing={field.threat.mode==='closing'} role="img" aria-label="접근 중인 배회형 MUTANT" aria-hidden={!threatInSight} style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:threatInSight?1:0}}><img src="/assets/animals/mutant_mutant.png" alt=""/><small>{field.threat.mode==='closing'?'추격 중':'MUTANT'}</small></span>}
+                  {field.threat && !field.combat && <span className="ark-moving-threat ark-step-threat" data-enemy={field.threat.kind??'mutant'} data-chasing={field.threat.mode==='closing'} role="img" aria-label={`접근 중인 ${field.threat.kind==='slime'?'오염 점액체':field.threat.kind==='echo'?'신경 잔향체':`MUTANT-${String(field.threat.mutantVariant??1).padStart(2,'0')}`}`} aria-hidden={!threatInSight} style={{left:`${(field.threat.position%width+.5)/width*100}%`,top:`${(Math.floor(field.threat.position/width)+.5)/height*100}%`,width:`${100/width}%`,height:`${100/height}%`,opacity:threatInSight?1:0}}><img src={field.threat.kind==='mutant'||!field.threat.kind?mutantSprite(field.threat.mutantVariant):`/assets/field/enemy_${field.threat.kind}.png`} alt=""/><small>{field.threat.mode==='closing'?'추격 중':field.threat.kind==='slime'?'점액체':field.threat.kind==='echo'?'잔향체':`MUTANT-${String(field.threat.mutantVariant??1).padStart(2,'0')}`}</small></span>}
                    {walking && (
                     <span
                       className="v42-walker-path"

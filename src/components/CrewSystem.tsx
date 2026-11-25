@@ -9,11 +9,11 @@ import {cinematicArtworkCandidates} from '@/lib/cinematic-art';
 
 export function StaffPortrait({id,className='',condition='safe',dialogueMood,dialogueText}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical';dialogueMood?:PortraitMood;dialogueText?:string}){
  const dialogueSources=dialogueMood?staffDialogueArtworkCandidates(id,dialogueMood,condition,dialogueText??''):[staffStatusPortrait(id,condition)];
- const sources=[...new Set([
-  ...dialogueSources,
+ const legacySources=id==='rabbit'?[]:[
   `/assets/staff/${id}/portrait.webp`,
   id==='wolf'?'/assets/cinematics/staff-arrivals/wolf/CN_07_wolf_guard_arrival.png':`/assets/cinematics/staff-arrivals/${id}/scene.webp`
- ])];
+ ];
+ const sources=[...new Set([...dialogueSources,...legacySources])];
  const [index,setIndex]=useState(0);
  useEffect(()=>setIndex(0),[id,condition,dialogueMood,dialogueText]);
  const key=`${id}-${condition}-${dialogueMood??'status'}-${dialogueText??''}`;
@@ -41,6 +41,10 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
   'SECURE CHANNEL // OFFLINE · 2089',
   '비상 전원이 응답합니다. 유리창 너머에서 누군가 깨어납니다.',
   '아직 눈을 가진 것은 아닙니다. 하지만 당신을 보고 있습니다.'
+ ]:kind==='rabbit'?[
+  'HQ MEDICAL TRANSFER // 의무관 도착',
+  '의무관은 보안 캡슐에서 내려 대답보다 먼저 진료실과 환자 침상을 살핍니다. 의료 기록은 아직 봉인되어 있습니다.',
+  '…환자분이 계신가요? 담당자님도 다친 곳부터 보여주세요. 우선 제가 살펴볼게요.'
  ]:[
   `HQ TRANSPORT // ${data!.post} ARRIVAL`,
   '지하 통로에서 반송 캡슐이 도착했습니다. 생체 기록은 암호화되어 있습니다.',
@@ -138,9 +142,11 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  const [shown,setShown]=useState(0);
  const textTimer=useRef<number|null>(null);
  const profile=CREW_PROFILES[id],effect=CREW_LOSS_EFFECTS[id];
- const terminationArt=id==='wolf'
-  ? '/assets/cinematics/staff-terminations/wolf/scene.webp'
-  : `/assets/cinematics/staff-terminations/${id}/scene.webp`;
+ const terminationArt=id==='rabbit'
+  ? staffStatusPortrait('rabbit','critical')
+  : id==='wolf'
+   ? '/assets/cinematics/staff-terminations/wolf/scene.webp'
+   : `/assets/cinematics/staff-terminations/${id}/scene.webp`;
  const lines=effect.quote;
  const line=lines[step]??'';
  useEffect(()=>{setShown(0);let i=0;const timer=window.setInterval(()=>{i=Math.min(line.length,i+1);setShown(i);if(i===line.length){window.clearInterval(timer);textTimer.current=null;}},31);textTimer.current=timer;return()=>{window.clearInterval(timer);textTimer.current=null;}},[line,step]);

@@ -10,9 +10,9 @@ const {ENDING_ART,ORIGIN_ZERO_CANONICAL_ENDING_ART,endingArtworkCandidates,findE
 const {staffDialogueTone,staffDialogueArtworkCandidates}=require('../src/lib/character-art.ts');
 const core=['echo','breach','blackout','spores','signal','visitor','predator','coolant','rations','intrusion','garden','keepsake','quiet'];
 const ids=[...core,...EXTENDED_INCIDENT_IDS];
-assert.equal(ids.length,41,'exactly 41 game incidents');
-assert.equal(GAME_EVENT_ART_ORDER.length,41);
-assert.equal(new Set(GAME_EVENT_ART_ORDER).size,41,'one unique CG target per incident');
+assert.equal(ids.length,43,'exactly 43 game incidents');
+assert.equal(GAME_EVENT_ART_ORDER.length,43);
+assert.equal(new Set(GAME_EVENT_ART_ORDER).size,43,'one unique CG target per incident');
 assert.deepEqual([...GAME_EVENT_ART_ORDER].sort(),ids.sort(),'all executable incident IDs have CG targets');
 const all=new Set();
 for(const id of ids){
@@ -22,12 +22,12 @@ for(const id of ids){
  assert.ok(fs.existsSync(path.join(__dirname,'../public',legacy)),'missing legacy incident art for '+id);
  all.add(canonical);
 }
-assert.equal(all.size,41);
+assert.equal(all.size,43);
 const arrivals=['rabbit','fox','deer','wolf','eve'];
 for(const id of arrivals){
- const [canonical,legacy]=cinematicArtworkCandidates(id);
+ const [canonical]=cinematicArtworkCandidates(id);
  assert.ok(canonical.startsWith('/assets/cinematics/origin-zero/story/SCN_'),id+' canonical art path');
- if(legacy)assert.ok(fs.existsSync(path.join(__dirname,'../public',legacy)),id+' legacy cinematic must be playable');else assert.ok(fs.existsSync(path.join(__dirname,'../public',canonical)),id+' canonical cinematic must be playable');
+ assert.ok(cinematicArtworkCandidates(id).some(candidate=>fs.existsSync(path.join(__dirname,'../public',candidate))),id+' must have at least one playable canonical or fallback scene');
 }
 assert.equal(ORIGIN_ZERO_CANONICAL_ENDING_ART.length,8);
 for(const item of ORIGIN_ZERO_CANONICAL_ENDING_ART){

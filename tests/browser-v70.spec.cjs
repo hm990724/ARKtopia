@@ -17,6 +17,7 @@ test('DAY 003 AP 0 -> supply screen (no date or AP spent)',async({page})=>{
 test('AP 0 -> night handling -> day 004 and 4 AP saved',async({page})=>{
  await page.getByRole('button',{name:/야간 대응/}).last().click();
  await expect(page.getByRole('heading',{name:'밤이 오기 전에'})).toBeVisible();
+ await page.getByRole('button',{name:/경비 중단/}).click();
  await page.getByRole('button',{name:/야간 운영 확정|무방비로 다음 날/}).last().click();
  await expect.poll(async()=>page.evaluate(key=>{const x=JSON.parse(localStorage.getItem(key));return [x.day,x.ap];},key)).toEqual([4,4]);
  await page.reload();

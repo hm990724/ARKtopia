@@ -23,13 +23,13 @@ const EXTENDED_INCIDENT_ART:Record<ExtendedIncidentId,string>={
  fence_crack:'event_containment.png',enclosure_rattle:'event_containment.png',escape_tracks:'event_signal.png',animal_fever:'event_garden.png',feed_shortage:'event_garden.png',
  medic_memory:'event_garden.png',guard_refusal:'event_containment.png',staff_conflict:'event_signal.png',empty_chair:'event_garden.png',neural_static:'event_signal.png',
  resonance_drift:'event_signal.png',data_corruption:'event_signal.png',hq_recall_order:'event_signal.png',hq_delete_order:'event_signal.png',field_scavenger:'event_coolant.png',
- contamination_pool:'event_spores.png',construction_noise:'event_blackout.png',m00_signature:'event_signal.png',exposure_critical:'event_containment.png'
+ contamination_pool:'event_spores.png',construction_noise:'event_blackout.png',m00_signature:'event_signal.png',exposure_critical:'event_containment.png',fox_supply_memory:'event_garden.png',deer_archive_memory:'event_signal.png'
 };
 
 export function findIncidentArt(id:IncidentId):string{return id in CORE_INCIDENT_ART?CORE_INCIDENT_ART[id as CoreIncidentId]:EXTENDED_INCIDENT_ART[id as ExtendedIncidentId];}
 export const incidentArtFiles=[...new Set([...Object.values(CORE_INCIDENT_ART),...Object.values(EXTENDED_INCIDENT_ART)])];
 
-/** 41 distinct gameplay incident artwork targets (separate from the story EVT storyboard).
+/** 43 distinct gameplay incident artwork targets (separate from the story EVT storyboard).
  * Names are tied to actual executable incident IDs, not guessed story scenes.
  * A missing replacement never causes a blank event: the known legacy illustration
  * remains an explicit fallback until visual QA approves and commits each new CG.
@@ -75,7 +75,9 @@ export const GAME_EVENT_ART_ORDER:readonly IncidentId[]=[
  'data_corruption',
  'fence_crack',
  'construction_noise',
- 'neural_static'
+ 'neural_static',
+ 'fox_supply_memory',
+ 'deer_archive_memory'
 ];
 export function incidentArtworkCandidates(id:IncidentId):readonly string[]{
  const order=GAME_EVENT_ART_ORDER.indexOf(id);
