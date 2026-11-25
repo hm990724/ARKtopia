@@ -25,12 +25,12 @@ const seedFor=(day:number,region:RegionId)=>region.split('').reduce((n,c)=>hash(
 const distance=(a:number,b:number,width:number)=>Math.abs(a%width-b%width)+Math.abs(Math.floor(a/width)-Math.floor(b/width));
 export const fieldDimensions=(region:RegionId):{width:number;height:number}=>({garden:{width:8,height:8},conservatory:{width:8,height:8},rail:{width:9,height:9},archive:{width:10,height:10},vault:{width:11,height:11},tunnels:{width:12,height:12}}[region]);
 export const REGION_RULES:Record<RegionId,{title:string;description:string;blind:boolean;sporeRate:number;sporeWake:number;sporeGrowth:number;sporeCap:number}> = {
- garden:{title:'기본 수색',description:'생체 청음과 시야로 개체 신호를 추적한다.',blind:false,sporeRate:0.6,sporeWake:0,sporeGrowth:1,sporeCap:0.45},
- conservatory:{title:'온실 · 급속 오염',description:'포자가 빠르게 번진다. 바이오필터와 빠른 귀환이 유리하다.',blind:false,sporeRate:0.6,sporeWake:0,sporeGrowth:1,sporeCap:0.5},
- rail:{title:'폐역 · 완전 암전',description:'조명은 무용하다. 청음의 방향과 강도로 길을 찾아라. 소음이 적을수록 안전하다.',blind:true,sporeRate:0.6,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
- archive:{title:'관측소 · 혼선 신호',description:'정상 기록과 가짜 신호가 뒤섞인다. 스캐너나 기록관으로 판별할 수 있다.',blind:false,sporeRate:0.6,sporeWake:0,sporeGrowth:2,sporeCap:0.6},
- vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.6,sporeWake:0,sporeGrowth:2,sporeCap:0.65},
- tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.6,sporeWake:0,sporeGrowth:3,sporeCap:0.7}
+ garden:{title:'기본 수색',description:'생체 청음과 시야로 개체 신호를 추적한다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:1,sporeCap:0.45},
+ conservatory:{title:'온실 · 급속 오염',description:'포자가 빠르게 번진다. 바이오필터와 빠른 귀환이 유리하다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:1,sporeCap:0.5},
+ rail:{title:'폐역 · 완전 암전',description:'조명은 무용하다. 청음의 방향과 강도로 길을 찾아라. 소음이 적을수록 안전하다.',blind:true,sporeRate:0.4,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
+ archive:{title:'관측소 · 혼선 신호',description:'정상 기록과 가짜 신호가 뒤섞인다. 스캐너나 기록관으로 판별할 수 있다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:2,sporeCap:0.6},
+ vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:2,sporeCap:0.65},
+ tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.4,sporeWake:0,sporeGrowth:3,sporeCap:0.7}
 };
 export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?0:region==='tunnels'?(scanner?2+Math.floor(level/2):1):scanner?3+Math.floor(level/2):light?2:1;}
 export function acousticBearing(f:FieldState,kind:'animal'|'exit'|'threat'|'fragment'){
@@ -114,6 +114,16 @@ export function advanceFieldShift(f:FieldState){
  }
  if(changes.length){shift.serial++;shift.lastStep=f.steps;shift.notice=changes.join(' · ');}
 }
+/** MUTANT deposits persistent spores; never overwrite loot, wildlife, entry or exit tiles. */
+export function depositMutantSpores(f:FieldState,at:number,count=1):number{
+ const s=f.sporeSpread??={turn:0,active:[],cells:[]};
+ const occupied=new Set(sporeVisibleCells(f)),w=fieldWidth(f),rule=REGION_RULES[f.region??'garden'];
+ const allowed=(i:number)=>i>=0&&i<f.tiles.length&&f.tiles[i]!=='wall'&&f.tiles[i]!=='exit'&&i!==f.origin&&i!==f.exitIndex;
+ const maximum=Math.floor(f.tiles.filter((_,i)=>allowed(i)).length*rule.sporeCap);
+ const pool=[at,...[at-w,at+w,at-1,at+1].filter(i=>adjacentField(at,i,w,f.tiles.length))].filter(i=>allowed(i)&&!occupied.has(i));
+ let added=0;for(const i of pool){if(added>=count||occupied.size>=maximum)break;s.cells.push(i);occupied.add(i);added++;}
+ return added;
+}
 export function advanceSporeSpread(f:FieldState,roll?:()=>number):number|null{
  const s=f.sporeSpread??={turn:0,active:[],cells:[]};s.turn++;
  s.lastGrowth=[];
@@ -189,7 +199,7 @@ export function advanceFieldThreat(f:FieldState,_noise=f.noise,_relayLevel=0,_li
   if((costs.get(t.position)??Infinity)<=1)break;
   const next=neighbors(t.position).sort((a,b)=>(costs.get(a)??Infinity)-(costs.get(b)??Infinity))[0];
   if(next===undefined||(costs.get(next)??Infinity)>=(costs.get(t.position)??Infinity))break;
-  t.position=next;
+  depositMutantSpores(f,t.position);t.position=next;
  }
  const close=(costs.get(t.position)??Infinity)<=1;
  t.warningTicks=close?1:0;return close;
