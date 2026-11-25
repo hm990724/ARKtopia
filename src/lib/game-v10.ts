@@ -133,7 +133,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  }
  // Retain existing saves and active combat progress, but never duplicate a secured Mutant.
  if(restored.field){
-  restored.field.region??=restored.run?.region;restored.field.sporeSwarm=null;
+  restored.field.region??=restored.run?.region;restored.field.sporeSwarm=null;restored.field.encountered=remainingWildlife(restored.field).length===0;
   if(restored.field.interruptedCapture)restored.field.interruptedCapture=normalizeCapture(restored.field.interruptedCapture);
   if(mutantSecured(restored)||restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
   else if(restored.field.combat?.source==='mobile'){restored.field.combat.enemy='mutant';restored.roamingStory??={};restored.roamingStory.firstEncounterDay??=restored.day;}
@@ -664,7 +664,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    if(run.region==='archive'){observation='불규칙한 신호가 수신됩니다. 진위 확인이 필요합니다.';}else{n.knowledge+=4;n.clues++;field.clues++;earnDuringRun(run,'knowledge',4);earnDuringRun(run,'clues',1);observation='폐쇄된 연구 신호를 복원했습니다. 지식 +4, 기록 단서 +1.';}
   }else if(tile==='animal'){
    field.tiles[destination]='empty';field.encountered=remainingWildlife(field).length===0;field.wildlifeIndex=remainingWildlife(field)[0]??destination;delete field.acoustic;
-   const firstRabbit=n.lifeSaved===0&&!n.animals.some(a=>a.id==='rabbit'&&a.alive)&&run.region==='garden';
+   const firstRabbit=n.lifeSaved===0&&!(field.seenSpecies??[]).includes('rabbit')&&!n.animals.some(a=>a.id==='rabbit'&&a.alive)&&run.region==='garden'&&(!field.wildlifeSpecies?.[destination]||field.wildlifeSpecies[destination]==='rabbit');
    const region=regions.find(r=>r.id===run.region)!;
    const candidates=region.animals.filter(id=>(id!=='mutant'||!mutantSecured(n))&&!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(a=>a.id===id)!.unlock<=n.day);
    const assigned=field.wildlifeSpecies?.[destination];const species:AnimalId|undefined=firstRabbit?'rabbit':(assigned&&candidates.includes(assigned)?assigned:candidates.length?candidates[(n.day+field.steps+field.clues)%candidates.length]:undefined);if(species)field.seenSpecies=[...new Set([...(field.seenSpecies??[]),species])];
