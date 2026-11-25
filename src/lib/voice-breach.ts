@@ -7,7 +7,8 @@ import type {V10} from './game-v10';
 import type {AnimalId} from './sim';
 import {cap,copy,log} from './sim';
 import {CREW_PROFILES,queueCrewTerminations,type CrewId} from './crew';
-import type {CameraId} from './security';
+import {roomCamera,type CameraId} from './security';
+import {recordSpecimen} from './specimen-archive';
 
 export type VoiceProbe='eve'|'enclosure'|'personnel'|'thermal'|'radio';
 export type VoiceVerdict='open'|'seal';
@@ -45,9 +46,9 @@ export function scheduleVoiceBreach(s:V10,triggerRoll=Math.random(),subjectRoll=
  const isMimic=clampRoll(truthRoll)<.55;
  const name=subject==='eve'?'EVE':subject==='animal'?creatureName(s,animalId!):CREW_PROFILES[subject].post;
  const line=subject==='eve'?'담당자님. 외부 보조 단말입니다. 문 앞 통신 패널을 확인해 주세요.':subject==='animal'?`${name}의 울음소리... 마지막 음절은 이상하게 익숙합니다.`:staffLines[subject];
- v.pending={id:`VOICE-${s.day}-${v.resolved+1}`,day:s.day,camera:subject==='animal'?'CAM-02':subject==='eve'?'CAM-04':'CAM-01',subject,animalId,name,line,isMimic,checks:[],remaining:3,signalSeed:Math.floor(clampRoll(subjectRoll*.61+truthRoll*.29+.07)*100000)+s.day*97};
+ v.pending={id:`VOICE-${s.day}-${v.resolved+1}`,day:s.day,camera:subject==='animal'?roomCamera(animals.find(a=>a.id===animalId)?.room??1):subject==='eve'&&v.firstTriggered?'CAM-04':'CAM-01',subject,animalId,name,line,isMimic,checks:[],remaining:3,signalSeed:Math.floor(clampRoll(subjectRoll*.61+truthRoll*.29+.07)*100000)+s.day*97};
  v.firstTriggered=true;v.lastTriggeredDay=s.day;
- log(s,'똑, 똑, 똑 · 외부 음성 감지',`${name}의 목소리가 출입문 밖에서 들립니다. 세 번까지 조사한 뒤 개방 또는 봉쇄를 결정하십시오.`,'mystery');
+ log(s,'똑, 똑, 똑 · 외부 음성 감지',`${name}의 신호가 ${v.pending.camera}에서 감지되었습니다. 세 번까지 조사한 뒤 현장 개방 또는 봉쇄를 결정하십시오.`,'mystery');
  s.lastOutcome='CCTV / 음성 출처 미확인 · 출입문 봉쇄 대기';
  return true;
 }
@@ -67,6 +68,9 @@ export function voiceSignal(e:VoiceEvent,probe:VoiceProbe){
  const received=[...sample.slice(phase),...sample.slice(0,phase)];
  return {base,sample,received,alignment:6-phase,reading,quality:ambiguous?'중계 기록 · 오차 가능':'직접 센서 · 독립 기록'};
 }
+export function voiceFrequency(e:VoiceEvent,probe:VoiceProbe){const i=(['eve','enclosure','personnel','thermal','radio'] as const).indexOf(probe);return 89+((e.signalSeed??e.day*97)+i*73)%171/10;}
+export function voiceReception(e:VoiceEvent,probe:VoiceProbe,frequency:number){return Math.max(0,Math.min(100,Math.round(100-Math.abs(voiceFrequency(e,probe)-frequency)*28)));}
+export function voiceSite(e:VoiceEvent):'enclosure'|'research'|'gate'{return e.subject==='animal'?'enclosure':e.camera==='CAM-04'?'research':'gate';}
 export function voiceKnockPattern(e:VoiceEvent){const {sample}=voiceSignal(e,'eve');return sample.slice(0,4).map(v=>.12+v*.095);}
 function evidence(e:VoiceEvent,probe:VoiceProbe,reading?:VoiceReading,alignment?:number):VoiceEvidence{
  const signal=voiceSignal(e,probe);
@@ -90,11 +94,26 @@ export function resolveVoiceBreach(s:V10,verdict:VoiceVerdict):V10{
  let outcome='';const right=(verdict==='seal')===ev.isMimic;
  if(ev.isMimic){
   if(verdict==='open'){
-   const old=n.mind;n.mind=cap(n.mind-20);
-   const losses=(n.crew?.members??[]).filter(m=>m.mind>0).map(m=>{const was=m.mind;m.mind=cap(m.mind-20);return `${CREW_PROFILES[m.id].post} ${was}→${m.mind}`;});
-   n.threat=cap(n.threat+14);n.facility=cap(n.facility-10);
+   const site=voiceSite(ev);
+   if(site==='enclosure'){
+    const animal=n.animals.find(a=>a.id===ev.animalId&&a.alive);
+    const checked=ev.checks.some(c=>c.probe==='enclosure'&&c.tone==='doubt');
+    if(animal){
+     animal.stress=cap(animal.stress+(checked?24:40));animal.bond=cap(animal.bond-12);
+     animal.contamination=cap(animal.contamination+25);animal.hp=cap(animal.hp-(checked?20:45));
+     if(animal.hp<=0||(!checked&&animal.stress>=90&&animal.hp<=35)){animal.hp=0;animal.alive=false;recordSpecimen(n,animal.id,'야간 CCTV · 개체 손실','격리문 오인 개방 후 생체 신호 소실.','loss');outcome=animal.name+' 생체 신호 소실 · 개체 사망.';}
+     else outcome=animal.name+' 격리실 침입 · 스트레스 및 오염 증가, 건강과 유대 감소.';
+    }else outcome='빈 격리 구역 침입.';
+    n.infection=cap(n.infection+9);n.mind=cap(n.mind-8);n.threat=cap(n.threat+8);
+   }else if(site==='research'){
+    n.eve=cap(n.eve-16);n.power=cap(n.power-12);n.infection=cap(n.infection+12);n.trust=cap(n.trust-8);n.mind=cap(n.mind-9);outcome='연구동 단말 침입 · EVE 코어 -16, 전력 -12, 감염 +12, 신뢰 -8, 정신력 -9.';
+   }else{
+    n.mind=cap(n.mind-12);n.infection=cap(n.infection+20);n.threat=cap(n.threat+14);n.facility=cap(n.facility-10);
+    const member=n.crew?.members.find(m=>m.id===ev.subject&&m.mind>0);
+    if(member){member.mind=cap(member.mind-16);member.hp=cap(member.hp-12);member.bond=cap(member.bond-8);}
+    outcome='정문 모방체 침입 · 감염 +20, 정신력 -12, 시설 -10, 위협 +14.'+(member?' 해당 직원 건강·정신력·유대 감소.':'');
+   }
    queueCrewTerminations(n);
-   outcome=`신원 불명 개체 침입. 관리자 정신 ${old}→${n.mind} (-20), 직원 전원 정신 -20.${losses.length?' '+losses.join(' / '):''} 시설 안정성 -10, 위협도 +14.`;
   }else {n.knowledge+=3;n.clues++;n.threat=cap(n.threat-4);outcome='모방 신호 차단 성공. 지식 +3, 기록 단서 +1, 외부 위협도 -4. 인간의 말투를 학습한 흔적이 남았습니다.';}
  }else if(verdict==='open'){
   if(ev.subject==='animal'){
@@ -111,15 +130,15 @@ export function resolveVoiceBreach(s:V10,verdict:VoiceVerdict):V10{
  }else {
   if(ev.subject==='animal'){
    const a=n.animals.find(a=>a.id===ev.animalId&&a.alive);
-   if(a){a.stress=cap(a.stress+17);if(!n.security.escapedIds.includes(a.id))n.security.escapedIds.push(a.id);
+   if(a){a.stress=cap(a.stress+17);a.bond=cap(a.bond-12);n.mind=cap(n.mind-4);if(!n.security.escapedIds.includes(a.id))n.security.escapedIds.push(a.id);
     if(!n.security.incident)n.security.incident={animalId:a.id,status:'escaped',camera:'CAM-01',severity:44,steps:0,detected:true,tracked:false,description:'진짜 격리 개체를 모방 신호로 오인하여 복귀 문을 열지 않았습니다.'};}
    outcome=`${ev.name}이(가) 돌아오지 못했습니다. 탈출 개체로 등록되었습니다. CCTV에서 추적해 재격리하십시오.`;
   }else if(ev.subject==='eve'){
-   n.eve=cap(n.eve-8);n.power=cap(n.power-7);
+   n.eve=cap(n.eve-8);n.power=cap(n.power-7);n.trust=cap(n.trust-8);n.mind=cap(n.mind-4);
    outcome='정상 EVE 보조 단말을 차단했습니다. 정비 신호 소실: EVE 코어 -8, 시설 전력 -7%p.';
   }else{
    const m=n.crew?.members.find(m=>m.id===ev.subject);
-   if(m){const old=m.mind;m.mind=cap(m.mind-15);queueCrewTerminations(n);outcome=`진짜 ${CREW_PROFILES[ev.subject].post}을(를) 정문 밖에 방치했습니다. 정신력 ${old}→${m.mind} (-${old-m.mind}).`}
+   if(m){const old=m.mind;m.mind=cap(m.mind-15);m.bond=cap(m.bond-12);n.trust=cap(n.trust-5);n.mind=cap(n.mind-4);queueCrewTerminations(n);outcome=`진짜 ${CREW_PROFILES[ev.subject].post}을(를) 정문 밖에 방치했습니다. 정신력 ${old}→${m.mind} (-${old-m.mind}), 직원 유대 -12, 신뢰 -5, 관리자 정신력 -4.`}
    else outcome='보안문을 닫았습니다. 통신 기록이 불완전합니다.';
   }
  }
