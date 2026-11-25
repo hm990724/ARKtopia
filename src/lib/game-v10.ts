@@ -52,7 +52,7 @@ export const regions:{id:RegionId;name:string;desc:string;art:string;danger:numb
 {id:'vault',name:'B-3 밀폐 연구동',desc:'봉인된 보급 설비. 스캐너·보급관과 회수 효율 상승.',art:'laboratory',danger:72,reward:5,ap:1,power:30,unlocked:9,animals:['axolotl','mutant']},
 {id:'tunnels',name:'제0구역 통로',desc:'EVE의 기록에서 존재하지 않는 장소.',art:'wasteland',danger:86,reward:6,ap:1,power:37,unlocked:14,animals:['specter','mutant','chimera']}
 ];
-export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'수동 손전등',desc:'정전 수동 탐사 · 조사 시야 반경 2칸 · 수동 출동 전지 25%'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 추가 8 · 조사 시야 반경 3칸 · 포자 노출 피해 -3'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 정신력 +20 · 미사용 귀환 시 반환'}];
+export const gearData:{id:Gear;name:string;desc:string}[]=[{id:'flashlight',name:'손전등',desc:'점등마다 시설 전력 5%p · 4회 이동 동안 시야 반경 2칸'},{id:'filter',name:'바이오필터',desc:'출동 시 필터 1개 · 사고 위험 계산 -12 · 탐사 감염 증가 -5'},{id:'scanner',name:'EVE 스캐너',desc:'출동 전력 8%p · 지속 시야 반경 3칸 · 포자 피해 감소 및 가짜 기록 판독'},{id:'medkit',name:'응급 키트',desc:'출동 시 의약품 1개 예약 · 탐사 중 원하는 시점에 정신력 +20 · 미사용 귀환 시 반환'}];
 const coreIncidentDefs:Record<CoreIncidentId,Incident>={
 garden:{id:'garden',title:'금 간 바닥의 새싹',desc:'온실 배수구에서 작은 싹이 올라왔습니다. EVE는 잡초로 분류했지만, 오늘은 잠시 판단을 유보합니다.',cause:'시설이 버틴 밤 뒤에 찾아온 작은 회복',options:['전력 6을 들여 재배등을 켠다 · 식량 +3','씨앗과 토양을 조사한다 · 지식 +10','작은 화단으로 남긴다 · 정신력 +7']},
 keepsake:{id:'keepsake',title:'우리 앞에 놓인 작은 선물',desc:'보호 중인 동물이 깨끗한 금속 조각을 문 앞에 놓았습니다. EVE는 우연한 행동이라고 말하다가 기록 버튼을 누릅니다.',cause:'살아 있는 보호 개체와 쌓아온 일상',options:['식량 1로 응답한다 · 유대 +8, 스트레스 -8','부품으로 회수한다 · 부품 +2, 유대 -3','손대지 않고 지켜본다 · 단서 +1, 정신력 +4']},
@@ -217,11 +217,11 @@ export function handleMutant(s:V10,id:AnimalId,choice:MutantDecision):V10{
 }
 export function gearUnavailable(s:V10,gear:Gear,region:RegionId):string|null{
  const r=regions.find(r=>r.id===region);if(!r)return '알 수 없는 탐사 구역입니다.';
- if(gear==='flashlight'&&s.flashlight<25)return '손전등 배터리 25% 이상이 필요합니다. 보급에서 충전하세요.';
+ 
  if(gear==='filter'&&s.filters<1)return '바이오필터가 부족합니다. 보급에서 구입하세요.';
  if(gear==='medkit'&&s.medicine<1)return '의약품이 부족합니다. 보급에서 구입하세요.';
  if(gear==='cage'&&s.parts<1)return '운송 케이지용 부품이 부족합니다.';
- if(gear==='scanner'&&s.power<r.power+8)return '스캐너 전력이 부족합니다. 전력을 보충하거나 손전등을 선택하세요.';
+ if(gear==='scanner'&&s.power<8)return '스캐너 전력이 부족합니다. 전력을 보충하거나 손전등을 선택하세요.';
  return null;
 }
 export function expeditionLimit(s:V10){return upgradeLevel(s,'sortie')>0?2:1;}
@@ -241,14 +241,13 @@ export function expeditionBlockReason(s:V10,region:RegionId,gear:Gear[],companio
  if(new Set(companions).size!==companions.length)return '같은 직원을 중복 편성할 수 없습니다.';
  if(companions.some(id=>!s.crew?.members.some(m=>m.id===id&&m.mind>0)))return '미합류·퇴장·정신 붕괴 직원은 출동할 수 없습니다.';
  if(companions.some(id=>s.crew?.supportWorked?.includes(id)))return '선택한 직원은 오늘 기지 지원 업무를 수행했습니다. 다른 직원을 선택하거나 혼자 출동하세요.';
- if(!gear.includes('flashlight')&&!gear.includes('scanner'))return '어두운 현장에 들어가려면 손전등 또는 EVE 스캐너가 필요합니다.';
  for(const g of gear){const reason=gearUnavailable(s,g,region);if(reason)return reason;}
- if(gear.includes('scanner')&&s.power<r.power+8)return 'EVE 스캐너는 시설 전력이 부족합니다. 손전등으로 바꾸거나 발전기를 복구하세요.';
+ if(gear.includes('scanner')&&s.power<8)return 'EVE 스캐너는 시설 전력이 부족합니다. 손전등으로 바꾸거나 발전기를 복구하세요.';
  return null;
 }
-export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null|CrewId[]=null):V10{const requested=Array.isArray(companion)?companion:[companion].filter(Boolean) as CrewId[];if(expeditionBlockReason(s,region,gear,requested))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=r.power+8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(!gear.includes('flashlight')&&!scanner)||(scanner&&n.power<scannerPower))return s;if(gear.includes('flashlight')&&n.flashlight<25)return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
-n.expeditionCount=expeditionCountToday(s)+1;n.lastExpeditionDay=n.day;n.ap-=1;if(scanner)n.power-=scannerPower;if(gear.includes('flashlight'))n.flashlight=cap(n.flashlight-10);if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
-const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);const companions=requested.filter((id,index)=>requested.indexOf(id)===index&&s.crew?.members.some(m=>m.id===id&&m.mind>0)).slice(0,2);if(companions.length){const crew=ensureCrew(n);crew.sortieWorked=[...new Set([...(crew.sortieWorked??[]),...companions])];}n.run={region,gear,stage:0,netLevel:upgradeLevel(n,'net'),suitLevel:upgradeLevel(n,'suit'),scannerLevel:upgradeLevel(n,'scanner'),integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:companions[0]??null,companions,log:[scanner?'시설 전력망 EVE 스캐너 연결':'휴대 손전등 출동 · 시설 전력 보존']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;const available=r.animals.filter(id=>(id!=='mutant'||!mutantSecured(n))&&!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(a=>a.id===id)!.unlock<=n.day);const guided=!!n.run.firstTutorial;n.field=createField(n.day,region,n.encounters+n.expeditionCount,guided,available.length);const slots=remainingWildlife(n.field);const offset=(n.day*17+n.encounters*7+n.expeditionCount)%Math.max(1,available.length);n.field.wildlifeSpecies=Object.fromEntries(slots.flatMap((at,i)=>{const id=guided?'rabbit':available[(i+offset)%available.length];return id?[[at,id]]:[];}));if(region==='rail')n.field.lightOff=true;if(n.originZero?.route)placeOriginFragments(n.field,regionFragments(n,region),n.day*1709+n.encounters*313+n.expeditionCount);if(mutantSecured(n)||n.run.firstTutorial)n.field.threat=null;n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
+export function startRun(s:V10,region:RegionId,gear:Gear[],companion:CrewId|null|CrewId[]=null):V10{const requested=Array.isArray(companion)?companion:[companion].filter(Boolean) as CrewId[];if(expeditionBlockReason(s,region,gear,requested))return s;const n=copy(s) as V10;const r=regions.find(r=>r.id===region)!;const scanner=gear.includes('scanner');const scannerPower=8;if(n.phase!=='day'||n.run||n.ap<1||n.day<r.unlocked||(scanner&&n.power<scannerPower))return s;if(gear.includes('filter')&&n.filters<1)return s;if(gear.includes('medkit')&&n.medicine<1)return s;if(gear.includes('cage')&&n.parts<1)return s;
+n.expeditionCount=expeditionCountToday(s)+1;n.lastExpeditionDay=n.day;n.ap-=1;if(scanner)n.power-=scannerPower;if(gear.includes('filter'))n.filters--;if(gear.includes('medkit'))n.medicine--;if(gear.includes('cage'))n.parts--;
+const initialRisk=r.danger-(gear.includes('filter')?13:0)-(scanner?9:0);const companions=requested.filter((id,index)=>requested.indexOf(id)===index&&s.crew?.members.some(m=>m.id===id&&m.mind>0)).slice(0,2);if(companions.length){const crew=ensureCrew(n);crew.sortieWorked=[...new Set([...(crew.sortieWorked??[]),...companions])];}n.run={region,gear,stage:0,netLevel:upgradeLevel(n,'net'),suitLevel:upgradeLevel(n,'suit'),scannerLevel:upgradeLevel(n,'scanner'),integrity:100,exposure:0,loot:0,discovery:null,event:'',medkitUsed:false,earned:freshFieldEarnings(),captures:[],firstTutorial:s.tutorialStep===1,companion:companions[0]??null,companions,log:[scanner?'EVE 스캐너 연결 · 전력 -8':'장비 점등 전까지 암전 탐사']};n.stamina=n.nextFieldFatigued?50:100;n.nextFieldFatigued=false;n.lastFieldSummary=null;const available=r.animals.filter(id=>(id!=='mutant'||!mutantSecured(n))&&!n.headquarters?.transferred.includes(id)&&!n.animals.some(a=>a.id===id&&a.alive)&&specs.find(a=>a.id===id)!.unlock<=n.day);const guided=!!n.run.firstTutorial;n.field=createField(n.day,region,n.encounters+n.expeditionCount,guided,available.length);const slots=remainingWildlife(n.field);const offset=(n.day*17+n.encounters*7+n.expeditionCount)%Math.max(1,available.length);n.field.wildlifeSpecies=Object.fromEntries(slots.flatMap((at,i)=>{const id=guided?'rabbit':available[(i+offset)%available.length];return id?[[at,id]]:[];}));n.field.lightOff=true;n.field.lightSteps=0;revealField(n.field,fieldVision(region,false,scanner,n.run.scannerLevel??0));if(n.originZero?.route)placeOriginFragments(n.field,regionFragments(n,region),n.day*1709+n.encounters*313+n.expeditionCount);if(mutantSecured(n)||n.run.firstTutorial)n.field.threat=null;n.capture=null;n.tacticalCaptured=false;n.eventRisk=cap(n.eventRisk+3);n.threat=cap(n.threat+4);n.lastOutcome=`${r.name}에 진입했다. 탐사 ST ${n.stamina}/100 · 초기 위험 ${Math.max(5,initialRisk)}%.`;return n}
 // Reserved expedition supplies are refunded if not consumed. A cage is consumed only on capture attempt.
 function returnUnusedRunSupplies(s:V10,run:Run,hasEncounter:boolean){
  if(run.gear.includes('medkit')&&!run.medkitUsed)s.medicine++;
@@ -276,7 +275,7 @@ export const fieldScenes:Record<RegionId,FieldScene[]>={
 };
 export function currentFieldScene(run:Run):FieldScene{return fieldScenes[run.region][run.stage%3]}
 export function canUseRunGear(s:V10):boolean{
- return !!s.run&&(s.run.gear.includes('scanner')||s.run.gear.includes('filter')||(s.run.gear.includes('flashlight')&&s.flashlight>=9)||s.power>=6);
+ return !!s.run&&(s.run.gear.includes('scanner')||s.run.gear.includes('filter')||(s.run.gear.includes('flashlight')&&s.power>=5)||s.power>=6);
 }
 export type RunChoice='careful'|'rush'|'gear'|'retreat';
 export function runStep(s:V10,choice:RunChoice,rand=Math.random(),signalAccuracy=50):V10{if(!s.run)return s;if(choice==='gear'&&!canUseRunGear(s))return s;const n=copy(s) as V10;const run=n.run!;const region=regions.find(r=>r.id===run.region)!;
@@ -287,7 +286,7 @@ const signalModifier=Math.round((50-Math.max(0,Math.min(100,signalAccuracy)))*.4
 const risk=signalModifier+region.danger+tactic+(run.stage*11)+(run.exposure*.28)+(n.infection*.25)+(100-n.facility)*.13-(run.gear.includes('filter')?12:0)-(run.gear.includes('scanner')?8:0)+(choice==='rush'?18:choice==='gear'?-20:-8);
 const check=rand*100;const success=check>risk;const gain=success?(choice==='rush'?3:choice==='gear'?2:2)*region.reward:Math.max(0,region.reward-1);
 run.loot+=gain+(success&&signalAccuracy>=85?region.reward:0);run.stage++;run.exposure+=choice==='rush'?20:choice==='gear'?7:12;run.integrity=cap(run.integrity-(success?6:22)-(choice==='rush'?8:0));n.stamina=cap(n.stamina-(choice==='rush'?13:7));n.infection=cap(n.infection+(success?2:9)+Math.round(region.danger/18)-(run.gear.includes('filter')?5:0));n.threat=cap(n.threat+(success?2:6));
-if(choice==='gear'){if(run.gear.includes('flashlight')&&n.flashlight>=9)n.flashlight-=9;else if(n.power>=6)n.power-=6;else if(!run.gear.includes('scanner')&&!run.gear.includes('filter')){run.integrity=cap(run.integrity-8);run.event='작동 가능한 장비가 없어 방호 상태가 감소했다.'}}
+if(choice==='gear'){if(run.gear.includes('flashlight')&&n.power>=5)n.power-=5;else if(n.power>=6)n.power-=6;else if(!run.gear.includes('scanner')&&!run.gear.includes('filter')){run.integrity=cap(run.integrity-8);run.event='작동 가능한 장비가 없어 방호 상태가 감소했다.'}}
 if(!success){n.mind=cap(n.mind-5-Math.round(region.danger/20));n.mind=cap(n.mind-5);n.facility=cap(n.facility-2)}
 run.log.push(`신호 보정 ${signalAccuracy}점 · ${signalModifier>0?'위험 증가':signalModifier<0?'위험 감소':'보정 없음'}`);
 run.log.push(`${success?'작전 성공':'위험 발생'} · ${scene.title} · ${choice===scene.preferred?'상황에 적합한 대응':choice===scene.punished?'잘못된 접근으로 위험 증가':'기본 대응'}`);run.event=run.log[run.log.length-1];
@@ -628,30 +627,32 @@ export function tickAutonomousSpores(s:V10):V10{
  const n=copy(s) as V10;advanceSporeSpread(n.field!);if(fieldSporeNearby(n.field!))tickFieldSpores(n);return n;
 }
 export function toggleFieldLight(s:V10):V10{
- if(s.run?.region==='rail'||!s.run?.gear.includes('flashlight')||!s.field||s.field.combat||s.field.choice||s.pending||s.flashlight<=0)return s;
- const n=copy(s) as V10;const f=n.field!;f.lightOff=!f.lightOff;
- if(!f.lightOff){f.noise=cap(f.noise+3);f.concealed=false;revealField(f,fieldVision(n.run!.region,true));}
- f.lastEvent=n.lastOutcome=f.lightOff?'손전등 소등 · 시야 감소, 노출 감소':'손전등 점등 · 시야 확장, 발각 위험 증가';
+ if(s.run?.region==='rail'||!s.run?.gear.includes('flashlight')||!s.field||s.capture||s.field.combat||s.field.choice||s.pending)return s;
+ const lit=!s.field.lightOff&&(s.field.lightSteps??0)>0;
+ if(!lit&&s.power<5)return s;
+ const n=copy(s) as V10,f=n.field!;
+ if(lit){f.lightOff=true;f.lightSteps=0;}else{n.power-=5;f.lightOff=false;f.lightSteps=4;f.noise=cap(f.noise+3);f.concealed=false;revealField(f,fieldVision(n.run!.region,true,n.run!.gear.includes('scanner'),n.run!.scannerLevel??0));}
+ f.lastEvent=n.lastOutcome=lit?'손전등 소등 · 시야 감소':'손전등 점등 · 시설 전력 -5%p · 이동 4회 동안 작동';
  return n;
 }
 export function listenField(s:V10,kind:'animal'|'exit'|'threat'|'fragment'):V10{if(!s.field||!s.run||s.capture||s.field.combat||s.field.choice||s.pending||s.stamina<3)return s;const signal=acousticBearing(s.field,kind);if(!signal)return s;const n=copy(s) as V10;n.stamina=cap(n.stamina-2);n.field!.noise=cap(n.field!.noise-12);n.field!.acoustic=signal;const label=kind==='animal'?'생체 울음':kind==='exit'?'귀환 유도음':kind==='fragment'?'기록 단말 잔향':'변이체 발소리';n.lastOutcome=n.field!.lastEvent=label+' · '+signal.direction+' · '+signal.range+' · ST -2';const message=n.lastOutcome;if(tickFieldSpores(n))n.lastOutcome=n.field!.lastEvent=message+' · '+n.lastOutcome;return n;}
 export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  if(s.run&&s.field&&!s.capture&&!s.field.combat&&s.stamina<2)return leaveField(s,'탈진 · 긴급 귀환');
  if(!s.run||!s.field||s.capture||s.phase!=='day'||s.pending||!adjacentField(s.field.position,destination,s.field.width??7,s.field.tiles.length)||s.field.choice||s.field.combat)return s;
- const tile=s.field.tiles[destination];if(tile==='wall'){if(s.run.region!=='rail'||s.field.discovered?.includes(destination))return s;const n=copy(s) as V10;n.field!.discovered=[...new Set([...(n.field!.discovered??[]),destination])];n.stamina=cap(n.stamina-1);n.lastOutcome=n.field!.lastEvent='금속 벽에 닿았습니다. 다른 방향을 찾으세요. ST -1';return n;}
+ const tile=s.field.tiles[destination];if(tile==='wall'){if((s.run.region!=='rail'&&((!s.field.lightOff&&(s.field.lightSteps??0)>0)||s.run.gear.includes('scanner')))||s.field.discovered?.includes(destination))return s;const n=copy(s) as V10;n.field!.discovered=[...new Set([...(n.field!.discovered??[]),destination])];n.stamina=cap(n.stamina-1);n.lastOutcome=n.field!.lastEvent='금속 벽에 닿았습니다. 다른 방향을 찾으세요. ST -1';return n;}
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
  field.previousPosition=field.position;field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
- if(run.region!=='rail'&&run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
+ const lightWasOn=!field.lightOff&&(field.lightSteps??0)>0;
  field.pressure=Math.min(100,(field.pressure??0)+fieldPressureGain(field,n.day,pace,upgradeLevel(n,'relay'),tile==='hazard'||!!field.sporeSpread?.cells.includes(destination)));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';const metal=metalFloor(field,destination);const masked=run.region==='rail';
- field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(metal?(noisy?18:pace==='normal'?10:1):0)+(run.region==='tunnels'&&pace!=='quiet'?6:0)+(run.region!=='rail'&&run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
+ field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(metal?(noisy?18:pace==='normal'?10:1):0)+(run.region==='tunnels'&&pace!=='quiet'?6:0)+(run.region!=='rail'&&lightWasOn?(noisy?7:3):0)));
  n.stamina=cap(n.stamina-(noisy?4:pace==='normal'?2:1));
  const exposed=pace==='fast'?9:pace==='normal'?5:2;
  run.exposure+=exposed;
  const shard=field.originFragments?.[destination];const recovered=shard!==undefined&&collectOriginFragment(n,shard);if(shard!==undefined)delete field.originFragments![destination];
- let observation=masked?'어둠 속에서 바닥을 더듬어 이동했습니다.':'손전등으로 주변을 확인했습니다. 아직 새로운 흔적은 없습니다.';
+ let observation=masked||(!lightWasOn&&!run.gear.includes('scanner'))?'어둠 속에서 바닥을 더듬어 이동했습니다.':'주변을 확인했습니다. 아직 새로운 흔적은 없습니다.';
  if(firstVisit){
   if(tile==='track'){
    field.clues++;n.knowledge+=2;earnDuringRun(run,'knowledge',2);field.noise=Math.max(0,field.noise-4);
@@ -718,7 +719,7 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
   else if(!beforeThreat&&field.threat)observation+=' · EVE: 노출 위협 임계 도달, 외곽 MUTANT 출현.';
  }
  if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
- revealField(field,fieldVision(run.region,run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0,run.gear.includes('scanner'),run.scannerLevel??0));
+ revealField(field,fieldVision(run.region,lightWasOn,run.gear.includes('scanner'),run.scannerLevel??0));if(lightWasOn){field.lightSteps=Math.max(0,(field.lightSteps??0)-1);if(!field.lightSteps){field.lightOff=true;observation+=' · 손전등 소등.';}}
  field.lastEvent=observation;
  n.lastOutcome=observation;
  if(tile==='exit'&&!field.combat&&!n.capture)return leaveField(n,'정상 귀환');
