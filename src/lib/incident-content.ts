@@ -86,9 +86,9 @@ function followupIsRelevant(s:V10,id:ExtendedIncidentId){
 }
 export function queueIncidentFollowup(s:V10,sourceId:IncidentId,option:number):V10{
  const rule=incidentFollowupRules[sourceId]?.[option as 0|1|2];
- if(!rule||!followupIsRelevant(s,rule.id))return s;
+ if(!rule||!followupIsRelevant(s,rule.id)||(s.incidentFollowups??[]).some(item=>item.id===rule.id&&item.expiresDay>=s.day))return s;
  const n=copy(s) as V10;const dueDay=n.day+rule.delay;
- const queue=(n.incidentFollowups??[]).filter(item=>item.expiresDay>=n.day&&!(item.sourceId===sourceId&&item.id===rule.id));
+ const queue=(n.incidentFollowups??[]).filter(item=>item.expiresDay>=n.day);
  n.incidentFollowups=[...queue,{id:rule.id,sourceId,dueDay,expiresDay:dueDay+2}].slice(-6);
  return n;
 }

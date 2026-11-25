@@ -9,6 +9,8 @@ Updated 2026-11-25. This is the active handoff. Implementation is still in progr
 - Added a four-sector moving acoustic readout and pointer-based net aiming whose release tile and pointer precision affect the throw.
 - Split manual interactions into distinct search/recovery, generator pressure/heat, power allocation, waveform reconstruction, rotary repair, channel tuning, facility assembly, and terminal-sequence commissioning. Save/resume state is kept for operation puzzles; commission sequences reject invalid order and cannot be completed through the generic verify action.
 - Prevented duplicate ARK RECALL answer submission. Updated opening-screen copy and expedition layout for desktop tools in one view, with responsive reflow on smaller screens.
+- Compressed desktop supply/power/upgrade and research rosters so their primary controls and status fit together at large viewports; smaller screens retain responsive reflow.
+- Connected selected risky event choices to durable follow-up incidents due in 1-3 days. The queue survives save/load, prioritizes an eligible due incident, expires when its window passes, and is surfaced on the base dashboard.
 - Ignored local archives and added a Git file-size check covering indexed blobs, staged working files, and ordinary untracked source. `public.zip` is absent from the repository and ignored.
 - Added deferred logic checks for idle AI, active-hunt interruption/resumption, 100% pressure, two-person companion persistence, and minigame state/solve paths. None of the integrated checks have been run in this pass yet.
 

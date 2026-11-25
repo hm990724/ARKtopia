@@ -19,7 +19,7 @@ This file summarizes the current gameplay loop. It is intentionally version-free
 ## People, incidents, research
 
 - Four crew roles provide distinct field and base support. Bond, memory, fatigue, mental stability, death, memorial, vacancies, and EVE responses are stateful.
-- Forty-one conditional incidents change resources, facilities, staff, specimens, CCTV, threat, or future incident likelihood. Recent decisions can increase a related event's chance during the following three days.
+- Forty-one conditional incidents change resources, facilities, staff, specimens, CCTV, and threat. Selected high-risk choices schedule a related incident 1–3 days later; the saved follow-up only appears while its state conditions remain valid and expires after its window.
 - Resonance, diagnosis, treatment, containment work, Hidden Photo records, animal observation, and M-00 investigation have dedicated routes. ARK RECALL persists by individual specimen and uses species-specific interactions.
 
 ## Saves and assets
