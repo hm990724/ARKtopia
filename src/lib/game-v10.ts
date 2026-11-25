@@ -13,7 +13,7 @@ import {resolveNightWatch} from './night-watch';
 import {emptyVoice,ensureVoice,scheduleVoiceBreach,type VoiceState} from './voice-breach';
 import {tickHorror} from './horror-cases';
 import {emptyHqOrders,ensureHqOrders,tickHqOrders,registerHqSpecies,issueNextHqOrder,type HqOrderState} from './hq-orders';
-import {fieldVision,acousticBearing,metalFloor,falseFieldSignal,revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,advanceSporeSpread,advanceFieldShift,remainingWildlife,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
+import {fieldVision,acousticBearing,metalFloor,falseFieldSignal,revealField,placeOriginFragments,createField,createCapture,adjacentField,fieldHasCover,fieldSporeNearby,fieldPressureGain,advanceSporeSpread,advanceFieldShift,remainingWildlife,advanceCapture,setDevice,removeDevice,markCapturePrediction,armCaptureSeal,normalizeCapture,type FieldState,type FieldChoice,type CaptureState,type DeviceKind,type Pace} from './tactical-field';
 import {EXTENDED_INCIDENT_IDS,extendedIncidentDefs,extendedIncidentWeight,resolveExtendedIncident,type ExtendedIncidentId} from './incident-content';
 import {allocateFacilityPower,normalizeFacilityPowerOrder,previewFacilityPower,type FacilityPowerState} from './facility-power';
 
@@ -634,9 +634,9 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  const tile=s.field.tiles[destination];if(tile==='wall'){if(s.run.region!=='rail'||s.field.discovered?.includes(destination))return s;const n=copy(s) as V10;n.field!.discovered=[...new Set([...(n.field!.discovered??[]),destination])];n.stamina=cap(n.stamina-1);n.lastOutcome=n.field!.lastEvent='금속 벽에 닿았습니다. 다른 방향을 찾으세요. ST -1';return n;}
  const n=copy(s) as V10;const field=n.field!;const run=n.run!;
  const firstVisit=!field.visited.includes(destination);
- field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
+ field.previousPosition=field.position;field.position=destination;field.concealed=false;field.steps++;if(!fieldSporeNearby(field))field.sporeTicks=0;
  if(run.region!=='rail'&&run.gear.includes('flashlight')&&!field.lightOff)n.flashlight=Math.max(0,n.flashlight-(upgradeLevel(n,'battery')>0?1:2));
- field.pressure=Math.min(100,(field.pressure??0)+Math.max(1,Math.round(100/((field.width??7)+(field.height??5)+3))-upgradeLevel(n,'relay'))+Math.floor(regions.find(r=>r.id===run.region)!.danger/14)+Math.floor(n.day/5)+(tile==='hazard'||field.sporeSpread?.cells.includes(destination)?12:0)+(pace==='fast'?8:0));
+ field.pressure=Math.min(100,(field.pressure??0)+fieldPressureGain(field,n.day,pace,upgradeLevel(n,'relay'),tile==='hazard'||!!field.sporeSpread?.cells.includes(destination)));
  if(firstVisit)field.visited.push(destination);
  const noisy=pace==='fast';const metal=metalFloor(field,destination);const masked=run.region==='rail';
  field.noise=Math.max(0,Math.min(100,field.noise+(noisy?18:pace==='normal'?7:-4)+(metal?(noisy?18:pace==='normal'?10:1):0)+(run.region==='tunnels'&&pace!=='quiet'?6:0)+(run.region!=='rail'&&run.gear.includes('flashlight')&&!field.lightOff&&n.flashlight>0?(noisy?7:3):0)));
