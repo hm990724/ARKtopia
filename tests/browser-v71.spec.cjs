@@ -29,7 +29,7 @@ test('recovered photos load, enlarge and close with Escape while early records s
  await expect.poll(()=>page.locator('.v71-photo-dialog>img').evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
  await page.keyboard.press('Escape');await expect(page.locator('.v71-photo-dialog')).not.toBeVisible();
  await page.locator('.v71-story-archive summary').click();
- await expect(page.locator('.v71-story-grid')).not.toContainText('실패라고 이름 붙인 생명');
+ await expect(page.locator('.v71-story-grid')).not.toContainText('시리우스 시절의 연구 책임자');
  await page.screenshot({path:'test-results/browser-v71-archive.png',fullPage:true});
 });
 test('night wiring wrong test costs resources and solved topology changes saved settlement',async({page})=>{

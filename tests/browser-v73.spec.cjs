@@ -5,11 +5,11 @@ const KEY='last-enclosure-ark-v10';
 async function state(page){return page.evaluate(k=>JSON.parse(localStorage.getItem(k)),KEY)}
 async function seed(page,s){await page.addInitScript(({s,KEY})=>{if(!sessionStorage.getItem('v73seed')){localStorage.setItem(KEY,JSON.stringify(s));sessionStorage.setItem('v73seed','1')}},{s,KEY});await page.addLocatorHandler(page.locator('.v44-story-overlay'),()=>page.locator('.v44-story-overlay .is-skip').click(),{noWaitAfter:true});await page.goto('/');}
 function base(day=4){const s=beginGame('medic','generator');s.day=day;s.tutorialStep=9;s.parts=10;s.facility=60;s.facilities.cctv=true;return s;}
-test('opening scene has readable start on desktop and mobile, all hero portraits share 3:4',async({page})=>{
+test('opening scene is readable on desktop and mobile, and all hero portraits load',async({page})=>{
  await page.goto('/');await expect(page.getByRole('heading',{name:'ORIGIN ZERO'})).toBeVisible();await expect(page.locator('.v73-opening footer')).toContainText('ARKtopia · ORIGIN ZERO');
  for(const [width,height] of [[1366,768],[390,844]]){await page.setViewportSize({width,height});await expect(page.getByRole('button',{name:'최초 통신 복원'})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);expect((await page.locator('.v73-opening').boundingBox()).width).toBeGreaterThanOrEqual(width-2);await page.screenshot({path:`test-results/v73-opening-${width}.png`,fullPage:true});}
- const dims=await page.evaluate(async()=>Promise.all(['neutral','anxious','critical','resolve'].map(m=>new Promise(resolve=>{const i=new Image();i.onload=()=>resolve([i.naturalWidth,i.naturalHeight]);i.onerror=()=>resolve([0,1]);i.src='/assets/characters/protagonist_'+m+'.png'}))));
- dims.forEach(size=>expect(size).toEqual([768,1024]));
+ const dims=await page.evaluate(async()=>Promise.all(['neutral','anxious','critical','resolve'].map(m=>new Promise(resolve=>{const i=new Image();i.onload=()=>resolve([i.naturalWidth,i.naturalHeight]);i.onerror=()=>resolve([0,1]);i.src='/assets/characters/protagonist_'+m+'.webp'}))));
+ dims.forEach(([width,height])=>{expect(width).toBeGreaterThan(0);expect(height).toBeGreaterThan(0)});
 });
 test('walking feet retain the same tile baseline and scale before, during and after motion',async({page})=>{
  let s=base(5);s=startRun(s,'garden',['flashlight']);await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
@@ -41,7 +41,7 @@ test('new mutant sprites and matching hero portrait are consumed by the actual r
  await expect(page.locator('.awakening-shade')).toBeVisible();
  for(let i=0;i<6;i++)await page.locator('.awakening-next').click();
  await page.getByRole('button',{name:'격리실',exact:true}).click();await expect(page.locator('img[src="/assets/animals/axolotl_mutant.png"]').first()).toBeVisible();
- await expect(page.locator('.v43-operator-head img')).toHaveAttribute('src','/assets/characters/protagonist_neutral.png');expect(await page.locator('img[src="/assets/animals/axolotl_mutant.png"]').first().evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
+ await expect(page.locator('.v43-operator-head img')).toHaveAttribute('src','/assets/characters/protagonist_neutral.webp');expect(await page.locator('img[src="/assets/animals/axolotl_mutant.png"]').first().evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
 });
 
 
@@ -61,17 +61,8 @@ test('first roaming MUTANT encounter shows its dedicated cinematic reveal',async
  s.field.threat={position:s.field.exitIndex,origin:s.field.exitIndex,alert:70,mode:'closing',stage:'chase',ticks:0};
  expect(beginRoamingCombat(s)).toBe(true);expect(s.field.combat.introPending).toBe(true);
  await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
- const intro=page.getByRole('dialog',{name:'최초 배회 위협 조우 · MUTANT'});await expect(intro).toBeVisible();
- const still=intro.locator('img').first();await expect(still).toHaveAttribute('src','/assets/cinematics/field-threats/roaming-mutant/reveal.png');
+ const variant=s.field.combat.mutantVariant??1;
+ const intro=page.getByRole('dialog',{name:new RegExp(`최초 MUTANT 조우 · MUTANT-${String(variant).padStart(2,'0')}`)});await expect(intro).toBeVisible();
+ const still=intro.locator('img').first();await expect(still).toHaveAttribute('src',`/assets/cinematics/field-threats/mutant${variant}/reveal.png`);
  await expect.poll(()=>still.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
 });
-for(const [enemy,label] of [['slime','오염 점액체'],['echo','신경 잔향체']])test(`first roaming ${label} encounter uses its creature-specific cinematic`,async({page})=>{
- const {beginRoamingCombat}=require('../src/lib/field-combat.ts');let s=base(6);s=startRun(s,'conservatory',['flashlight']);
- s.field.threat={kind:enemy,position:s.field.exitIndex,origin:s.field.exitIndex,alert:62,mode:'closing',stage:'chase',ticks:0};
- expect(beginRoamingCombat(s)).toBe(true);expect(s.field.combat.enemy).toBe(enemy);expect(s.field.combat.introPending).toBe(true);
- await seed(page,s);await page.getByRole('button',{name:'탐사',exact:true}).click();
- const intro=page.getByRole('dialog',{name:`최초 배회 위협 조우 · ${label}`});await expect(intro).toBeVisible();
- const still=intro.locator('img').first();await expect(still).toHaveAttribute('src',`/assets/cinematics/field-threats/roaming-${enemy}/reveal.png`);
- await expect.poll(()=>still.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
-});
-

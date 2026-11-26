@@ -68,7 +68,7 @@ import {House,Shield,Map,FlaskConical,ShoppingBag,BookOpen,Volume2,VolumeX,Moon,
 type Tab=GameTab;
 type Talk={speaker:'EVE'|'관리자'|CrewId;text:string;expression?:PortraitMood;scene?:number;recordedSpeaker?:string;recordedArt?:string};
 function capturedSpeciesCount(s:V10):number{return new Set([...s.animals.map(a=>a.id),...s.headquarters.transferred]).size}
-const KEY='last-enclosure-ark-v10';const SPRITE_SPECIES=new Set(['rabbit','fox','deer','owl','wolf','crow','otter','lynx','axolotl','moth','mutant','chimera','specter']);const img=(id:string)=>{if(SPRITE_SPECIES.has(id))return animalSprite(id);if(specs.some(a=>a.id===id))return '/assets/animals/unavailable-specimen.svg';if(id==='protagonist-young')return '/assets/characters/protagonist_neutral.png';if(id==='eve-hologram')return '/assets/characters/eve_hologram.webp';if(['hero-gate','gate','sanctuary','laboratory','wasteland','hidden-photo','dawn'].includes(id))return '/assets/backgrounds/'+id+'.webp';return '/art/'+id+'.png'};
+const KEY='last-enclosure-ark-v10';const SPRITE_SPECIES=new Set(['rabbit','fox','deer','owl','wolf','crow','otter','lynx','axolotl','moth','mutant','chimera','specter']);const img=(id:string)=>{if(SPRITE_SPECIES.has(id))return animalSprite(id);if(specs.some(a=>a.id===id))return '/assets/animals/unavailable-specimen.svg';if(id==='protagonist-young')return '/assets/characters/protagonist_neutral.webp';if(id==='eve-hologram')return '/assets/characters/eve_hologram.webp';if(['hero-gate','gate','sanctuary','laboratory','wasteland','hidden-photo','dawn'].includes(id))return '/assets/backgrounds/'+id+'.webp';return '/art/'+id+'.png'};
 
 // Every implemented species has its own uncanny and mutant sprite.
 // Preserve the individual and its stats when choosing the matching visual.

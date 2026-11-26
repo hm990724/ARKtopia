@@ -1,38 +1,25 @@
-# QA report
+# ARKtopia QA report
 
-Updated 2026-11-25. This report records the completed implementation pass and the consolidated checks actually run. Browser integration remains incomplete, so this is not a full QA sign-off.
+Updated 2026-11-26. Gameplay and asset checks pass; full browser verification remains blocked in this sandbox.
 
-## Passed
+## Passed in this run
 
-- `npm run test:all`: PASS. Logic/save suites, v69-v76, v81-v83, ending matrix, roaming mutant, region care, and deterministic minigame checks passed.
+- `npm run test:all`: PASS, including logic/save migration, v69-v76, v81-v83, ending matrix, roaming MUTANT AI/capture, region care, and deterministic minigame suites.
 - `npm run typecheck`: PASS.
 - `npm run lint`: PASS.
-- `npm run check:assets`: PASS. The checker reports informational legacy staff-arrival and first-meeting candidates; current fallback/story candidates are available.
-- `npm run check:git-size`: PASS. No indexed, staged, or ordinary untracked source file is at or above 100 MiB. Keep generated ZIPs local; `public.zip` is ignored.
-- `npm run build`: PASS. The production bundle compiled and prerendered `/` and `/_not-found`.
+- `npm run check:assets`: PASS. 264 asset references checked; no missing required assets, format mismatches, or obsolete `mutant_mutant` / `enemy_echo` / `enemy_smile` files.
+- `npm run check:git-size`: PASS for 483 working-tree files; none reach GitHub's 100 MiB single-file limit. The index/history scan is unavailable because this sandbox blocks Node child processes.
+- `node --check` on browser specs v71-v75: PASS.
+- `git diff --check`: PASS; Git reports only configured LF-to-CRLF notices.
 
-## Incomplete: browser regression
+## Browser verification still needed
 
-`npm run test:browser` was stopped after reaching 19 of 48 cases because the run was taking too long. It is not a pass. Observed failures:
+`npm run test:browser -- --reporter=line` currently exits before Playwright starts with `Error: spawn EPERM`. Browser UI automation also cannot attach to a native browser in this environment. This is an environment launch restriction, not a passed browser run. Several browser expectations were aligned with the current canonical character portrait, cinematic, and incident artwork routes; the MUTANT encounter case now checks its actual variant-specific dialog and reveal path. The UI still needs an end-to-end browser regression run on a machine where Playwright can launch Chromium.
 
-- AP 0 night handling did not find the expected night-settlement control.
-- Recovered-photo dialog and night-wiring panel tests waited for UI selectors that may no longer match current markup.
-- Voice identity test did not open the expected event dialog.
-- Hunt/pixel layout cases used stale toolbar/status selectors.
-- First-expedition flow timed out.
-- Ranger walk test did not observe the expected movement.
+## Build status
 
-Before changing gameplay code, compare each failing test with the current component and distinguish stale selectors/fixtures from actual user-visible failures. Then rerun affected scenarios and complete the remaining browser suite.
+The previous 2026-11-25 handoff recorded a successful production build. A fresh build could not be confirmed in this sandbox because Next.js child-process startup is blocked with `spawn EPERM`; do not treat the old build result as a current-run verification.
 
-## Focused MUTANT cinematic check
+## Current coverage checked
 
-- `npm run test:browser -- tests/browser-v73.spec.cjs -g "first roaming MUTANT encounter"`: PASS. The real encounter dialog loaded `/assets/cinematics/field-threats/roaming-mutant/reveal.png` successfully.
-- Final local checks after adding the new still and its scene hook: typecheck, lint, asset references, Git file-size guard, and production build all passed. Existing non-blocking build warnings remain.
-
-## Non-blocking warnings and asset limits
-
-- Build emitted CSS compatibility warnings for `end` alignment and React hook dependency warnings in `FieldMission.tsx`, `Game.tsx`, and `VoiceBreachPanel.tsx`.
-- Existing images, ending art, cinematic stills, and files under `public/assets` were left unchanged. The separately requested new MUTANT encounter still is at `public/assets/cinematics/field-threats/roaming-mutant/reveal.png`.
-- Browser QA can generate screenshots under `docs/qa-v71`; do not use or commit those generated screenshot changes as production art.
-
-See [NEXT_STEPS_README.md](NEXT_STEPS_README.md) for implementation coverage and the next browser-QA steps.
+The current suites cover 20 distinct MUTANT sprites and encounter stills, 13 animal capture protocols, real-time field threat behavior, staff role support, save/load, base upkeep, conditional incidents, story/ending routes, mood portraits, and manual minigame paths. The asset checker confirms the canonical image routes exist. Visual presentation and responsive layout remain unverified until the browser suite can run.

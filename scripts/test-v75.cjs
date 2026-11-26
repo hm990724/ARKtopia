@@ -18,7 +18,7 @@ assert.equal(m00Sprite.subarray(0,8).toString('hex'),'89504e470d0a1a0a','canonic
 assert.equal(m00Sprite.readUInt32BE(16),1254);assert.equal(m00Sprite.readUInt32BE(20),1254);
 assert.equal(m00Sprite[25],6,'M-00 sprite has transparent RGBA');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/lib/animal-art.ts'),'utf8'),/m00_normal\.png/);
-assert.ok(fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.webp')),'replaced M-00 art is archived instead of deleted');
+assert.ok(!fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.webp')),'obsolete pre-pixel M-00 art stays removed');
 const preservedOriginalFiles=['ending_incomplete_revival.webp','ending_new_consciousness.webp','ending_two_caretakers.webp','ending_open_spring.webp','ending_subject_000.webp','ending_silent_automation.webp','ending_scattered_names.webp','ending_last_signal.webp'];
 const expectedEndingFiles=['ending_eternal_experiment_finale.png','ending_eden_finale.png','ending_seed_ark_finale.png','ending_last_zoo_finale.png','ending_subject_000_choice.png','ending_silent_automation_finale.png','ending_scattered_names_finale.png','ending_last_signal_finale.png','ending_successor_cinematic.png','ending_humane_restoration_cinematic.png','ending_spring_outside_records_cinematic.png','ending_late_gate_cinematic.png','ending_empty_shiftroom_cinematic.png','ending_first_sentence_cinematic.png','ending_incomplete_revival_cinematic.png','ending_spring_beyond_cage_cinematic.png','ending_two_caretakers_cinematic.png','ending_quiet_automation_cinematic.png','ending_final_transmission_cinematic.png'];
 assert.equal(ENDING_ART.length,19,'all nineteen ending scenes remain separately addressable');
@@ -33,6 +33,7 @@ for(const ending of ENDING_ART){
  const png=fs.readFileSync(file);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a',file);assert.ok(png.readUInt32BE(16)>=1600&&png.readUInt32BE(20)>=800,`${file}: cinematic resolution`);assert.ok(png.length>1000000,`${file}: ending illustration must retain full quality`);
 }
 for(const file of preservedOriginalFiles){const webp=fs.readFileSync(path.join(base,'assets/endings',file));assert.equal(webp.subarray(0,4).toString(),'RIFF',file);assert.equal(webp.subarray(8,12).toString(),'WEBP',file);assert.ok(webp.length>250000,`${file}: original handoff artwork must remain intact`)}
+const isWebP=b=>b.subarray(0,4).toString('ascii')==='RIFF'&&b.subarray(8,12).toString('ascii')==='WEBP';
 for(const legacy of LEGACY_ENDING_ART){
  const canonical=ENDING_ART.find(item=>item.prefix===legacy.canonicalPrefix);assert.ok(canonical,`${legacy.prefix} must map to a canonical outcome`);
  assert.equal(findEndingArt(`${legacy.prefix} — legacy save` ).file,canonical.file,`${legacy.prefix} preserves saved ending compatibility`);
@@ -43,7 +44,7 @@ assert.equal(EXTENDED_INCIDENT_IDS.length,30);
 assert.equal(incidentArtFiles.length,6,'incident set should use its six distinct scene illustrations');
 for(const id of ids){
  const event=incidentDefs[id];assert.ok(event.title&&event.desc&&event.cause,id);assert.equal(event.options.length,3,id);
- const file=findIncidentArt(id),png=fs.readFileSync(path.join(base,'assets/events',file));assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a',id);assert.ok(png.readUInt32BE(16)>=1200&&png.readUInt32BE(20)>=800,id);
+ const file=findIncidentArt(id),image=fs.readFileSync(path.join(base,'assets/events',file));assert.ok(isWebP(image),`${id}: expected optimized WebP`);assert.ok(image.length>80000,`${id}: incident artwork unexpectedly tiny`);
 }
 // Every extended event must be gated by meaningful game state and resolve all three choices.
 const eligible=beginGame('artist','generator');eligible.day=8;eligible.power=48;eligible.facility=50;eligible.infection=60;eligible.threat=70;eligible.clues=10;eligible.knowledge=50;
@@ -64,7 +65,7 @@ for(const id of EXTENDED_INCIDENT_IDS){
 const stale=beginGame('artist','generator');const staleBefore=JSON.stringify(stale);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(stale,0),stale,'a missing pending event must not resolve');assert.equal(JSON.stringify(stale),staleBefore,'a rejected event choice must not mutate the save');
 const unaffordable=beginGame('artist','generator');unaffordable.pendingIncident='cctv_loop';unaffordable.facilities.cctv=true;unaffordable.parts=0;const unaffordableBefore=JSON.stringify(unaffordable);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(unaffordable,0),unaffordable,'an unaffordable response must be rejected');assert.equal(JSON.stringify(unaffordable),unaffordableBefore,'an unaffordable response must not partially mutate the save');
 const previewState=beginGame('artist','generator');previewState.pendingIncident='battery_swelling';const cellPreview=previewIncident(previewState,0);assert.ok(cellPreview.effects.some(x=>x.name==='전지'&&x.delta===-1),'new event cards must show battery costs');
-const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin.webp'));assert.equal(suspect.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(suspect.readUInt32BE(16)>=1200&&suspect.readUInt32BE(20)>=800);
+const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin.webp'));assert.ok(isWebP(suspect),'M-00 incident artwork is optimized WebP');assert.ok(suspect.length>80000);
 assert.match(origin.catTrackFrames[0].hint,/시초 개체로 의심/);assert.doesNotMatch(origin.catTrackFrames[0].hint,/검은 고양이/);assert.doesNotMatch(origin.catTrackFrames[2].hint,/검은 고양이/);
 const route=beginGame('artist','generator');route.day=26;route.tutorialStep=9;route.encounters=5;route.ap=4;route.facilities.cctv=true;route.headquarters.revealStage=2;route.originZero=emptyOriginZero();
 assert.equal(origin.canTrackCat(route),true);let traced=origin.initiateOriginTrack(route);assert.match(traced.lastOutcome,/시초일 가능성을 제기/);

@@ -3,7 +3,7 @@ const path=require('node:path');
 const out=path.join(__dirname,'../public/assets/endings');
 const portrait=(file,mime)=>`data:${mime};base64,${fs.readFileSync(path.join(__dirname,'../public/assets/characters',file)).toString('base64')}`;
 const evePortrait=portrait('eve_hologram.webp','image/webp');
-const managerPortrait=portrait('protagonist_neutral.png','image/png');
+const managerPortrait=portrait('protagonist_neutral.webp','image/webp');
 const endings=[
  ['seed_ark','#9d395d','#351e36','DAWN / PRESERVATION','EVE carries the final instructions into the next morning.'],
  ['eden','#73575e','#294536','AFTER / RECLAMATION','A human witness watches an empty garden take root.'],

@@ -1,51 +1,38 @@
-﻿# NEXT STEPS — ARKtopia gameplay improvement
+# ARKtopia implementation handoff
 
-Updated 2026-11-25. This is the active handoff. The implementation pass and non-browser consolidated checks are complete. Browser regression is incomplete and has unresolved failures; do not treat it as passed.
+Updated 2026-11-26. This handoff reflects the current worktree and the checks that actually ran.
 
-## Implemented and verified outside the browser suite
+## Implemented gameplay scope
 
-- Added four-second autonomous expedition ticks that continue during creature tracking. The roaming threat can patrol, investigate sound/light, pursue a visible player, search the last-seen location, interrupt a hunt, and resume the saved hunt after combat or retreat.
-- Preserved concealment/noise/flashlight influence and clarified that 100% tracking pressure is dangerous but does not eject the player.
-- Added a four-sector moving acoustic readout and pointer-based net aiming whose release tile and pointer precision affect the throw.
-- Split manual interactions into distinct search/recovery, generator pressure/heat, power allocation, waveform reconstruction, rotary repair, channel tuning, facility assembly, and terminal-sequence commissioning. Save/resume state is kept for operation puzzles; commission sequences reject invalid order and cannot be completed through the generic verify action.
-- Prevented duplicate ARK RECALL answer submission. Updated opening-screen copy and expedition layout for desktop tools in one view, with responsive reflow on smaller screens.
-- Compressed desktop supply/power/upgrade and research rosters so their primary controls and status fit together at large viewports; smaller screens retain responsive reflow.
-- Added an in-game resource ledger to the status drawer with live stock, acquisition sources, uses, night-feeding/maintenance shortfalls, and the material gap for the next unbuilt facility. Disabled sortie gear now shows the specific missing resource and a resupply path; the upcoming-incident forecast has readable labels.
-- Compressed the supply shop and four maintenance actions into a compact desktop grid so the workshop, construction, and routine resupply can be handled together on common desktop sizes.
-- Connected selected risky event choices to durable follow-up incidents due in 1-3 days. The queue survives save/load, prioritizes an eligible due incident, expires when its window passes, and is surfaced on the base dashboard.
-- Connected the blackout → CCTV loop → blindspot chain to a real, optional `cctvOfflineUntilDay` save field. CCTV scan/watch/track stop while the installed network is offline, animal escape risk and undetected incident growth rise, manual field-trace tracking remains available, and recovery choices restore the network. Added deferred regression coverage for the chain and save migration.
-- Ignored local archives and added a Git file-size check covering indexed blobs, staged working files, and ordinary untracked source. `public.zip` is absent from the repository and ignored.
-- Added logic checks for idle AI, active-hunt interruption/resumption, 100% pressure, two-person companion persistence, capture evidence, flashlight battery use, relay detection range, and minigame state/solve paths.
-- Added a new, 2.9 MB roaming MUTANT reveal still in `public/assets/cinematics/field-threats/roaming-mutant/reveal.png`; the first mobile encounter shows it before combat, with the existing SCN_08 still retained as a load fallback.
+- Field exploration uses persistent discovered areas, movement and noise/light signals, acoustic tracking, footprints/grass traces, pursuit and last-seen searches. Active tracking can be interrupted by a roaming MUTANT and resume after retreat or combat.
+- Twenty MUTANT variants have dedicated combat sprites, behavior/archetype data, and variant-specific encounter stills. Legacy `mutant_mutant`, `enemy_echo`, and `enemy_smile` routes are intentionally removed.
+- Capture supports species-specific protocols, observation and evidence gates, pointer-based net throws, struggle/failure states, companion support, and save-resume.
+- Combat supports up to two selected companions with role-specific support, enemy intent, guard/counter, equipment and retreat, plus single reward settlement.
+- Base/day loops cover power dispatch and priority, outage and CCTV consequences, fuel/filter/maintenance costs, resource acquisition, construction/upgrades, night repair, and sortie/base-work opportunity cost.
+- Crew systems cover four distinct staff roles, dialogue moods, bond/memory, mental state, one-time bereavement effects, termination consequences, and empty-crew survival. Event choices can create durable follow-up incidents.
+- Story/research coverage includes gated evidence, Hidden Photos, animal observation and dossiers, M-00 choices, ARK RECALL, and ending branches. Late revelations remain evidence-gated. User-owned ending epilogue art was left out of this art work.
+- Manual minigame paths include distinct search/recovery, wiring, waveform, repair, tuning, assembly, and terminal-order interactions with persisted progress and costs.
+- Desktop exploration/management controls use fixed one-screen tool groups where practical and responsive reflow on smaller screens.
 
-## Existing systems to preserve and audit in context
+## Character and image connections
 
-- Thirteen distinct specimen routines, field exploration and capture, combat, role-specific two-person companion support, and map/track/evidence systems.
-- Day upkeep, fuel/filter/power use, resource acquisition, construction, upgrades, night dispatch, wiring, and repair loops.
-- Four staff roles, bonding and mental state, death consequences, sortie/base-work conflict, 41 gated incidents, and delayed choice follow-ups.
-- Research, diagnosis, treatment, observation, archive unlocks, Hidden Photo records, M-00 investigation, and ARK RECALL.
-- Ending conditions and existing asset references. Existing ending/epilogue/cinematic art remains user-owned and untouched. The only newly authorized art in the current turn is the MUTANT reveal still at `public/assets/cinematics/field-threats/roaming-mutant/reveal.png`.
+- Canonical character, EVE, Sirius-era scientist, Deer arrival, crew mood, combat-sprite, capture, cinematic, and ending routes are checked by the asset audit.
+- Rabbit's neutral/smile/crying/angry/unstable/critical portraits and arrival, event, and farewell art remain in the user-provided `public/assets/staff/rabbit` and cinematic locations and are connected to dialogue/story routes.
+- Wolf's guarded farewell dialogue and last-stand/collapse art are on separate routes. Fox's possession/critical mood and Deer archive reveal routes are represented in the authored character/story data.
+- Only missing or explicitly replaced assets from the requested art pass were changed; obsolete/unused files were removed after route checks. Existing epilogues remain outside scope.
+- Do not add generated ZIPs or build artifacts to Git. `.gitignore` and `clean:generated` handle local generated output; the source-size check found no working-tree file over GitHub's 100 MiB per-file limit.
 
-## Remaining work
+## Verification completed 2026-11-26
 
-1. Resolve the remaining browser regression. The full run stopped after 19 of 48 cases because it was slow; observed failures include AP-zero night settlement, recovered-photo dialog, wiring panel access, voice-breach scheduling, hunt/pixel-test selectors, first-expedition flow, and ranger movement animation. The newly added MUTANT reveal has a passing focused browser check; the full browser suite still has not passed.
-2. Rerun the affected browser scenarios after updating stale tests or fixing genuine UI behavior, then complete the browser suite once.
-3. Keep `QA_REPORT.md` aligned with verified results. Do not mark the browser regression complete until all required cases pass.
-
-## Consolidated verification already completed
-
-- `npm run test:all`: PASS, including logic/save, v69-v76, v81-v83, ending matrix, roaming mutant, region care, and deterministic minigame suites.
+- `npm run test:all`: PASS.
 - `npm run typecheck`: PASS.
 - `npm run lint`: PASS.
-- `npm run check:assets`: PASS; reports informational legacy portrait candidates with fallback assets available.
-- `npm run check:git-size`: PASS; no indexed or working source file reaches GitHub's 100 MiB limit.
-- `npm run build`: PASS; non-blocking CSS compatibility and React hook dependency warnings remain.
-- Focused browser check for the first roaming MUTANT cinematic: PASS; the encounter dialog displayed and loaded the new still.
-- `npm run test:browser`: INCOMPLETE; 19/48 cases reached, with the failures listed above. This is the only outstanding verification category currently known.
+- `npm run check:assets`: PASS, 264 references and 0 required/format issues.
+- `npm run check:git-size`: PASS for 483 working-tree files; Git index/history scan is blocked by child-process restrictions.
+- Browser spec syntax checks and `git diff --check`: PASS.
 
-## Repository and asset state
+## Remaining verification
 
-- `main` is the only local/remote branch; `origin/HEAD` points to `origin/main`. The old backup and feature branches were removed after confirming their source changes were present in the worktree.
-- Obsolete version-specific QA, requirements, art, and handoff documents were removed. Current gameplay requirements, system summary, UI specification, story canon, incident matrix, acceptance criteria, QA report, and this handoff remain.
-- Do not replace or edit existing art files. The new MUTANT reveal still is the sole exception explicitly requested by the user; leave untracked epilogue PNGs and all other image assets untouched.
-- Keep project ZIPs local. Never add `public.zip` or another generated archive to Git.
+Full visual/browser regression is not complete. `npm run test:browser` exits before Playwright launches with `Error: spawn EPERM`; native browser automation is also unavailable in this environment. Run the 48-case Playwright suite on a machine that allows Chromium child processes, then fix any actual UI failures (rather than reviving old image paths or selectors). Re-run `npm run build` there as well; the earlier handoff recorded a successful build, but this sandbox cannot verify a fresh one because child-process launch is blocked.
+
+See [QA_REPORT.md](QA_REPORT.md) for the current run details. No gameplay implementation gap was identified by the current non-browser suite; browser presentation is the outstanding verification category.
