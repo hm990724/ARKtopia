@@ -520,6 +520,7 @@ export default function FieldMission({
                   return (
                     <button
                       key={i}
+                      data-tour={hunt.tutorial && !known && i === hunt.revealed.filter(Boolean).length ? "hunt-trait" : undefined}
                       type="button"
                       className={
                         "v47-trait-card " +
@@ -729,6 +730,7 @@ export default function FieldMission({
                         type="button"
                         key={i}
                         data-hunt-cell={i}
+                        data-tour={hunt.tutorial && mode === "bait" && !hunt.objects.some(o => o.kind === "bait") && i === hunt.position ? "hunt-bait-cell" : undefined}
                         onClick={() => {if(!suppressHuntClick.current)tap(i)}}
                         disabled={hunt.outcome !== "playing"}
                         aria-label={`${Math.floor(i / size) + 1}행 ${(i % size) + 1}열 · ${label}${obj ? " · " + obj.kind + " 설치됨" : ""}`}
@@ -953,7 +955,7 @@ export default function FieldMission({
                       <button
                         type="button"
                         key={i}
-                        data-tour={run.firstTutorial&&field.tutorialStep==='move-quiet'&&i===field.position+1?'field-move':run.firstTutorial&&field.tutorialStep==='move-walk'&&i===field.position+1?'field-move':run.firstTutorial&&field.tutorialStep==='move-run'&&i===field.position+1?'field-move':run.firstTutorial&&field.tutorialStep==='spore'&&i===(field.origin??field.position)+width+3?'field-spore':run.firstTutorial&&field.tutorialStep==='cache'&&i===(field.origin??field.position)+width+4?'field-cache':undefined}
+                        data-tour={run.firstTutorial&&field.tutorialStep==='move-quiet'&&i===field.position+1?'field-move':run.firstTutorial&&field.tutorialStep==='move-walk'&&i===field.position+1?'field-move':run.firstTutorial&&field.tutorialStep==='move-run'&&i===field.position+1?'field-move':run.firstTutorial&&field.tutorialStep==='spore'&&i===(field.origin??field.position)+4?'field-spore':run.firstTutorial&&field.tutorialStep==='cache'&&i===(field.origin??field.position)+width+4?'field-cache':undefined}
                         disabled={!walk || !!walking}
                         className={
                           "v33-route-cell " +
@@ -1206,7 +1208,7 @@ export default function FieldMission({
                       className={
                         "v33-tool " +
                         (mode === t.kind ? "v33-tool-active " : "") +
-                        (hunt.tutorial && hunt.revealed.every(Boolean) && t.kind === "bait" && !hunt.objects.some(o => o.kind === "bait") ? " ark-tutorial-highlight " : "") +
+                          (hunt.tutorial && hunt.revealed.every(Boolean) && t.kind === "bait" && !hunt.objects.some(o => o.kind === "bait") ? " ark-tutorial-highlight " : "") +
                         " v33-tool-" +
                         t.tone
                       }

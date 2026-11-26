@@ -638,6 +638,32 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 @media(max-width:640px){.ark-transport-drive-layout{grid-template-columns:minmax(0,1fr)!important}.ark-transport-tactical{width:min(100%,360px)!important}.ark-drive-track{height:100px}.ark-transit-board{padding:7px}.ark-transport-tactical button b{min-height:28px}.ark-field-loot-swoosh>div>span{flex:1;min-width:120px;justify-content:flex-start}}
 @media(prefers-reduced-motion:reduce){.ark-transport[data-instability="high"],.ark-transport[data-instability="high"]::after,.ark-capsule-pod.is-small,.ark-field-loot-swoosh,.ark-field-loot-swoosh>div>span,.v41-reward-entry{animation:none!important}}
 
+/* Guided field/capture: keep first-use controls in reach without dimming the map. */
+.ark-field-controls{position:sticky;top:8px;z-index:18;background:linear-gradient(145deg,#1b2830f5,#201a2bf5);backdrop-filter:blur(10px);box-shadow:0 8px 22px #0008;border:1px solid #786743;border-radius:9px;padding:8px}
+.ark-first-capture-tutorial .ark-capture-tutorial{position:sticky;top:8px;z-index:14;border:1px solid #e9c45a;background:linear-gradient(120deg,#332b1c,#201b2b);color:#fff1c3;box-shadow:0 0 0 2px #efc64b40,0 8px 25px #0009}
+.ark-tutorial-highlight,.echo-tour-focus{outline:2px solid #ffe15b!important;outline-offset:2px;box-shadow:0 0 0 4px #ffe15b45,0 0 22px #ffdf4b99!important;animation:ark-tutorial-pulse 1.3s ease-in-out infinite}
+@keyframes ark-tutorial-pulse{0%,100%{filter:brightness(1);box-shadow:0 0 0 3px #ffe15b35,0 0 12px #ffdf4b66}50%{filter:brightness(1.22);box-shadow:0 0 0 5px #ffe15b66,0 0 24px #ffdf4bcc}}
+.ark-transit-tutorial{display:grid;gap:4px;padding:9px 11px;border:1px solid #e5c659;border-left:4px solid #ffe36b;border-radius:7px;background:linear-gradient(110deg,#352e20,#211c2a);color:#fff0b7;font-size:12px;line-height:1.45}
+.ark-transit-arena-wrap{overflow:hidden;border:1px solid #638c85;border-radius:10px;background:#101922;box-shadow:inset 0 0 28px #02070c}
+.ark-transit-arena{position:relative;overflow:hidden;isolation:isolate;height:clamp(210px,35vh,330px);min-height:210px;touch-action:none;cursor:crosshair;background:radial-gradient(ellipse at 12% 50%,#29473e 0,#14252b 42%,#101621 100%)}
+.ark-transit-arena::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#8cd0b117 1px,transparent 1px),linear-gradient(0deg,#8cd0b112 1px,transparent 1px);background-size:8% 12.5%;mask-image:linear-gradient(90deg,#000,transparent 95%)}
+.ark-transit-lane-markings{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 8%,#a8e1cf0b 8.1% 8.3%,transparent 8.4% 16%)}
+.ark-transit-depth{position:absolute;left:3%;top:8%;bottom:8%;width:1px;background:linear-gradient(transparent,#b5ead355,transparent);box-shadow:0 0 16px #75ddc777}
+.ark-transit-gate{position:absolute;top:0;bottom:0;width:8%;min-width:22px;transform:translateX(-50%);filter:drop-shadow(0 0 9px #ed927c66);z-index:2}
+.ark-transit-gate i,.ark-transit-gate b{position:absolute;left:0;right:0;background:repeating-linear-gradient(135deg,#3c252d 0 8px,#b8625d 9px 12px,#522d35 13px 20px);border:1px solid #e28b77;box-shadow:inset 0 0 16px #ff8c6d38,0 0 10px #eb705944}
+.ark-transit-gate i{top:0;height:var(--gap-top)}.ark-transit-gate b{top:var(--gap-bottom);bottom:0}.ark-transit-gate span{position:absolute;left:50%;top:calc(var(--gap-top) + (var(--gap-bottom) - var(--gap-top))/2);transform:translate(-50%,-50%);font-size:9px;color:#e6f8d6;white-space:nowrap;text-shadow:0 1px #000;background:#18382d;border:1px solid #90cf9e;padding:3px 5px}
+.ark-transit-spore{position:absolute;z-index:3;transform:translate(-50%,-50%);width:56px;height:56px;display:grid;place-items:center;border-radius:50%;font-size:28px;color:#e6a9ff;background:radial-gradient(circle,#e766f555,#9d41d422 55%,transparent 72%);filter:drop-shadow(0 0 12px #c93eea);animation:ark-transit-spore 1.2s ease-in-out infinite alternate}
+.ark-transit-player{position:absolute;z-index:5;transform:translate(-50%,-50%);width:40px;height:54px;display:grid;place-items:center;filter:drop-shadow(0 0 11px #94ffe0);transition:left .08s linear,top .08s linear;pointer-events:none}
+.ark-transit-dock-line{position:absolute;right:0;top:0;bottom:0;width:6%;border-left:2px solid #77e7e3;background:linear-gradient(90deg,#40d8d433,transparent);box-shadow:-8px 0 24px #4ce1d255}.ark-transit-dock-line span{position:absolute;right:100%;top:8px;white-space:nowrap;color:#98eee7;font-size:10px}
+.ark-transit-impact{position:absolute;z-index:7;left:50%;top:12%;transform:translateX(-50%);padding:9px 13px;border:1px solid #ff9a8f;border-radius:6px;background:#561f2cf2;color:#fff1e5;font-weight:800;box-shadow:0 0 24px #ff434477;animation:ark-impact-pop .25s ease-out}
+.ark-transit-arena-foot{display:flex;justify-content:space-between;gap:8px;padding:6px 9px;color:#b9cdc9;background:#131c25;font-size:10px}
+.ark-transport-dodge[data-instability="high"] .ark-transit-arena{animation:ark-arena-hit .8s ease-in-out infinite alternate}
+@keyframes ark-transit-spore{from{scale:.82;opacity:.65}to{scale:1.15;opacity:1}}
+@keyframes ark-impact-pop{from{scale:.82;opacity:.3}to{scale:1;opacity:1}}
+@keyframes ark-arena-hit{from{box-shadow:inset 0 0 0 #ef334300}to{box-shadow:inset 0 0 65px #ef334333}}
+@media(max-width:640px){.ark-transit-arena{height:250px}.ark-transit-gate{width:11%}.ark-transit-player{width:32px;height:45px}.ark-transit-spore{width:44px;height:44px}.ark-transit-arena-foot{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.ark-transit-spore,.ark-tutorial-highlight,.echo-tour-focus,.ark-transport-dodge[data-instability="high"] .ark-transit-arena{animation:none!important}}
+
 /* Unknown wildlife stays recognizable by silhouette while its species remains concealed. */
 .v71-field.v33-expedition .v91-route-animal img,.v71-field.v33-expedition .ark-route-mini-grid .ark-mini-animal,.v71-field.v33-expedition .v44-specimen-image img,.v71-field.v33-expedition .v74-live-animal{filter:brightness(0) saturate(100%) drop-shadow(0 0 2px #b4d0c8aa) drop-shadow(0 0 7px #70a89b55)!important;opacity:.96}
 .v71-field.v33-expedition .v91-route-animal{background:radial-gradient(ellipse at center,#62716b22,transparent 70%)}
