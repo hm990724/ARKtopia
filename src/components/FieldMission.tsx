@@ -13,7 +13,7 @@ import {directionForMove,type WalkDirection} from '@/lib/character-art';
 import type { AnimalId } from "@/lib/sim";
 import {
   adjacentField,
-  REGION_RULES,acousticBearing,fieldVision,fieldVisible,fieldBeamContains,
+  REGION_RULES,acousticBearing,fieldVision,fieldVisible,fieldFlashlightContains,
   fieldLineOfSight,
   fieldWidth,
   fieldHeight,
@@ -321,14 +321,14 @@ export default function FieldMission({
   const width = fieldWidth(field),
     height = fieldHeight(field);
   const relayLevel = Math.max(0, Math.min(5, state.baseLevels?.relay ?? 0));
-  const rule=REGION_RULES[run.region],lightOn=!rule.blind&&run.gear.includes('flashlight')&&!field.lightOff&&(field.lightSteps??0)>0;
+  const rule=REGION_RULES[run.region],lightOn=run.gear.includes('flashlight')&&!field.lightOff&&(field.lightSteps??0)>0;
   const scannerOn=run.gear.includes('scanner'),directionalLight=lightOn&&!scannerOn;
   const blind=rule.blind||(!lightOn&&!scannerOn);
   const relayBearing = blind?null:fieldRelayBearing(field, relayLevel);
   const threatSignal=fieldThreatSignal(field);
   const sporeCells=sporeVisibleCells(field);const choicePreview=fieldChoicePreview(state);
   const visionRange = fieldVision(run.region,lightOn,scannerOn,run.scannerLevel??0);
-  const threatInSight = !blind && !!field.threat && ((directionalLight?fieldBeamContains(field,field.threat.position,visionRange,facing):fieldLineOfSight(field,field.threat.position,visionRange)) || !!threatSignal?.warning);
+  const threatInSight = !blind && !!field.threat && ((directionalLight?fieldFlashlightContains(field,field.threat.position):fieldLineOfSight(field,field.threat.position,visionRange)) || !!threatSignal?.warning);
   const fieldProgress = Math.round(
     (field.visited.length / field.tiles.length) * 100,
   );
@@ -509,7 +509,7 @@ export default function FieldMission({
         </strong>
       </div>
       <div className="v33-mission-layout">
-        <aside className="v44-specimen-column" aria-label="개체와 지역 정보">{!hunt&&<section className="ark-route-minimap" aria-label="탐사 미니맵"><header><b><MapPin size={13}/> 탐사 지도</b><small>{new Set(field.visited).size}/{field.tiles.length}칸</small></header><div className="ark-route-mini-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=>{const visible=fieldVisible(field,i,visionRange,directionalLight),visited=field.visited.includes(i),here=field.position===i,enemy=field.threat?.position===i&&threatInSight,spore=(directionalLight?fieldBeamContains(field,i,visionRange,facing):fieldLineOfSight(field,i,visionRange))&&sporeCells.includes(i),exit=(directionalLight?fieldBeamContains(field,i,visionRange,facing):fieldLineOfSight(field,i,visionRange))&&tile==='exit';const tag=here?'player':enemy?'enemy':exit?'exit':visible&&tile==='wall'?'wall':spore?'spore':visited?'visited':visible?'seen':'unknown';return <span key={i} data-kind={tag} data-visited={visited} title={here?'현재 위치':enemy?'MUTANT':exit?'귀환':tag==='wall'?'장애물':spore?'포자':visited?'지나온 칸':visible?'확인한 칸':'미확인'}>{here?'●':enemy?'!':exit?'↗':spore?'✳':visible&&tile==='cache'?'▤':visible&&tile==='animal'?'◇':''}</span>})}</div><div className="ark-route-mini-legend"><span>● 현재</span><span>■ 이동 완료</span><span>↗ 귀환</span><span>✳ 포자</span></div></section>}
+        <aside className="v44-specimen-column" aria-label="개체와 지역 정보">{!hunt&&<section className="ark-route-minimap" aria-label="탐사 미니맵"><header><b><MapPin size={13}/> 탐사 지도</b><small>{new Set(field.visited).size}/{field.tiles.length}칸</small></header><div className="ark-route-mini-grid" style={{gridTemplateColumns:`repeat(${width},minmax(0,1fr))`,aspectRatio:`${width}/${height}`}}>{field.tiles.map((tile,i)=>{const visible=fieldVisible(field,i,visionRange,directionalLight),visited=field.visited.includes(i),here=field.position===i,enemy=field.threat?.position===i&&threatInSight,spore=(directionalLight?fieldFlashlightContains(field,i):fieldLineOfSight(field,i,visionRange))&&sporeCells.includes(i),exit=(directionalLight?fieldFlashlightContains(field,i):fieldLineOfSight(field,i,visionRange))&&tile==='exit';const tag=here?'player':enemy?'enemy':exit?'exit':visible&&tile==='wall'?'wall':spore?'spore':visited?'visited':visible?'seen':'unknown';return <span key={i} data-kind={tag} data-visited={visited} title={here?'현재 위치':enemy?'MUTANT':exit?'귀환':tag==='wall'?'장애물':spore?'포자':visited?'지나온 칸':visible?'확인한 칸':'미확인'}>{here?'●':enemy?'!':exit?'↗':spore?'✳':visible&&tile==='cache'?'▤':visible&&tile==='animal'?<img className="ark-mini-animal" src={animalSrc(field.wildlifeSpecies?.[i]??'rabbit')} alt="생체 신호" onError={event=>{event.currentTarget.src='/assets/animals/rabbit_uncanny.png'}}/>:''}</span>})}</div><div className="ark-route-mini-legend"><span>● 현재</span><span>■ 이동 완료</span><span>↗ 귀환</span><span>✳ 포자</span></div></section>}
           {hunt && species ? (
             <>
               <span className="v33-eyebrow">
@@ -519,6 +519,7 @@ export default function FieldMission({
                 <img
                   src={animalSrc(hunt.species)}
                   alt="확보된 표본 이미지, 실제 위치는 미확인"
+                  onError={event=>{event.currentTarget.src='/assets/animals/unavailable-specimen.svg'}}
                 />
               </div>
               <h3>
@@ -778,7 +779,7 @@ export default function FieldMission({
                             aria-hidden="true"
                           />
                         )}
-                        {opened&&i===hunt.position&&<img className="v74-live-animal" src={animalSrc(hunt.species)} alt="밝혀진 구역의 개체" draggable={false}/>}
+                        {opened&&i===hunt.position&&<img className="v74-live-animal" src={animalSrc(hunt.species)} alt="밝혀진 구역의 개체" draggable={false} onError={event=>{event.currentTarget.src='/assets/animals/unavailable-specimen.svg'}}/>}
                         {foot && <PawPixel />}
                         {regrowth && <span className="v74-regrowth-mark" aria-label="재생 조직 흔적">✣</span>}
                         {decoy && <span className="v74-decoy-mark" aria-label="오염 거짓 흔적">⌁</span>}
@@ -962,7 +963,7 @@ export default function FieldMission({
                 >
                   {field.tiles.map((tile, i) => {
                     const visible = fieldVisible(field,i,visionRange,directionalLight),
-                      lit = directionalLight?fieldBeamContains(field,i,visionRange,facing):fieldLineOfSight(field,i,visionRange),
+                      lit = directionalLight?fieldFlashlightContains(field,i):fieldLineOfSight(field,i,visionRange),
                       here = field.position === i,
                       relayExit = !blind && relayLevel >= 1 && tile === "exit" && !visible,
                       walk =
@@ -1021,8 +1022,8 @@ export default function FieldMission({
                         ) : tile === "wall" ? (
                           <span className="v33-route-block" />
                         ) : tile === "animal" ? (
-                          <span className="v33-route-object v33-signal">
-                            ✧<small>생체</small>
+                          <span className="v33-route-object v33-signal v91-route-animal">
+                            <img src={animalSrc(field.wildlifeSpecies?.[i]??'rabbit')} alt={`${field.wildlifeSpecies?.[i]??'미확인'} 생체 반응`} onError={event=>{event.currentTarget.src='/assets/animals/rabbit_uncanny.png'}}/><small>생체</small>
                           </span>
                         ) : tile === "cache" ? (
                           <span className="v33-route-object v33-cache">
@@ -1351,7 +1352,7 @@ export default function FieldMission({
           ) : (
             <>
       {!hunt&&<section className="ark-biome-rule" aria-label="현장 탐지">{run.region!=='garden'&&<span>{rule.description}</span>}<div className="ark-acoustic-actions">{(['animal','exit','threat','fragment'] as const).filter(kind=>kind!=='fragment'||Object.keys(field.originFragments??{}).length>0).map((kind,i)=><button key={kind} disabled={!!walking||!!field.choice||!!field.combat||state.stamina<3||(kind==='animal'&&field.encountered)||(kind==='threat'&&!field.threat)} onClick={()=>{setNotice('');const a=acousticBearing(field,kind);if(sound&&a){try{const ctx=new AudioContext(),osc=ctx.createOscillator(),gain=ctx.createGain(),pan=ctx.createStereoPanner();void ctx.resume();osc.type=a.kind==='threat'?'triangle':'sine';osc.frequency.value=a.kind==='exit'?660:a.kind==='fragment'?520:a.kind==='threat'?100:360;pan.pan.value=a.pan;gain.gain.setValueAtTime(.001,ctx.currentTime);gain.gain.linearRampToValueAtTime(.12*a.strength,ctx.currentTime+.05);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.65);osc.connect(gain);gain.connect(pan);pan.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.7);osc.onended=()=>{void ctx.close()};}catch{}}onListen(kind)}}><Radio size={14}/> {['생체 청음','귀환 유도음','위협 청음','기록 잔향'][i]}</button>)}</div>{field.acoustic&&<div className="ark-acoustic-result" role="status"><b>{field.acoustic.kind==='animal'?'생체':field.acoustic.kind==='exit'?'귀환':field.acoustic.kind==='fragment'?'기록':'위협'} · {field.acoustic.direction} · {field.acoustic.range}</b><span>{field.steps===field.acoustic.step?'최근 청음':'이동 전 기록 · 다시 청음 권장'}</span><div>{Array.from({length:8},(_,i)=><i key={i} style={{height:5+i*2,opacity:field.acoustic!.strength*8>=i+1?1:.16}}/>)}</div></div>}</section>}
-      {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀"],["normal","걷기"],["fast","달리기"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={rule.blind||!run.gear.includes("flashlight")||(!lightOn&&state.power<5)||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>{rule.blind?"완전 암전":lightOn?`손전등 ON · ${field.lightSteps}칸 남음`:`손전등 점등 · 전력 -5` }</button><small>달리기: 소음 증가 / 무조명: 현재 칸만 보임</small></div>}
+      {!hunt&&<div className="ark-field-controls" role="group" aria-label="현장 이동 방식"><span>이동 방식</span>{([["quiet","은밀"],["normal","걷기"],["fast","달리기"]] as const).map(([id,label])=><button key={id} disabled={!!walking||!!field.combat||!!field.choice} aria-pressed={pace===id} onClick={()=>setPace(id)}>{label}</button>)}<button disabled={!run.gear.includes("flashlight")||!!field.combat||!!field.choice} aria-pressed={lightOn} onClick={onToggleLight}>{lightOn?`손전등 끄기 · 주변 9칸`:`손전등 켜기 · 주변 9칸` }</button><small>{lightOn?"주변 3×3칸에 은은한 원형 조명 · 현장 ON/OFF 무제한":"손전등은 출동 시 전력 5%p 1회 소모 · 현장 ON/OFF 무료"}</small></div>}
               <div className="v44-side-label">
                 <Package size={14} /> 출동 장비 / 즉시 확인
               </div>

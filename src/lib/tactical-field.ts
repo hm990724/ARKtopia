@@ -34,7 +34,7 @@ export const REGION_RULES:Record<RegionId,{title:string;description:string;blind
  vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
  tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:3,sporeCap:0.6}
 };
-export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?0:scanner?(region==='tunnels'?2:3)+Math.floor(level/2):light?2:0;}
+export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return scanner?(region==='tunnels'?2:3)+Math.floor(level/2):light?1:REGION_RULES[region].blind?0:0;}
 export function acousticBearing(f:FieldState,kind:'animal'|'exit'|'threat'|'fragment'){
  const fragment=Object.keys(f.originFragments??{}).map(Number).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];
  const target=kind==='fragment'?fragment:kind==='threat'?f.threat?.position:kind==='exit'?f.exitIndex:remainingWildlife(f).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];
@@ -166,6 +166,12 @@ export function fieldLineOfSight(f:FieldState,i:number,range=1):boolean{
  let x=f.position%width,y=Math.floor(f.position/width);const tx=i%width,ty=Math.floor(i/width),dx=Math.abs(tx-x),dy=-Math.abs(ty-y),sx=x<tx?1:-1,sy=y<ty?1:-1;let err=dx+dy;
  while(x!==tx||y!==ty){const twice=2*err;if(twice>=dy){err+=dy;x+=sx}if(twice<=dx){err+=dx;y+=sy}if(x===tx&&y===ty)return true;if(f.tiles[y*width+x]==='wall')return false;}return true;
 }
+/** A carried flashlight softly lights the player plus the eight surrounding cells. */
+export function fieldFlashlightContains(f:FieldState,i:number):boolean{
+ const width=fieldWidth(f),dx=Math.abs(i%width-f.position%width),dy=Math.abs(Math.floor(i/width)-Math.floor(f.position/width));
+ return dx<=1&&dy<=1&&fieldLineOfSight(f,i,2);
+}
+export function revealFieldFlashlight(f:FieldState){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>fieldFlashlightContains(f,i)?[i]:[])])];}
 export function fieldBeamContains(f:FieldState,i:number,range=2,facing=f.facing??'down'){
  if(!fieldLineOfSight(f,i,range))return false;
  if(i===f.position)return true;
@@ -174,7 +180,7 @@ export function fieldBeamContains(f:FieldState,i:number,range=2,facing=f.facing?
  const forward=dx*fx+dy*fy,side=Math.abs(dx*fy-dy*fx);
  return forward>0&&side<=forward;
 }
-export const fieldVisible=(f:FieldState,i:number,range=1,directionalLight=false)=>range===0?i===f.position:f.visited.includes(i)||(f.discovered??[]).includes(i)||(directionalLight?fieldBeamContains(f,i,range):fieldLineOfSight(f,i,range));
+export const fieldVisible=(f:FieldState,i:number,range=1,directionalLight=false)=>range===0?i===f.position:f.visited.includes(i)||(f.discovered??[]).includes(i)||(directionalLight?fieldFlashlightContains(f,i):fieldLineOfSight(f,i,range));
 export function revealField(f:FieldState,range:number,directionalLight=false){f.discovered=[...new Set([...(f.discovered??[]),...f.tiles.flatMap((_,i)=>(directionalLight?fieldBeamContains(f,i,range):fieldLineOfSight(f,i,range))?[i]:[])])];}
 /** Coarse CCTV bearing only; never returns the animal's tile or coordinates. */
 export function fieldRelayBearing(f:FieldState,level:number):string|null{
