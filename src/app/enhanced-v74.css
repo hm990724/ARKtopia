@@ -562,3 +562,31 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .ark-battle-intro>p:nth-of-type(2){bottom:clamp(66px,11vh,110px)!important;color:#ffbfca!important;font-size:clamp(12px,1.25vw,16px)!important}
 .ark-battle-intro>button{left:auto!important;right:clamp(16px,5vw,72px)!important;bottom:clamp(18px,4vh,42px)!important;width:auto!important;min-height:48px!important;padding:12px 22px!important;border:1px solid #fa8ab0!important;background:#51233f!important;color:#fff0f5!important;font-weight:700!important}
 .ark-battle-intro>button:last-child:not(:first-of-type){right:clamp(230px,24vw,340px)!important;border-color:#776779!important;background:#191923!important}
+
+/* Impact reads clearly while keeping combat actors and field art live. */
+.ark-battle-stage .ark-battle-hit-overlay{overflow:hidden}
+.ark-battle-stage .ark-battle-hit-overlay::before{content:"";position:absolute;inset:8% 18%;opacity:0;pointer-events:none;background:radial-gradient(circle at 72% 54%,#fff6 0 1px,transparent 2px),radial-gradient(circle at 67% 47%,#ff8c9c 0 2px,transparent 3px),radial-gradient(circle at 78% 44%,#ffe5c7 0 1px,transparent 2px),radial-gradient(circle at 74% 66%,#e84d72 0 2px,transparent 3px);filter:drop-shadow(0 0 5px #ff5575)}
+.ark-battle-stage[data-phase=impact][data-action=strike] .ark-battle-hit-overlay::before,.ark-battle-stage[data-phase=impact][data-action=pulse] .ark-battle-hit-overlay::before{animation:ark-battle-sparks .48s ease-out both}
+.ark-battle-stage[data-enemy-hit=true] .ark-battle-foe{animation:ark-battle-impact .52s cubic-bezier(.2,.8,.2,1);filter:brightness(1.85) saturate(1.35) drop-shadow(0 0 15px #ed4d72)}
+.ark-battle-stage[data-hit=true] .ark-battle-party{animation:ark-battle-party-hit .34s steps(2,end)}
+.ark-battle-stage[data-critical=true][data-phase=impact] .ark-battle-hit-overlay{box-shadow:inset 0 0 58px 16px #c92f465c}
+.ark-battle-stage[data-defeated=true] .ark-battle-foe{animation:ark-battle-collapse .8s ease-in forwards;transform-origin:50% 100%}
+@keyframes ark-battle-impact{0%,100%{transform:translateX(0) rotate(0);filter:brightness(1)}18%{transform:translateX(5%) rotate(4deg)}45%{transform:translateX(-6%) rotate(-5deg)}70%{transform:translateX(2%) rotate(2deg)}}
+@keyframes ark-battle-party-hit{0%,100%{filter:none}30%{filter:brightness(1.9) sepia(.5) saturate(2);transform:translateX(-3%)}60%{filter:none;transform:translateX(2%)}}
+@keyframes ark-battle-sparks{0%{opacity:0;transform:scale(.55) rotate(-12deg)}22%{opacity:1}100%{opacity:0;transform:scale(1.2) rotate(18deg)}}
+@keyframes ark-battle-collapse{0%{opacity:1;transform:translateY(0) scale(1)}35%{opacity:.9;transform:translateY(-4%) scale(1.03)}100%{opacity:.16;transform:translateY(12%) scale(.9)}}
+.v90-item-title{display:flex;align-items:center;gap:6px;min-width:0}.v90-item-title img{width:22px;height:22px;object-fit:contain;image-rendering:pixelated;flex:none;filter:drop-shadow(0 0 4px #79c9c544)}.v90-item-title b{flex:1;min-width:0}
+.v71-field .v33-route-object>img{display:block;width:clamp(28px,4vw,54px);height:clamp(25px,4vh,48px);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 5px #000c) drop-shadow(0 0 5px #efb88444)}.v71-field .v33-cache>img{filter:brightness(.62) saturate(.75) drop-shadow(0 3px 5px #000d);transition:filter .2s,transform .2s}.v71-field .v33-route-cell:hover .v33-cache>img{filter:brightness(1.15) saturate(1.05) drop-shadow(0 0 8px #e6b97a);transform:translateY(-2px)}
+.v90-inventory-ledger article>div.v90-item-title{justify-content:flex-start}
+.ark-battle-stage .ark-battle-hit-overlay::after{content:"";position:absolute;inset:24% 26%;border:2px solid #c9f6fa;border-radius:50%;opacity:0;transform:scale(.35);pointer-events:none}
+.ark-battle-stage[data-phase=impact][data-action=strike] .ark-battle-hit-overlay::after{border-radius:0;border:0;inset:16% 24%;background:linear-gradient(112deg,transparent 42%,#fff 49%,#ff6f92 51%,transparent 58%);animation:ark-battle-slash .34s ease-out both}
+.ark-battle-stage[data-phase=impact][data-action=pulse] .ark-battle-hit-overlay::after{border-color:#73e9fa;box-shadow:0 0 18px #55dff5,inset 0 0 20px #55dff588;animation:ark-battle-ring .56s ease-out both}
+.ark-battle-stage[data-phase=impact][data-action=guard] .ark-battle-hit-overlay::after,.ark-battle-stage[data-phase=impact][data-action=cover] .ark-battle-hit-overlay::after{border-color:#a4e6ca;box-shadow:0 0 16px #80d2b288;animation:ark-battle-ring .4s ease-out both}
+.ark-battle-stage[data-phase=impact][data-action=heal] .ark-battle-fighter{filter:drop-shadow(0 0 14px #9ce7bc);animation:ark-battle-heal .6s ease-out}
+.ark-battle-stage[data-phase=impact][data-action=support] .ark-battle-staff-sprite{animation:ark-battle-support .5s ease-out}
+.v33-route-cell.v33-route-fog .v33-cache-memory{opacity:.5;filter:grayscale(1) brightness(.35)}.v33-route-cell.v33-route-fog .v33-cache-memory img{filter:brightness(.25) grayscale(1);opacity:.75}
+@keyframes ark-battle-slash{0%{opacity:0;transform:translateX(-22%) scaleX(.4)}28%{opacity:1}100%{opacity:0;transform:translateX(22%) scaleX(1.1)}}
+@keyframes ark-battle-ring{0%{opacity:0;transform:scale(.25)}22%{opacity:.95}100%{opacity:0;transform:scale(1.25)}}
+@keyframes ark-battle-heal{0%,100%{filter:none}35%{filter:drop-shadow(0 0 20px #9ce7bc);transform:translateY(-3%)}}
+@keyframes ark-battle-support{0%,100%{transform:translateY(0)}35%{transform:translateY(-8%) scale(1.04);filter:brightness(1.35) drop-shadow(0 0 8px #8addb9)}}
+@media(prefers-reduced-motion:reduce){.ark-battle-stage .ark-battle-hit-overlay::before,.ark-battle-stage .ark-battle-hit-overlay::after{animation:none!important}}

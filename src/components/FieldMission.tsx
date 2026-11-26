@@ -3,7 +3,7 @@ import ArtSlot from './ArtSlot';
 import {gameplayArt} from '@/lib/gameplay-art';
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { V10 } from "@/lib/game-v10";
-import { regions, fieldChoicePreview } from "@/lib/game-v10";
+import { regions } from "@/lib/game-v10";
 import {CombatPanel} from './EnhancedField';
 import type {CombatAction} from '@/lib/field-combat';
 import RangerSprite from './RangerSprite';
@@ -149,7 +149,7 @@ function PawPixel() {
 }
 function PixelFoliage({ variant }: { variant: number }) {
   return <span className={"v33-leaf v33-leaf-" + variant} aria-hidden="true">
-    <img className="v71-grass" src="/assets/field/grass.png" alt="" draggable={false}/>
+    <img className="v71-grass" src="/assets/field/grass_dread.png" alt="" draggable={false}/>
   </span>;
 }
 function Status({
@@ -326,7 +326,7 @@ export default function FieldMission({
   const blind=rule.blind||(!lightOn&&!scannerOn);
   const relayBearing = blind?null:fieldRelayBearing(field, relayLevel);
   const threatSignal=fieldThreatSignal(field);
-  const sporeCells=sporeVisibleCells(field);const choicePreview=fieldChoicePreview(state);
+  const sporeCells=sporeVisibleCells(field);
   const visionRange = fieldVision(run.region,lightOn,scannerOn,run.scannerLevel??0);
   const threatInSight = !blind && !!field.threat && ((directionalLight?fieldFlashlightContains(field,field.threat.position):fieldLineOfSight(field,field.threat.position,visionRange)) || !!threatSignal?.warning);
   const fieldProgress = Math.round(
@@ -671,7 +671,7 @@ export default function FieldMission({
                   className={"v33-hidden-map v33-biome-" + run.region}
                   style={{
                     gridTemplateColumns:`repeat(${size},minmax(0,1fr))`,
-                    backgroundImage: "url(/assets/field/world_ground.png)",
+                    backgroundImage: "url(/assets/field/ground_dread.webp)",
                     ["--v33-beam-x" as string]:hunt.lastSearch?`${((hunt.lastSearch.cell%size)+.5)/size*100}%`:'50%',
                     ["--v33-beam-y" as string]:hunt.lastSearch?`${(Math.floor(hunt.lastSearch.cell/size)+.5)/size*100}%`:'50%',
                   }}
@@ -955,7 +955,7 @@ export default function FieldMission({
                       ["--v57-light-x" as string]: `${(((field.position % width) + 0.5) / width) * 100}%`,
                       ["--v57-light-y" as string]: `${((Math.floor(field.position / width) + 0.5) / height) * 100}%`,
                       ["--v57-light-direction" as string]: ({up:'0deg',right:'90deg',down:'180deg',left:'270deg'} as const)[facing],
-                      backgroundImage: "url(/assets/field/ground.png)",
+                      backgroundImage: "url(/assets/field/ground_dread.webp)",
                     } as CSSProperties
                   }
                   role="group"
@@ -1018,7 +1018,7 @@ export default function FieldMission({
                             <RangerSprite direction={facing}/>
                           </span>
                         ) : !visible ? (
-                          <span className="v33-route-veiled" />
+                          <>{field.visited.includes(i)&&tile==='cache'&&<span className="v33-route-object v33-cache v33-cache-memory" aria-label="이전에 확인한 보급 상자"><img src="/assets/field/objects/supply-crate.svg" alt="" draggable={false}/></span>}<span className="v33-route-veiled" /></>
                         ) : tile === "wall" ? (
                           <span className="v33-route-block" />
                         ) : tile === "animal" ? (
@@ -1027,7 +1027,7 @@ export default function FieldMission({
                           </span>
                         ) : tile === "cache" ? (
                           <span className="v33-route-object v33-cache">
-                            ▤<small>보급</small>
+                            <img src="/assets/field/objects/supply-crate.svg" alt="보급 상자" draggable={false}/><small>보급</small>
                           </span>
                         ) : tile === "track" ? (
                           <PawPixel />
@@ -1037,11 +1037,11 @@ export default function FieldMission({
                           </span>
                         ) : tile === "exit" ? (
                           <span className="v33-route-object">
-                            ⇥<small>귀환</small>
+                            <img src="/assets/field/objects/extraction-gate.svg" alt="귀환 지점" draggable={false}/><small>귀환</small>
                           </span>
                         ) : tile === "signal" ? (
                           <span className="v33-route-object">
-                            ✧<small>기록</small>
+                            <img src="/assets/field/objects/record-fragment.svg" alt="기록 신호" draggable={false}/><small>기록</small>
                           </span>
                         ) : i === (field.origin ?? 14) ? (
                           <span className="v33-route-object">
@@ -1122,7 +1122,7 @@ export default function FieldMission({
                             <Search size={17} />
                           </span>
                           <strong>신중 조사</strong>
-                          <small>ST -3 · 지식 +2{field.choice.kind==='cache'&&choicePreview?` · 고철 +${choicePreview.surveyScrap} · 회수 +${choicePreview.surveyLoot}점`:field.choice.kind==='signal'&&!choicePreview?.knownFake?' · 단서 확보 가능':''}</small>
+                          <small>ST -3 · 주변 흔적과 회수 단서를 조사합니다</small>
                         </button>
                         <button
                           type="button"
@@ -1134,7 +1134,7 @@ export default function FieldMission({
                           </span>
                           <strong>강행 회수</strong>
                           <small>
-                            ST -6 · 실패 위험 {choicePreview?.knownFake?100:choicePreview?.displayFailure??field.choice.danger}% · 성공 시 고철 +{field.choice.reward*2}, 지식 +3, 회수 +{field.choice.reward}점{field.choice.kind==='signal'?' · 단서 +2':''}
+                            ST -6 · 물자를 강행 회수합니다 · 결과와 부상 위험은 선택 후 공개
                           </small>
                         </button>
                       </div>
