@@ -5,6 +5,7 @@ import {newHunt,normalizeHunt,type HuntState} from './hidden-hunt';
  */
 import type {AnimalId} from './sim';
 import type {RegionId} from './game-v10';
+import {mutantArchetype} from './mutant-roster';
 
 export const FIELD_COLUMNS=7;
 export const FIELD_ROWS=5;
@@ -209,23 +210,18 @@ export const MUTANT_TIERS=[
 ] as const;
 export function mutantTierIndex(region?:RegionId){return Math.max(0,['garden','conservatory','rail','archive','vault','tunnels'].indexOf(region??'garden'));}
 export function mutantTier(region?:RegionId){return MUTANT_TIERS[mutantTierIndex(region)];}
-/** Existing field combat enemies can also roam; each sector cycles a different threat mix. */
-export function roamingEnemyFor(region:RegionId|undefined,spawn:number,mutantAvailable=true):RoamingEnemy{
- if(spawn<=0&&mutantAvailable)return 'mutant';
- const mixes:Record<RegionId,RoamingEnemy[]>={
-  garden:['slime','echo','mutant'],conservatory:['slime','echo','mutant'],rail:['echo','slime','mutant'],
-  archive:['echo','mutant','slime'],vault:['mutant','echo','slime'],tunnels:['mutant','slime','echo']
- };
- const pool=(mixes[region??'garden']??mixes.garden).filter(kind=>kind!=='mutant'||mutantAvailable);
- return pool[Math.max(0,spawn-1)%pool.length]??'echo';
-}
+/** Roaming encounters use the 20-variant mutant roster; secured M-00 is handled separately. */
+export function roamingEnemyFor(_region:RegionId|undefined,_spawn:number,_mutantAvailable=true):RoamingEnemy{return 'mutant'}
 export function fieldPressureGain(f:FieldState,day:number,pace:Pace,relay:number,contaminated:boolean){
  const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  return Math.max(1,tier.basePressure-Math.min(2,Math.floor(relay/2))+(pace==='quiet'?-1:pace==='fast'?3+index:0)+(contaminated?3+index:0)+Math.min(index,Math.floor(day/10)));
 }
 export function advanceFieldThreat(f:FieldState,noise=f.noise,_relayLevel=0,lightOn=false,pace?:Pace,goal=f.position,stage?:FieldThreat['stage']):boolean{
  const t=f.threat;if(!t||f.combat)return false;
- const kind=t.kind??'mutant';t.kind=kind;
+ const legacyKind=t.kind??'mutant';
+ if(legacyKind!=='mutant')t.mutantVariant??=legacyKind==='echo'?16:5;
+ t.kind='mutant';
+ const archetype=mutantArchetype(t.mutantVariant),ability=archetype.ability;
  const tier=mutantTier(f.region),index=mutantTierIndex(f.region);
  t.ticks=(t.ticks??0)+1;
  if((t.cooldown??0)>0){t.cooldown!--;return false;}
@@ -235,7 +231,9 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,_relayLevel=0,ligh
  if(index<=1&&pace==='quiet'&&d>4&&t.ticks%2===0){t.mode='search';t.stage='search';t.warningTicks=0;return false;}
  // Keep accumulated suspicion and feed actual movement cues into it. Loud
  // movement and a live beam are easier to track; careful movement bleeds it off.
- const soundCue=Math.ceil(Math.max(0,noise)/(kind==='echo'?3:2)),lightCue=lightOn?(kind==='slime'?0:kind==='echo'?7:4):0,quietMask=pace==='quiet'?(kind==='echo'?2:6):0;
+ const soundCue=Math.ceil(Math.max(0,noise)/(ability==='sound-hunt'?1.4:ability==='false-signal'?3:2));
+ const lightCue=lightOn?(ability==='light-drain'?7:ability==='obscure'?1:4):0;
+ const quietMask=pace==='quiet'?(ability==='false-signal'?2:ability==='sound-hunt'?3:6):0;
  t.alert=Math.max(0,Math.min(100,Math.max(t.alert??0,f.pressure??0)+soundCue+lightCue-quietMask));
  if(stage){t.stage=stage;t.mode=stage==='patrol'||stage==='search'?'search':'closing';}
  else{t.mode='closing';t.stage='chase';}
@@ -246,7 +244,7 @@ export function advanceFieldThreat(f:FieldState,noise=f.noise,_relayLevel=0,ligh
  const target=goal===f.position&&index>=3&&delta&&adjacentField(f.position,predicted,fieldWidth(f),f.tiles.length)&&f.tiles[predicted]!=='wall'?predicted:undefined;
  const intercept=goal===f.position&&target!==undefined?sporePaths(f,target).costs:null;
  const exitCosts=goal===f.position&&index>=4&&f.exitIndex!==undefined?sporePaths(f,f.exitIndex).costs:null;
- const steps=kind==='slime'?1:2;
+ const steps=ability==='route-lock'||ability==='slip'||ability==='charge'?3:ability==='armor'||ability==='regenerate'?1:2;
  for(let i=0;i<steps;i++){
   if((costs.get(t.position)??Infinity)<=(stage==='patrol'?0:1))break;
   const score=(cell:number)=>(costs.get(cell)??Infinity)+(intercept?Math.min(12,intercept.get(cell)??12)*.35:0)+(exitCosts?Math.min(12,exitCosts.get(cell)??12)*.15:0);

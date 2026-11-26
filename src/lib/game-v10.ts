@@ -139,16 +139,16 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
  if(restored.field){
   restored.field.region??=restored.run?.region;restored.field.sporeSwarm=null;restored.field.encountered=remainingWildlife(restored.field).length===0;
   if(restored.field.interruptedCapture)restored.field.interruptedCapture=normalizeCapture(restored.field.interruptedCapture);
-  const legacyMobileEnemy=!restored.field.threat?.kind;
   restored.roamingStory??={};
-  if(restored.field.threat)restored.field.threat.kind??='mutant';
+  if(restored.field.threat){const oldKind=restored.field.threat.kind;restored.field.threat.kind='mutant';if(oldKind&&oldKind!=='mutant')restored.field.threat.mutantVariant??=oldKind==='echo'?16:5;restored.field.threat.mutantVariant=Math.max(1,Math.min(20,Math.floor(restored.field.threat.mutantVariant??1)));}
+  if(restored.field.combat){const oldEnemy=(restored.field.combat as {enemy?:string}).enemy;if(oldEnemy&&oldEnemy!=='mutant')restored.field.combat.mutantVariant??=oldEnemy==='echo'?16:5;restored.field.combat.enemy='mutant';restored.field.combat.mutantVariant=Math.max(1,Math.min(20,Math.floor(restored.field.combat.mutantVariant??1)));}
   if(restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
   else{
    if(mutantSecured(restored)&&(restored.field.threat?.kind??'mutant')==='mutant')restored.field.threat=null;
    if(restored.field.combat?.source==='mobile'){
-    if(legacyMobileEnemy)restored.field.combat.enemy='mutant';else restored.field.combat.enemy??='mutant';
+    restored.field.combat.mutantVariant??=1;
     if(mutantSecured(restored)&&restored.field.combat.enemy==='mutant'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}
-    else{const key=restored.field.combat.enemy==='slime'?'firstSlimeEncounterDay':restored.field.combat.enemy==='echo'?'firstEchoEncounterDay':'firstEncounterDay';restored.roamingStory[key]??=restored.day;}
+    else{restored.roamingStory.firstEncounterDay??=restored.day;}
    }
   }
  }
@@ -653,7 +653,7 @@ export function tickAutonomousSpores(s:V10):V10{
  else if(!beforeThreat&&field.threat)n.lastOutcome=field.lastEvent=field.lastEvent||'외곽에서 움직이는 위협 신호가 포착됐습니다. 청음과 은신으로 접근을 피하세요.';
  else if(beforeThreat&&field.threat&&field.threat.position!==beforePosition){
   const stage=field.threat.stage;
-  const enemy=field.threat.kind==='slime'?'오염 점액체':field.threat.kind==='echo'?'신경 잔향체':'MUTANT';
+  const enemy=`MUTANT-${String(field.threat.mutantVariant??1).padStart(2,'0')}`;
   const cue=stage==='patrol'?'순찰 중인 생체 반응이 위치를 바꿨습니다.':stage==='investigate'?`${enemy}가 소음·빛 신호를 따라 수색 범위를 좁힙니다.`:stage==='search'?`${enemy}가 마지막 목격 지점을 수색합니다.`:`${enemy}가 탐사자 쪽으로 추격해 옵니다.`;
   n.lastOutcome=field.lastEvent=cue;
  }
@@ -752,8 +752,8 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
  // MUTANT advances only after a successful field movement; capture and decisions pause pursuit.
  const beforeThreat=!!field.threat;
  if(tile!=='exit'&&destination!==(field.origin??14)&&!n.capture&&!field.choice){
-  if(tickRoamingThreat(n,pace))observation+=` · ${field.combat?.enemy==='slime'?'오염 점액체':field.combat?.enemy==='echo'?'신경 잔향체':'MUTANT'} 접근 · 전투 전환.`;
-  else if(!beforeThreat&&field.threat)observation+=` · EVE: 노출 위협 임계 도달, ${field.threat.kind==='slime'?'오염 점액체':field.threat.kind==='echo'?'신경 잔향체':'MUTANT'} 출현.`;
+  if(tickRoamingThreat(n,pace))observation+=` · MUTANT-${String(field.combat?.mutantVariant??1).padStart(2,'0')} 접근 · 전투 전환.`;
+  else if(!beforeThreat&&field.threat)observation+=` · EVE: 노출 위협 임계 도달, MUTANT-${String(field.threat.mutantVariant??1).padStart(2,'0')} 출현.`;
  }
  if((field.threat?.warningTicks??0)>0)observation+=' 발소리가 급격히 커집니다. 지금 은폐하거나 퇴로를 확보하세요.';
  const scanner=run.gear.includes('scanner');revealField(field,fieldVision(run.region,lightWasOn,scanner,run.scannerLevel??0),lightWasOn&&!scanner);if(lightWasOn){field.lightSteps=Math.max(0,(field.lightSteps??0)-1);if(!field.lightSteps){field.lightOff=true;observation+=' · 손전등 소등.';}}

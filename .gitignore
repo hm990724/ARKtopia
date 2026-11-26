@@ -2,6 +2,7 @@ node_modules
 .next
 .next-qa
 out
+/tmp/
 .env*
 *.tsbuildinfo
 .DS_Store

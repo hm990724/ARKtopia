@@ -7,9 +7,9 @@ const {EXTENDED_INCIDENT_IDS,extendedIncidentWeight}=require('../src/lib/inciden
 const {makeAnimal}=require('../src/lib/sim.ts');
 const {recruitCrew}=require('../src/lib/crew.ts');
 const crewSource=fs.readFileSync(path.join(__dirname,'../src/components/CrewSystem.tsx'),'utf8');
-const wolfScene=fs.readFileSync(path.join(__dirname,'../public/assets/cinematics/staff-terminations/wolf/scene.webp'));
-assert.equal(wolfScene.subarray(0,4).toString(),'RIFF');assert.equal(wolfScene.subarray(8,12).toString(),'WEBP');assert.ok(wolfScene.length>150000);
-assert.match(crewSource,/\/assets\/cinematics\/staff-terminations\/\$\{id\}\/scene\.webp/);assert.doesNotMatch(crewSource,/wolf\/scene_v\d+/);
+const wolfScene=fs.readFileSync(path.join(__dirname,'../public/assets/cinematics/staff-terminations/wolf/scene.png'));
+assert.equal(wolfScene.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(wolfScene.length>150000);
+assert.match(crewSource,/staff-terminations\/wolf\/scene\.png/);assert.doesNotMatch(crewSource,/wolf\/scene_v\d+/);
 const origin=require('../src/lib/origin-zero.ts');
 const {emptyOriginZero}=origin;
 const base=path.join(__dirname,'../public');
@@ -18,7 +18,7 @@ assert.equal(m00Sprite.subarray(0,8).toString('hex'),'89504e470d0a1a0a','canonic
 assert.equal(m00Sprite.readUInt32BE(16),1254);assert.equal(m00Sprite.readUInt32BE(20),1254);
 assert.equal(m00Sprite[25],6,'M-00 sprite has transparent RGBA');
 assert.match(fs.readFileSync(path.join(__dirname,'../src/lib/animal-art.ts'),'utf8'),/m00_normal\.png/);
-assert.ok(fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.png')),'replaced M-00 art is archived instead of deleted');
+assert.ok(fs.existsSync(path.join(base,'assets/archive/m00_normal_pre_pixel.webp')),'replaced M-00 art is archived instead of deleted');
 const preservedOriginalFiles=['ending_incomplete_revival.webp','ending_new_consciousness.webp','ending_two_caretakers.webp','ending_open_spring.webp','ending_subject_000.webp','ending_silent_automation.webp','ending_scattered_names.webp','ending_last_signal.webp'];
 const expectedEndingFiles=['ending_eternal_experiment_finale.png','ending_eden_finale.png','ending_seed_ark_finale.png','ending_last_zoo_finale.png','ending_subject_000_choice.png','ending_silent_automation_finale.png','ending_scattered_names_finale.png','ending_last_signal_finale.png','ending_successor_cinematic.png','ending_humane_restoration_cinematic.png','ending_spring_outside_records_cinematic.png','ending_late_gate_cinematic.png','ending_empty_shiftroom_cinematic.png','ending_first_sentence_cinematic.png','ending_incomplete_revival_cinematic.png','ending_spring_beyond_cage_cinematic.png','ending_two_caretakers_cinematic.png','ending_quiet_automation_cinematic.png','ending_final_transmission_cinematic.png'];
 assert.equal(ENDING_ART.length,19,'all nineteen ending scenes remain separately addressable');
@@ -37,9 +37,9 @@ for(const legacy of LEGACY_ENDING_ART){
  const canonical=ENDING_ART.find(item=>item.prefix===legacy.canonicalPrefix);assert.ok(canonical,`${legacy.prefix} must map to a canonical outcome`);
  assert.equal(findEndingArt(`${legacy.prefix} — legacy save` ).file,canonical.file,`${legacy.prefix} preserves saved ending compatibility`);
 }
-const ids=Object.keys(incidentDefs);assert.equal(ids.length,41,'13 core + 28 stateful incidents');
+const ids=Object.keys(incidentDefs);assert.equal(ids.length,43,'13 core + 30 stateful incidents, including Fox and Deer memories');
 assert.equal(new Set(ids).size,ids.length,'incident IDs must remain unique');
-assert.equal(EXTENDED_INCIDENT_IDS.length,28);
+assert.equal(EXTENDED_INCIDENT_IDS.length,30);
 assert.equal(incidentArtFiles.length,6,'incident set should use its six distinct scene illustrations');
 for(const id of ids){
  const event=incidentDefs[id];assert.ok(event.title&&event.desc&&event.cause,id);assert.equal(event.options.length,3,id);
@@ -64,7 +64,7 @@ for(const id of EXTENDED_INCIDENT_IDS){
 const stale=beginGame('artist','generator');const staleBefore=JSON.stringify(stale);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(stale,0),stale,'a missing pending event must not resolve');assert.equal(JSON.stringify(stale),staleBefore,'a rejected event choice must not mutate the save');
 const unaffordable=beginGame('artist','generator');unaffordable.pendingIncident='cctv_loop';unaffordable.facilities.cctv=true;unaffordable.parts=0;const unaffordableBefore=JSON.stringify(unaffordable);assert.equal(require('../src/lib/game-v10.ts').resolveIncident(unaffordable,0),unaffordable,'an unaffordable response must be rejected');assert.equal(JSON.stringify(unaffordable),unaffordableBefore,'an unaffordable response must not partially mutate the save');
 const previewState=beginGame('artist','generator');previewState.pendingIncident='battery_swelling';const cellPreview=previewIncident(previewState,0);assert.ok(cellPreview.effects.some(x=>x.name==='전지'&&x.delta===-1),'new event cards must show battery costs');
-const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin.png'));assert.equal(suspect.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(suspect.readUInt32BE(16)>=1200&&suspect.readUInt32BE(20)>=800);
+const suspect=fs.readFileSync(path.join(base,'assets/events','m00_suspected_origin.webp'));assert.equal(suspect.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(suspect.readUInt32BE(16)>=1200&&suspect.readUInt32BE(20)>=800);
 assert.match(origin.catTrackFrames[0].hint,/시초 개체로 의심/);assert.doesNotMatch(origin.catTrackFrames[0].hint,/검은 고양이/);assert.doesNotMatch(origin.catTrackFrames[2].hint,/검은 고양이/);
 const route=beginGame('artist','generator');route.day=26;route.tutorialStep=9;route.encounters=5;route.ap=4;route.facilities.cctv=true;route.headquarters.revealStage=2;route.originZero=emptyOriginZero();
 assert.equal(origin.canTrackCat(route),true);let traced=origin.initiateOriginTrack(route);assert.match(traced.lastOutcome,/시초일 가능성을 제기/);

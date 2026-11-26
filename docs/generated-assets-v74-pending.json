@@ -51,7 +51,7 @@
   },
   {
     "id": "hero_neutral",
-    "dest": "characters/protagonist_neutral_v74_source.png",
+    "dest": "characters/protagonist_neutral_v74_source.webp",
     "refs": [
       "characters/protagonist_neutral.webp"
     ],
@@ -139,27 +139,27 @@
   },
   {
     "id": "hero_anxious",
-    "dest": "characters/protagonist_anxious_v74_source.png",
+    "dest": "characters/protagonist_anxious_v74_source.webp",
     "refs": [
-      "characters/protagonist_neutral_v74_source.png"
+      "characters/protagonist_neutral_v74_source.webp"
     ],
     "alpha": false,
     "prompt": "Precise facial expression edit of supplied portrait. Change ONLY expression to slightly drawn brows, uneasy eyes, closed lips, one small sweat mark. Preserve exact framing 3:4, head size and position, hair silhouette, eyes alignment, nose, face shape, shoulders, jacket, goggles, headphones, violet-magenta colors and background. Same adult male identity, no borders, no additional portrait, no camera zoom. Pixel-art treatment identical to reference. Expression variant: anxious."
   },
   {
     "id": "hero_critical",
-    "dest": "characters/protagonist_critical_v74_source.png",
+    "dest": "characters/protagonist_critical_v74_source.webp",
     "refs": [
-      "characters/protagonist_neutral_v74_source.png"
+      "characters/protagonist_neutral_v74_source.webp"
     ],
     "alpha": false,
     "prompt": "Precise facial expression edit of supplied portrait. Change ONLY expression to exhausted half-lidded eyes with unfocused gaze, tense brows and slightly parted mouth, no injury. Preserve exact framing 3:4, head size and position, hair silhouette, eyes alignment, nose, face shape, shoulders, jacket, goggles, headphones, violet-magenta colors and background. Same adult male identity, no borders, no additional portrait, no camera zoom. Pixel-art treatment identical to reference. Expression variant: critical."
   },
   {
     "id": "hero_resolve",
-    "dest": "characters/protagonist_resolve_v74_source.png",
+    "dest": "characters/protagonist_resolve_v74_source.webp",
     "refs": [
-      "characters/protagonist_neutral_v74_source.png"
+      "characters/protagonist_neutral_v74_source.webp"
     ],
     "alpha": false,
     "prompt": "Precise facial expression edit of supplied portrait. Change ONLY expression to steady focused eyes and calm determined brows, mouth closed. Preserve exact framing 3:4, head size and position, hair silhouette, eyes alignment, nose, face shape, shoulders, jacket, goggles, headphones, violet-magenta colors and background. Same adult male identity, no borders, no additional portrait, no camera zoom. Pixel-art treatment identical to reference. Expression variant: resolve."

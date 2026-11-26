@@ -19,9 +19,9 @@ for(const id of crewIds){
  for(const url of options){
   assert.ok(fs.existsSync(path.join(__dirname,'../public',url)),id+': missing portrait '+url);
  }
- assert.ok(staffStatusPortrait(id,'critical').endsWith('portrait_critical.webp'));
- assert.ok(staffDialoguePortrait(id,'critical','safe').endsWith('portrait_critical.png'));
- assert.ok(staffDialoguePortrait(id,'anxious','safe').endsWith('portrait_unstable.png'));
+ assert.ok(staffStatusPortrait(id,'critical').endsWith('/critical.png'));
+ assert.ok(staffDialoguePortrait(id,'critical','safe').endsWith('/critical.png'));
+ assert.ok(staffDialoguePortrait(id,'anxious','safe').endsWith('/unstable.png'));
  assert.equal(staffDialoguePortrait(id,'neutral','critical'),staffStatusPortrait(id,'critical'));
  assert.equal(characterPortrait(id,'critical'),staffStatusPortrait(id,'critical'));
 }

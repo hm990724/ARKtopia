@@ -2,28 +2,28 @@ import type {CoreIncidentId,IncidentId} from './game-v10';
 import type {ExtendedIncidentId} from './incident-content';
 
 const CORE_INCIDENT_ART:Record<CoreIncidentId,string>={
- echo:'event_garden.png',
- breach:'event_containment.png',
- blackout:'event_blackout.png',
- spores:'event_spores.png',
- signal:'event_signal.png',
- visitor:'event_signal.png',
- predator:'event_containment.png',
- coolant:'event_coolant.png',
- rations:'event_garden.png',
- intrusion:'event_signal.png',
- garden:'event_garden.png',
- keepsake:'event_garden.png',
- quiet:'event_garden.png'
+ echo:'event_garden.webp',
+ breach:'event_containment.webp',
+ blackout:'event_blackout.webp',
+ spores:'event_spores.webp',
+ signal:'event_signal.webp',
+ visitor:'event_signal.webp',
+ predator:'event_containment.webp',
+ coolant:'event_coolant.webp',
+ rations:'event_garden.webp',
+ intrusion:'event_signal.webp',
+ garden:'event_garden.webp',
+ keepsake:'event_garden.webp',
+ quiet:'event_garden.webp'
 };
 
 const EXTENDED_INCIDENT_ART:Record<ExtendedIncidentId,string>={
- cctv_loop:'event_signal.png',cctv_blindspot:'event_signal.png',evidence_gap:'event_signal.png',patrol_echo:'event_containment.png',
- generator_overheat:'event_blackout.png',cable_arc:'event_blackout.png',battery_swelling:'event_blackout.png',pump_backflow:'event_coolant.png',filter_clog:'event_spores.png',
- fence_crack:'event_containment.png',enclosure_rattle:'event_containment.png',escape_tracks:'event_signal.png',animal_fever:'event_garden.png',feed_shortage:'event_garden.png',
- medic_memory:'event_garden.png',guard_refusal:'event_containment.png',staff_conflict:'event_signal.png',empty_chair:'event_garden.png',neural_static:'event_signal.png',
- resonance_drift:'event_signal.png',data_corruption:'event_signal.png',hq_recall_order:'event_signal.png',hq_delete_order:'event_signal.png',field_scavenger:'event_coolant.png',
- contamination_pool:'event_spores.png',construction_noise:'event_blackout.png',m00_signature:'event_signal.png',exposure_critical:'event_containment.png',fox_supply_memory:'event_garden.png',deer_archive_memory:'event_signal.png'
+ cctv_loop:'event_signal.webp',cctv_blindspot:'event_signal.webp',evidence_gap:'event_signal.webp',patrol_echo:'event_containment.webp',
+ generator_overheat:'event_blackout.webp',cable_arc:'event_blackout.webp',battery_swelling:'event_blackout.webp',pump_backflow:'event_coolant.webp',filter_clog:'event_spores.webp',
+ fence_crack:'event_containment.webp',enclosure_rattle:'event_containment.webp',escape_tracks:'event_signal.webp',animal_fever:'event_garden.webp',feed_shortage:'event_garden.webp',
+ medic_memory:'event_garden.webp',guard_refusal:'event_containment.webp',staff_conflict:'event_signal.webp',empty_chair:'event_garden.webp',neural_static:'event_signal.webp',
+ resonance_drift:'event_signal.webp',data_corruption:'event_signal.webp',hq_recall_order:'event_signal.webp',hq_delete_order:'event_signal.webp',field_scavenger:'event_coolant.webp',
+ contamination_pool:'event_spores.webp',construction_noise:'event_blackout.webp',m00_signature:'event_signal.webp',exposure_critical:'event_containment.webp',fox_supply_memory:'event_garden.webp',deer_archive_memory:'event_signal.webp'
 };
 
 export function findIncidentArt(id:IncidentId):string{return id in CORE_INCIDENT_ART?CORE_INCIDENT_ART[id as CoreIncidentId]:EXTENDED_INCIDENT_ART[id as ExtendedIncidentId];}
@@ -83,8 +83,9 @@ export function incidentArtworkCandidates(id:IncidentId):readonly string[]{
  const order=GAME_EVENT_ART_ORDER.indexOf(id);
  const fallback=`/assets/events/${findIncidentArt(id)}`;
  if(order<0)return [fallback];
+ const extension=id==='medic_memory'?'png':'webp';
  return [
-  `/assets/cinematics/origin-zero/events/EVT_${String(order+1).padStart(2,'0')}_${id}.png`,
+  `/assets/cinematics/origin-zero/events/EVT_${String(order+1).padStart(2,'0')}_${id}.${extension}`,
   fallback
  ];
 }

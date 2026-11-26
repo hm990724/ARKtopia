@@ -753,7 +753,7 @@
       "bytes": 1534190
     },
     {
-      "path": "public/assets/archive/m00_normal_pre_pixel.png",
+      "path": "public/assets/archive/m00_normal_pre_pixel.webp",
       "width": 1254,
       "height": 1254,
       "mode": "RGBA",
@@ -890,7 +890,7 @@
       "bytes": 632788
     },
     {
-      "path": "public/assets/characters/daughter_portrait.png",
+      "path": "public/assets/characters/daughter_portrait.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -923,7 +923,7 @@
       "bytes": 2573679
     },
     {
-      "path": "public/assets/characters/eve_glitch.png",
+      "path": "public/assets/characters/eve_glitch.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -956,7 +956,7 @@
       "bytes": 2480164
     },
     {
-      "path": "public/assets/characters/eve_revelation.png",
+      "path": "public/assets/characters/eve_revelation.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -989,7 +989,7 @@
       "bytes": 2342338
     },
     {
-      "path": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "path": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "width": 768,
       "height": 1024,
       "mode": "RGB",
@@ -1011,7 +1011,7 @@
       "bytes": 1843418
     },
     {
-      "path": "public/assets/characters/protagonist_anxious_v74_source.png",
+      "path": "public/assets/characters/protagonist_anxious_v74_source.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1044,7 +1044,7 @@
       "bytes": 2619055
     },
     {
-      "path": "public/assets/characters/protagonist_critical_v73_768.png",
+      "path": "public/assets/characters/protagonist_critical_v73_768.webp",
       "width": 768,
       "height": 1024,
       "mode": "RGB",
@@ -1066,7 +1066,7 @@
       "bytes": 1865104
     },
     {
-      "path": "public/assets/characters/protagonist_critical_v74_source.png",
+      "path": "public/assets/characters/protagonist_critical_v74_source.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1077,7 +1077,7 @@
       "bytes": 2349885
     },
     {
-      "path": "public/assets/characters/protagonist_decline.png",
+      "path": "public/assets/characters/protagonist_decline.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1088,7 +1088,7 @@
       "bytes": 2895483
     },
     {
-      "path": "public/assets/characters/protagonist_final.png",
+      "path": "public/assets/characters/protagonist_final.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1121,7 +1121,7 @@
       "bytes": 2527567
     },
     {
-      "path": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "path": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "width": 768,
       "height": 1024,
       "mode": "RGB",
@@ -1143,7 +1143,7 @@
       "bytes": 1855390
     },
     {
-      "path": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "path": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1176,7 +1176,7 @@
       "bytes": 2448846
     },
     {
-      "path": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "path": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "width": 768,
       "height": 1024,
       "mode": "RGB",
@@ -1198,7 +1198,7 @@
       "bytes": 1870148
     },
     {
-      "path": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "path": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1209,7 +1209,7 @@
       "bytes": 2374303
     },
     {
-      "path": "public/assets/characters/scientist_archive.png",
+      "path": "public/assets/characters/scientist_archive.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -1220,7 +1220,7 @@
       "bytes": 3324591
     },
     {
-      "path": "public/assets/characters/scientist_obsession.png",
+      "path": "public/assets/characters/scientist_obsession.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -2169,7 +2169,7 @@
       "bytes": 2952067
     },
     {
-      "path": "public/assets/hidden-photos/photo_01.png",
+      "path": "public/assets/hidden-photos/photo_01.webp",
       "width": 1448,
       "height": 1086,
       "mode": "RGB",
@@ -2547,7 +2547,7 @@
     ],
     [
       "public/assets/animals/m00_normal_v74.png",
-      "public/assets/archive/m00_normal_pre_pixel.png"
+      "public/assets/archive/m00_normal_pre_pixel.webp"
     ],
     [
       "public/assets/animals/specter_uncanny.png",
@@ -2593,7 +2593,7 @@
     },
     {
       "a": "public/assets/animals/m00_normal.png",
-      "b": "public/assets/archive/m00_normal_pre_pixel.png",
+      "b": "public/assets/archive/m00_normal_pre_pixel.webp",
       "distance": 3
     },
     {
@@ -2633,7 +2633,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v72.png",
-      "b": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "b": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "distance": 1
     },
     {
@@ -2648,7 +2648,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v72.png",
-      "b": "public/assets/characters/protagonist_critical_v73_768.png",
+      "b": "public/assets/characters/protagonist_critical_v73_768.webp",
       "distance": 1
     },
     {
@@ -2663,7 +2663,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v72.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 0
     },
     {
@@ -2678,12 +2678,12 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v72.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 2
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v73.png",
-      "b": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "b": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "distance": 0
     },
     {
@@ -2698,7 +2698,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v73.png",
-      "b": "public/assets/characters/protagonist_critical_v73_768.png",
+      "b": "public/assets/characters/protagonist_critical_v73_768.webp",
       "distance": 0
     },
     {
@@ -2713,7 +2713,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v73.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 1
     },
     {
@@ -2728,57 +2728,57 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v73.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "b": "public/assets/characters/protagonist_critical_v72.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "b": "public/assets/characters/protagonist_critical_v73.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
-      "b": "public/assets/characters/protagonist_critical_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
+      "b": "public/assets/characters/protagonist_critical_v73_768.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "b": "public/assets/characters/protagonist_neutral.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "b": "public/assets/characters/protagonist_neutral_v73.png",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "b": "public/assets/characters/protagonist_resolve_v72.png",
       "distance": 2
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
       "b": "public/assets/characters/protagonist_resolve_v73.png",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v73_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "a": "public/assets/characters/protagonist_anxious_v73_768.webp",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 1
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v74_768.png",
-      "b": "public/assets/characters/protagonist_anxious_v74_source.png",
+      "b": "public/assets/characters/protagonist_anxious_v74_source.webp",
       "distance": 0
     },
     {
@@ -2788,7 +2788,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v74_768.png",
-      "b": "public/assets/characters/protagonist_critical_v74_source.png",
+      "b": "public/assets/characters/protagonist_critical_v74_source.webp",
       "distance": 0
     },
     {
@@ -2798,7 +2798,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v74_768.png",
-      "b": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "b": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "distance": 0
     },
     {
@@ -2808,37 +2808,37 @@
     },
     {
       "a": "public/assets/characters/protagonist_anxious_v74_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v74_source.png",
+      "a": "public/assets/characters/protagonist_anxious_v74_source.webp",
       "b": "public/assets/characters/protagonist_critical_v74_768.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v74_source.png",
-      "b": "public/assets/characters/protagonist_critical_v74_source.png",
+      "a": "public/assets/characters/protagonist_anxious_v74_source.webp",
+      "b": "public/assets/characters/protagonist_critical_v74_source.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v74_source.png",
+      "a": "public/assets/characters/protagonist_anxious_v74_source.webp",
       "b": "public/assets/characters/protagonist_neutral_v74_768.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v74_source.png",
-      "b": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "a": "public/assets/characters/protagonist_anxious_v74_source.webp",
+      "b": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v74_source.png",
+      "a": "public/assets/characters/protagonist_anxious_v74_source.webp",
       "b": "public/assets/characters/protagonist_resolve_v74_768.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_anxious_v74_source.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "a": "public/assets/characters/protagonist_anxious_v74_source.webp",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {
@@ -2848,7 +2848,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v72.png",
-      "b": "public/assets/characters/protagonist_critical_v73_768.png",
+      "b": "public/assets/characters/protagonist_critical_v73_768.webp",
       "distance": 0
     },
     {
@@ -2863,7 +2863,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v72.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 1
     },
     {
@@ -2878,12 +2878,12 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v72.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 1
     },
     {
       "a": "public/assets/characters/protagonist_critical_v73.png",
-      "b": "public/assets/characters/protagonist_critical_v73_768.png",
+      "b": "public/assets/characters/protagonist_critical_v73_768.webp",
       "distance": 0
     },
     {
@@ -2898,7 +2898,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v73.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 1
     },
     {
@@ -2913,42 +2913,42 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v73.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v73_768.png",
+      "a": "public/assets/characters/protagonist_critical_v73_768.webp",
       "b": "public/assets/characters/protagonist_neutral.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v73_768.png",
+      "a": "public/assets/characters/protagonist_critical_v73_768.webp",
       "b": "public/assets/characters/protagonist_neutral_v73.png",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v73_768.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "a": "public/assets/characters/protagonist_critical_v73_768.webp",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v73_768.png",
+      "a": "public/assets/characters/protagonist_critical_v73_768.webp",
       "b": "public/assets/characters/protagonist_resolve_v72.png",
       "distance": 2
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v73_768.png",
+      "a": "public/assets/characters/protagonist_critical_v73_768.webp",
       "b": "public/assets/characters/protagonist_resolve_v73.png",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v73_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "a": "public/assets/characters/protagonist_critical_v73_768.webp",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 1
     },
     {
       "a": "public/assets/characters/protagonist_critical_v74_768.png",
-      "b": "public/assets/characters/protagonist_critical_v74_source.png",
+      "b": "public/assets/characters/protagonist_critical_v74_source.webp",
       "distance": 0
     },
     {
@@ -2958,7 +2958,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v74_768.png",
-      "b": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "b": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "distance": 0
     },
     {
@@ -2968,27 +2968,27 @@
     },
     {
       "a": "public/assets/characters/protagonist_critical_v74_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v74_source.png",
+      "a": "public/assets/characters/protagonist_critical_v74_source.webp",
       "b": "public/assets/characters/protagonist_neutral_v74_768.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v74_source.png",
-      "b": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "a": "public/assets/characters/protagonist_critical_v74_source.webp",
+      "b": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v74_source.png",
+      "a": "public/assets/characters/protagonist_critical_v74_source.webp",
       "b": "public/assets/characters/protagonist_resolve_v74_768.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_critical_v74_source.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "a": "public/assets/characters/protagonist_critical_v74_source.webp",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {
@@ -2998,7 +2998,7 @@
     },
     {
       "a": "public/assets/characters/protagonist_neutral.webp",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 1
     },
     {
@@ -3013,12 +3013,12 @@
     },
     {
       "a": "public/assets/characters/protagonist_neutral.webp",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 1
     },
     {
       "a": "public/assets/characters/protagonist_neutral_v73.png",
-      "b": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "b": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "distance": 0
     },
     {
@@ -3033,27 +3033,27 @@
     },
     {
       "a": "public/assets/characters/protagonist_neutral_v73.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 2
     },
     {
-      "a": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "a": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "b": "public/assets/characters/protagonist_resolve_v72.png",
       "distance": 1
     },
     {
-      "a": "public/assets/characters/protagonist_neutral_v73_768.png",
+      "a": "public/assets/characters/protagonist_neutral_v73_768.webp",
       "b": "public/assets/characters/protagonist_resolve_v73.png",
       "distance": 2
     },
     {
-      "a": "public/assets/characters/protagonist_neutral_v73_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "a": "public/assets/characters/protagonist_neutral_v73_768.webp",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 2
     },
     {
       "a": "public/assets/characters/protagonist_neutral_v74_768.png",
-      "b": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "b": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "distance": 0
     },
     {
@@ -3063,17 +3063,17 @@
     },
     {
       "a": "public/assets/characters/protagonist_neutral_v74_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_neutral_v74_source.png",
+      "a": "public/assets/characters/protagonist_neutral_v74_source.webp",
       "b": "public/assets/characters/protagonist_resolve_v74_768.png",
       "distance": 0
     },
     {
-      "a": "public/assets/characters/protagonist_neutral_v74_source.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "a": "public/assets/characters/protagonist_neutral_v74_source.webp",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {
@@ -3083,17 +3083,17 @@
     },
     {
       "a": "public/assets/characters/protagonist_resolve_v72.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 3
     },
     {
       "a": "public/assets/characters/protagonist_resolve_v73.png",
-      "b": "public/assets/characters/protagonist_resolve_v73_768.png",
+      "b": "public/assets/characters/protagonist_resolve_v73_768.webp",
       "distance": 0
     },
     {
       "a": "public/assets/characters/protagonist_resolve_v74_768.png",
-      "b": "public/assets/characters/protagonist_resolve_v74_source.png",
+      "b": "public/assets/characters/protagonist_resolve_v74_source.webp",
       "distance": 0
     },
     {

@@ -8,7 +8,7 @@
     "alpha": false,
     "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression relaxed restrained smile. Opaque background identical composition.",
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-fe0f9c84-a707-45a9-a2aa-90ade2fac73f.png",
-    "integrated": "public/assets/characters/protagonist_neutral_v73_768.png",
+    "integrated": "public/assets/characters/protagonist_neutral_v73_768.webp",
     "export": {
       "width": 768,
       "height": 1024,
@@ -24,7 +24,7 @@
     "alpha": false,
     "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression worried eyebrows and slightly parted lips, normal-sized eyes, not exaggerated. Opaque background identical composition.",
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-b132d65a-9e48-4cb6-a7dd-b17ba5130de3.png",
-    "integrated": "public/assets/characters/protagonist_anxious_v73_768.png",
+    "integrated": "public/assets/characters/protagonist_anxious_v73_768.webp",
     "export": {
       "width": 768,
       "height": 1024,
@@ -40,7 +40,7 @@
     "alpha": false,
     "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression exhausted and frightened, small sweat beads, tense mouth, dark under-eye shading, eyes still anatomically coherent. Opaque background identical composition.",
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-a7fa1aff-ef9f-443b-b6ea-c1055b7ebf8a.png",
-    "integrated": "public/assets/characters/protagonist_critical_v73_768.png",
+    "integrated": "public/assets/characters/protagonist_critical_v73_768.webp",
     "export": {
       "width": 768,
       "height": 1024,
@@ -56,7 +56,7 @@
     "alpha": false,
     "prompt": "Edit reference portrait for game production. Identity-preserve pixel illustration. EXACT 3:4 portrait canvas, same framing, hair, goggles, headphones, clothing and neon magenta/violet palette as reference. Fix the eyes: exactly two normal human eyes with one clearly readable dark round pupil in each magenta iris, anatomically coherent perspective and both gazing toward the same point just right of viewer. No split pupils, no cross eyes, no glowing white pupils. Preserve asymmetry of head tilt but consistent eye line. Crisp pixel clusters and detailed original finish, full border inside canvas with 3% safe margins. One person only. Expression quiet determination, steady focused gaze and closed mouth. Opaque background identical composition.",
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-42804e95-abc9-4421-8d70-eb6f8e06a29c.png",
-    "integrated": "public/assets/characters/protagonist_resolve_v73_768.png",
+    "integrated": "public/assets/characters/protagonist_resolve_v73_768.webp",
     "export": {
       "width": 768,
       "height": 1024,

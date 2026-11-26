@@ -7,7 +7,7 @@ export type EndingScene={slot:number;title:string;time:'before'|'after';lines:En
 const line=(speaker:string,text:string):EndingLine=>({speaker,text});
 const m=(text:string)=>line('관리자',text),e=(text:string)=>line('EVE',text),hq=(text:string)=>line('본부 AI',text),record=(text:string)=>line('기록',text);
 const titles=['영원한 실험','에덴','방주의 씨앗','마지막 동물원','제000번 우리','침묵의 자동화','흩어진 이름들','마지막 신호'];
-const farewell:Record<CrewId,string>={rabbit:'담당자님… 그동안 정말 고생 많으셨어요. 남은 환자들은 제가 돌볼게요. …웃으면서 보내드리고 싶었는데, 자꾸 눈물이 나네요. 안녕히 가세요.',fox:'인수인계는 제가 확인하겠습니다. …이번에는 빠뜨리는 물건 없이요. 고생하셨습니다.',wolf:'관리자님, 마지막까지 문은 제가 지키겠습니다. 그러니 이제 안심하십시오. …저는 변하는 게 무서웠습니다. 그래도 함께 지키려고 싸운 시간은 잊지 않겠습니다. 그동안 정말 고생 많으셨습니다.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요.'};
+const farewell:Record<CrewId,string>={rabbit:'담당자님… 정말 고생 많으셨어요. 남은 생명들은 제가 잘 돌볼게요. …웃으면서 보내드리고 싶었는데, 자꾸 눈물이 나네요. 조심히 가세요. 그리고 꼭 쉬셔야 해요.',fox:'인수인계 목록은 전부 확인했습니다. 이번에는 누락된 물품도, 기록도 없습니다. …잘 가십시오. 돌아오시는 날까지 제가 이곳을 지키겠습니다.',wolf:'관리자님… 마지막 경례 대신 손을 흔들어도 괜찮겠습니까? …잘 가요. 제가 여기 남아 모두를 지킬게요. 그러니 부디, 끝까지 무사하셔야 합니다. 웃으면서 보내드리려 했는데… 죄송합니다. 눈물이 멈추질 않네요.',deer:'마지막 보고서에 이름을 남겨 뒀어요. 제가… 절대 지우지 않을게요. 담당자님, 조심히 가세요. 다음에 읽어 드릴 책도 골라 둘게요.'};
 export function mainEndingSlot(s:V10):number{
  if(s.phase!=='ending'||!s.originZero?.route||s.originZero.photos<12)return 0;
  const goal=s.decisions.filter(d=>d.title==='마지막 보존 지침').at(-1)?.answer;

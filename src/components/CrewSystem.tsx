@@ -9,10 +9,7 @@ import {cinematicArtworkCandidates} from '@/lib/cinematic-art';
 
 export function StaffPortrait({id,className='',condition='safe',dialogueMood,dialogueText}:{id:CrewId;className?:string;condition?:'safe'|'unstable'|'critical';dialogueMood?:PortraitMood;dialogueText?:string}){
  const dialogueSources=dialogueMood?staffDialogueArtworkCandidates(id,dialogueMood,condition,dialogueText??''):[staffStatusPortrait(id,condition)];
- const legacySources=id==='rabbit'?[]:[
-  `/assets/staff/${id}/portrait.webp`,
-  id==='wolf'?'/assets/cinematics/staff-arrivals/wolf/CN_07_wolf_guard_arrival.png':`/assets/cinematics/staff-arrivals/${id}/scene.webp`
- ];
+ const legacySources=[...cinematicArtworkCandidates(id)];
  const sources=[...new Set([...dialogueSources,...legacySources])];
  const [index,setIndex]=useState(0);
  useEffect(()=>setIndex(0),[id,condition,dialogueMood,dialogueText]);
@@ -20,7 +17,7 @@ export function StaffPortrait({id,className='',condition='safe',dialogueMood,dia
  const current=index;
  const fallback=current>=sources.length;
  const arrivalFrame=current===sources.length-1;
- return <span className={'v45-portrait v53-staff-portrait '+className+' '+condition+(fallback?' uses-fallback':'')+(arrivalFrame?' uses-arrival-frame':'')} title={fallback?'인물 초상화가 누락되어 임시 이니셜을 표시합니다.':arrivalFrame?'도착 기록(scene.webp)을 초상화 대신 표시합니다.':CREW_PROFILES[id].post}>
+ return <span className={'v45-portrait v53-staff-portrait '+className+' '+condition+(fallback?' uses-fallback':'')+(arrivalFrame?' uses-arrival-frame':'')} title={fallback?'인물 초상화가 누락되어 임시 이니셜을 표시합니다.':arrivalFrame?'도착 기록 장면을 초상화 대신 표시합니다.':CREW_PROFILES[id].post}>
   {current<sources.length?<img key={`${key}-${current}`} src={sources[current]} alt={CREW_PROFILES[id].post} onError={()=>setIndex(v=>Math.min(sources.length,v+1))}/>:<span className="v45-portrait-fallback">{CREW_PROFILES[id].title.slice(0,1)}</span>}
   {fallback&&<small className="v53-staff-fallback-label">PERSONNEL RECORD</small>}
  </span>;
@@ -45,6 +42,18 @@ export function CinematicScene({kind,onFinish}:{kind:CinematicKind;onFinish:()=>
   'HQ MEDICAL TRANSFER // 의무관 도착',
   '의무관은 보안 캡슐에서 내려 대답보다 먼저 진료실과 환자 침상을 살핍니다. 의료 기록은 아직 봉인되어 있습니다.',
   '…환자분이 계신가요? 담당자님도 다친 곳부터 보여주세요. 우선 제가 살펴볼게요.'
+ ]:kind==='fox'?[
+  'HQ SUPPLY TRANSFER // 보급관 도착',
+  '봉인 캡슐이 열리자 보급관은 물품 목록과 봉인 번호부터 대조합니다. 누락된 상자 하나도 그냥 넘기지 않습니다.',
+  '담당자님, 현재 재고는 제가 정리하겠습니다. 필요한 곳에 먼저 배치하고, 기록이 맞을 때까지 확인하겠습니다.'
+ ]:kind==='wolf'?[
+  'HQ SECURITY TRANSFER // 보안관 도착',
+  '캡슐에서 내린 보안관은 곧바로 출입구와 엄폐 위치를 확인합니다. 경례는 조금 서툴러도 경계 태세는 흐트러지지 않습니다.',
+  '안녕하십니까, 관리자님! 경비는 맡겨 주십시오. 제가 먼저 순찰하겠습니다! 아, 보고 순서는… 이번엔 제대로 하겠습니다.'
+ ]:kind==='deer'?[
+  'HQ ARCHIVE TRANSFER // 서기관 도착',
+  '자료실 문이 열리자 서기관의 시선이 책장과 색인표를 따라갑니다. 긴장한 손으로 기록 단말기를 꼭 쥡니다.',
+  '담당자님, 서고가 그대로 남아 있어요! 아… 죄송해요, 너무 반가워서요. 필요한 기록은 제가 찾아드릴게요.'
  ]:[
   `HQ TRANSPORT // ${data!.post} ARRIVAL`,
   '지하 통로에서 반송 캡슐이 도착했습니다. 생체 기록은 암호화되어 있습니다.',
@@ -145,7 +154,7 @@ export function CrewCollapseScene({id,onTerminate}:{id:CrewId;onTerminate:()=>vo
  const terminationArt=id==='rabbit'
   ? staffStatusPortrait('rabbit','critical')
   : id==='wolf'
-   ? '/assets/cinematics/staff-terminations/wolf/scene.webp'
+   ? '/assets/cinematics/staff-terminations/wolf/scene.png'
    : `/assets/cinematics/staff-terminations/${id}/scene.webp`;
  const lines=effect.quote;
  const line=lines[step]??'';

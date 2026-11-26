@@ -15,6 +15,7 @@ Open `http://localhost:3000`.
 
 ```powershell
 npm run check:git-size
+npm run check:assets
 npm run typecheck
 npm run lint
 npm run test:all
@@ -31,7 +32,7 @@ See [the current gameplay requirements](docs/REQUIREMENTS_GAMEPLAY.md), [gamepla
 
 ## GitHub file-size handling
 
-Do not commit `public.zip` or another packaged project archive. Archive formats are ignored; source, package manifests, and GitHub Actions carry the project. `npm run check:git-size` checks staged/indexed and non-ignored untracked files for GitHub's 100 MiB per-file limit. If an archive was already staged, remove it from the index with `git rm --cached -- public.zip` and then run the size check.
+Do not commit `public.zip` or another packaged project archive. Archive formats and `/tmp/` are ignored; source, package manifests, and GitHub Actions carry the project. `npm run check:git-size` checks staged/indexed and non-ignored untracked files for GitHub's 100 MiB per-file limit. If an archive was already staged, remove it from the index with `git rm --cached -- public.zip` and then run the size check. For a manual source handoff, run `npm run clean:generated -- --include-deps`, omit `.git`, then rebuild dependencies with `npm ci` after unpacking.
 
 The canonical story is in [STORY_BIBLE.md](STORY_BIBLE.md). Ending/cinematic artwork is maintained separately and is outside the current gameplay task.
 

@@ -66,7 +66,7 @@
     "key": "photo_01",
     "prompt": "Use case: illustration-story. One landscape 4:3 archival story photograph for ANOMALY ZOO pixel-art narrative game. Match muted mauve, ivory, plum and desaturated sage palette of reference family photo, deliberate crisp pixel clusters, aged photographic wear around edges, analog archive atmosphere. One scene only, no collage or split screen, NO embedded words, logos, UI, readable text. A locked wartime underground fictional biology laboratory, empty small animal cages, sealed cabinets and an observation desk. Old military secrecy, no real biology diagrams or procedures.",
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-46f2459e-d3df-4dbe-9e71-26ca157ca0e1.png",
-    "file": "public/assets/hidden-photos/photo_01.png",
+    "file": "public/assets/hidden-photos/photo_01.webp",
     "status": "integrated"
   },
   {
@@ -174,7 +174,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-c6e49c16-af9f-46eb-b331-729b24f02b16.png",
-    "file": "public/assets/characters/eve_glitch.png",
+    "file": "public/assets/characters/eve_glitch.webp",
     "status": "integrated"
   },
   {
@@ -184,7 +184,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/eve_hologram.webp"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-1f715515-3ed8-4b42-9425-06f09b102254.png",
-    "file": "public/assets/characters/eve_revelation.png",
+    "file": "public/assets/characters/eve_revelation.webp",
     "status": "integrated"
   },
   {
@@ -194,7 +194,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-ac32b6b3-eb46-43ec-a86b-5c8d50d23f83.png",
-    "file": "public/assets/characters/protagonist_decline.png",
+    "file": "public/assets/characters/protagonist_decline.webp",
     "status": "integrated"
   },
   {
@@ -204,7 +204,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/characters/protagonist_neutral.webp"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-57c61a31-05d5-44fa-82eb-6d3015fc8bc3.png",
-    "file": "public/assets/characters/protagonist_final.png",
+    "file": "public/assets/characters/protagonist_final.webp",
     "status": "integrated"
   },
   {
@@ -214,7 +214,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-39a551c9-0b67-4653-a819-784bec5c5b25.png",
-    "file": "public/assets/characters/scientist_archive.png",
+    "file": "public/assets/characters/scientist_archive.webp",
     "status": "integrated"
   },
   {
@@ -224,7 +224,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-73a5a8d9-82ec-48fc-98f8-b079408254b8.png",
-    "file": "public/assets/characters/scientist_obsession.png",
+    "file": "public/assets/characters/scientist_obsession.webp",
     "status": "integrated"
   },
   {
@@ -234,7 +234,7 @@
       "C:/Users/lookm/Documents/GitHub/ARKtopia/public/assets/hidden-photos/photo_08.png"
     ],
     "source": "C:\\Users\\lookm\\.codex\\generated_images\\01a1f771-6bee-7bf1-87b7-502e3f858791\\exec-cc4e11a9-8f9f-4bad-89b3-46e97eb2204e.png",
-    "file": "public/assets/characters/daughter_portrait.png",
+    "file": "public/assets/characters/daughter_portrait.webp",
     "status": "integrated"
   },
   {

@@ -7,21 +7,17 @@ import {createPortal} from 'react-dom';
 import type {V10} from '@/lib/game-v10';
 import {combatBlock,fieldEnemyClue,combatRoundLimit,escapeChance,resolveCombat,combatTurnFeedback,type CombatAction,baseUpgrades,upgradeLevel,upgradeMaxLevel,upgradeBlock,upgradeCost,type UpgradeId} from '@/lib/field-combat';
 import {CREW_PROFILES,canWolfLastStand,type CrewId} from '@/lib/crew';
-import {characterPortrait} from '@/lib/character-art';
+import {combatStaffSprite} from '@/lib/character-art';
 import RangerSprite from './RangerSprite';
 import StoryStill from './StoryStill';
 import {storyArtworkCandidates} from '@/lib/story-art';
 import {mutantReveal,mutantSprite} from '@/lib/monster-art';
-const roamingReveal:Record<'slime'|'echo',string>={
- slime:'/assets/cinematics/field-threats/roaming-slime/reveal.png',
- echo:'/assets/cinematics/field-threats/roaming-echo/reveal.png',
-};
-const roamingName:Record<'slime'|'echo'|'mutant',string>={mutant:'MUTANT',slime:'오염 점액체',echo:'신경 잔향체'};
+import {mutantArchetype} from '@/lib/mutant-roster';
 type CombatHandler=(action:CombatAction,prepared?:{before:V10;after:V10})=>void;
 export function CombatPanel({state,onAction}:{state:V10;onAction:CombatHandler}){
  const b=state.field?.combat;if(!b)return null;
  const companions=(state.run?.companions??[state.run?.companion]).filter((id):id is CrewId=>!!id&&!!state.crew?.members.some(m=>m.id===id&&m.mind>0));
- if(b.introPending||b.lastStand){const last=!!b.lastStand,enemy=b.enemy??'mutant',variant=b.mutantVariant??1,label=enemy==='mutant'?`MUTANT-${String(variant).padStart(2,'0')}`:roamingName[enemy],art=last?storyArtworkCandidates(9):enemy==='mutant'?[mutantReveal(variant),...storyArtworkCandidates(8)]:[roamingReveal[enemy],`/assets/field/enemy_${enemy}.png`];return createPortal(<div className="v74-combat-shade"><section className="v74-combat origin-field-scene" role="dialog" aria-modal="true" aria-label={last?'경비관의 마지막 엄호':`최초 배회 위협 조우 · ${label}`}><h3>{last?'경비관의 마지막 엄호':`최초 배회 위협 조우 · ${label}`}</h3><StoryStill sources={art} alt={last?'경비관의 마지막 엄호':`어둠 속에서 모습을 드러낸 ${label}`}/><p>{last?'경비관: 관리자님, 먼저 가세요. 제가 막을게요.':enemy==='mutant'?`EVE: 미확인 거대 생체 신호 ${label}. 포자 확산형 변이체가 접근 중입니다. 움직임을 멈추고 퇴로를 확인하세요.`:enemy==='slime'?'EVE: 오염 점액체가 바닥을 타고 접근합니다. 달리면 진동을 따라오니 장애물과 높은 지형을 이용하세요.':'EVE: 신경 잔향체가 손전등 신호를 따라옵니다. 빛을 끄고 시야를 끊으세요.'}</p>{last&&<p>확인 시 경비관 영구 이탈 · 다른 생존 직원 정신력 -30 · 경비 부재 발생.</p>}<button type="button" onClick={()=>onAction(last?'retreat':'intro-continue')}>{last?'마지막 엄호를 받고 철수한다':'현장 대응 시작'}</button>{last&&<button type="button" onClick={()=>onAction('cancel-last-stand')}>엄호 거부 · 함께 다른 대응</button>}</section></div>,document.body);}
+ if(b.introPending||b.lastStand){const last=!!b.lastStand,variant=b.mutantVariant??1,archetype=mutantArchetype(variant),label=`MUTANT-${String(variant).padStart(2,'0')} · ${archetype.name}`,art=last?storyArtworkCandidates(9):[mutantReveal(variant),gameplayArt.result('combatEncounter'),...storyArtworkCandidates(8)];return createPortal(<div className="v74-combat-shade"><section className="v74-combat origin-field-scene" role="dialog" aria-modal="true" aria-label={last?'경비관의 마지막 엄호':`최초 MUTANT 조우 · ${label}`}><h3>{last?'경비관의 마지막 엄호':`최초 MUTANT 조우 · ${label}`}</h3><StoryStill sources={art} alt={last?'경비관의 마지막 엄호':`어둠 속에서 모습을 드러낸 ${label}`}/><p>{last?'경비관: 관리자님, 먼저 가세요. 제가 막을게요.':`EVE: ${archetype.name} 생체 변이 신호가 접근합니다. ${archetype.fieldTell} 이동을 멈추고 퇴로와 동행자 상태를 확인하십시오.`}</p>{last&&<p>확인 시 경비관 영구 이탈 · 다른 생존 직원 정신력 -30 · 경비 부재 발생.</p>}<button type="button" onClick={()=>onAction(last?'retreat':'intro-continue')}>{last?'마지막 엄호를 받고 철수한다':'현장 대응 시작'}</button>{last&&<button type="button" onClick={()=>onAction('cancel-last-stand')}>엄호 거부 · 함께 다른 대응</button>}</section></div>,document.body);}
  return <CombatArena state={state} onAction={onAction}/>;
 }
 const actionDeck=[
@@ -62,7 +58,7 @@ function CombatArena({state,onAction}:{state:V10;onAction:CombatHandler}){
   window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);
  });
  const companions=(run.companions??[run.companion]).filter((id):id is CrewId=>!!id&&!!state.crew?.members.some(m=>m.id===id&&m.mind>0&&m.hp>0));
- const enemyName=b.enemy==='mutant'?'특수 변이체 MUTANT':b.enemy==='slime'?'오염 점액체':'신경 잔향체';
+ const enemyName=`${mutantArchetype(b.mutantVariant).name} · MUTANT-${String(b.mutantVariant??1).padStart(2,'0')}`;
  const display=turn&&impact?turn.after:state,fx=turn?.feedback;
  const hp=turn&&impact?fx!.hp:b.hp,integrity=turn&&impact?fx!.integrity:run.integrity;
  const critical=integrity<=30||display.mind<=30;
@@ -71,14 +67,14 @@ function CombatArena({state,onAction}:{state:V10;onAction:CombatHandler}){
  <header className="ark-battle-header"><div><span>ARK / FIELD ENGAGEMENT</span><h3 id="v74-combat-title">{enemyName}</h3></div><div className="ark-battle-round"><small>ROUND</small><b>{String(b.round).padStart(2,'0')} / {combatRoundLimit(b)}</b></div></header>
  <div className="ark-battle-duel"><CombatGauge label="관리자 방호" value={integrity} kind="operator"/><span>VS</span><CombatGauge label="오염 핵 내구" value={hp} max={b.maxHp} kind="enemy"/></div>
  <div className="v74-combat-stage ark-battle-stage" data-action={activeAction} data-phase={turn?(impact?'impact':'windup'):'ready'} data-hit={!!(impact&&fx&&fx.damage>0)} data-enemy-hit={!!(impact&&fx&&fx.enemyDamage>0)} data-critical={critical} data-defeated={!!(impact&&fx?.defeated)}>
- <ArtSlot src={gameplayArt.combat(run.region)}/><div className="ark-battle-fighter"><RangerSprite direction="right"/>{impact&&fx&&fx.damage>0&&<strong className="ark-battle-number">-{fx.damage}</strong>}{impact&&fx&&fx.recovery>0&&<strong className="ark-battle-number heal">+{fx.recovery}</strong>}</div><div className="ark-battle-foe"><img className="v74-enemy" src={b.enemy==='mutant'?mutantSprite(b.mutantVariant):`/assets/field/enemy_${b.enemy}.png`} data-mutant={b.enemy==='mutant'?'active':undefined} alt={enemyName}/>{impact&&fx&&fx.enemyDamage>0&&<strong className="ark-battle-number">-{fx.enemyDamage}</strong>}</div>
+ <ArtSlot src={gameplayArt.combat(run.region)}/><div className="ark-battle-party" data-companions={companions.length} aria-label="전투 인원"><div className="ark-battle-fighter"><RangerSprite direction="right"/>{impact&&fx&&fx.damage>0&&<strong className="ark-battle-number">-{fx.damage}</strong>}{impact&&fx&&fx.recovery>0&&<strong className="ark-battle-number heal">+{fx.recovery}</strong>}</div>{companions.map(id=>{const member=state.crew!.members.find(m=>m.id===id)!;return <img className="ark-battle-staff-sprite" key={id} src={combatStaffSprite(id)} alt={`${CREW_PROFILES[id].post} 전투 지원`} title={`${CREW_PROFILES[id].post} · HP ${member.hp}/100`}/>})}</div><div className="ark-battle-foe"><img className="v74-enemy" src={mutantSprite(b.mutantVariant)} data-mutant="active" alt={enemyName}/>{impact&&fx&&fx.enemyDamage>0&&<strong className="ark-battle-number">-{fx.enemyDamage}</strong>}</div>
  {impact&&fx&&fx.infection>0&&<span className="ark-battle-infection">감염 +{fx.infection}</span>}
  <i className="ark-battle-hit-overlay" aria-hidden="true"/><span className="ark-battle-stage-label">{turn?(impact?fx?.defeated?'위협 격퇴':fx?.escaped?'도주 성공':fx?.fatal?'생체 신호 위급':'대응 결과 확인':'행동 실행 중'):'행동 대기'}</span></div>
  {critical&&<div className="ark-battle-critical" role="status"><AlertTriangle size={15}/> {integrity<=30?'방호 내구 위험':'관리자 정신력 위험'}{integrity<=30&&display.mind<=30?' · 정신력 위험':''}</div>}
  <div className="ark-battle-secondary"><CombatGauge label="정신력" value={display.mind} kind="mind"/><CombatGauge label="현장 ST" value={display.stamina} kind="stamina"/><CombatGauge label="전력" value={display.power} kind="power"/><CombatGauge label="감염" value={display.infection} kind="infection"/></div>
  <div className="ark-battle-observe" id="v74-combat-intent"><small>{turn?'ACTION RESOLUTION':'OBSERVATION / 관찰'}</small><p>{turn?(impact?turn.after.lastOutcome:'행동 수행 중…'):fieldEnemyClue(b)}{!turn&&b.stagger?' · 균형이 무너졌다.':''}</p></div>
  <div className="ark-battle-deck" aria-label="전투 행동" aria-busy={!!turn}>{actionDeck.map(item=>{const blocked=combatBlock(state,item.id),Icon=item.icon;return <button type="button" key={item.id} data-tone={item.tone} data-selected={activeAction===item.id} disabled={!!turn||!!blocked} onClick={()=>act(item.id)} title={blocked??item.label}><span className="ark-battle-key">{item.key}</span><Icon size={22} aria-hidden="true"/><span className="ark-battle-card-copy"><b>{item.label}</b><small>{blocked??item.hint}</small>{item.id==='retreat'&&<span className="ark-battle-escape"><span>도주 성공률 {escapeChance(state)}%</span><i><em style={{width:escapeChance(state)+'%'}}/></i></span>}</span></button>})}</div>
- {companions.length>0&&<div className="ark-combat-team" aria-label="동행 직원">{companions.map(id=>{const member=state.crew!.members.find(m=>m.id===id)!;const mood=member.mind<35?'critical':member.mind<62?'anxious':'neutral';return <figure className="v74-combat-companion ark-combat-support-card" key={id}><img src={characterPortrait(id,mood)} alt={CREW_PROFILES[id].post}/><figcaption>{CREW_PROFILES[id].post} · 동행</figcaption></figure>})}</div>}
+ {companions.length>0&&<div className="ark-combat-team" aria-label="동행 직원 상태">{companions.map(id=>{const member=state.crew!.members.find(m=>m.id===id)!;const mood=member.mind<35?'critical':member.mind<62?'anxious':'neutral';return <figure className="v74-combat-companion ark-combat-support-card" key={id}><img src={combatStaffSprite(id)} alt=""/><figcaption>{CREW_PROFILES[id].post} · HP {member.hp}/100 · 정신 {member.mind}% · {mood==='critical'?'위기':mood==='anxious'?'불안':'안정'}</figcaption></figure>})}</div>}
  {canWolfLastStand(state)&&<button type="button" className="origin-sacrifice" disabled={!!turn} onClick={()=>onAction('wolf-last-stand')}>경비관의 마지막 엄호 요청 · 영구 이탈</button>}
  <details className="ark-battle-history"><summary>전투 기록 · 최근 {b.log.length}건</summary>{b.log.map((line,i)=><p key={i}>{line}</p>)}</details>
  </section></div>,document.body);

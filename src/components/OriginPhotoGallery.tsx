@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {photoRecords} from '@/lib/origin-zero';
 import {storyArtworkCandidates} from '@/lib/story-art';
 import StoryStill from './StoryStill';
-const source=(i:number)=>`/assets/hidden-photos/photo_${String(i+1).padStart(2,'0')}.png`;
+const source=(i:number)=>`/assets/hidden-photos/photo_${String(i+1).padStart(2,'0')}.${i===0?'png':'webp'}`;
 const sources=(i:number):readonly string[]=>i===7?[source(i),...storyArtworkCandidates(15)]:[source(i)];
 export default function OriginPhotoGallery({count}:{count:number}){
  const [selected,setSelected]=useState<number|null>(null);

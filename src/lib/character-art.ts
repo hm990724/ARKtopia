@@ -44,9 +44,13 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  return 'neutral';
 }
 export function characterPortrait(id:CharacterId,mood:PortraitMood):string{
- if(id==='protagonist')return `/assets/characters/protagonist_${mood}.png`;
- if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}.png`;
+ if(id==='protagonist')return `/assets/characters/protagonist_${mood}.webp`;
+ if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}.webp`;
  return staffStatusPortrait(id,mood==='critical'?'critical':mood==='anxious'?'unstable':'safe');
+}
+/** Tiny, transparent full-body combat sprites; expressive portraits stay in dialogue and staff cards. */
+export function combatStaffSprite(id:CrewId):string{
+ return `/assets/staff/combat/${id}.png`;
 }
 
 /** Resolve the mental-state portrait from the active art roster. */
@@ -72,8 +76,6 @@ export function staffDialoguePortrait(id:CrewId,mood:PortraitMood,condition:Staf
  if(id==='wolf')return `/assets/staff/wolf/${wolfDialogueExpression(mood,condition,'')}.png`;
  if(condition==='critical')return staffStatusPortrait(id,'critical');
  if(condition==='unstable'&&mood!=='critical')return staffStatusPortrait(id,'unstable');
- if(mood==='critical')return `/assets/staff/${id}/portrait_critical.png`;
- if(mood==='anxious')return `/assets/staff/${id}/portrait_unstable.png`;
  return staffStatusPortrait(id,condition);
 }
 
@@ -103,17 +105,19 @@ function rabbitDialogueExpression(mood:PortraitMood,condition:StaffCondition,lin
 }
 function foxDialogueExpression(mood:PortraitMood,condition:StaffCondition,line:string):FoxExpression{
  if(/작별|안녕히|고생하셨|떠나|그리워|보고 싶|마지막|잃었|돌아오지/.test(line))return 'crying';
+ if(/다 제 거|제 물건|빼앗|가져가려|저리 가|제 재고|제 몫/.test(line))return 'critical';
  if(condition==='critical'||mood==='critical')return 'critical';
+ if(/억울|누락|제 이름이 지워|제가 확인|장부에는/.test(line))return 'crying';
  if(/거짓말|왜 그래|책임|싫어요|분명히|화가/.test(line))return 'angry';
  if(condition==='unstable'||mood==='anxious')return 'unstable';
  if(mood==='resolve'||staffDialogueTone(mood,line)==='soft')return 'smile';
  return 'neutral';
 }
 function wolfDialogueExpression(mood:PortraitMood,condition:StaffCondition,line:string):WolfExpression{
- if(condition==='critical'||mood==='critical')return 'critical';
- if(/변하고 싶지|무서워|두려워|잠식|내가 아닌/.test(line))return 'critical';
- if(condition==='unstable'||mood==='anxious')return 'unstable';
+ if(/변하고 싶지|무서워|두렵|내가 아닌|제 정체성|혼자 두지 말/.test(line))return 'crying';
  if(/작별|안녕히|고생하셨|떠나|그리워|보고 싶|마지막|잃었|돌아오지|눈물/.test(line))return 'crying';
+ if(condition==='critical'||mood==='critical')return 'critical';
+ if(condition==='unstable'||mood==='anxious')return 'unstable';
  if(/거짓말|왜 그래|책임|싫어요|분명히|화가|화났|그만하세요/.test(line))return 'angry';
  if(mood==='resolve'||staffDialogueTone(mood,line)==='soft')return 'smile';
  if(/두려|불안|걱정|기억|모르겠|죄송|경고|위험|손이 떨/.test(line))return 'unstable';
@@ -143,8 +147,7 @@ export function staffDialogueArtworkCandidates(id:CrewId,mood:PortraitMood,condi
  }
  if(condition==='critical')return [status];
  if(condition==='unstable')return legacy===status?[status]:[legacy,status];
- const tone=staffDialogueTone(mood,line);
- return [`/assets/staff/${id}/portrait_talk_${tone}.png`,legacy,status].filter((v,i,a)=>a.indexOf(v)===i);
+ return [legacy,status].filter((v,i,a)=>a.indexOf(v)===i);
 }
 
 export type WalkDirection='down'|'left'|'right'|'up';

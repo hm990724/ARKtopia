@@ -522,7 +522,7 @@
       "bytes": 632788
     },
     {
-      "path": "public/assets/characters/daughter_portrait.png",
+      "path": "public/assets/characters/daughter_portrait.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -533,7 +533,7 @@
       "bytes": 3465634
     },
     {
-      "path": "public/assets/characters/eve_glitch.png",
+      "path": "public/assets/characters/eve_glitch.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -555,7 +555,7 @@
       "bytes": 288012
     },
     {
-      "path": "public/assets/characters/eve_revelation.png",
+      "path": "public/assets/characters/eve_revelation.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -566,7 +566,7 @@
       "bytes": 2903216
     },
     {
-      "path": "public/assets/characters/protagonist_decline.png",
+      "path": "public/assets/characters/protagonist_decline.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -577,7 +577,7 @@
       "bytes": 2895483
     },
     {
-      "path": "public/assets/characters/protagonist_final.png",
+      "path": "public/assets/characters/protagonist_final.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -599,7 +599,7 @@
       "bytes": 277612
     },
     {
-      "path": "public/assets/characters/scientist_archive.png",
+      "path": "public/assets/characters/scientist_archive.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -610,7 +610,7 @@
       "bytes": 3324591
     },
     {
-      "path": "public/assets/characters/scientist_obsession.png",
+      "path": "public/assets/characters/scientist_obsession.webp",
       "width": 1086,
       "height": 1448,
       "mode": "RGB",
@@ -928,7 +928,7 @@
       "bytes": 643376
     },
     {
-      "path": "public/assets/hidden-photos/photo_01.png",
+      "path": "public/assets/hidden-photos/photo_01.webp",
       "width": 1448,
       "height": 1086,
       "mode": "RGB",

@@ -4,7 +4,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const targets=['.next','.next-qa','test-results','playwright-report','tsconfig.tsbuildinfo','tmp/v68/npm-cache'];
+const targets=['.next','.next-qa','test-results','playwright-report','tsconfig.tsbuildinfo','tmp'];
 if(process.argv.includes('--include-deps'))targets.push('node_modules');
 if(process.argv.includes('--include-bundles'))targets.push('public.zip');
 let deleted=0;

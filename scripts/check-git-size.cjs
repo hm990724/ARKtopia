@@ -3,7 +3,36 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const limit=100*1024*1024;
-const records=execFileSync('git',['ls-files','-s','-z'],{encoding:'buffer'})
+function scanWorkingTree(){
+  const ignoredDirectories=new Set(['.git','node_modules','.next','.next-qa','out','tmp','coverage','test-results','playwright-report']);
+  const files=[];
+  function visit(directory){
+    for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
+      if(entry.isDirectory()&&ignoredDirectories.has(entry.name))continue;
+      const absolute=path.join(directory,entry.name);
+      if(entry.isDirectory())visit(absolute);
+      else if(entry.isFile())files.push(absolute);
+    }
+  }
+  visit(process.cwd());
+  const oversized=files.map(file=>({file:path.relative(process.cwd(),file),size:fs.statSync(file).size})).filter(item=>item.size>=limit);
+  if(oversized.length){
+    console.error('Files at or above GitHub’s 100 MiB per-file limit:');
+    for(const item of oversized)console.error(`- ${item.file}: ${(item.size/1024/1024).toFixed(1)} MiB`);
+    process.exitCode=1;
+  }else{
+    console.log(`PASS: checked ${files.length} working-tree files; none reach GitHub’s 100 MiB single-file limit.`);
+  }
+  console.log('Git index/history check unavailable: this sandbox blocks Node child-process launches.');
+}
+
+let records;
+try{records=execFileSync('git',['ls-files','-s','-z'],{encoding:'buffer'})}
+catch(error){
+  if(error.code==='EPERM'||error.code==='EACCES'){scanWorkingTree();process.exit();}
+  throw error;
+}
+records=records
   .toString('utf8').split('\0').filter(Boolean);
 const staged=records.map(record=>{
   const tab=record.indexOf('\t');
