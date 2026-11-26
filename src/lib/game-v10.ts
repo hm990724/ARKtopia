@@ -142,7 +142,7 @@ export function loadGame(raw:unknown):V10|null{if(!raw||typeof raw!=='object')re
   restored.roamingStory??={};
   if(restored.field.threat){const oldKind=restored.field.threat.kind;restored.field.threat.kind='mutant';if(oldKind&&oldKind!=='mutant')restored.field.threat.mutantVariant??=oldKind==='echo'?16:5;restored.field.threat.mutantVariant=Math.max(1,Math.min(20,Math.floor(restored.field.threat.mutantVariant??1)));}
   if(restored.field.combat){const oldEnemy=(restored.field.combat as {enemy?:string}).enemy;if(oldEnemy&&oldEnemy!=='mutant')restored.field.combat.mutantVariant??=oldEnemy==='echo'?16:5;restored.field.combat.enemy='mutant';restored.field.combat.mutantVariant=Math.max(1,Math.min(20,Math.floor(restored.field.combat.mutantVariant??1)));}
-  if(restored.run?.firstTutorial){restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
+  if(restored.run?.firstTutorial){restored.field.tutorialStep??='choose-quiet';restored.field.threat=null;if(restored.field.combat?.source==='mobile'){restored.field.combat=null;if(restored.field.interruptedCapture&&!restored.capture)restored.capture=restored.field.interruptedCapture;restored.field.interruptedCapture=null;}}
   else{
    if(mutantSecured(restored)&&(restored.field.threat?.kind??'mutant')==='mutant')restored.field.threat=null;
    if(restored.field.combat?.source==='mobile'){
@@ -697,6 +697,8 @@ export function moveField(s:V10,destination:number,pace:Pace='normal'):V10{
    const gain=regions.find(r=>r.id===run.region)!.reward*2;
    field.loot+=gain;run.loot+=gain;const salvaged=Math.max(1,Math.ceil(gain/2))+((run.companions??[run.companion]).includes('fox')?1:0);n.scrap+=salvaged;earnDuringRun(run,'scrap',salvaged);
    observation=`손상된 물자 상자를 확보했습니다. 회수 점수 +${gain} · 고철 +${Math.max(1,Math.ceil(gain/2))}.`;
+  }else if(tile==='hazard'&&run.firstTutorial){
+   observation='포자 군락을 확인했습니다. 포자는 주변으로 번질 수 있습니다. 바이오필터는 장착하면 자동으로 오염 노출을 줄입니다.';
   }else if(tile==='hazard'&&!run.firstTutorial){
    // Environmental contamination is independent of the mobile enemy.
    const damage=Math.max(1,Math.round(regions.find(r=>r.id===run.region)!.danger/12)+(noisy?4:0)-(run.gear.includes('scanner')?3:0)-((run.companions??[run.companion]).includes('wolf')?3:0));
@@ -860,7 +862,7 @@ export function leaveField(s:V10,kind='조기 철수'):V10{
 /** v33 hidden-pursuit command; the UI never receives the living creature's actual cell. */
 export function performVeiledHunt(s:V10,command:import('./hidden-hunt').HuntCommand):V10{
  if(!s.capture||!s.field||!s.run||!s.capture.hunt||s.field.combat||s.phase!=='day')return s;
- if(command.method==='cage'&&(!s.run.gear.includes('cage')||command.type!=='net'))return s;
+ if(command.method==='cage'&&((!s.run.gear.includes('cage')&&!s.capture.hunt.tutorial)||command.type!=='net'))return s;
  const outcome=performHuntAction(s.capture.hunt,command);
  if(!outcome.changed)return s;
  const n=copy(s) as V10;n.capture!.hunt=outcome.state;n.lastOutcome=outcome.state.lastEvent;

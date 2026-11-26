@@ -376,6 +376,11 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .v71-field.v33-expedition .ark-local-vitals{display:grid!important;grid-template-columns:1fr!important;gap:4px!important;margin:0 0 5px!important;position:static!important}
 .v71-field.v33-expedition .ark-local-vitals>div{grid-template-columns:minmax(0,1fr) auto!important;padding:5px 7px!important;min-height:0!important}
 .v71-field.v33-expedition .ark-local-vitals i{grid-column:1/-1!important}
+.v71-field.v33-expedition.v33-is-field .v44-specimen-column{min-height:min(78dvh,760px)!important}
+.v71-field.v33-expedition.v33-is-field .ark-left-vitals{margin-top:auto!important;padding:7px!important;border:1px solid #657068!important;background:linear-gradient(145deg,#1b2728,#171923)!important;box-shadow:0 0 16px #c5a95a18!important}
+.v71-field.v33-expedition.v33-is-field .ark-left-vitals>div{background:#1d292b!important;border-color:#52665d!important}
+.ark-filter-tutorial-chip{padding:6px 9px;border:1px solid #d8bd68;background:#403922;color:#ffe9a6;font:inherit;cursor:pointer;box-shadow:0 0 12px #f3ce5c55}
+.ark-filter-tutorial-chip:hover{background:#584a29}
 .ark-route-minimap{display:grid!important;gap:6px;min-width:0;padding:7px;border:1px solid #536b64;background:#142025;color:#c5dcd3}
 .ark-route-minimap header{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:11px}.ark-route-minimap header b{display:flex;align-items:center;gap:3px}.ark-route-minimap small{font-size:10px;color:#b6c5bd}
 .ark-route-mini-grid{display:grid;gap:2px;width:100%;max-width:190px;margin:auto}.ark-route-mini-grid>span{min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;font-size:clamp(6px,.7vw,10px);line-height:1;background:#0e141a;border:1px solid #263138;color:#bcd7c9}
@@ -383,7 +388,7 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 .ark-route-mini-legend{display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:10px}.ark-route-mini-legend span:nth-child(1){color:#ddb3f2}.ark-route-mini-legend span:nth-child(2){color:#9bd4bc}.ark-route-mini-legend span:nth-child(3){color:#8de2da}.ark-route-mini-legend span:nth-child(4){color:#ecc18e}
 .v71-field.v33-expedition.v33-is-field .v44-specimen-column>.v44-sector-banner{display:none!important}
 @container(max-width:740px){.v71-field.v33-expedition.v33-is-field .v33-mission-layout,.v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(105px,23%) minmax(0,1fr)!important}.v71-field.v33-expedition.v33-is-field .v33-side-console,.v71-field.v33-expedition.v33-is-hunt .v33-side-console{grid-column:2!important;grid-row:2!important}.v71-field.v33-expedition.v33-is-field .v44-specimen-column,.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column{grid-row:1 / span 2!important}}
-@container(max-width:480px){.v71-field.v33-expedition.v33-is-field .v33-mission-layout,.v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(0,1fr)!important}.v71-field.v33-expedition.v33-is-field .v33-theater,.v71-field.v33-expedition.v33-is-hunt .v33-theater{grid-column:1!important;grid-row:2!important}.v71-field.v33-expedition.v33-is-field .v33-side-console,.v71-field.v33-expedition.v33-is-hunt .v33-side-console{grid-column:1!important;grid-row:3!important}.v71-field.v33-expedition.v33-is-field .v44-specimen-column,.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column{grid-column:1!important;grid-row:1!important}.ark-route-mini-grid{max-width:120px}}
+@container(max-width:480px){.v71-field.v33-expedition.v33-is-field .v33-mission-layout,.v71-field.v33-expedition.v33-is-hunt .v33-mission-layout{grid-template-columns:minmax(0,1fr)!important}.v71-field.v33-expedition.v33-is-field .v33-theater,.v71-field.v33-expedition.v33-is-hunt .v33-theater{grid-column:1!important;grid-row:2!important}.v71-field.v33-expedition.v33-is-field .v33-side-console,.v71-field.v33-expedition.v33-is-hunt .v33-side-console{grid-column:1!important;grid-row:3!important}.v71-field.v33-expedition.v33-is-field .v44-specimen-column,.v71-field.v33-expedition.v33-is-hunt .v44-specimen-column{grid-column:1!important;grid-row:1!important}.v71-field.v33-expedition.v33-is-field .v44-specimen-column{min-height:0!important}.ark-route-mini-grid{max-width:120px}}
 
 /* Night camera switching and physical radio tuner */
 .ark-cctv-channels{display:flex;gap:4px;flex-wrap:wrap}.ark-cctv-channels button{flex:1 1 65px;display:grid;gap:2px;text-align:left;padding:6px 8px;background:#202532;border:1px solid #53576a;color:#c1d4cf}.ark-cctv-channels button small{font:10px monospace;color:#9cb3b0}.ark-cctv-channels button b{font-size:11px}.ark-cctv-channels button[aria-pressed=true]{background:#304c49;border-color:#9ad3c8}.ark-cctv-channels button[data-alert=true] small{color:#f4a1a8}
@@ -632,3 +637,35 @@ h1,h2,h3,h4,.micro-label,.tile-head>b,.v74-actions-left strong{font-family:var(-
 @keyframes ark-reward-swoosh{from{opacity:0;transform:translateX(-52px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:640px){.ark-transport-drive-layout{grid-template-columns:minmax(0,1fr)!important}.ark-transport-tactical{width:min(100%,360px)!important}.ark-drive-track{height:100px}.ark-transit-board{padding:7px}.ark-transport-tactical button b{min-height:28px}.ark-field-loot-swoosh>div>span{flex:1;min-width:120px;justify-content:flex-start}}
 @media(prefers-reduced-motion:reduce){.ark-transport[data-instability="high"],.ark-transport[data-instability="high"]::after,.ark-capsule-pod.is-small,.ark-field-loot-swoosh,.ark-field-loot-swoosh>div>span,.v41-reward-entry{animation:none!important}}
+
+/* Unknown wildlife stays recognizable by silhouette while its species remains concealed. */
+.v71-field.v33-expedition .v91-route-animal img,.v71-field.v33-expedition .ark-route-mini-grid .ark-mini-animal,.v71-field.v33-expedition .v44-specimen-image img,.v71-field.v33-expedition .v74-live-animal{filter:brightness(0) saturate(100%) drop-shadow(0 0 2px #b4d0c8aa) drop-shadow(0 0 7px #70a89b55)!important;opacity:.96}
+.v71-field.v33-expedition .v91-route-animal{background:radial-gradient(ellipse at center,#62716b22,transparent 70%)}
+.v71-field.v33-expedition .ark-route-mini-grid .ark-mini-animal{padding:2px;filter:brightness(0) saturate(100%) drop-shadow(0 0 3px #aac9c0)!important}
+.v71-field.v33-expedition .v44-specimen-image{background:radial-gradient(ellipse at 50% 75%,#94bcb522,transparent 58%),linear-gradient(180deg,#111923,#1a1c24)!important;border-color:#627d79!important}
+.v71-field.v33-expedition .v71-route-map .v33-land-wall,.v71-field.v33-expedition .v33-route-map .v33-land-wall{position:relative;overflow:hidden;background:linear-gradient(155deg,#303d44,#171f25 75%)!important;border-color:#71808742!important;box-shadow:inset 0 0 0 1px #aabcc014!important}
+.v71-field.v33-expedition .v33-route-map .v33-land-wall::before{content:"";position:absolute;inset:6% 4% 7%;z-index:1;clip-path:polygon(6% 0,76% 0,76% 8%,96% 8%,100% 26%,96% 31%,100% 94%,78% 94%,78% 100%,0 100%,3% 78%,0 25%);background:linear-gradient(180deg,#617078 0 5%,transparent 6% 91%,#10171d 92%),linear-gradient(90deg,#29343b,#424e53 13%,#263139 15%,#313d43 53%,#1c272e 56%,#3c484c 88%,#202a31);box-shadow:inset 0 0 0 2px #a9b7b522,inset 5px 0 10px #050a0dbb,4px 5px 8px #000b;filter:drop-shadow(0 3px 2px #000b)}
+.v71-field.v33-expedition .v33-route-map .v33-land-wall::after{content:"";position:absolute;inset:8% 8%;z-index:2;pointer-events:none;background:radial-gradient(circle at 12% 18%,#aebcbb 0 1px,#27343a 2px 3px,transparent 4px),radial-gradient(circle at 88% 18%,#aebcbb 0 1px,#27343a 2px 3px,transparent 4px),radial-gradient(circle at 12% 82%,#aebcbb 0 1px,#27343a 2px 3px,transparent 4px),radial-gradient(circle at 88% 82%,#aebcbb 0 1px,#27343a 2px 3px,transparent 4px),linear-gradient(112deg,transparent 0 45%,#c6d1cf19 46% 47%,transparent 48%),linear-gradient(0deg,transparent 0 78%,#11191f 79% 83%,#778287 84% 87%,transparent 88%);opacity:.9}
+.ark-route-mini-grid>span[data-kind="wall"]{position:relative;overflow:hidden;background:linear-gradient(145deg,#586268,#252e35 42%,#151c23)!important;border-color:#859092!important;box-shadow:inset 0 0 0 1px #c2ccca22,inset 0 -3px #090f14}
+.ark-route-mini-grid>span[data-kind="wall"]::after{content:"";position:absolute;inset:2px;background:repeating-linear-gradient(135deg,transparent 0 5px,#0c131866 6px 8px),linear-gradient(0deg,#ba925f88 0 2px,transparent 2px 100%);opacity:.65}
+
+/* Compact capture console: keep the three live vitals and method controls above the map actions. */
+.v71-field.v33-expedition.v33-is-hunt .v33-side-console{align-content:start!important}
+.v71-field.v33-expedition.v33-is-hunt .ark-local-vitals>div{border:1px solid #53685f!important;border-radius:4px!important;background:linear-gradient(110deg,#202b30,#19232b)!important}
+.ark-method-picker{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:0}
+.ark-method-option{position:relative;display:block;min-width:0}
+.ark-method-option>button{width:100%;height:100%;min-height:32px;display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 6px;border:1px solid #55766c;background:#263d36;color:#e2f1e7;font-size:11px;white-space:nowrap}
+.ark-method-option>button[aria-pressed=true]{border-color:#b0e5cb;background:#35594b;color:#fff}
+.ark-method-option>button:disabled{opacity:.48}
+.ark-method-option::after{content:attr(data-tip);position:absolute;z-index:50;left:50%;bottom:calc(100% + 7px);width:max-content;max-width:min(260px,80vw);transform:translate(-50%,4px);padding:7px 9px;border:1px solid #d5bc6d;border-radius:4px;background:#25232a;color:#fff2c8;font-size:11px;line-height:1.45;white-space:normal;box-shadow:0 5px 18px #0009;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease,transform .12s ease}
+.ark-method-option:hover::after,.ark-method-option:focus-within::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.ark-capture-tutorial{position:relative;z-index:9;display:grid;gap:3px;padding:7px 8px;border:1px solid #e7c85f;border-left:3px solid #ffdb62;background:linear-gradient(110deg,#3b3320,#24272b);color:#fff2bd;font-size:11px;line-height:1.45;box-shadow:0 0 12px #efc64b30}
+.ark-capture-tutorial>b{color:#ffe07a;font-size:11px}
+.ark-tutorial-highlight{position:relative!important;z-index:2!important;outline:3px solid #ffd84f!important;outline-offset:2px!important;box-shadow:0 0 0 7px #ffd84f38,0 0 22px #ffd34dcc!important;animation:ark-tutorial-glow 1s ease-in-out infinite alternate!important}
+@keyframes ark-tutorial-glow{from{filter:brightness(1);box-shadow:0 0 0 5px #ffd84f24,0 0 12px #ffd34d88}to{filter:brightness(1.28);box-shadow:0 0 0 8px #ffd84f55,0 0 26px #ffd34d}}
+@media(prefers-reduced-motion:reduce){.ark-tutorial-highlight{animation:none!important}}
+
+.ark-first-capture-tutorial{position:relative;isolation:isolate}
+.ark-first-capture-tutorial::after{content:"";position:absolute;inset:0;z-index:8;background:#09090f80;pointer-events:none}
+.ark-first-capture-tutorial .ark-tutorial-highlight{z-index:9!important}
+.ark-first-capture-tutorial .ark-method-option:hover::after,.ark-first-capture-tutorial .ark-method-option:focus-within::after{z-index:60}

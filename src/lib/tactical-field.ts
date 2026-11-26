@@ -13,11 +13,12 @@ export const FIELD_START=14;
 export const FIELD_EXIT=20;
 export type FieldTile='empty'|'wall'|'track'|'cache'|'hazard'|'signal'|'animal'|'exit';
 export type Pace='quiet'|'normal'|'fast';
+export type FieldTutorialStep='choose-quiet'|'move-quiet'|'choose-walk'|'move-walk'|'choose-run'|'move-run'|'flashlight'|'filter'|'spore'|'cache'|'complete';
 export type RoamingEnemy='slime'|'echo'|'mutant';
 export type FieldChoice={id:string;kind:'cache'|'signal'|'hazard';title:string;description:string;danger:number;reward:number};
 export type FieldThreat={position:number;alert:number;mode:'search'|'closing';kind?:RoamingEnemy;mutantVariant?:number;origin?:number;lastSeen?:number;stage?:'patrol'|'investigate'|'alerted'|'chase'|'search'|'retreat';ticks?:number;warningTicks?:number;cooldown?:number};
 export type SporeSwarm={position:number;origin:number;alert:number;target?:number;mode:'drift'|'chase'|'search';ticks:number};
-export type FieldState={region?:RegionId;facing?:'up'|'right'|'down'|'left';acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;lightSteps?:number;mutantNextTurn?:number;autonomousTicks?:number;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
+export type FieldState={region?:RegionId;facing?:'up'|'right'|'down'|'left';acoustic?:{step:number;serial:number;direction:string;range:string;pan:number;strength:number;kind:'animal'|'exit'|'threat'|'fragment'};originFragments?:Record<number,number>;lightOff?:boolean;lightSteps?:number;tutorialStep?:FieldTutorialStep;mutantNextTurn?:number;autonomousTicks?:number;sporeTicks?:number;sporeSwarm?:SporeSwarm|null;sporeSpread?:{turn:number;active:number[];cells:number[];lastGrowth?:number[]};worldShift?:{serial:number;nextStep:number;lastStep:number;notice:string};combat?:FieldCombat|null;interruptedCapture?:CaptureState|null;threat?:FieldThreat|null;mutantSpawns?:number;mutantNextStep?:number;previousPosition?:number;discovered?:number[];concealed?:boolean;tiles:FieldTile[];position:number;visited:number[];steps:number;clues:number;loot:number;noise:number;wildlifeIndex:number;wildlifeSpecies?:Record<number,AnimalId>;seenSpecies?:AnimalId[];encountered:boolean;lastEvent:string;pressure?:number;width?:number;height?:number;origin?:number;exitIndex?:number;choice?:FieldChoice|null;sortie?:number};
 export type DeviceKind='cage'|'bait'|'sound'|'light'|'barrier';
 export type TacticalDevice={position:number;kind:DeviceKind};
 export type CaptureState={species:AnimalId;position:number;devices:TacticalDevice[];turn:number;fear:number;trust:number;maxTurns:number;lastEvent:string;tutorial:boolean;outcome:'playing'|'caught'|'escaped';path:number[];gate:number;prediction:number|null;confirmed:number;lastConfirmed:number|null;sealArmed:boolean;focus?:number;hunt?:HuntState;};
@@ -283,8 +284,11 @@ export function createField(day:number,region:RegionId,sortie=0,guided=day===1&&
   else if(h<65)tiles[i]='cache';
   else if(h<77)tiles[i]='signal';
  }
+ // Keep the first field lesson deterministic: its single spore patch and cache
+ // are introduced only when their tutorial beats are reached.
+ if(guided)for(let i=0;i<size;i++)if(tiles[i]==='hazard'||tiles[i]==='cache'||tiles[i]==='signal')tiles[i]='empty';
  // Most early encounters sit near the protected central route. Later regions hide them farther away.
- const wildlifeCol=guided?3:Math.min(width-2,2+hash(seed+971)%(Math.max(2,width-3)));
+ const wildlifeCol=guided?Math.max(5,width-2):Math.min(width-2,2+hash(seed+971)%(Math.max(2,width-3)));
  const wildlifeRow=guided?startingRow:Math.min(height-2,Math.max(1,startingRow+(hash(seed+1171)%3)-1));
  const wildlifeIndex=wildlifeRow*width+wildlifeCol;
  // Carve reachable corridors without opening the entire map.
@@ -294,7 +298,9 @@ export function createField(day:number,region:RegionId,sortie=0,guided=day===1&&
  tiles[start]='empty';tiles[exit]='exit';tiles[wildlifeIndex]='animal';
  // Only the introductory mission needs visible footprints.
  if(guided)tiles[start+1]='track';
- const nearby=[start-width+1,start+width+1].filter(i=>i>=0&&i<size&&i!==wildlifeIndex&&i!==exit);for(const i of nearby)tiles[i]='hazard';
+ const tutorialSpore=start+width+3,tutorialCache=start+width+4;
+ const nearby=(guided?[tutorialSpore]:[start-width+1,start+width+1]).filter(i=>i>=0&&i<size&&i!==wildlifeIndex&&i!==exit);for(const i of nearby)tiles[i]='hazard';
+ if(guided&&tutorialCache<size&&tutorialSpore<size){tiles[tutorialSpore]='hazard';tiles[tutorialCache]='cache';}
  // Each signal is reachable from the entry. Do not overwrite caches, hazards, or story signals.
  const reached=new Set<number>([start]),queue=[start];
  for(let i=0;i<queue.length;i++)for(const n of [queue[i]-width,queue[i]+width,queue[i]-1,queue[i]+1])if(adjacentField(queue[i],n,width,size)&&tiles[n]!=='wall'&&!reached.has(n)){reached.add(n);queue.push(n);}
@@ -304,7 +310,7 @@ export function createField(day:number,region:RegionId,sortie=0,guided=day===1&&
  const placed=count?[wildlifeIndex]:[];
  while(placed.length<count&&pool.length){const at=pool.shift()!;if(placed.some(i=>distance(i,at,width)<2))continue;tiles[at]='animal';placed.push(at);}
 
- return {region,tiles,position:start,facing:'down',visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:count===0,threat:null,pressure:0,lastEvent:'이동키(WASD) 또는 인접 칸으로 수색하십시오. 장비가 없으면 현재 위치만 보입니다. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
+ return {region,tiles,position:start,facing:'down',visited:[start],steps:0,clues:0,loot:0,noise:0,wildlifeIndex,encountered:count===0,threat:null,pressure:0,tutorialStep:guided?'choose-quiet':undefined,lastEvent:'이동키(WASD) 또는 인접 칸으로 수색하십시오. 장비가 없으면 현재 위치만 보입니다. 귀환 및 미회수 보급 신호는 탐사 중에도 변동될 수 있습니다.',width,height,origin:start,exitIndex:exit,choice:null,sortie};
 }
 
 export type Behaviour={name:string;instinct:string;memory:string;favours:DeviceKind[];avoids:DeviceKind[];speed:1|2;patience:number};
@@ -453,7 +459,7 @@ export function advanceCapture(raw:CaptureState):CaptureState{
   // Tutorial has zero RNG / no hard failure. Preserve the feeling of a planned capture.
   next.position=next.gate;next.path.push(next.gate);next.confirmed=Math.max(1,next.confirmed);
   next.sealArmed=true;next.outcome='caught';
-  next.lastEvent='EVE가 초회 이송 경로를 교정했습니다. 첫 토끼 확보 성공 (튜토리얼 100%).';return next;
+  next.lastEvent='EVE가 초회 이송 경로를 교정했습니다. 첫 토끼 확보 실습을 마쳤습니다.';return next;
  }
  if(!next.tutorial&&(next.turn>=next.maxTurns||next.fear>=100)){
   next.outcome='escaped';next.lastEvent=`${b.name}: 시한 종료. 개체가 경계 구역 밖으로 이탈했습니다.`;return next;

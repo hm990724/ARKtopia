@@ -305,7 +305,7 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
  }
  current.actions--;current.turn++;current.lastCommand=action.type;current.selectedCell=action.cell??null;
  const from=current.position;
- const next=chooseStep(current);
+ const next=current.tutorial&&current.species==='rabbit'?current.position:chooseStep(current);
  current.previous=from;current.position=next;
  current.trail=[...(current.trail??[]),{cell:from,turn:current.turn}].filter(t=>current.turn-t.turn<=6);
  current.footprints=[...new Set(current.trail.map(t=>t.cell))];
@@ -333,8 +333,9 @@ export function performHuntAction(raw:HuntState,action:HuntCommand):HuntResult{
  }
  // Every fifth spent action earns a real clue and a small search area. The
  // snapshot is AFTER movement and valid for the next action only, never a live marker.
- if([5,10,15].includes(current.turn)){
-  const index=current.turn/5-1;
+ const tutorialRevealTurns=current.tutorial?[3,6,9]:[5,10,15];
+ if(tutorialRevealTurns.includes(current.turn)){
+  const index=tutorialRevealTurns.indexOf(current.turn);
   current.revealed[index]=true;
   current.trailZone=Math.floor(Math.floor(next/size)/2)*(size/2)+Math.floor((next%size)/2);
   current.trailTurn=current.turn;
