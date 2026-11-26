@@ -34,7 +34,7 @@ export const REGION_RULES:Record<RegionId,{title:string;description:string;blind
  vault:{title:'연구동 · 봉인 물자',description:'잠긴 보급 설비가 많다. 스캐너 또는 보급관은 안전한 회수에 유리하다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:2,sporeCap:0.55},
  tunnels:{title:'제0구역 · 복합 위험',description:'시야가 좁고 소음이 증폭되며 포자가 빠르게 퍼진다.',blind:false,sporeRate:0.3,sporeWake:0,sporeGrowth:3,sporeCap:0.6}
 };
-export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return scanner?(region==='tunnels'?2:3)+Math.floor(level/2):light?1:REGION_RULES[region].blind?0:0;}
+export function fieldVision(region:RegionId,light:boolean,scanner=false,level=0){return REGION_RULES[region].blind?(light&&!scanner?2:0):scanner?(region==='tunnels'?2:3)+Math.floor(level/2):light?2:0;}
 export function acousticBearing(f:FieldState,kind:'animal'|'exit'|'threat'|'fragment'){
  const fragment=Object.keys(f.originFragments??{}).map(Number).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];
  const target=kind==='fragment'?fragment:kind==='threat'?f.threat?.position:kind==='exit'?f.exitIndex:remainingWildlife(f).sort((a,b)=>distance(a,f.position,fieldWidth(f))-distance(b,f.position,fieldWidth(f)))[0];

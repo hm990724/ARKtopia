@@ -1,6 +1,6 @@
 import type {V10} from './game-v10';
 import type {CrewId} from './crew';
-export type PortraitMood='neutral'|'anxious'|'critical'|'resolve';
+export type PortraitMood='neutral'|'anxious'|'critical'|'resolve'|'smile';
 export type CharacterId='protagonist'|'eve'|CrewId;
 export type StaffCondition='safe'|'unstable'|'critical';
 type RabbitExpression='neutral'|'smile'|'angry'|'unstable'|'critical'|'crying';
@@ -32,11 +32,13 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
   if(value<35)return 'critical';
   if(value<62&&explicit!=='critical')return 'anxious';
  }
+ if(explicit==='resolve'&&/고마워|고맙|다행|안심|괜찮아|잘됐|함께여서|믿어줘|좋아졌/.test(text))return 'smile';
  if(explicit)return explicit;
  if(id==='wolf'&&/변하고 싶지|무서워|두려워|잠식|내가 아닌/.test(text))return 'critical';
  if(value!==undefined&&value<35)return 'critical';
  if(/제 손이|네 발로|무너질|끝나가|살려|죽고|이상해요/.test(text))return 'critical';
  if(value!==undefined&&value<62)return 'anxious';
+ if(/고마워|고맙|다행|안심|괜찮아|잘됐|함께여서|믿어줘|좋아졌/.test(text))return 'smile';
  if(/이해한 마음|내일은 제가|네가 이어|스스로|지키겠|함께 보자|제가 결정/.test(text))return 'resolve';
  if(/두려|불안|걱정|기억|모르겠|죄송|경고|위험/.test(text))return 'anxious';
  if(id==='eve'&&(state?.originZero?.photos??0)>=12)return 'resolve';
@@ -44,8 +46,8 @@ export function characterMood(state:V10|undefined,id:CharacterId,text='',explici
  return 'neutral';
 }
 export function characterPortrait(id:CharacterId,mood:PortraitMood):string{
- if(id==='protagonist')return `/assets/characters/protagonist_${mood}.webp`;
- if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':`/assets/characters/eve_${mood}.webp`;
+ if(id==='protagonist')return mood==='smile'?'/assets/characters/protagonist_smile.png':`/assets/characters/protagonist_${mood}.webp`;
+ if(id==='eve')return mood==='neutral'?'/assets/characters/eve_hologram.webp':mood==='smile'?'/assets/characters/eve_smile.png':`/assets/characters/eve_${mood}.webp`;
  return staffStatusPortrait(id,mood==='critical'?'critical':mood==='anxious'?'unstable':'safe');
 }
 /** Tiny, transparent full-body combat sprites; expressive portraits stay in dialogue and staff cards. */
@@ -86,7 +88,7 @@ export function staffDialoguePortrait(id:CrewId,mood:PortraitMood,condition:Staf
 export type StaffDialogueTone='neutral'|'soft'|'shocked';
 export function staffDialogueTone(mood:PortraitMood,line=''):StaffDialogueTone{
  if(mood==='critical'||/살려|죽|충격|무너|안 돼|이게 뭐|무슨 일이/.test(line))return 'shocked';
- if(mood==='resolve'||/고마|괜찮|함께|곁에|안심|미안|지켜|잘됐/.test(line))return 'soft';
+ if(mood==='resolve'||mood==='smile'||/고마|괜찮|함께|곁에|안심|미안|지켜|잘됐/.test(line))return 'soft';
  if(mood==='anxious'||/[?!？！]/.test(line))return 'shocked';
  return 'neutral';
 }
@@ -99,7 +101,7 @@ function rabbitDialogueExpression(mood:PortraitMood,condition:StaffCondition,lin
  if(mood==='critical')return 'critical';
  if(mood==='anxious')return 'unstable';
  if(/작별|안녕히|고생하셨|떠나|그리워|보고 싶|마지막|잃었|돌아오지|눈물/.test(line))return 'crying';
- if(mood==='resolve'||/고마|괜찮|함께|곁에|안심|미안|지켜|잘됐|간호해드릴게요/.test(line))return 'smile';
+ if(mood==='resolve'||mood==='smile'||/고마|괜찮|함께|곁에|안심|미안|지켜|잘됐|간호해드릴게요/.test(line))return 'smile';
  if(/두려|불안|걱정|기억|모르겠|죄송|경고|위험|손이 떨/.test(line))return 'unstable';
  return 'neutral';
 }
@@ -129,7 +131,7 @@ function deerDialogueExpression(mood:PortraitMood,condition:StaffCondition,line:
  if(/작별|안녕히|고생하셨|떠나|그리워|보고 싶|마지막|잃|돌아오지|눈물|슬프|헤어지|놓아주|이름을 지우지|이름이 사라지|지키지 못/.test(line))return 'crying';
  if(/거짓말|왜 그래|책임져|싫어요|분명히|화가|화났|그만하세요|그만해|틀렸|명령에 따르지|분노/.test(line))return 'angry';
  if(mood==='anxious'||/두려|불안|걱정|기억|모르겠|죄송|경고|위험|떨려|흔들/.test(line))return 'unstable';
- if(mood==='resolve'||/고마|괜찮|함께|곁에|안심|지켜|잘됐|희망|믿|해낼|좋아요|도와|약속/.test(line))return 'smile';
+ if(mood==='resolve'||mood==='smile'||/고마|괜찮|함께|곁에|안심|지켜|잘됐|희망|믿|해낼|좋아요|도와|약속/.test(line))return 'smile';
  return 'neutral';
 }
 export function staffDialogueArtworkCandidates(id:CrewId,mood:PortraitMood,condition:StaffCondition,line=''):readonly string[]{

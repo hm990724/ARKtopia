@@ -38,6 +38,10 @@ function check(relative, label, required = true) {
 }
 
 const crew = ['rabbit', 'fox', 'deer', 'wolf'];
+for (const [id, file] of [
+  ['protagonist', 'characters/protagonist_smile.png'],
+  ['EVE', 'characters/eve_smile.png']
+]) check(file, `${id} fifth smile portrait`);
 const arrivals = {
   rabbit: 'cinematics/origin-zero/story/SCN_04_rabbit_medic_arrival.png',
   fox: 'cinematics/origin-zero/story/SCN_05_fox_supply_arrival.webp',

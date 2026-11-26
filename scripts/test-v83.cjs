@@ -56,5 +56,6 @@ const event=fs.readFileSync(path.join(__dirname,'../src/components/IncidentArtwo
 assert.ok(scene.includes("cinematicArtworkCandidates(kind)"));
 assert.ok(event.includes("incidentArtworkCandidates(id)"));
 assert.ok(scene.includes("setImageIndex(v=>v+1)"));
-assert.ok(event.includes("setImageIndex(i=>Math.min(sources.length-1,i+1))"));
+assert.ok(event.includes("sourceIncidentArtwork(id)"));
+assert.ok(event.includes("setFailed(true)"),'event art must render a safe fallback after all image URLs fail');
 console.log('PASS v83: 43 incident CG targets, 19 stable story scenes and 8 main ending CG targets; canonical routes resolve');
